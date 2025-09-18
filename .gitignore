@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django-specific
+*.log
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+.coverage
+htmlcov/
+
+# Environments
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# IDEs & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Build & packaging
+*.egg-info/
+dist/
+build/
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.cache/
+
+# Local Django settings (если используешь)
+local_settings.py
+settings/local.py
+
+# Logs
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Django migrations (если нужно — иногда их коммитят, но не автогенерённые конфликты)
+# migrations/
+# !migrations/__init__.py
