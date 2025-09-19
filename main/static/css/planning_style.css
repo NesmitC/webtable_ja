@@ -1,0 +1,72 @@
+/* Минималистичный CSS Grid для таблицы планирования */
+.title-planing {
+    margin: 20px 0;
+}
+
+.table-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-flow: row dense;
+}
+
+.item {
+    border: 1px solid black; /* Рамка вокруг каждого элемента */
+    font-size: .9em; /* Размер шрифта */
+    color: black; /* Цвет текста */
+    padding: 3px; /* Внутренние отступы */
+    text-align: center; /* Выравнивание текста по центру */
+    display: flex; /* Активируем Flexbox */
+    flex-direction: column; /* Направление расположения дочерних элементов вертикально */
+    align-items: center; /* Центруем по горизонтали */
+}
+
+.text-orf {
+    text-align: left;
+}
+
+.item-1, .item-2, .item-3, .item-4, .item-5 {
+    background-color: rgb(47, 197, 33);
+}
+
+.item-6, .item-7, .item-8, .item-9, .item-10 {
+    background-color: rgb(215, 54, 230);
+}
+
+.item-11, .item-12, .item-13, .item-14, .item-15 {
+    background-color: rgb(255, 255, 0);
+    width: 100%;
+    height: 55px;
+    padding: 7px;
+}
+
+.input-text {
+    width: 100%;
+    resize: vertical; /* Возможность изменять высоту руками пользователя */
+    overflow-y: auto; /* Появляется прокрутка, если текста много */
+}
+
+.item-png {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.circle {
+    width: 30px;      /* диаметр окружности */
+    height: 30px;     /* делаем квадрат для будущей окружности */
+    border-radius: 50%; /* преобразует прямоугольник в круг */
+    display: flex;    /* центрирование содержимого */
+    align-items: center; /* центровка по вертикали */
+    justify-content: center; /* центровка по горизонтали */
+    background-color: rgb(255, 255, 0); /* желтый фон */
+    border: 1px solid black; /* тонкая черная обводка */
+}
+
+.text-orf-effects {
+    font-weight: bold; /* Выделяем важное слово полужирным */
+    text-decoration: underline; /* Подчеркивание текста */
+}
+
+.bold {
+    font-weight: bold; /* Выделяем полужирным */
+}

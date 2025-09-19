@@ -1,0 +1,37 @@
+/* Сброс общих стилей */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* учитывает padding и border в ширину элемента */
+}
+
+body {
+    font-family: 'Roboto', 'Open Sans', sans-serif; /* Установка шрифтов по умолчанию */
+    line-height: 1.5;                 /* Стандартная межстрочная высота */
+    font-weight: normal;              /* Нормальная толщина шрифта */
+    color: #333;                      /* Основной цвет текста */
+    background-color: #fff;           /* Основной цвет фона страницы */
+}
+
+ul, ol {
+    list-style-type: none;            /* Скрываем маркеры списков */
+}
+
+a {
+    text-decoration: none;            /* Убираем подчеркивания ссылок */
+    color: inherit;                   /* Наследование цвета текста */
+}
+
+img {
+    max-width: 100%;                  /* Изображения адаптируются под контейнер */
+    height: auto;                     /* Сохраняем пропорции изображений */
+}
+
+button,
+input[type="submit"],
+input[type="button"] {
+    cursor: pointer;                  /* Курсор-клик для кнопок */
+    outline: none;                    /* Убираем выделение кнопки при фокусировке */
+}

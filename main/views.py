@@ -1,0 +1,122 @@
+# main/views.py
+from django.shortcuts import render, redirect
+from .forms import CustomUserCreationForm
+from django.contrib.auth import login
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.models import User
+from .models import UserProfile
+from .forms import ProfileForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import UserExample
+
+
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False  # Пользователь не активен, пока не подтвердит email
+            user.save()
+
+            # Отправляем письмо
+            current_site = get_current_site(request)
+            subject = 'Подтвердите ваш email'
+            message = render_to_string('registration/confirm_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            send_mail(subject, message, None, [user.email])
+
+            return render(request, 'registration/email_sent.html')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+
+def confirm_email(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+
+        # Создаем профиль, если его нет
+        UserProfile.objects.get_or_create(user=user)
+        user.profile.email_confirmed = True
+        user.profile.save()
+
+        login(request, user)
+        return redirect('index')  # или 'profile', если хочешь сразу в ЛК
+    else:
+        return render(request, 'registration/invalid_link.html')
+
+def profile(request):
+    if request.user.is_authenticated:
+        return render(request, 'profile.html')
+    else:
+        return redirect('login')
+    
+@login_required
+def profile(request):
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Данные успешно сохранены!')
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, 'profile.html', {'form': form})
+
+@login_required
+def save_example(request):
+    if request.method == 'POST':
+        field_name = request.POST.get('field_name')
+        content = request.POST.get('content', '')
+
+        # Сохраняем или обновляем запись
+        obj, created = UserExample.objects.update_or_create(
+            user=request.user,
+            field_name=field_name,
+            defaults={'content': content}
+        )
+
+        return JsonResponse({'status': 'success'})
+
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def load_examples(request):
+    examples = UserExample.objects.filter(user=request.user).values('field_name', 'content')
+    data = {item['field_name']: item['content'] for item in examples}
+    return JsonResponse(data)
+
+
+def index(request):
+    return render(request, 'index.html')
+
+def planning_5kl(request):
+    return render(request, 'planning_5kl.html')
+
+def planning_6kl(request):
+    return render(request, 'planning_6kl.html')
+
+def planning_7kl(request):
+    return render(request, 'planning_7kl.html')

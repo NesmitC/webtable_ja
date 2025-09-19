@@ -1,0 +1,14 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Выход</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>Вы вышли из системы</h2>
+        <a href="{% url 'login' %}">Войти снова</a>
+    </div>
+</body>
+</html>

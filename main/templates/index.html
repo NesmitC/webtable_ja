@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}  <!-- ЭТО ОБЯЗАТЕЛЬНО! -->
+    <meta charset="UTF-8">
+    <title>Нейростат — Онлайн-школа</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <!-- Левая часть: классы -->
+            <div>
+                <a href="{% url 'planning_5kl' %}">5 класс</a>
+                <a href="{% url 'planning_6kl' %}">6 класс</a>
+                <a href="{% url 'planning_7kl' %}">7 класс</a>
+            </div>
+
+            <!-- Правая часть: кнопки -->
+            <div class="right-nav">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}">ЛК</a>
+                    <form method="post" action="{% url 'logout' %}?next=/">
+                        {% csrf_token %}
+                        <button type="submit">Выйти</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'register' %}" style="margin-right: 15px;">Зарегистрироваться</a>
+                    <a href="{% url 'login' %}">Войти</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Добро пожаловать в электронные планинги!</h1>
+        <p>Для школьников 5–7 классов</p>
+        <p>Полноценно пользоваться планингом можно, зарегистрировавшись на сайте. После регистрации на почту придет письмо с подтверждением:</p>
+        <p>- пройдите по ссылке, </p>
+        <p>- на главной странице нажмите кнопку личного кабинета ЛК,</p>
+        <p>- заполните анкету.</p> <br>
+        <p>Теперь можно делать записи в планингах. Они всегда будут под рукой.</p> <br>
+        <p>Мы заботимся о Вашей безопасности!</p>
+
+
+    </main>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

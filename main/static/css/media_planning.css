@@ -1,0 +1,28 @@
+/* Мобильная версия */
+@media screen and (max-width: 480px) {
+    .table-container {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Изменяем порядок элементов для мобильной версии */
+    .item-1 { order: 1; }
+    .item-2 { order: 5; }
+    .item-3 { order: 9; }
+    .item-4 { order: 13; }
+    .item-5 { order: 17; }
+    .item-6 { order: 2; }
+    .item-7 { order: 6; }
+    .item-8 { order: 10; }
+    .item-9 { order: 14; }
+    .item-10 { order: 18; }
+    .item-11 { order: 3; }
+    .item-12 { order: 7; }
+    .item-13 { order: 11; }
+    .item-14 { order: 15; }
+    .item-15 { order: 19; }
+    .item-16 { order: 4; }
+    .item-17 { order: 8; }
+    .item-18 { order: 12; }
+    .item-19 { order: 16; }
+    .item-20 { order: 20; }
+}

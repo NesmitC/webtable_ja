@@ -1,0 +1,15 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Ошибка</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h2>Ссылка недействительна</h2>
+        <p>Возможно, ссылка устарела или уже была использована.</p>
+        <a href="{% url 'register' %}">Зарегистрироваться снова</a>
+    </div>
+</body>
+</html>
