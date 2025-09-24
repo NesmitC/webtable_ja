@@ -1,3 +1,6 @@
+# Deployment
+
+See deploy/README_deploy.md for a production deployment guide (Nginx + Gunicorn + PostgreSQL).
 '''
 структура проекта
 

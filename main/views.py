@@ -15,7 +15,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import UserExample
-
+from django.views.decorators.csrf import csrf_exempt
+from .models import CorrectAnswer
+import json
 
 
 def register(request):
@@ -23,18 +25,22 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False  # Пользователь не активен, пока не подтвердит email
+            # Пользователь не активен, пока не подтвердит email
+            user.is_active = False
             user.save()
 
             # Отправляем письмо
             current_site = get_current_site(request)
             subject = 'Подтвердите ваш email'
-            message = render_to_string('registration/confirm_email.html', {
-                'user': user,
-                'domain': current_site.domain,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': default_token_generator.make_token(user),
-            })
+            message = render_to_string(
+                'registration/confirm_email.html',
+                {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': default_token_generator.make_token(user),
+                },
+            )
             send_mail(subject, message, None, [user.email])
 
             return render(request, 'registration/email_sent.html')
@@ -64,12 +70,7 @@ def confirm_email(request, uidb64, token):
     else:
         return render(request, 'registration/invalid_link.html')
 
-def profile(request):
-    if request.user.is_authenticated:
-        return render(request, 'profile.html')
-    else:
-        return redirect('login')
-    
+
 @login_required
 def profile(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
@@ -84,6 +85,7 @@ def profile(request):
         form = ProfileForm(instance=profile)
 
     return render(request, 'profile.html', {'form': form})
+
 
 @login_required
 def save_example(request):
@@ -102,9 +104,13 @@ def save_example(request):
 
     return JsonResponse({'status': 'error'}, status=400)
 
+
 @login_required
 def load_examples(request):
-    examples = UserExample.objects.filter(user=request.user).values('field_name', 'content')
+    examples = (
+        UserExample.objects.filter(user=request.user)
+        .values('field_name', 'content')
+    )
     data = {item['field_name']: item['content'] for item in examples}
     return JsonResponse(data)
 
@@ -112,11 +118,41 @@ def load_examples(request):
 def index(request):
     return render(request, 'index.html')
 
+
 def planning_5kl(request):
     return render(request, 'planning_5kl.html')
+
 
 def planning_6kl(request):
     return render(request, 'planning_6kl.html')
 
+
 def planning_7kl(request):
     return render(request, 'planning_7kl.html')
+
+
+@csrf_exempt
+def check_answers(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            # Список слов от пользователя
+            user_words = data.get('words', [])
+            results = []
+
+            for word in user_words:
+                # Ищем точное совпадение в БД
+                is_correct = (
+                    CorrectAnswer.objects.filter(correct_word=word).exists()
+                )
+                results.append({
+                    'word': word,
+                    'is_correct': is_correct
+                })
+
+            return JsonResponse({'results': results})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Only POST allowed'}, status=405)

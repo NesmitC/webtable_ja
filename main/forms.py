@@ -31,11 +31,13 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
         label='Логин',
-        widget=forms.TextInput(attrs={'autofocus': True, 'class': 'form-control'})
+        widget=forms.TextInput(
+            attrs={'autofocus': True, 'class': 'form-control'}
+        ),
     )
     password = forms.CharField(
         label='Пароль',
-        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
     )
 
 
@@ -54,5 +56,7 @@ class ProfileForm(forms.ModelForm):
             'grade': forms.Select(attrs={'class': 'form-control'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'telegram_username': forms.TextInput(attrs={'class': 'form-control'}),
+            'telegram_username': forms.TextInput(
+                attrs={'class': 'form-control'}
+            ),
         }
