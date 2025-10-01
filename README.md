@@ -47,4 +47,11 @@ DELETE FROM auth_user WHERE username IN ('Ric', 'mika');
 
 
 
+
+cd /home/neurostat
+source .venv/bin/activate
+
+открыть конфиг
+sudo nano /etc/nginx/sites-available/neurostat
+
 '''

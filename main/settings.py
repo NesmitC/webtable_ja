@@ -1,3 +1,4 @@
+# main\settings.py
 from pathlib import Path
 from decouple import config
 import os
@@ -141,8 +142,8 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 # Prod security settings (enabled when DEBUG=False)
 if not DEBUG:
     SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = False # False - временно, до настройки HTTPS
+    CSRF_COOKIE_SECURE = False # False - временно, до настройки HTTPS
     SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -157,3 +158,22 @@ if not DEBUG:
 CSRF_TRUSTED_ORIGINS = [
     origin for origin in config('CSRF_TRUSTED_ORIGINS', default='', cast=str).split(',') if origin
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': '/home/neurostat/logs/django_error.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}

@@ -20,30 +20,46 @@ from .models import CorrectAnswer
 import json
 
 
+# def register(request):
+#     if request.method == 'POST':
+#         form = CustomUserCreationForm(request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             # Пользователь не активен, пока не подтвердит email
+#             user.is_active = False
+#             user.save()
+
+#             # Отправляем письмо
+#             current_site = get_current_site(request)
+#             subject = 'Подтвердите ваш email'
+#             message = render_to_string(
+#                 'registration/confirm_email.html',
+#                 {
+#                     'user': user,
+#                     'domain': current_site.domain,
+#                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+#                     'token': default_token_generator.make_token(user),
+#                 },
+#             )
+#             send_mail(subject, message, None, [user.email])
+
+#             return render(request, 'registration/email_sent.html')
+#     else:
+#         form = CustomUserCreationForm()
+#     return render(request, 'registration/register.html', {'form': form})
+
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            # Пользователь не активен, пока не подтвердит email
-            user.is_active = False
-            user.save()
+            user = form.save()  # ← is_active=True по умолчанию
+            login(request, user)
 
-            # Отправляем письмо
-            current_site = get_current_site(request)
-            subject = 'Подтвердите ваш email'
-            message = render_to_string(
-                'registration/confirm_email.html',
-                {
-                    'user': user,
-                    'domain': current_site.domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token': default_token_generator.make_token(user),
-                },
-            )
-            send_mail(subject, message, None, [user.email])
+            # Создаем профиль при регистрации
+            UserProfile.objects.get_or_create(user=user, defaults={'email_confirmed': True})
 
-            return render(request, 'registration/email_sent.html')
+            return redirect('index')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
