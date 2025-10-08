@@ -20,46 +20,31 @@ from .models import CorrectAnswer
 import json
 
 
-# def register(request):
-#     if request.method == 'POST':
-#         form = CustomUserCreationForm(request.POST)
-#         if form.is_valid():
-#             user = form.save(commit=False)
-#             # Пользователь не активен, пока не подтвердит email
-#             user.is_active = False
-#             user.save()
-
-#             # Отправляем письмо
-#             current_site = get_current_site(request)
-#             subject = 'Подтвердите ваш email'
-#             message = render_to_string(
-#                 'registration/confirm_email.html',
-#                 {
-#                     'user': user,
-#                     'domain': current_site.domain,
-#                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-#                     'token': default_token_generator.make_token(user),
-#                 },
-#             )
-#             send_mail(subject, message, None, [user.email])
-
-#             return render(request, 'registration/email_sent.html')
-#     else:
-#         form = CustomUserCreationForm()
-#     return render(request, 'registration/register.html', {'form': form})
-
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()  # ← is_active=True по умолчанию
-            login(request, user)
+            try:
+                user = form.save()  # ← is_active=True по умолчанию
+                login(request, user)
 
-            # Создаем профиль при регистрации
-            UserProfile.objects.get_or_create(user=user, defaults={'email_confirmed': True})
+                # Создаем профиль при регистрации
+                profile, created = UserProfile.objects.get_or_create(
+                    user=user,
+                    defaults={'email_confirmed': True}
+                )
 
-            return redirect('index')
+                return redirect('index')
+
+            except Exception as e:
+                # Логируем ошибку (если настроен логгер)
+                import logging
+                logger = logging.getLogger('django')
+                logger.error(f"Ошибка при регистрации пользователя {user.username}: {e}")
+
+                # Показываем пользователю понятное сообщение
+                messages.error(request, "Произошла ошибка при регистрации. Попробуйте позже.")
+                return render(request, 'registration/register.html', {'form': form})
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -77,12 +62,12 @@ def confirm_email(request, uidb64, token):
         user.save()
 
         # Создаем профиль, если его нет
-        UserProfile.objects.get_or_create(user=user)
-        user.profile.email_confirmed = True
-        user.profile.save()
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        profile.email_confirmed = True
+        profile.save()
 
         login(request, user)
-        return redirect('index')  # или 'profile', если хочешь сразу в ЛК
+        return redirect('index')  # или 'profile'
     else:
         return render(request, 'registration/invalid_link.html')
 

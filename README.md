@@ -54,4 +54,20 @@ source .venv/bin/activate
 открыть конфиг
 sudo nano /etc/nginx/sites-available/neurostat
 
+Команда nano - редактирование файла
+nano /home/neurostat/main/views.py
+
+# Перезагружаем конфигурацию systemd
+sudo systemctl daemon-reload
+
+Перезапуск Gunicorn
+sudo systemctl restart gunicorn
+
+====================================================
+ЗАПУСК через ТЕРМИНАЛ
+ssh root@91.197.96.233
+
+
+
+
 '''
