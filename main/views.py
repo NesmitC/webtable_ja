@@ -17,6 +17,8 @@ from django.http import JsonResponse
 from .models import UserExample
 from django.views.decorators.csrf import csrf_exempt
 from .models import CorrectAnswer
+from django.conf import settings
+import logging
 import json
 
 
@@ -25,24 +27,27 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             try:
-                user = form.save()  # ← is_active=True по умолчанию
-                login(request, user)
+                user = form.save(commit=False)
+                user.is_active = False 
+                user.save()
 
-                # Создаем профиль при регистрации
-                profile, created = UserProfile.objects.get_or_create(
-                    user=user,
-                    defaults={'email_confirmed': True}
-                )
+                # ОТПРАВКА EMAIL ДЛЯ ПОДТВЕРЖДЕНИЯ
+                current_site = get_current_site(request)
+                mail_subject = 'Активируйте ваш аккаунт'
+                message = render_to_string('registration/confirm_email.html', {
+                    'user': user,
+                    'domain': current_site.domain,
+                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                    'token': default_token_generator.make_token(user),
+                })
+                send_mail(mail_subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
 
-                return redirect('index')
+                messages.success(request, 'Письмо с подтверждением отправлено на вашу почту!')
+                return redirect('login')
 
             except Exception as e:
-                # Логируем ошибку (если настроен логгер)
-                import logging
                 logger = logging.getLogger('django')
-                logger.error(f"Ошибка при регистрации пользователя {user.username}: {e}")
-
-                # Показываем пользователю понятное сообщение
+                logger.error(f"Ошибка при регистрации: {e}")
                 messages.error(request, "Произошла ошибка при регистрации. Попробуйте позже.")
                 return render(request, 'registration/register.html', {'form': form})
     else:

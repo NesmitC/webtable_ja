@@ -1,4 +1,4 @@
-# main\settings.py
+# main\settings.py НОВЫЙ НОВЫЙ
 from pathlib import Path
 from decouple import config
 import os
@@ -16,7 +16,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 # Django не будет обслуживать статику через runserver
 # DEBUG = True
 # ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-# STATIC_URL = '/static/'
+
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Для collectstatic
@@ -83,6 +83,7 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
 
 
 # Password validation

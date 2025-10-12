@@ -56,6 +56,7 @@ sudo nano /etc/nginx/sites-available/neurostat
 
 Команда nano - редактирование файла
 nano /home/neurostat/main/views.py
+nano /home/neurostat/main/settings.py
 
 # Перезагружаем конфигурацию systemd
 sudo systemctl daemon-reload
@@ -63,10 +64,29 @@ sudo systemctl daemon-reload
 Перезапуск Gunicorn
 sudo systemctl restart gunicorn
 
+ls -la /home/neurostat/main/staticfiles/
+cat /home/neurostat/main/.env
+
 ====================================================
 ЗАПУСК через ТЕРМИНАЛ
 ssh root@91.197.96.233
 
+
+ПЕРЕЗАЛИВКА ФАЙЛОВ на примере settings.py
+(venv) PS C:\Users\alex\Jango\webtable_ja_project>
+
+cd C:\Users\alex\Jango\webtable_ja_project
+
+🔹 Команда для копирования:
+scp .\main\settings.py root@91.197.96.233:/home/neurostat/main/settings.py
+
+Перезапусти Gunicorn:
+sudo systemctl restart gunicorn
+
+===================================================================
+
+ВЫХОД:
+exit
 
 
 
