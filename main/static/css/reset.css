@@ -7,14 +7,6 @@
     box-sizing: border-box; /* учитывает padding и border в ширину элемента */
 }
 
-body {
-    font-family: 'Roboto', 'Open Sans', sans-serif; /* Установка шрифтов по умолчанию */
-    line-height: 1.5;                 /* Стандартная межстрочная высота */
-    font-weight: normal;              /* Нормальная толщина шрифта */
-    color: #333;                      /* Основной цвет текста */
-    background-color: #fff;           /* Основной цвет фона страницы */
-}
-
 ul, ol {
     list-style-type: none;            /* Скрываем маркеры списков */
 }
@@ -34,4 +26,9 @@ input[type="submit"],
 input[type="button"] {
     cursor: pointer;                  /* Курсор-клик для кнопок */
     outline: none;                    /* Убираем выделение кнопки при фокусировке */
+}
+
+/* ------- плавное перемещение по якорной ссылке -------- */
+html {
+    scroll-behavior: smooth;
 }

@@ -8,14 +8,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # для продакшна
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+# DEBUG = config('DEBUG', default=False, cast=bool)
+# ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 
 # Для локальной разработки должно быть DEBUG=True - Включаем режим разработки.
 # Django не будет обслуживать статику через runserver
-# DEBUG = True
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 
@@ -160,21 +160,21 @@ CSRF_TRUSTED_ORIGINS = [
     origin for origin in config('CSRF_TRUSTED_ORIGINS', default='', cast=str).split(',') if origin
 ]
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': '/home/neurostat/logs/django_error.log',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'ERROR',
+#             'class': 'logging.FileHandler',
+#             'filename': '/home/neurostat/logs/django_error.log',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'ERROR',
+#             'propagate': True,
+#         },
+#     },
+# }

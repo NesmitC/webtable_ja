@@ -1,0 +1,38 @@
+<!-- templates/chat_widget.html -->
+<div id="chat-widget" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="chat-toggle" style="width: 50px; height: 50px; border-radius: 50%; background: #0d6efd; color: white; font-size: 20px; border: none; cursor: pointer;">
+        ⚡
+    </button>
+    <div id="chat-window" style="display: none; width: 350px; height: 400px; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: absolute; bottom: 60px; right: 0;">
+        <div id="chat-messages" style="padding: 12px; height: 320px; overflow-y: auto; font-size: 14px;"></div>
+        <input type="text" id="chat-input" placeholder="Напиши вопрос..." style="width: 100%; padding: 8px; border-top: 1px solid #eee; box-sizing: border-box;">
+    </div>
+</div>
+
+<script>
+    document.getElementById('chat-toggle').addEventListener('click', () => {
+        const window = document.getElementById('chat-window');
+        window.style.display = window.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const input = e.target;
+            const message = input.value.trim();
+            if (message) {
+                fetch('/api/chat/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                }).then(r => r.json()).then(data => {
+                    const messagesDiv = document.getElementById('chat-messages');
+                    messagesDiv.innerHTML += 
+                        `<div><strong>Ты:</strong> ${message}</div>` +
+                        `<div style="background:#f0f8ff; padding:6px; margin:4px 0; border-radius:4px;"><strong>Нейроассистент:</strong> ${data.reply}</div>`;
+                    input.value = '';
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                });
+            }
+        }
+    });
+</script>

@@ -1,0 +1,23 @@
+<!-- templates/exercise_snippet.html -->
+
+{% comment %} <article class="article-practice">
+    <h2 class="title-practice">Упражнение 8_1</h2>
+    <p class="practice-task"><span class="bold">В словах пропущена буква, кликните по пропуску-смайлу, выбрав подходящую из списка:</span></p>
+    <p class="practice-text" data-exercise="8_dynamic">
+        {{ words_text }}
+    </p>
+    <div class="practice-buttons">
+        <button class="check-answers">Проверить</button>
+    </div>
+</article> {% endcomment %}
+
+<!-- templates/exercise_snippet.html -->
+<article class="article-practice">
+    <p class="practice-task"><span class="bold">В словах пропущена буква, кликните по пропуску-смайлу, выбрав подходящую из списка:</span></p>
+    <p class="practice-text" data-exercise="{{ exercise_id }}">
+        {{ words_text }}
+    </p>
+    <div class="practice-buttons">
+        <button class="check-answers">Проверить</button>
+    </div>
+</article>

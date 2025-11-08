@@ -44,6 +44,11 @@ class UserProfile(models.Model):
         blank=True,
         verbose_name="Ник в Telegram",
     )
+    telegram_id = models.BigIntegerField(
+        null=True, 
+        blank=True, 
+        unique=True, 
+        verbose_name="Telegram ID")
 
     def __str__(self):
         return f"{self.user.username} Profile"
@@ -103,3 +108,84 @@ class CorrectAnswer(models.Model):
         ]
         verbose_name = "Правильный ответ"
         verbose_name_plural = "Правильные ответы"
+
+
+
+
+
+class Orthogram(models.Model):
+    id = models.CharField(max_length=10, primary_key=True)  # '1', '2', '6', '271'
+    name = models.CharField(max_length=200)
+    rule = models.TextField()
+    
+    # 🔑 Новый: список букв/символов для этой орфограммы
+    letters = models.CharField(
+        max_length=200,
+        default='а,о,е,и,я',
+        help_text="Буквы или символы через запятую: а,б,в,г,д,е,ё,ж,з,и,й,к,л,м,н,о,п,р,с,т,у,ф,х,ц,ч,ш,щ,ъ,ы,ь,э,ю,я,-,/,|,_"  # можно добавлять любые символы
+    )
+    grades = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Через запятую: 5,6,7"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_letters_list(self):
+        """Возвращает список букв без пробелов"""
+        return [letter.strip() for letter in self.letters.split(',') if letter.strip()]
+
+    def __str__(self):
+        return f"{self.id}: {self.name}"
+    
+
+
+class OrthogramExample(models.Model):
+    orthogram = models.ForeignKey(Orthogram, on_delete=models.CASCADE)
+    text = models.CharField(max_length=300)                    # например: "вода"
+    masked_word = models.CharField(max_length=300)             # например: "в*1*да"
+    incorrect_variant = models.CharField(max_length=300, blank=True, null=True)
+    explanation = models.TextField(blank=True)
+
+    difficulty = models.PositiveSmallIntegerField(default=1)
+    is_for_quiz = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    # Для каких классов актуален пример
+    grades = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Через запятую: 5,6,7"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_grades_list(self):
+        """Возвращает список целых чисел: [5, 6, 7]"""
+        if self.grades:
+            return [
+                int(g.strip())
+                for g in self.grades.split(',')
+                if g.strip().isdigit()
+            ]
+        return []
+
+    def __str__(self):
+        grades_display = self.grades or 'все'
+        return f"{self.text} (орф. {self.orthogram.id}, классы: {grades_display})"
+
+
+class StudentAnswer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
+    orthogram = models.ForeignKey(Orthogram, on_delete=models.CASCADE, verbose_name="Орфограмма")
+    phrase = models.ForeignKey(OrthogramExample, on_delete=models.CASCADE, verbose_name="Пример")
+    selected_answer = models.CharField(max_length=300, verbose_name="Выбранный ответ")
+    is_correct = models.BooleanField(verbose_name="Правильно?")
+    answered_at = models.DateTimeField(auto_now_add=True, verbose_name="Когда ответил")
+
+    class Meta:
+        verbose_name = "Ответ ученика"
+        verbose_name_plural = "Ответы учеников"
+
+    def __str__(self):
+        return f"{self.user.username} → {self.selected_answer} ({'✓' if self.is_correct else '✗'})"

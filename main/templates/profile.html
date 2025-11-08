@@ -26,8 +26,72 @@
         <p><strong>Email:</strong> {{ request.user.email }}</p>
         <p><strong>Статус:</strong> {% if request.user.profile.email_confirmed %}Подтверждён{% else %}Не подтверждён{% endif %}</p>
 
+
+        <h2>Telegram</h2>
+        
+        <!-- Если пользователь ещё не подписан — покажи ссылку -->
+        {% if not user.profile.telegram_id %}
+            <div class="tg-link-look">
+                <p>Хочешь получать вопрос дня и напоминания?</p>
+                <ol>
+                    <li>Напиши боту: <a href="https://t.me/neurostat_ai_bot" target="_blank">@neurostat_ai_bot</a></li>
+                    <li>Нажми <code>/start</code></li>
+                    <li>Перейди по ссылке из бота</li>
+                </ol>
+                <a href="https://t.me/neurostat_ai_bot" target="_blank" style="font-weight: bold;">@neurostat_ai_bot</a>
+                <p>Хочешь быть в курсе событий в образовании? Подпишись на наш канал:</p>
+                <a href="https://t.me/neurostat_ru" target="_blank" style="font-weight: bold;">@neurostat_ru</a>
+            </div>
+        {% else %}
+            <div class="tg-link-look">
+                <p>✅ Telegram привязан (ID: {{ user.profile.telegram_id }})</p>
+                <p>Теперь ты будешь получать персонализированные задания!</p>
+            </div>
+        {% endif %}
+
+            <div class="tg-link-look">
+                <p>Хочешь быть в курсе событий в образовании? Подпишись на наш канал "Нейростат":</p>
+                <a href="https://t.me/neurostat_ru" target="_blank" style="font-weight: bold;">@neurostat_ru</a>
+            </div>
+
         <h2>Прогресс обучения</h2>
-        <p>Здесь будет отображаться прогресс...</p>
+        <p id="progress-summary">Загрузка...</p>
+        <h2>Недельный отчёт</h2>
+        <p id="weekly-report">Загрузка...</p>
+
+        <script>
+        fetch('/api/assistant/?action=progress')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('progress-summary').textContent = data.summary;
+            })
+            .catch(err => {
+                console.error('Ошибка загрузки прогресса:', err);
+                document.getElementById('progress-summary').textContent = "Не удалось загрузить прогресс.";
+            });
+        </script>
+
+        <script>
+        fetch('/api/weekly-report/')
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'inactive') {
+                    document.getElementById('weekly-report').innerHTML = 
+                        `<div style="color:#6c757d;">${data.message}</div>`;
+                } else {
+                    let html = `<strong>${data.message}</strong><br><br>`;
+                    if (data.weak_orthograms.length > 0) {
+                        html += "Самые частые ошибки:<ul>";
+                        data.weak_orthograms.forEach(o => {
+                            html += `<li>${o.orthogram__name} — ${o.errors} раз</li>`;
+                        });
+                        html += "</ul>";
+                    }
+                    document.getElementById('weekly-report').innerHTML = html;
+                }
+            });
+        </script>
+
 
     </div>
 </body>

@@ -131,6 +131,14 @@
     border-bottom: 1px solid #eee;
 }
 
+/* Серый фон — выбрано, но не проверено */
+.smiley-icon.selected {
+    background-color: #e9ecef; /* светло-серый */
+    color: #495057;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
 /* Зелёный фон — правильный ответ */
 .smiley-icon.correct {
     background-color: #d4edda;
@@ -150,4 +158,101 @@
 
 .smiley-options li:hover {
     background-color: #f0f0f0;
+}
+
+/* ------- задания к егэ -------- */
+.block-task, .block-answer {
+    background-color: #f0f0f0d2;
+    border-radius: 10px;
+    margin: 20px 0;
+    padding: 5px;
+}
+
+.block-planning {
+    display: flex;
+    align-items: center;
+}
+
+.block-planning-subtitle {
+    display: flex;
+    flex-wrap: wrap; /* Позволяет элементам переноситься на новую строку при необходимости */
+    padding: 0; /* Убираем отступы списка */
+    margin: 0; /* Убираем отступы списка */
+}
+
+.planning-item {
+    margin-right: 10px; /* Добавляем отступ между элементами списка */
+    /* Дополнительные стили для элементов */
+    padding: 3px 10px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+}
+
+.task-buttons {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 0;
+    max-width: 100%;
+}
+
+.check-task {
+    padding: 3px 5px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.check-task:hover {
+    background-color: #e0e0e0;
+}
+
+.task-1-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sub-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.check-task-sub {
+    font-size: 0.9em;
+    padding: 4px 8px;
+    background-color: #e0e0e0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+
+
+/* ------- Стилизация ответа нейроасситента -------- */
+
+.practice-buttons {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+}
+
+.practice-buttons button {
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.advice-block {
+    display: none;
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #0d6efd;
+    font-style: italic;
+    border-radius: 0 4px 4px 0;
+}
+
+
+.green {
+    background: rgb(170, 236, 170);
 }

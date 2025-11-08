@@ -20,6 +20,13 @@ webtable_ja_project/
 ├── README.md
 └── requirements.txt
 
+*******************************************
+ГИТ ХАБ
+git add .
+git status
+git commit -m " коммит"
+git push
+*******************************************
 
 запуск проекта
 python manage.py runserver
@@ -46,10 +53,31 @@ DELETE FROM auth_user WHERE username IN ('Ric', 'mika');
 
 
 
+*********************************************************************
+!!! ОБНОВЛЕНИЕ ЧЕРЕЗ PuttY:
 
-
+# 1. Перейдите в проект
 cd /home/neurostat
+
+# 2. Активируйте виртуальное окружение (если есть)
 source .venv/bin/activate
+
+# 3. Примените миграции (если менялись модели)
+python manage.py makemigrations
+python manage.py migrate
+
+# 4. Соберите статические файлы
+python manage.py collectstatic --noinput
+
+# 5. Перезапустите Gunicorn
+sudo systemctl restart gunicorn
+
+# 6. Проверьте статус
+sudo systemctl status gunicorn
+
+*********************************************************************
+
+
 
 открыть конфиг
 sudo nano /etc/nginx/sites-available/neurostat
@@ -87,6 +115,14 @@ sudo systemctl restart gunicorn
 
 ВЫХОД:
 exit
+
+
+✅ Шаг 5: Как использовать в браузере (для теста):
+http://127.0.0.1:8000/api/assistant/?action=daily_question
+http://127.0.0.1:8000/api/assistant/?action=progress
+http://127.0.0.1:8000/api/assistant/?action=weak
+http://127.0.0.1:8000/api/assistant/?action=planning
+
 
 
 

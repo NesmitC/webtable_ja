@@ -1,0 +1,627 @@
+<!-- templates/ege.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}  <!-- ЭТО ОБЯЗАТЕЛЬНО! -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЕГЭ — NeuroStat</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/planning_style.css">
+    <link rel="stylesheet" href="/static/css/media_planning.css">
+    <link rel="stylesheet" href="/static/css/reset.css">
+</head>
+<body>
+    <header>
+        <a href="/">← Назад</a>
+    </header>
+
+    <main>
+        <article class="block-planning">
+            <h3 class="block-planning-title">Планинги:</h3>
+            <ul class="block-planning-subtitle">
+                <li class="planning-item"><a href="#task7-8">ЗАДАНИЯ 7-8 (предлоги)</a></li>
+                <li class="planning-item"><a href="#task9">ЗАДАНИЕ 9</a></li>
+                <li class="planning-item"><a href="#task10">ЗАДАНИЕ 10</a></li>
+                <li class="planning-item"><a href="#task11">ЗАДАНИЕ 11</a></li>
+                <li class="planning-item"><a href="#task12">ЗАДАНИЕ 12</a></li>
+            </ul>
+        </article>
+
+        <section class="block-task">
+            <h2 class="title-planing">Выберите задание ЕГЭ по номеру</h2>
+
+            <article class="block-task-num">
+                <div class="task-buttons">
+                    <button class="check-task">1</button>
+                    <button class="check-task">2</button>
+                    <button class="check-task">3</button>
+                    <button class="check-task">4</button>
+                    <button class="check-task">5</button>
+                    <button class="check-task green" data-orthogram="6">6</button>
+                    <button class="check-task">7</button>
+                    <button class="check-task green" data-orthogram="661,662">8</button>
+                    <button class="check-task green" data-orthogram="1,2,12,13,14,15,24,26,27,271">9</button>
+                    <button class="check-task green" data-orthogram="10,11,28,29,6">10</button>
+                    <button class="check-task green" data-orthogram="31,33,34,35,37,39,48,481,482,483,484,60,61,610,485">11</button>
+                    <button class="check-task">12</button>
+                    <button class="check-task">13</button>
+                    <button class="check-task">14</button>
+                    <button class="check-task">15</button>
+                    <button class="check-task">16</button>
+                    <button class="check-task">17</button>
+                    <button class="check-task">18</button>
+                    <button class="check-task">19</button>
+                    <button class="check-task">20</button>
+                    <button class="check-task">21</button>
+                    <button class="check-task">22</button>
+                    <button class="check-task">23</button>
+                    <button class="check-task">24</button>
+                    <button class="check-task">25</button>
+                    <button class="check-task">26</button>
+                    <button class="check-task">27</button>
+                </div>
+            </article>
+            <p>* готовые задания отмечены зеленым</p>
+        </section>
+
+        <section class="block-answer"></section>
+
+
+
+        <article id="task7-8" class="article-table-container">
+            <h2 class="title-table-container">ЗАДАНИЯ 7-8 (предлоги)</h2>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">71(1)</span></h3>
+                    <p class="subtitle-orf">Грамматика существительных, глаголов, прилагательных</p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">71(2)</span></h3>
+                    <p class="subtitle-orf">Числительные</p>    
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">66(1)</span></h3>
+                    <p class="subtitle-orf">Производные предлоги + родительный падеж</p>    
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">66(2)</span></h3>
+                    <p class="subtitle-orf">Производные предлоги + дательный падеж</p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"><span class="circle">66(3)</span></h3>
+                    <p class="subtitle-orf">Трудные случаи</p>
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Вспомнить или найти в словаре</p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">У сложных склоняются обе части</p>
+                </div>                
+                <div class="item item-8">
+                    <p class="text-orf">Вспомнить или найти в словаре</p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf">Вспомнить или найти в словаре</p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">Свой словарик</p>
+                </div>
+                <div class="item item-16">
+                    <textarea id="item-text-711" class="input-text" name="user-input-orf-711" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-712" class="input-text" name="user-input-orf-712" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-661" class="input-text" name="user-input-orf-661" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-662" class="input-text" name="user-input-orf-662" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-663" class="input-text" name="user-input-orf-663" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+
+
+        <article id="task9" class="article-table-container">
+            <h2 class="title-table-container">ЗАДАНИЕ 9</h2>
+            <h3 class="subtitle-table-container">Корни. Орфограммы:</h3>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">1</span></h3>
+                    <p class="subtitle-orf">Проверяемая безударная гласная в <span class="text-orf-effects">корне</span> слова</p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">2</span></h3>
+                    <p class="subtitle-orf">Непроверяемые гласные и согласные в <span class="text-orf-effects">корне</span></p>    
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">12</span></h3>
+                    <p class="subtitle-orf">О и А в <span class="text-orf-effects">корне</span> -ЛАГ-, -ЛОЖ-</p>    
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">13</span></h3>
+                    <p class="subtitle-orf">О и А в <span class="text-orf-effects">корне</span> -РАСТ-, -РОС-</p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"><span class="circle">14</span></h3>
+                    <p class="subtitle-orf">Ё-О после шипящих в <span class="text-orf-effects">корне</span> слова</p>
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Подобрать проверочное слово, где эта гласная <span class="text-orf-effects">под ударением</span></p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">Вспомнить или найти в словаре</p>
+                </div>                
+                <div class="item item-8">
+                    <p class="text-orf">Перед <span class="bold">Г</span> пишется <span class="text-orf-effects">А</span>, перед <span class="bold">Ж</span> – <span class="text-orf-effects">О</span></p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf">Если в корне после одной из этих предполагаемых гласных есть согласные <span class="bold">СТ</span> или <span class="bold">Щ</span>, пишется <span class="text-orf-effects">А</span>, если нет – <span class="text-orf-effects">О</span> (кроме некоторых слов-исключений: росток, Ростов, Ростислав, ростовщик; отрасль)</p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">Под ударением пишется <span class="bold">Ё</span> (кроме некоторых слов-исключений: шов, шорох, крыжовник, капюшон, цоколь, чопорный, шомпол и др.)</p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/1.png" alt="орфограмма 1" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/2.png" alt="орфограмма 2" loading="lazy"></div>
+                <div class="item item-13"><img class="item-png" src="/static/images/12.png" alt="орфограмма 12" loading="lazy"></div>
+                <div class="item item-14"><img class="item-png" src="/static/images/13.png" alt="орфограмма 13" loading="lazy"></div>
+                <div class="item item-15"><img class="item-png" src="/static/images/14.png" alt="орфограмма 14" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-1" class="input-text" name="user-input-orf-1" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-2" class="input-text" name="user-input-orf-2" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-12" class="input-text" name="user-input-orf-12" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-13" class="input-text" name="user-input-orf-13" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-14" class="input-text" name="user-input-orf-14" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">Корни. Орфограммы:</h3>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">15</span></h3>
+                    <p class="subtitle-orf">И-Ы после Ц</p>
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">24</span></h3>
+                    <p class="subtitle-orf">Е и И в <span class="text-orf-effects">корнях</span> с <span class="bold">чередованиями</span></p>
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">26</span></h3>
+                    <p class="subtitle-orf">О и А в <span class="text-orf-effects">корне</span> с <span class="bold">чередованием</span> -КАС-, -КОС-</p>
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">27</span></h3>
+                    <p class="subtitle-orf">А и О в <span class="text-orf-effects">корнях</span> с <span class="bold">чередованием</span> <br>1)-ГАР-,-ГОР- <br> 2)-ЗАР-,-ЗОР-</p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"><span class="circle">27.1</span></h3>
+                    <p class="subtitle-orf">А и О в <span class="text-orf-effects">корнях</span> с <span class="bold">чередованием</span> <br>-КЛАН-, -КЛОН-</p>    
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">В <span class="text-orf-effects">корне</span> после Ц и словах на <span class="bold">-ЦИЯ</span> пишется <span class="text-orf-effects">И</span>, в <span class="bold">суффиксе</span> и <span class="bold">окончании</span> – <span class="text-orf-effects">Ы</span> (кроме некоторых слов-исключений: цыган, цыпочки, цыпленок, цыкнуть)</p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">Это множество корней: -дер- -дир-, -мер- -мир-, -бер- -бир-, -пер- -пир-, -тер- -тир-, -блест- -блист-, -жег- -жиг-, -стел- -стил-, -чет- -чит-.  Посмотреть, есть ли <span class="bold">суффикс А</span>. Если он есть, то в корне пишется буква <span class="bold">И</span>. <br> Если нет – то <span class="bold">Е</span></p>
+                </div>
+                <div class="item item-8">
+                    <p class="text-orf">Если после корня есть <span class="bold">суффикс А</span>, в корне пишется А</span></p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf">В соответствии с произношением. <br>1) Под <span class="bold">ударением</span> пишется А (гар), без ударения О (гор). <br>2) Под <span class="bold">ударением</span> пишется О (зор), без ударения А (зар)</p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">В соответствии с произношением. <br>Под <span class="bold">ударением</span> пишутся А (клан), О (клон), <span class="bold">без ударения</span> - всегда О (клон)</p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/15.png" alt="орфограмма 15" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/24.png" alt="орфограмма 24" loading="lazy"></div>
+                <div class="item item-13"><img class="item-png" src="/static/images/26.png" alt="орфограмма 26" loading="lazy"></div>
+                <div class="item item-14"><img class="item-png" src="/static/images/27.png" alt="орфограмма 27" loading="lazy"></div>
+                <div class="item item-15"><img class="item-png" src="/static/images/27.1.png" alt="орфограмма 27.1" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-15" class="input-text" name="user-input-orf-15" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-24" class="input-text" name="user-input-orf-24" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-26" class="input-text" name="user-input-orf-26" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-27" class="input-text" name="user-input-orf-27" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-271" class="input-text" name="user-input-orf-271" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">Корни. Орфограммы:</h3>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">27.2</span></h3>
+                    <p class="subtitle-orf">А и О в <span class="text-orf-effects">корнях</span> с <span class="bold">чередованием</span> <br>-ТВАР-,-ТВОР-</p>
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">27.3</span></h3>
+                    <p class="subtitle-orf">А и О в <span class="text-orf-effects">корнях</span> с <span class="bold">чередованием</span> <br>-ПЛАВ-,-ПЛОВ-</span></p>
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">27.4</span></h3>
+                    <p class="subtitle-orf">О и А в <span class="text-orf-effects">корне</span> с <span class="bold">чередованием</span> -СКАК-, -СКОЧ-</p>
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">27.5</span></h3>
+                    <p class="subtitle-orf">О и А в <span class="text-orf-effects">корнях</span> с <span class="bold">чередованием</span> <br>1)-РАВН-,-РОВН- <br> 2)-МАК-,-МОК-</p>
+                </div>
+                <div class="item item-5"></div>
+                <div class="item item-6">
+                    <p class="text-orf">В соответствии с произношением. <br>Под <span class="bold">ударением</span> пишется А (твар), без ударения О (твор). <br>Искл.: утварь</p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">В соответствии с произношением. <br>Всегда пишется А (плав). <br>Искл.: пловец, пловчиха, плывун </span></p>
+                </div>
+                <div class="item item-8">
+                    <p class="text-orf">Перед <span class="bold">К</span> пишется <span class="bold">А</span>. Перед <span class="bold">Ч</span> пишется <span class="bold">О</span>. <br>Искл.: скачок, скачу</p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf"><span class="bold">РОВН</span> пишется в значении "ровный, гладкий" <br><span class="bold">РАВН</span> - "равный" <br><span class="bold">МОК</span> пишется в значении "намокать, напитываться жидкостью, пропускать жидкость" <br><span class="bold">МАК</span> - "погружать в жидкость"</p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">Трудные случаи</p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/27.2.png" alt="орфограмма 27.2" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/27.3.png" alt="орфограмма 27.3" loading="lazy"></div>
+                <div class="item item-13"><img class="item-png" src="/static/images/27.4.png" alt="орфограмма 27.4" loading="lazy"></div>
+                <div class="item item-14"><img class="item-png" src="/static/images/27.5.png" alt="орфограмма 27.5" loading="lazy"></div>
+                <div class="item item-15"><img class="item-png" src="/static/images/71.png" alt="орфограмма вопрос" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-272" class="input-text" name="user-input-orf-272" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-273" class="input-text" name="user-input-orf-273" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-274" class="input-text" name="user-input-orf-274" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-275" class="input-text" name="user-input-orf-275" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-276" class="input-text" name="user-input-orf-276" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+
+        <article id="task10" class="article-table-container">
+            <h2 class="title-table-container">ЗАДАНИЕ 10</h2>
+            <h3 class="subtitle-table-container">Приставки. Орфограммы:</h3>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">10</span></h3>
+                    <p class="subtitle-orf">Одновариантные <span class="text-orf-effects">приставки</span></p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">11</span></h3>
+                    <p class="subtitle-orf"><span class="text-orf-effects">Приставки</span> на -З и -С</span></p>    
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">28</span></h3>
+                    <p class="subtitle-orf">Ы-И после приставок</p>    
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">29</span></h3>
+                    <p class="subtitle-orf">Гласные в <span class="text-orf-effects">приставках</span> <br>ПРЕ- и ПРИ-</p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"><span class="circle">6</span></h3>
+                    <p class="subtitle-orf">Разделительные <span class="bold">Ъ и Ь</span></p>                    
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Вспомнить: всегда пишутся одинаково</p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">Посмотреть на первую согласную после приставки: если <span class="bold">глухая</span> – в приставке пишем глухую <span class="text-orf-effects">С</span>. И <span class="bold">наоборот</span></p>
+                </div>                
+                <div class="item item-8">
+                    <p class="text-orf">Если слово, к которому добавлена приставка <span class="bold">на согласный</span>, начинается с И, то на <span class="bold">И меняется на Ы</span> (кроме слов с приставками  СВЕРХ-, МЕЖ- и иноязычными СУПЕР-, ТРАНС-, ДЕЗ-, ПАН-, ПОСТ-, КОНТР-)</p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf">Определить значение приставки. <span class="bold">ПРИ</span> пишется, когда приставка обозначает <br>1) приближение, <br>2) присоединение, <br>3) близость, <br>4) неполноту действия. <br>ПРЕ заменяет приставку <span class="bold">ПЕРЕ</span> или слово <span class="bold">ОЧЕНЬ</span></p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">Если знак находится <span class="bold">после приставки</span> перед <span class="text-orf-effects">Е, Ё, Ю, Я</span>, то пишется <span class="bold">Ъ</span>. В остальных случаях <span class="bold">Ь</span> <br>Запомнить: адъютант, фельдъегерь, нюанс и др.</p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/10.png" alt="орфограмма 10" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/11.png" alt="орфограмма 11" loading="lazy"></div>
+                <div class="item item-13"><img class="item-png" src="/static/images/28.png" alt="орфограмма 12" loading="lazy"></div>
+                <div class="item item-14"><img class="item-png" src="/static/images/29.png" alt="орфограмма 13" loading="lazy"></div>
+                <div class="item item-15"><img class="item-png" src="/static/images/6.png" alt="орфограмма 6" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-10" class="input-text" name="user-input-orf-10" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-11" class="input-text" name="user-input-orf-11" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-28" class="input-text" name="user-input-orf-28" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-29" class="input-text" name="user-input-orf-29" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-6" class="input-text" name="user-input-orf-6" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article id="task11" class="article-table-container">
+            <h2 class="title-table-container">ЗАДАНИЕ 11</h2>
+            <h3 class="subtitle-table-container">Суффиксы. Орфограммы:</h3>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">31</span></h3>
+                    <p class="subtitle-orf">Суфффикс ЕН в <span class="text-orf-effects">существительных</span> на -МЯ</p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">33</span></h3>
+                    <p class="subtitle-orf">Суффиксы -ЧИК- и -ЩИК- в <span class="text-orf-effects">существительных</span></p>    
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">34</span></h3>
+                    <p class="subtitle-orf">Суффиксы ЕК и ИК в <span class="text-orf-effects">существительных</span></p>    
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">35</span></h3>
+                    <p class="subtitle-orf">О и Е после шипящих в суффиксах <span class="text-orf-effects">существительных</span></p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"><span class="circle">37</span></h3>
+                    <p class="subtitle-orf">О и Е после <span class="bold">шипящих</span> и <span class="bold">Ц</span> в суффиксах <span class="text-orf-effects">прилагательных</span></p>                    
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Существительные <span class="bold">на – МЯ</span> (разносклоняемые) при склонении приобретают <span class="bold">суффикс -ЕН-</span></p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">После <span class="bold">Д, Т, З, С</span> и <span class="bold">Ж</span> пишется -ЧИК-. <br> В остальных случаях -ЩИК-</p>
+                </div>                
+                <div class="item item-8">
+                    <p class="text-orf">Просклонять слово. Суффикс <span class="text-orf-effects">ЕК</span> пишется, если в <span class="bold">косвенных падежах</span> гласная Е <span class="text-orf-effects">исчезает</span>. <br> В суффиксе <span class="text-orf-effects">ИК</span> при склонении <span class="bold">И</span> остаётся</p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf">Под <span class="bold">ударением</span> пишется <span class="bold">О</span>. Без ударения – <span class="bold">Е</span></p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">Под <span class="bold">ударением</span> пишется <span class="bold">О</span>. Без ударения – <span class="bold">Е</span></p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/31.png" alt="орфограмма 31" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/33.png" alt="орфограмма 33" loading="lazy"></div>
+                <div class="item item-13"><img class="item-png" src="/static/images/34.png" alt="орфограмма 34" loading="lazy"></div>
+                <div class="item item-14"><img class="item-png" src="/static/images/35.png" alt="орфограмма 35" loading="lazy"></div>
+                <div class="item item-15"><img class="item-png" src="/static/images/37.png" alt="орфограмма 37" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-31" class="input-text" name="user-input-orf-31" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-33" class="input-text" name="user-input-orf-33" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-34" class="input-text" name="user-input-orf-34" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-35" class="input-text" name="user-input-orf-35" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-37" class="input-text" name="user-input-orf-37" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">Суффиксы. Орфограммы:</h3>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">39</span></h3>
+                    <p class="subtitle-orf">Суффиксы -К- и -СК-</p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">48</span></h3>
+                    <p class="subtitle-orf">Гласные в <span class="bold">суффиксах</span> -ОВА- (-ЕВА-) / -ЫВА- (-ИВА-)</p>    
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">48.1</span></h3>
+                    <p class="subtitle-orf">Гласные в <span class="bold">суффиксах</span> -ЕЦ- / -ИЦ- <br>-ИЧК- / -ЕЧК-</p>    
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">48.2</span></h3>
+                    <p class="subtitle-orf">Гласные в <span class="bold">суффиксах</span> -ЕНК- / -ИНК- <br>-ОНЬК- / -ЕНЬК-</p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"><span class="circle">48.3</span></h3>
+                    <p class="subtitle-orf">Гласные в <span class="bold">суффиксах</span> -ЛИВ- / -ЧИВ- <br>-ЕВ-</p>                    
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf"><span class="bold">-К-</span>: <br>1) в качественных прил., образующих краткую форму, <br>2) в некоторых относительных прил., образованных от существ., основа которых оканчивается на -К, -Ч, -Ц. При этом -К и -Ч меняются на -Ц. <br><span class="bold">-СК-</span> пишется в других прилагательных</p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">Образовать от данных глаголов форму <span class="bold">1 лица ед. числа наст. или будущего времени</span>. <br>Если оканчивается на -УЮ (-ЮЮ), то в слове пишется суффикс -ОВА- (-ЕВА-). <br>Если нет, то  -ЫВА- (-ИВА-)</p>
+                </div>                
+                <div class="item item-8">
+                    <p class="text-orf">См. орф. № 34. <br>В сущ. среднего рода <span class="bold">-ЕЦ-</span> пишется, если ударение падает на окончание. <span class="bold">-ИЦ-</span> пишется, если ударение падает на корень. <br>От сущ. с <span class="bold">-ИЦ-</span> образуются сущ. с <span class="bold">-ИЧК-</span>. От сущ. на <span class="bold">-НЯ</span> образуются сущ. с <span class="bold">-ЕЧК-</span></p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf">Суффикс -ИНК- пишется в словах, образованных от слов с основой на -ИН. В остальных и с основой на -НЯ - -ЕНК-. <br>После твердого согласного пишется -ОНЬК-. После мягкого - -ЕНЬК- <br>Искл.: заинька, паинька, баиньки </p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">В <span class="bold">суффиксах</span> -ЛИВ- / -ЧИВ- пишется И. В <span class="bold">суффиксе</span> -ЕВ- пишется Е. <br>Искл.: милостивый, юродивый</p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/39.png" alt="орфограмма 39" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/48.png" alt="орфограмма 48" loading="lazy"></div>
+                <div class="item item-13"><img class="item-png" src="/static/images/48.1.png" alt="орфограмма 48.1" loading="lazy"></div>
+                <div class="item item-14"><img class="item-png" src="/static/images/48.2.png" alt="орфограмма 48.2" loading="lazy"></div>
+                <div class="item item-15"><img class="item-png" src="/static/images/48.3.png" alt="орфограмма 48.3" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-39" class="input-text" name="user-input-orf-39" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-48" class="input-text" name="user-input-orf-48" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-481" class="input-text" name="user-input-orf-481" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-482" class="input-text" name="user-input-orf-482" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-483" class="input-text" name="user-input-orf-483" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">Суффиксы. Орфограммы:</h3>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">48.4</span></h3>
+                    <p class="subtitle-orf">Суффиксы -ЧАТ- / -АТ- / -АН-</p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">60</span></h3>
+                    <p class="subtitle-orf">О и Е после шипящих на конце <span class="text-orf-effects">наречий</span></p>    
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">61</span></h3>
+                    <p class="subtitle-orf">О и А на конце <span class="text-orf-effects">наречий</p>    
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">61.1</span></h3>
+                    <p class="subtitle-orf">Гласные в -ЕТЬ- / -ИТЬ-</p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"></h3>
+                    <p class="subtitle-orf"></p>                    
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Пишется <span class="bold">А</span></p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf"><span class="bold">О – под</span> ударением, <br> <span class="bold">Е – без</span> ударения</span></p>
+                </div>                
+                <div class="item item-8">
+                    <p class="text-orf">А – если в слове есть приставка: <br> ИЗ- <br> ДО- <br> С- <br> ----- <br>В остальных – О. <br>О пишется и в наречиях, образованных от прилагательных с приставками из-, до-, с-</p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf">Вспомнить или найти в словаре. <br>В <span class="bold">непереходных</span> глаголах пишется -ЕТЬ-. В <span class="bold">переходных</span> -ИТЬ-</p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf"></p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/48.4.png" alt="орфограмма 48.4" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/60.png" alt="орфограмма 60" loading="lazy"></div>
+                <div class="item item-13"><img class="item-png" src="/static/images/61.png" alt="орфограмма 61" loading="lazy"></div>
+                <div class="item item-14"><img class="item-png" src="/static/images/60.1.png" alt="орфограмма 60.1" loading="lazy"></div>
+                <div class="item item-15"><img class="item-png" src="/static/images/71.png" alt="орфограмма 48.5" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-484" class="input-text" name="user-input-orf-484" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-60" class="input-text" name="user-input-orf-60" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-61" class="input-text" name="user-input-orf-61" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-601" class="input-text" name="user-input-orf-601" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-485" class="input-text" name="user-input-orf-485" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+
+        <article id="task12" class="article-table-container">
+            <h2 class="title-table-container">ЗАДАНИЕ 12</h2>
+            <h3 class="subtitle-table-container">Окончания (спряжения) и суффиксы. Орфограммы:</h3>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">25</span></h3>
+                    <p class="subtitle-orf">Е и И в окончаниях <span class="text-orf-effects">глаголов</span> I и II спр.</p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">49</span></h3>
+                    <p class="subtitle-orf">Гласные в суфф. <span class="text-orf-effects">действит. причастий</span> наст. времени</p>    
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">50</span></h3>
+                    <p class="subtitle-orf">Суффиксы <span class="text-orf-effects">страдательных причастий</span> -ЕМ- и -ИМ-</p>    
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">51</span></h3>
+                    <p class="subtitle-orf">Гласные перед -Н- в <span class="text-orf-effects">страдательных причастия</span></p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"><span class="circle">51.1</span></h3>
+                    <p class="subtitle-orf">Гласные перед -ВШ- в <span class="text-orf-effects">действ. причастиях</span></p>                    
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Поставить глагол в неопределенную форму. <br> Если оканчивается на <span class="bold">-АТЬ, -ЯТЬ,  -ЕТЬ, -ОТЬ, -УТЬ, -ЫТЬ</span>, то это глагол <span class="text-orf-effects">I спр.</span> <br> Если на <span class="bold">-ИТЬ</span>, то глагол <span class="text-orf-effects">II спр.</span> В 11 глаголах-исключениях наоборот. <br> У глаголов <span class="text-orf-effects">I спр.</span> в окончании пишется <span class="bold">Е</span>. У глаг. <span class="text-orf-effects">II спр.</span> – <span class="bold">И</span></p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">Подобрать соответствующий глагол в неопределенной форме. Если он <span class="bold">I спр.</span>, то пишется <span class="bold">-УЩ-(-ЮЩ-)</span>; <br> если <span class="bold">II спр.</span>, то <span class="bold">-АЩ-(-ЯЩ-)</span></p>
+                </div>                
+                <div class="item item-8">
+                    <p class="text-orf"><span class="bold">Е</span>: когда образованы от глаголов <span class="bold">I спр.</span>; <br> <span class="bold">И</span>: когда образованы от глаголов <span class="bold">II спр.</span></p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf"><span class="bold">А и Я</span> пишутся перед Н или НН в причастиях, образованных от глаголов на <span class="bold">-ать или –ять</span>. <br> <span class="bold">Е</span> – в причастиях, образованных от глаголов на <span class="bold">-ить или -еть</span></p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">Поставить глагол в неопределенную форму. Какая гласная пишется <span class="bold">перед ТЬ</span>, такая же - перед -ВШ-</p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/25.png" alt="орфограмма 25" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/49.png" alt="орфограмма 49" loading="lazy"></div>
+                <div class="item item-13"><img class="item-png" src="/static/images/50.png" alt="орфограмма 50" loading="lazy"></div>
+                <div class="item item-14"><img class="item-png" src="/static/images/51.png" alt="орфограмма 51" loading="lazy"></div>
+                <div class="item item-15"><img class="item-png" src="/static/images/51.1.png" alt="орфограмма 51.1" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-25" class="input-text" name="user-input-orf-25" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-49" class="input-text" name="user-input-orf-49" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-50" class="input-text" name="user-input-orf-50" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-51" class="input-text" name="user-input-orf-51" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-511" class="input-text" name="user-input-orf-511" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        
+        
+
+        <!-- Скрытое поле с CSRF-токеном -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    </main>
+
+    <script src="{% static 'js/planning.js' %}"></script>
+</body>
+</html>
