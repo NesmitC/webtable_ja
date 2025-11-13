@@ -1,6 +1,6 @@
 /* Минималистичный CSS Grid для таблицы планирования */
 .title-planing {
-    margin: 20px 0;
+    margin: 10px 0;
 }
 
 .table-container {
@@ -160,12 +160,25 @@
     background-color: #f0f0f0;
 }
 
+/* ------- задания к 6 классу -------- */
+.orthogram-buttons {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 0;
+    max-width: 100%;
+}
+
+
 /* ------- задания к егэ -------- */
-.block-task, .block-answer {
+.block-task, .block-answer, .block-answer-still, .orthogram-buttons-container {
     background-color: #f0f0f0d2;
-    border-radius: 10px;
+    border-radius: 5px;
     margin: 20px 0;
     padding: 5px;
+}
+
+.block-answer {
+    min-height: 20px;
 }
 
 .block-planning {

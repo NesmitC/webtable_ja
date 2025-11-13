@@ -160,6 +160,9 @@ CSRF_TRUSTED_ORIGINS = [
     origin for origin in config('CSRF_TRUSTED_ORIGINS', default='', cast=str).split(',') if origin
 ]
 
+
+# в продакшне раскоммментировать:
+
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,

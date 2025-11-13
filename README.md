@@ -69,6 +69,9 @@ python manage.py migrate
 # 4. Соберите статические файлы
 python manage.py collectstatic --noinput
 
+# Запустите импорт 
+python manage.py loaddata orthogram_fixed.json
+
 # 5. Перезапустите Gunicorn
 sudo systemctl restart gunicorn
 
@@ -123,6 +126,19 @@ http://127.0.0.1:8000/api/assistant/?action=progress
 http://127.0.0.1:8000/api/assistant/?action=weak
 http://127.0.0.1:8000/api/assistant/?action=planning
 
+
+
+🔍 Как подключиться к БД с локального компьютера (через DBeaver)
+Используйте SSH-туннель:
+
+SSH Host: ваш VPS IP (123.45.67.89)
+SSH User: ubuntu (или ваш пользователь)
+SSH Auth: пароль или приватный ключ
+Database Host: localhost
+Port: 5432
+Database: neurostat
+User: myuser
+Password: mypassword
 
 
 
