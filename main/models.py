@@ -150,6 +150,19 @@ class OrthogramExample(models.Model):
     difficulty = models.PositiveSmallIntegerField(default=1)
     is_for_quiz = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_user_added = models.BooleanField(default=False, verbose_name="Добавлен пользователем")
+    added_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Кем добавлен"
+    )
+    source_field = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Поле-источник (например, user-input-orf-711)"
+    )
 
     # Для каких классов актуален пример
     grades = models.CharField(

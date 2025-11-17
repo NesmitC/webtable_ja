@@ -39,8 +39,6 @@
                     <li>Перейди по ссылке из бота</li>
                 </ol>
                 <a href="https://t.me/neurostat_ai_bot" target="_blank" style="font-weight: bold;">@neurostat_ai_bot</a>
-                <p>Хочешь быть в курсе событий в образовании? Подпишись на наш канал:</p>
-                <a href="https://t.me/neurostat_ru" target="_blank" style="font-weight: bold;">@neurostat_ru</a>
             </div>
         {% else %}
             <div class="tg-link-look">
@@ -63,7 +61,15 @@
         fetch('/api/assistant/?action=progress')
             .then(r => r.json())
             .then(data => {
-                document.getElementById('progress-summary').textContent = data.summary;
+                // Проверьте, что именно возвращает data
+                // Например, если это {total: ..., correct: ...}
+                if (data.total !== undefined) {
+                    const rate = data.success_rate || Math.round((data.correct / data.total) * 100);
+                    document.getElementById('progress-summary').innerHTML = 
+                        `Выполнено заданий: ${data.total}, правильно: ${rate}%`;
+                } else {
+                    document.getElementById('progress-summary').textContent = data.summary || "Прогресс загружен.";
+                }
             })
             .catch(err => {
                 console.error('Ошибка загрузки прогресса:', err);
@@ -72,7 +78,7 @@
         </script>
 
         <script>
-        fetch('/api/weekly-report/')
+        fetch('/api/my-weekly-report/')  // ← НОВЫЙ ЭНДПОИНТ
             .then(r => r.json())
             .then(data => {
                 if (data.status === 'inactive') {
@@ -80,7 +86,7 @@
                         `<div style="color:#6c757d;">${data.message}</div>`;
                 } else {
                     let html = `<strong>${data.message}</strong><br><br>`;
-                    if (data.weak_orthograms.length > 0) {
+                    if (data.weak_orthograms && data.weak_orthograms.length > 0) {
                         html += "Самые частые ошибки:<ul>";
                         data.weak_orthograms.forEach(o => {
                             html += `<li>${o.orthogram__name} — ${o.errors} раз</li>`;
@@ -89,6 +95,10 @@
                     }
                     document.getElementById('weekly-report').innerHTML = html;
                 }
+            })
+            .catch(err => {
+                console.error('Ошибка загрузки отчёта:', err);
+                document.getElementById('weekly-report').textContent = "Не удалось загрузить отчёт.";
             });
         </script>
 

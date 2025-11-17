@@ -186,6 +186,10 @@
     align-items: center;
 }
 
+.block-planning-title {
+    margin-right: 5px;
+}
+
 .block-planning-subtitle {
     display: flex;
     flex-wrap: wrap; /* Позволяет элементам переноситься на новую строку при необходимости */
@@ -197,8 +201,14 @@
     margin-right: 10px; /* Добавляем отступ между элементами списка */
     /* Дополнительные стили для элементов */
     padding: 3px 10px;
-    background-color: #f0f0f0;
+    border: 1px solid #ff62ff;
+    background-color: #f1fc8f;
     border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.planning-item:hover {
+    background-color: #eaff2b;
 }
 
 .task-buttons {

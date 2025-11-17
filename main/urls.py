@@ -38,4 +38,5 @@ urlpatterns = [
     path('api/generate-exercise/', views.generate_exercise, name='generate_exercise'),
     path('api/weekly-report/', views.weekly_report, name='weekly_report'),
     path('api/generate-alphabetical-exercise/', views.generate_alphabetical_exercise, name='generate_alphabetical_exercise'),
+    path('api/my-weekly-report/', views.get_weekly_report, name='my_weekly_report'),
 ]
