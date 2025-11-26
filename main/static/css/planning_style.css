@@ -43,6 +43,7 @@
     width: 100%;
     resize: vertical; /* Возможность изменять высоту руками пользователя */
     overflow-y: auto; /* Появляется прокрутка, если текста много */
+    margin: 0 0;
 }
 
 .item-png {
@@ -71,7 +72,52 @@
     font-weight: bold; /* Выделяем полужирным */
 }
 
- /* ---------------- стили для смайла ------------------- */
+/* ---------------- контейнер для пунктограмм ------------------- */
+.table-container-punktum {
+    display: grid;
+    grid-template-columns: 5fr 25fr 15fr 55fr; /* = 5% | 25% | 15% | 55% */
+    grid-auto-flow: row dense;
+    margin: 5px 0;
+}
+
+.item-punktum-1 {
+    background-color: rgb(56, 238, 40);
+}
+
+.item-punktum-2 {
+    background-color: rgb(243, 92, 112);
+}
+
+.item-punktum-3 {
+    background-color: rgb(248, 248, 80);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: start;
+    gap: 5px;
+}
+
+.wrap-circle-punktum .item {
+    border: none;
+}
+
+.circle-punktum {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #000;
+}
+
+.item-punktum-4 {
+    height: 100%;
+}
+
+.input-text-punktum {
+    height: 100%;
+}
+
+
+/* ---------------- стили для смайла ------------------- */
 /* Минимальные отступы и естественный внешний вид смайлов */
 .smiley-placeholder {
     width: 25px;
@@ -97,8 +143,8 @@
     background-color: transparent; /* Прозрачный фон */
     border: none; /* Без границ */
     padding: 0; /* Без отступов */
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     display: inline-block; /* Расположение в одну линию с текстом */
     text-align: center; /* Центрирование иконки */
     line-height: 1.2; /* Однострочный режим */
@@ -108,6 +154,10 @@
 }
 
 /* Стили списков вариантов ответов */
+.practice-line {
+    letter-spacing: 0.01em;
+}
+
 .smiley-options {
     display: none;
     position: absolute;
@@ -193,13 +243,11 @@
 .block-planning-subtitle {
     display: flex;
     flex-wrap: wrap; /* Позволяет элементам переноситься на новую строку при необходимости */
-    padding: 0; /* Убираем отступы списка */
-    margin: 0; /* Убираем отступы списка */
+    gap: 10px;
 }
 
 .planning-item {
-    margin-right: 10px; /* Добавляем отступ между элементами списка */
-    /* Дополнительные стили для элементов */
+/* Дополнительные стили для элементов */
     padding: 3px 10px;
     border: 1px solid #ff62ff;
     background-color: #f1fc8f;
@@ -249,7 +297,12 @@
     cursor: pointer;
 }
 
-
+/* .practice-text {
+    white-space: pre-line;
+    margin: 10px 0;
+    font-size: 1.1em;
+    line-height: 1.6;
+} */
 
 /* ------- Стилизация ответа нейроасситента -------- */
 

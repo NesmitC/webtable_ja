@@ -51,7 +51,10 @@ DELETE FROM main_userprofile WHERE user_id IN (
 
 DELETE FROM auth_user WHERE username IN ('Ric', 'mika');
 
+*********************************************************************
 
+ПОПОЛНЕНИЕ БАЗЫ - ЛОКАЛЬНО
+python fix_export.py
 
 *********************************************************************
 !!! ОБНОВЛЕНИЕ ЧЕРЕЗ PuttY:
@@ -127,19 +130,6 @@ http://127.0.0.1:8000/api/assistant/?action=weak
 http://127.0.0.1:8000/api/assistant/?action=planning
 
 
-
-🔍 Как подключиться к БД с локального компьютера (через DBeaver)
-Используйте SSH-туннель:
-
-SSH Host: ваш VPS IP (123.45.67.89)
-SSH User: ubuntu (или ваш пользователь)
-SSH Auth: пароль или приватный ключ
-Database Host: localhost
-Port: 5432
-Database: neurostat
-User: myuser
-Password: mypassword
-
-
+![alt text](image.png)
 
 '''

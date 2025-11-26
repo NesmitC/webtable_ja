@@ -1,0 +1,31 @@
+/* Для полей id и name */
+.field-id input,
+.field-name input {
+    width: 50% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+}
+
+/* Для полей Text, Masked word, Incorrect variant */
+.field-text input,
+.field-masked_word input,
+.field-incorrect_variant input {
+    width: 50% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+}
+
+/* Для Explanation (уже должно быть) */
+.field-explanation textarea {
+    width: 50% !important;
+    min-height: 120px !important;
+    box-sizing: border-box;
+}
+
+/* Если используется старая версия Django */
+.form-row.field-text input,
+.form-row.field-masked_word input,
+.form-row.field-incorrect_variant input {
+    width: 50% !important;
+    max-width: none !important;
+}

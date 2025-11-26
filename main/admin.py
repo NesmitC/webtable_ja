@@ -1,6 +1,7 @@
 # main/admin.py
 from django.contrib import admin
-from .models import CorrectAnswer, Orthogram, OrthogramExample 
+from .models import CorrectAnswer, Orthogram, OrthogramExample
+from django.contrib.admin.actions import delete_selected
 
 
 @admin.register(CorrectAnswer)
@@ -27,10 +28,18 @@ class OrthogramAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs.extra(select={'id_as_int': "CAST(id AS INTEGER)"}).order_by('id_as_int')
+    
+    class Media:
+        css = {
+            'all': ('css/admin.css',)  # ← путь к вашему CSS
+        }
 
 @admin.register(OrthogramExample)
 class OrthogramExampleAdmin(admin.ModelAdmin):
     list_display = ['text', 'orthogram', 'masked_word', 'grades', 'difficulty', 'is_for_quiz', 'is_active']
+    
+    actions = [delete_selected]
+    
     fieldsets = (
         (None, {
             'fields': ('orthogram', 'text', 'masked_word', 'incorrect_variant', 'explanation', 'grades')
@@ -51,3 +60,8 @@ class OrthogramExampleAdmin(admin.ModelAdmin):
             .extra(select={'orthogram_id_as_int': "CAST(orthogram_id AS INTEGER)"})
             .order_by('orthogram_id_as_int', 'text')
         )
+        
+    class Media:
+        css = {
+            'all': ('css/admin.css',)  # ← подключаем тот же CSS
+        }

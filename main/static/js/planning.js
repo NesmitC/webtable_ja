@@ -69,36 +69,47 @@ function getCookie(name) {
 const orthogramLettersCache = {};
 
 async function getLettersForOrthogram(orthId) {
-    if (orthId == '6') {
-        return ['ъ', 'ь', '/'];
+    // Защита от некорректного ID
+    if (typeof orthId !== 'string') orthId = String(orthId);
+
+    // Задание 14 и связанные коды — три варианта
+    if (orthId.startsWith('14')) {
+        return ['/', '|', '-'];
     }
+
+    // Орфограммы с НЕ — слитно/раздельно
     if (['21', '32', '36', '46', '54', '56', '58', '581'].includes(orthId)) {
         return ['/', '|'];
     }
+
+    // Ъ/Ь
+    if (orthId == '6') {
+        return ['ъ', 'ь', '/'];
+    }
+
+    // Кэш
     if (orthogramLettersCache[orthId]) {
         return orthogramLettersCache[orthId];
     }
+
+    // API-запрос (на случай новых орфограмм)
     try {
         const response = await fetch(`/api/orthogram/${orthId}/letters/`);
         const data = await response.json();
-        orthogramLettersCache[orthId] = data.letters || ['а', 'о', 'е', 'и', 'я'];
-        return orthogramLettersCache[orthId];
+        const letters = Array.isArray(data.letters) ? data.letters : ['а', 'о', 'е', 'и', 'я'];
+        orthogramLettersCache[orthId] = letters;
+        return letters;
     } catch (err) {
+        console.warn(`Не удалось загрузить буквы для орфограммы ${orthId}`, err);
         return ['а', 'о', 'е', 'и', 'я'];
     }
 }
 
-// --- Замена *N* на смайлы ---
-async function replaceOrthMarkersInText(text) {
-    const wordsWithMasks = text.split(/,\s*/);
-    const processedWords = [];
-
-    for (const word of wordsWithMasks) {
-        const matches = [...word.matchAll(/\*(\d+)\*/g)];
-        if (matches.length === 0) {
-            processedWords.push(word);
-            continue;
-        }
+// --- Обработка одной строки с масками ---
+async function processLineWithMasks(lineText) {
+    try {
+        const matches = [...lineText.matchAll(/\*(\d+)\*/g)];
+        if (matches.length === 0) return lineText;
 
         let result = '';
         let lastIndex = 0;
@@ -110,39 +121,69 @@ async function replaceOrthMarkersInText(text) {
                 `<li data-letter="${letter}">${letter}</li>`
             ).join('');
 
-            result += word.slice(lastIndex, match.index);
+            result += lineText.slice(lastIndex, match.index);
 
-            if (['21', '32', '36', '46', '54', '56', '58', '581'].includes(orthId)) {
-                // Показываем "(не) 😊" 
-                result += `
-                    <span class="smiley-button" 
-                          data-orth-id="${orthId}" 
-                          data-word-template="${word}">
-                        (не)&nbsp;<span class="smiley-icon">😊</span>
-                        <ul class="smiley-options">${liItems}</ul>
-                    </span>
-                `;
-            } else {
-                result += `
-                    <span class="smiley-button" 
-                          data-orth-id="${orthId}" 
-                          data-word-template="${word}">
-                        <span class="smiley-icon">😊</span>
-                        <ul class="smiley-options">${liItems}</ul>
-                    </span>
-                `;
+            const isSplit = ['21', '32', '36', '46', '54', '56', '58', '581'].includes(orthId);
+            let prefix = '';
+            let removeLength = 0;
+
+            if (isSplit) {
+                const beforeMask = lineText.slice(0, match.index);
+                const parts = beforeMask.split(/\s+/).filter(Boolean);
+                const lastPart = parts.length > 0 ? parts[parts.length - 1] : '';
+
+                if (
+                    (lastPart.endsWith('не') || lastPart.endsWith('НЕ') || lastPart.endsWith('Не')) &&
+                    lastPart.length >= 2
+                ) {
+                    const suffix = lastPart.slice(-2);
+                    if (['не', 'НЕ', 'Не'].includes(suffix)) {
+                        const pos = match.index - 2;
+                        if (pos <= 0 || /\s/.test(lineText[pos - 1])) {
+                            removeLength = 2;
+                            prefix = '(не)';
+                        }
+                    }
+                }
+
+                if (removeLength > 0) {
+                    result = result.slice(0, -removeLength);
+                }
             }
 
+            const buttonHtml = isSplit
+                ? `<span class="smiley-button" data-orth-id="${orthId}" data-word-template="${lineText}">
+                     ${prefix}&nbsp;<span class="smiley-icon">😊</span>
+                     <ul class="smiley-options">${liItems}</ul>
+                   </span>`
+                : `<span class="smiley-button" data-orth-id="${orthId}" data-word-template="${lineText}">
+                     <span class="smiley-icon">😊</span>
+                     <ul class="smiley-options">${liItems}</ul>
+                   </span>`;
+
+            result += buttonHtml;
             lastIndex = match.index + match[0].length;
         }
 
-        result += word.slice(lastIndex);
-        processedWords.push(result);
+        result += lineText.slice(lastIndex);
+        return result;
+    } catch (err) {
+        console.error('Ошибка в processLineWithMasks:', err, 'Текст:', lineText);
+        return lineText; // возвращаем как есть при ошибке
     }
-
-    return processedWords.join(', ');
 }
 
+// --- Обработка контейнера ---
+async function processPracticeContainer(container) {
+    const lines = container.querySelectorAll('.practice-line');
+    for (const line of lines) {
+        const original = line.textContent.trim();
+        if (original) {
+            const processed = await processLineWithMasks(original);
+            line.innerHTML = processed;
+        }
+    }
+}
 
 // --- Обработчик проверки ---
 function setupCheckAnswers(container = document) {
@@ -152,14 +193,28 @@ function setupCheckAnswers(container = document) {
         }
         button._clickHandler = function () {
             const article = button.closest('.article-practice');
-            const userLetters = [];
             const smileyButtons = article.querySelectorAll('.smiley-button');
+
+            if (smileyButtons.length === 0) {
+                console.warn('Нет смайликов для проверки');
+                return;
+            }
+
+            const userAnswers = [];
             let hasSelection = false;
 
-            smileyButtons.forEach(smileyButton => {
-                const selectedLetter = smileyButton.querySelector('.smiley-icon').textContent;
-                if (selectedLetter !== '😊') hasSelection = true;
-                userLetters.push(selectedLetter);
+            smileyButtons.forEach(btn => {
+                const icon = btn.querySelector('.smiley-icon');
+                let selectedLetter = icon ? icon.textContent : '😊';
+
+                if (selectedLetter === '|') {
+                    selectedLetter = '\\';
+                }
+
+                if (selectedLetter !== '😊') {
+                    hasSelection = true;
+                }
+                userAnswers.push(selectedLetter);
             });
 
             if (!hasSelection) {
@@ -179,7 +234,7 @@ function setupCheckAnswers(container = document) {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
                 },
-                body: JSON.stringify({ user_words: userLetters })
+                body: JSON.stringify({ user_words: userAnswers })
             })
             .then(r => {
                 if (!r.ok) {
@@ -190,33 +245,17 @@ function setupCheckAnswers(container = document) {
                 return r.json();
             })
             .then(results => {
-                article.querySelectorAll('.smiley-icon').forEach((icon, i) => {
+                if (!Array.isArray(results)) {
+                    throw new Error('Некорректный ответ от сервера');
+                }
+
+                const icons = article.querySelectorAll('.smiley-icon');
+                icons.forEach((icon, i) => {
                     icon.classList.remove('selected', 'correct', 'incorrect');
-                    if (results[i]) {
-                        icon.classList.add('correct');
-                    } else {
-                        icon.classList.add('incorrect');
+                    if (i < results.length) {
+                        icon.classList.add(results[i] ? 'correct' : 'incorrect');
                     }
                 });
-                return fetch('/api/get-advice/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: JSON.stringify({ user_words: userLetters })
-                });
-            })
-            .then(r => r.json())
-            .then(data => {
-                let adviceBlock = article.querySelector('.advice-block');
-                if (!adviceBlock) {
-                    adviceBlock = document.createElement('div');
-                    adviceBlock.className = 'advice-block';
-                    article.appendChild(adviceBlock);
-                }
-                adviceBlock.textContent = data.advice;
-                adviceBlock.style.display = 'block';
             })
             .catch(err => {
                 console.error('Ошибка проверки:', err);
@@ -229,16 +268,15 @@ function setupCheckAnswers(container = document) {
 
 // --- Инициализация DOM ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // Инициализация стартовых упражнений (если есть на странице)
-    document.querySelectorAll('.practice-text').forEach(async (paragraph) => {
-        const originalText = paragraph.textContent.trim();
-        const processedHtml = await replaceOrthMarkersInText(originalText);
-        paragraph.innerHTML = processedHtml;
+    // Обработка стартовых упражнений
+    document.querySelectorAll('.practice-text-container').forEach(async (container) => {
+        await processPracticeContainer(container);
     });
 
-    setupCheckAnswers(); // Подключаем проверку для стартовых упражнений
+    // Подключение проверки
+    setupCheckAnswers();
 
-    // Глобальный обработчик выпадающих списков
+    // --- Глобальный обработчик выпадающих списков ---
     document.addEventListener('click', (e) => {
         const target = e.target;
 
@@ -260,9 +298,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const selectedLetter = target.dataset.letter;
             const icon = button.querySelector('.smiley-icon');
-
             if (icon) {
-                icon.textContent = selectedLetter; // ← Просто вставляем символ
+                icon.textContent = selectedLetter;
                 icon.className = 'smiley-icon selected';
             }
 
@@ -273,6 +310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        // Закрытие всех выпадашек при клике вне
         if (!e.target.closest('.smiley-button')) {
             document.querySelectorAll('.smiley-options').forEach(el => {
                 el.style.display = 'none';
@@ -280,13 +318,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // === ЗАДАНИЕ 9: СТАТИЧЕСКИЕ УПРАЖНЕНИЯ ===
+    // === ЗАДАНИЕ 9 ===
     const stillButtons = document.querySelectorAll('.check-task-still');
     const stillAnswerSection = document.querySelector('.block-answer-still-content');
 
     if (stillAnswerSection && stillButtons.length) {
         stillButtons.forEach(btn => {
             const handler = async () => {
+                /* логика генерации — без изменений */
                 const label = btn.textContent.trim();
                 let orthId = null;
                 let rangeCode = null;
@@ -302,7 +341,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 label === 'Е-К' ? 'E-K' :
                                 label === 'Л-Р' ? 'L-R' : 'S-YA';
                 } else if (btn.dataset.range === 'CHERED') {
-                    // Чередующиеся гласные
                     orthogramIds = [12, 13, 24, 26, 27, 271];
                 } else {
                     alert('Неизвестное упражнение');
@@ -347,13 +385,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return;
                     }
 
-                    // Вставляем новое упражнение
                     stillAnswerSection.innerHTML = `<h3 class="subtitle-still">${label}</h3>${data.html}`;
 
-                    const newText = stillAnswerSection.querySelector('.practice-text');
-                    if (newText) {
-                        const originalText = newText.textContent.trim();
-                        newText.innerHTML = await replaceOrthMarkersInText(originalText);
+                    const container = stillAnswerSection.querySelector('.practice-text-container');
+                    if (container) {
+                        await processPracticeContainer(container);
                     }
 
                     setupCheckAnswers(stillAnswerSection);
@@ -369,7 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // === ОСНОВНЫЕ ЗАДАНИЯ: 1–8, 10–27 (ЕГЭ) ===
+    // === ОСНОВНЫЕ ЗАДАНИЯ ===
     const taskButtons = document.querySelectorAll('.block-task-num .check-task');
     const answerSection = document.querySelector('.block-answer');
 
@@ -390,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const renderExercise = async (orthogramId, rangeCode = null) => {
                     const csrfToken = getCookie('csrftoken');
                     if (!csrfToken) {
-                        answerSection.innerHTML = '<p>Сессия истекла. Обновите страницу.</p>';
+                        answerSection.innerHTML = '<p class="error">Сессия истекла. Обновите страницу.</p>';
                         return;
                     }
 
@@ -413,30 +449,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                             body: JSON.stringify(payload)
                         });
 
+                        const contentType = response.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            const errorHtml = await response.text();
+                            console.error('Получен HTML вместо JSON:', errorHtml);
+                            throw new Error(`Сервер вернул ошибку (статус ${response.status}).`);
+                        }
+
                         if (!response.ok) {
-                            const errorText = await response.text();
-                            throw new Error(`HTTP ${response.status}: ${errorText}`);
+                            const errorData = await response.json().catch(() => ({}));
+                            throw new Error(errorData.error || `HTTP ${response.status}`);
                         }
 
                         const data = await response.json();
                         if (!data.html) {
-                            answerSection.innerHTML = `<p>${data.error || 'Не удалось загрузить упражнение.'}</p>`;
+                            answerSection.innerHTML = `<p class="error">${data.error || 'Не удалось загрузить упражнение.'}</p>`;
                             return;
                         }
 
                         answerSection.innerHTML = `<h2 class="title-practice">Задание № ${taskNum}</h2>${data.html}`;
 
-                        const newText = answerSection.querySelector('.practice-text');
-                        if (newText) {
-                            const originalText = newText.textContent.trim();
-                            newText.innerHTML = await replaceOrthMarkersInText(originalText);
+                        const container = answerSection.querySelector('.practice-text-container');
+                        if (container) {
+                            await processPracticeContainer(container);
                         }
 
                         setupCheckAnswers(answerSection);
 
                     } catch (err) {
                         console.error(`Ошибка при загрузке упражнения ${orthogramId}${rangeCode ? `, диапазон ${rangeCode}` : ''}:`, err);
-                        answerSection.innerHTML = '<p>Ошибка при загрузке упражнения.</p>';
+                        answerSection.innerHTML = '<p class="error">Не удалось загрузить упражнение. Попробуйте позже.</p>';
                     }
                 };
 
@@ -454,9 +496,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // === НОВЫЙ БЛОК: ВЫБОР ОРФОГРАММ ПО НОМЕРУ (5–7 кл) ===
+    // === ОРФОГРАММЫ ПО НОМЕРУ ===
     const orthogramButtons = document.querySelectorAll('.orthogram-buttons-container .orthogram-button');
-    const orthogramAnswerSection = document.querySelector('.block-answer'); // или отдельный контейнер
+    const orthogramAnswerSection = document.querySelector('.block-answer');
 
     if (orthogramButtons.length && orthogramAnswerSection) {
         orthogramButtons.forEach(button => {
@@ -503,10 +545,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${data.html}
                     `;
 
-                    const newText = orthogramAnswerSection.querySelector('.practice-text');
-                    if (newText) {
-                        const originalText = newText.textContent.trim();
-                        newText.innerHTML = await replaceOrthMarkersInText(originalText);
+                    const container = orthogramAnswerSection.querySelector('.practice-text-container');
+                    if (container) {
+                        await processPracticeContainer(container);
                     }
 
                     setupCheckAnswers(orthogramAnswerSection);
@@ -518,5 +559,4 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
     }
-
 });

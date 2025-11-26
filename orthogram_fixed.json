@@ -540,17 +540,6 @@
   },
   {
     "model": "main.orthogram",
-    "pk": "56",
-    "fields": {
-      "name": "НЕ с деепричастиями",
-      "rule": "Всегда раздельно (кроме случаев, когда деепричастие без НЕ не употребляется)",
-      "letters": "/,|",
-      "grades": "",
-      "created_at": "2025-11-11T19:02:51.409Z"
-    }
-  },
-  {
-    "model": "main.orthogram",
     "pk": "57",
     "fields": {
       "name": "НЕ с наречиями на -О и -Е",
@@ -580,6 +569,182 @@
       "letters": "/,|",
       "grades": "",
       "created_at": "2025-11-16T11:15:02.221Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "7",
+    "fields": {
+      "name": "Дефисное написание непроизв предлогов",
+      "rule": "Запомнить:\r\nиз-за\r\nиз-под\r\nпо-над",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T21:16:43.068Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "40",
+    "fields": {
+      "name": "Дефисное и слитное написание сложных прилагательных",
+      "rule": "Через дефис, если:\r\n1) образованы из двух равноправных слов;\r\n2) обозначают разные цвета или оттенки цветов;\r\n3) образованы от существ., которые пишутся через дефис.\r\n-----\r\nСлитно, если образованы на основе словосочетания",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T21:24:34.464Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "401",
+    "fields": {
+      "name": "ПОЛ- / ПОЛУ-",
+      "rule": "Слитно:\r\nПОЛ/ с согласными, кроме Л\r\nПОЛУ/\r\n------\r\nЧерез дефис ПОЛ-:\r\n1) гласная\r\n2) Л\r\n3) имя собственное",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T21:30:06.987Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "44",
+    "fields": {
+      "name": "Дефис в неопр местоимениях",
+      "rule": "-то, -либо, -нибудь, кое- пишутся через дефис.\r\nЕсли КОЕ- разбивает предлог, то пишется раздельно (получается 3 слова)",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T21:37:14.264Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "62",
+    "fields": {
+      "name": "Дефис в наречиях",
+      "rule": "Наречия, оканчивающиеся на -ому (-ему), -ых (-их), -и с приставками ПО-, В-(ВО-) пишутся через ДЕФИС.\r\nПриставка КОЕ-, суффиксы –ТО, -ЛИБО, -НИБУДЬ в наречиях пишутся с ДЕФИСОМ.\r\nСложные наречия также пишутся через дефис",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T21:46:39.169Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "621",
+    "fields": {
+      "name": "Наречия пишутся слитно, кроме некоторых (запомн.)",
+      "rule": "вмиг,\r\nнабок,\r\nнасчет.\r\n-----------\r\nЗапомнить: на миг\r\nбез устали",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:05:08.712Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "64",
+    "fields": {
+      "name": "Правописание произв предлогов на основе наречий",
+      "rule": "Пишутся слитно",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:17:18.826Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "65",
+    "fields": {
+      "name": "Правописание производных предлогов",
+      "rule": "СЛИТНО:\r\nвследствие (по причине),\r\nнаподобие,\r\nвроде (подобно),\r\nнасчет (о),\r\nввиду (из-за),\r\nвместо,\r\nнесмотря на.\r\n------\r\nРАЗДЕЛЬНО:\r\nв течение,\r\nв продолжение,\r\nпо причине,\r\nв целях,\r\nсо стороны и др.",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:25:54.735Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "67",
+    "fields": {
+      "name": "Слитное написание союзов ТАКЖЕ, ТОЖЕ, ЧТОБЫ",
+      "rule": "Вспомнить. Отличать от аналогичных сочетаний, пишущихся раздельно (ЖЕ можно отбросить; БЫ - переставить)",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:29:08.244Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "68",
+    "fields": {
+      "name": "Частицы БЫ, ЛИ, ЖЕ со словами",
+      "rule": "Пишутся раздельно",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:32:53.108Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "69",
+    "fields": {
+      "name": "Частица -КА с глаголами",
+      "rule": "Пишется через дефис",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:34:44.911Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "691",
+    "fields": {
+      "name": "Частица -ТО",
+      "rule": "Пишется через дефис со всеми словами",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:37:09.359Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "692",
+    "fields": {
+      "name": "Частица -ТАКИ",
+      "rule": "Пишется через дефис с наречиями, глаголами, частицами. \r\nВ других случаях - раздельно",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:38:28.790Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "70",
+    "fields": {
+      "name": "Повторяющиеся междометия",
+      "rule": "Пишутся через дефис",
+      "letters": "/,|,-",
+      "grades": "",
+      "created_at": "2025-11-19T22:40:55.587Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "38",
+    "fields": {
+      "name": "Н и НН в суффиксах прилагательных",
+      "rule": "Н:\r\nВ суффиксах -АН-, -ЯН-, -ИН-\r\nИскл.: стеклянный, оловянный, деревянный\r\n------------\r\nНН:\r\n- в словах с основой на Н,\r\n- в суффиксах -ОНН-, -ЕНН-\r\nИскл.: ветреный",
+      "letters": "н,нн",
+      "grades": "",
+      "created_at": "2025-11-19T22:45:35.571Z"
+    }
+  },
+  {
+    "model": "main.orthogram",
+    "pk": "56",
+    "fields": {
+      "name": "НЕ с деепричастиями",
+      "rule": "Всегда раздельно (кроме случаев, когда деепричастие без НЕ не употребляется).\r\nОтличать от предлогов \r\nНЕСМОТРЯ НА..., \r\nНЕВЗИРАЯ НА....",
+      "letters": "/,|",
+      "grades": "",
+      "created_at": "2025-11-11T19:02:51.409Z"
     }
   },
   {
@@ -618,6 +783,25 @@
       "source_field": "",
       "grades": "5",
       "created_at": "2025-10-14T12:23:08.806Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 34,
+    "fields": {
+      "orthogram": "11",
+      "text": "раздолье",
+      "masked_word": "ра*11*долье",
+      "incorrect_variant": null,
+      "explanation": "перед звонким Д пишется звонкая З",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-10-15T22:48:19.660Z"
     }
   },
   {
@@ -717,6 +901,63 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1891,
+    "fields": {
+      "orthogram": "7",
+      "text": "из-за",
+      "masked_word": "из*7*за",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:17:29.523Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1899,
+    "fields": {
+      "orthogram": "401",
+      "text": "пол-лимона",
+      "masked_word": "пол*401*лимона",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:31:51.521Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1905,
+    "fields": {
+      "orthogram": "44",
+      "text": "кое-кто",
+      "masked_word": "кое*44*кто",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:37:40.782Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 19,
     "fields": {
       "orthogram": "661",
@@ -770,6 +1011,44 @@
       "source_field": "",
       "grades": "7,8,9,10,11",
       "created_at": "2025-10-14T09:20:05.720Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1913,
+    "fields": {
+      "orthogram": "62",
+      "text": "давным-давно",
+      "masked_word": "давным*62*давно",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T21:47:09.919Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1919,
+    "fields": {
+      "orthogram": "62",
+      "text": "когда-то",
+      "masked_word": "когда*62*то",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T21:49:49.801Z"
     }
   },
   {
@@ -907,25 +1186,6 @@
   },
   {
     "model": "main.orthogramexample",
-    "pk": 32,
-    "fields": {
-      "orthogram": "6",
-      "text": "раздолье",
-      "masked_word": "раздоль*6*е",
-      "incorrect_variant": "раздолъе",
-      "explanation": "после корня перед окончанием пишется Ь",
-      "difficulty": 1,
-      "is_for_quiz": true,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "5",
-      "created_at": "2025-10-15T21:22:33.227Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
     "pk": 36,
     "fields": {
       "orthogram": "1",
@@ -1055,25 +1315,6 @@
       "source_field": "",
       "grades": "7,8,9,10,11",
       "created_at": "2025-10-14T21:11:39.633Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 34,
-    "fields": {
-      "orthogram": "11",
-      "text": "раздолье",
-      "masked_word": "ра*11*здолье",
-      "incorrect_variant": null,
-      "explanation": "перед звонким Д пишется звонкая З",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-10-15T22:48:19.660Z"
     }
   },
   {
@@ -2746,6 +2987,44 @@
       "source_field": "",
       "grades": "5,6,7,8,9,10,11",
       "created_at": "2025-10-28T17:47:45.657Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1892,
+    "fields": {
+      "orthogram": "7",
+      "text": "из-под",
+      "masked_word": "из*7*под",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:17:48.077Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1900,
+    "fields": {
+      "orthogram": "401",
+      "text": "пол-ложки",
+      "masked_word": "пол*401*ложки",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:33:45.416Z"
     }
   },
   {
@@ -8203,6 +8482,25 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1893,
+    "fields": {
+      "orthogram": "7",
+      "text": "по-над",
+      "masked_word": "по*7*над",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:18:09.910Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 412,
     "fields": {
       "orthogram": "2",
@@ -8317,6 +8615,25 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1901,
+    "fields": {
+      "orthogram": "401",
+      "text": "пол/года",
+      "masked_word": "пол*401*года",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:34:10.639Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 420,
     "fields": {
       "orthogram": "2",
@@ -8408,6 +8725,25 @@
       "source_field": "",
       "grades": "9,10,11",
       "created_at": "2025-10-23T16:48:11.191Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1906,
+    "fields": {
+      "orthogram": "44",
+      "text": "кое-что",
+      "masked_word": "кое*44*что",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:38:07.199Z"
     }
   },
   {
@@ -8522,6 +8858,44 @@
       "source_field": "",
       "grades": "8,9,10,11",
       "created_at": "2025-10-23T16:34:29.117Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1914,
+    "fields": {
+      "orthogram": "62",
+      "text": "много-премного",
+      "masked_word": "много*62*премного",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T21:47:49.622Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1920,
+    "fields": {
+      "orthogram": "62",
+      "text": "когда-нибудь",
+      "masked_word": "когда*62*нибудь",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T21:50:15.462Z"
     }
   },
   {
@@ -10768,6 +11142,25 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1894,
+    "fields": {
+      "orthogram": "40",
+      "text": "паровозо/ремонтный",
+      "masked_word": "паровозо*40*ремонтный",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:25:18.246Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 563,
     "fields": {
       "orthogram": "2",
@@ -10882,6 +11275,25 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1902,
+    "fields": {
+      "orthogram": "401",
+      "text": "пол/стакана",
+      "masked_word": "пол*401*стакана",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:34:31.820Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 521,
     "fields": {
       "orthogram": "2",
@@ -10992,6 +11404,25 @@
       "source_field": "",
       "grades": "6,7,8,9,10,11",
       "created_at": "2025-10-27T20:58:08.067Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1907,
+    "fields": {
+      "orthogram": "44",
+      "text": "что-то",
+      "masked_word": "что*44*то",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:38:25.072Z"
     }
   },
   {
@@ -11296,6 +11727,25 @@
       "source_field": "",
       "grades": "5,6,7,8,9,10,11",
       "created_at": "2025-10-27T21:35:51.299Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1908,
+    "fields": {
+      "orthogram": "44",
+      "text": "что-либо",
+      "masked_word": "что*44*либо",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:38:47.088Z"
     }
   },
   {
@@ -12706,25 +13156,6 @@
   },
   {
     "model": "main.orthogramexample",
-    "pk": 661,
-    "fields": {
-      "orthogram": "2",
-      "text": "стадион",
-      "masked_word": "ст*2**дион",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-10-28T09:14:12.967Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
     "pk": 662,
     "fields": {
       "orthogram": "2",
@@ -12801,25 +13232,6 @@
   },
   {
     "model": "main.orthogramexample",
-    "pk": 666,
-    "fields": {
-      "orthogram": "2",
-      "text": "теория",
-      "masked_word": "т*2*рия",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-10-28T09:20:05.736Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
     "pk": 667,
     "fields": {
       "orthogram": "2",
@@ -12892,6 +13304,25 @@
       "source_field": "",
       "grades": "6,7,8,9,10,11",
       "created_at": "2025-10-28T09:23:24.934Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1909,
+    "fields": {
+      "orthogram": "44",
+      "text": "кто-нибудь",
+      "masked_word": "кто*44*нибудь",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:39:07.016Z"
     }
   },
   {
@@ -13120,25 +13551,6 @@
       "source_field": "",
       "grades": "7,8,9,10,11",
       "created_at": "2025-10-28T11:06:43.127Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 684,
-    "fields": {
-      "orthogram": "2",
-      "text": "фиаско",
-      "masked_word": "ф*2*ско",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "9,10,11",
-      "created_at": "2025-10-28T11:07:04.712Z"
     }
   },
   {
@@ -13614,6 +14026,44 @@
       "source_field": "",
       "grades": "8,9,10,11",
       "created_at": "2025-10-28T11:20:45.073Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 661,
+    "fields": {
+      "orthogram": "2",
+      "text": "стадион",
+      "masked_word": "ст*2*дион",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-10-28T09:14:12.967Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 684,
+    "fields": {
+      "orthogram": "2",
+      "text": "фиаско",
+      "masked_word": "ф*2*аско",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "9,10,11",
+      "created_at": "2025-10-28T11:07:04.712Z"
     }
   },
   {
@@ -17000,25 +17450,6 @@
   },
   {
     "model": "main.orthogramexample",
-    "pk": 889,
-    "fields": {
-      "orthogram": "24",
-      "text": "набирает",
-      "masked_word": "наб*24**рает",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-10-28T21:05:45.489Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
     "pk": 890,
     "fields": {
       "orthogram": "24",
@@ -17623,44 +18054,6 @@
       "source_field": "",
       "grades": "5,6,7,8,9,10,11",
       "created_at": "2025-10-28T21:18:09.178Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 922,
-    "fields": {
-      "orthogram": "24",
-      "text": "прожигает",
-      "masked_word": "прож*24**гает",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-10-28T21:18:29.763Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 923,
-    "fields": {
-      "orthogram": "24",
-      "text": "прожигал",
-      "masked_word": "прож*24**гал",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-10-28T21:18:48.440Z"
     }
   },
   {
@@ -18649,6 +19042,25 @@
       "source_field": "",
       "grades": "6,7,8,9,10,11",
       "created_at": "2025-10-29T07:52:54.023Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 923,
+    "fields": {
+      "orthogram": "24",
+      "text": "прожигал",
+      "masked_word": "прож*24*гал",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-10-28T21:18:48.440Z"
     }
   },
   {
@@ -25740,6 +26152,44 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1910,
+    "fields": {
+      "orthogram": "44",
+      "text": "кое\\у кого",
+      "masked_word": "кое*44*у кого",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:40:17.471Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1916,
+    "fields": {
+      "orthogram": "62",
+      "text": "точь-в-точь",
+      "masked_word": "точь-в*62*точь",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:48:40.492Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 1344,
     "fields": {
       "orthogram": "33",
@@ -29483,6 +29933,25 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1895,
+    "fields": {
+      "orthogram": "40",
+      "text": "шахматно-шашечный",
+      "masked_word": "шахматно*40*шашечный",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:25:51.208Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 1541,
     "fields": {
       "orthogram": "611",
@@ -31801,6 +32270,25 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1896,
+    "fields": {
+      "orthogram": "40",
+      "text": "физико-математический",
+      "masked_word": "физико*40*математический",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:26:51.574Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 1663,
     "fields": {
       "orthogram": "49",
@@ -33112,6 +33600,25 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1740,
+    "fields": {
+      "orthogram": "32",
+      "text": "не/урядицы",
+      "masked_word": "не*32*урядицы",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T12:55:57.097Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 1773,
     "fields": {
       "orthogram": "661",
@@ -33150,11 +33657,11 @@
   },
   {
     "model": "main.orthogramexample",
-    "pk": 1732,
+    "pk": 1738,
     "fields": {
-      "orthogram": "21",
-      "text": "ничто | предвещало праздника",
-      "masked_word": "ничто *21*предвещало праздника",
+      "orthogram": "32",
+      "text": "не\\правда, а ложь",
+      "masked_word": "не*32*правда, а ложь",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,
@@ -33163,17 +33670,17 @@
       "is_user_added": false,
       "added_by": null,
       "source_field": "",
-      "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-11-11T11:39:55.930Z"
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T12:47:09.538Z"
     }
   },
   {
     "model": "main.orthogramexample",
-    "pk": 1733,
+    "pk": 1736,
     "fields": {
       "orthogram": "21",
-      "text": "она /ненавидела ложь",
-      "masked_word": "она *21*навидела ложь",
+      "text": "не/годовать",
+      "masked_word": "не*21*годовать",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,
@@ -33183,7 +33690,7 @@
       "added_by": null,
       "source_field": "",
       "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-11-11T11:40:58.136Z"
+      "created_at": "2025-11-11T12:32:00.274Z"
     }
   },
   {
@@ -33191,8 +33698,8 @@
     "pk": 1734,
     "fields": {
       "orthogram": "21",
-      "text": "он | знал",
-      "masked_word": "он *21*знал",
+      "text": "он не\\знал",
+      "masked_word": "он не*21*знал",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,
@@ -33210,8 +33717,8 @@
     "pk": 1735,
     "fields": {
       "orthogram": "21",
-      "text": "/невзлюбить",
-      "masked_word": "*21*взлюбить",
+      "text": "не/взлюбить",
+      "masked_word": "не*21*взлюбить",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,
@@ -33222,120 +33729,6 @@
       "source_field": "",
       "grades": "5,6,7,8,9,10,11",
       "created_at": "2025-11-11T12:31:29.378Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1738,
-    "fields": {
-      "orthogram": "32",
-      "text": "| правда, а ложь",
-      "masked_word": "*32*правда, а ложь",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T12:47:09.538Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1739,
-    "fields": {
-      "orthogram": "32",
-      "text": "это /неправда",
-      "masked_word": "это *32*правда",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T12:47:52.663Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1737,
-    "fields": {
-      "orthogram": "21",
-      "text": "/негодовали",
-      "masked_word": "*21*годовали",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-11-11T12:32:58.617Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1736,
-    "fields": {
-      "orthogram": "21",
-      "text": "/негодовать",
-      "masked_word": "*21*годовать",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "5,6,7,8,9,10,11",
-      "created_at": "2025-11-11T12:32:00.274Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1740,
-    "fields": {
-      "orthogram": "32",
-      "text": "/неурядицы",
-      "masked_word": "*32*урядицы",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T12:55:57.097Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1741,
-    "fields": {
-      "orthogram": "36",
-      "text": "/неширокий",
-      "masked_word": "*36*широкий",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T13:11:52.993Z"
     }
   },
   {
@@ -33359,106 +33752,11 @@
   },
   {
     "model": "main.orthogramexample",
-    "pk": 1742,
-    "fields": {
-      "orthogram": "36",
-      "text": "| глубокая, а мелкая речка",
-      "masked_word": "*36*глубокая, а мелкая речка",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T13:12:53.421Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1743,
-    "fields": {
-      "orthogram": "36",
-      "text": "/неширокий, но глубокий затон",
-      "masked_word": "*36*неширокий, но глубокий затон",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T18:54:16.370Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1744,
-    "fields": {
-      "orthogram": "46",
-      "text": "/некоторые",
-      "masked_word": "*49*которые",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T18:57:13.906Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1745,
-    "fields": {
-      "orthogram": "46",
-      "text": "| с кем",
-      "masked_word": "*46*с кем",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T18:57:45.279Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1746,
-    "fields": {
-      "orthogram": "46",
-      "text": "| о ком",
-      "masked_word": "*46*о ком",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T18:58:25.640Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
     "pk": 1747,
     "fields": {
       "orthogram": "46",
-      "text": "/некто",
-      "masked_word": "*49*кто",
+      "text": "не/кто",
+      "masked_word": "не*46*кто",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,
@@ -33469,177 +33767,6 @@
       "source_field": "",
       "grades": "6,7,8,9,10,11",
       "created_at": "2025-11-11T18:58:50.694Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1748,
-    "fields": {
-      "orthogram": "46",
-      "text": "/нечто",
-      "masked_word": "*46*что",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "6,7,8,9,10,11",
-      "created_at": "2025-11-11T18:59:15.007Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1749,
-    "fields": {
-      "orthogram": "54",
-      "text": "пёс наш | обозлён",
-      "masked_word": "пёс наш *46*обозлён",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "7,8,9,10,11",
-      "created_at": "2025-11-11T19:01:36.545Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1750,
-    "fields": {
-      "orthogram": "56",
-      "text": "/ненавидя",
-      "masked_word": "*56*навидя",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "7,8,9,10,11",
-      "created_at": "2025-11-11T19:03:22.330Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1751,
-    "fields": {
-      "orthogram": "56",
-      "text": "| узнав",
-      "masked_word": "*56*узнав",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "7,8,9,10,11",
-      "created_at": "2025-11-11T19:04:01.145Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1752,
-    "fields": {
-      "orthogram": "56",
-      "text": "/негодуя",
-      "masked_word": "*56*годуя",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "7,8,9,10,11",
-      "created_at": "2025-11-12T21:38:48.259Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1753,
-    "fields": {
-      "orthogram": "57",
-      "text": "совсем /недалеко",
-      "masked_word": "совсем *57*далеко",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "7,8,9,10,11",
-      "created_at": "2025-11-12T21:49:26.329Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1754,
-    "fields": {
-      "orthogram": "57",
-      "text": "/необоснованно высокие цены",
-      "masked_word": "*57*обоснованно высокие цены",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "7,8,9,10,11",
-      "created_at": "2025-11-12T21:54:39.921Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1755,
-    "fields": {
-      "orthogram": "57",
-      "text": "вовсе | близко",
-      "masked_word": "вовсе *57*близко",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "7,8,9,10,11",
-      "created_at": "2025-11-12T21:55:20.267Z"
-    }
-  },
-  {
-    "model": "main.orthogramexample",
-    "pk": 1756,
-    "fields": {
-      "orthogram": "57",
-      "text": "ничуть | высоко",
-      "masked_word": "ничуть *57*высоко",
-      "incorrect_variant": null,
-      "explanation": "",
-      "difficulty": 1,
-      "is_for_quiz": false,
-      "is_active": true,
-      "is_user_added": false,
-      "added_by": null,
-      "source_field": "",
-      "grades": "7,8,9,10,11",
-      "created_at": "2025-11-12T21:55:55.098Z"
     }
   },
   {
@@ -34153,6 +34280,310 @@
       "source_field": "",
       "grades": "",
       "created_at": "2025-11-13T22:31:46.156Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1739,
+    "fields": {
+      "orthogram": "32",
+      "text": "это не/правда",
+      "masked_word": "это не*32*правда",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T12:47:52.663Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1749,
+    "fields": {
+      "orthogram": "54",
+      "text": "Не/распустившиеся почки.",
+      "masked_word": "Не*54*распустившиеся почки.",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-11T19:01:36.545Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1733,
+    "fields": {
+      "orthogram": "21",
+      "text": "она не/навидела ложь",
+      "masked_word": "она не*21*навидела ложь",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-11-11T11:40:58.136Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1741,
+    "fields": {
+      "orthogram": "36",
+      "text": "не/широкий",
+      "masked_word": "не*36*широкий",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T13:11:52.993Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1742,
+    "fields": {
+      "orthogram": "36",
+      "text": "не\\глубокая, а мелкая речка",
+      "masked_word": "не*36*глубокая, а мелкая речка",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T13:12:53.421Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1748,
+    "fields": {
+      "orthogram": "46",
+      "text": "не/что хорошее",
+      "masked_word": "не*46*что хорошее",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T18:59:15.007Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1746,
+    "fields": {
+      "orthogram": "46",
+      "text": "не\\о ком",
+      "masked_word": "не*46*о ком",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T18:58:25.640Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1744,
+    "fields": {
+      "orthogram": "46",
+      "text": "не/которые",
+      "masked_word": "не*46*которые",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T18:57:13.906Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1745,
+    "fields": {
+      "orthogram": "46",
+      "text": "не\\с кем",
+      "masked_word": "не*46*с кем",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T18:57:45.279Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1752,
+    "fields": {
+      "orthogram": "56",
+      "text": "не/годуя",
+      "masked_word": "не*56*годуя",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-12T21:38:48.259Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1750,
+    "fields": {
+      "orthogram": "56",
+      "text": "не/навидя",
+      "masked_word": "не*56*навидя",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-11T19:03:22.330Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1751,
+    "fields": {
+      "orthogram": "56",
+      "text": "не\\узнав",
+      "masked_word": "не*56*узнав",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-11T19:04:01.145Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1754,
+    "fields": {
+      "orthogram": "57",
+      "text": "не/обоснованно высокие цены",
+      "masked_word": "не*57*обоснованно высокие цены",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-12T21:54:39.921Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1755,
+    "fields": {
+      "orthogram": "57",
+      "text": "вовсе не\\близко",
+      "masked_word": "вовсе не*57*близко",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-12T21:55:20.267Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1756,
+    "fields": {
+      "orthogram": "57",
+      "text": "ничуть не\\высоко",
+      "masked_word": "ничуть не*57*высоко",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-12T21:55:55.098Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1753,
+    "fields": {
+      "orthogram": "57",
+      "text": "совсем не/далеко",
+      "masked_word": "совсем не*57*далеко",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-12T21:49:26.329Z"
     }
   },
   {
@@ -34841,11 +35272,49 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1732,
+    "fields": {
+      "orthogram": "21",
+      "text": "ничто не\\предвещало праздника",
+      "masked_word": "ничто не*21*предвещало праздника",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-11-11T11:39:55.930Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1846,
+    "fields": {
+      "orthogram": "54",
+      "text": "Пёс наш не\\обозлён.",
+      "masked_word": "Пёс наш не*54*обозлён.",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": false,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-17T20:47:49.584Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 1822,
     "fields": {
       "orthogram": "58",
-      "text": "/негде",
-      "masked_word": "*58*где",
+      "text": "не/где",
+      "masked_word": "не*58*где",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,
@@ -34863,8 +35332,8 @@
     "pk": 1823,
     "fields": {
       "orthogram": "58",
-      "text": "/некогда",
-      "masked_word": "*58*когда",
+      "text": "не/когда",
+      "masked_word": "не*58*когда",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,
@@ -34882,8 +35351,8 @@
     "pk": 1824,
     "fields": {
       "orthogram": "581",
-      "text": "в комнате было | тихо",
-      "masked_word": "в комнате было *581*тихо",
+      "text": "в комнате было не\\тихо",
+      "masked_word": "в комнате было не*581*тихо",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,
@@ -34898,11 +35367,771 @@
   },
   {
     "model": "main.orthogramexample",
+    "pk": 1897,
+    "fields": {
+      "orthogram": "401",
+      "text": "полу/тона",
+      "masked_word": "полу*401*тона",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:30:43.192Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1903,
+    "fields": {
+      "orthogram": "401",
+      "text": "пол-апельсина",
+      "masked_word": "пол*401*апельсина",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:34:58.175Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1911,
+    "fields": {
+      "orthogram": "44",
+      "text": "кое\\с кем",
+      "masked_word": "кое*44*с кем",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:41:21.096Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1917,
+    "fields": {
+      "orthogram": "62",
+      "text": "бок\\о бок",
+      "masked_word": "бок*62*о бок",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T21:49:07.953Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1921,
+    "fields": {
+      "orthogram": "62",
+      "text": "где-либо",
+      "masked_word": "где*62*либо",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T21:50:41.168Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1923,
+    "fields": {
+      "orthogram": "621",
+      "text": "на\\миг",
+      "masked_word": "на*621*миг",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:06:01.592Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1925,
+    "fields": {
+      "orthogram": "621",
+      "text": "на/долго",
+      "masked_word": "на*621*долго",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:07:14.513Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1926,
+    "fields": {
+      "orthogram": "621",
+      "text": "лодка наклонилась на/бок",
+      "masked_word": "лодка наклонилась на*621*бок",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:15:30.185Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1928,
+    "fields": {
+      "orthogram": "64",
+      "text": "показался в/дали",
+      "masked_word": "показался в*64*дали",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:19:29.759Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1930,
+    "fields": {
+      "orthogram": "65",
+      "text": "в/следствие",
+      "masked_word": "в*65*следствие",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:26:29.864Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1932,
+    "fields": {
+      "orthogram": "65",
+      "text": "на\\протяжении вечера",
+      "masked_word": "на*65**протяжении вечера",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:28:04.657Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1934,
+    "fields": {
+      "orthogram": "67",
+      "text": "ехали быстро, что/бы успеть на поезд",
+      "masked_word": "ехали быстро, что*67*бы успеть на поезд",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:31:00.988Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1936,
+    "fields": {
+      "orthogram": "69",
+      "text": "иди-ка сюда",
+      "masked_word": "иди*69*ка сюда",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:35:26.920Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1938,
+    "fields": {
+      "orthogram": "691",
+      "text": "задачу-то реши",
+      "masked_word": "задачу*691*то реши",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:37:44.979Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1940,
+    "fields": {
+      "orthogram": "692",
+      "text": "ты с нами\\таки",
+      "masked_word": "ты с нами*692*таки",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:39:32.840Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1942,
+    "fields": {
+      "orthogram": "38",
+      "text": "кожаный",
+      "masked_word": "кожа*38*ый",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T22:47:01.256Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1944,
+    "fields": {
+      "orthogram": "38",
+      "text": "соломенный",
+      "masked_word": "соломе*38*ый",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "",
+      "created_at": "2025-11-19T22:47:48.039Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 889,
+    "fields": {
+      "orthogram": "24",
+      "text": "набирает",
+      "masked_word": "наб*24*рает",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-10-28T21:05:45.489Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1737,
+    "fields": {
+      "orthogram": "21",
+      "text": "Рабочие не/годовали из-за продленного дня.",
+      "masked_word": "Рабочие не*21*годовали из-за продленного дня.",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-11-11T12:32:58.617Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1947,
+    "fields": {
+      "orthogram": "56",
+      "text": "Можно только мчаться вперёд, НЕ\\ЗАМЕДЛЯЯ скорости.",
+      "masked_word": "Можно только мчаться вперёд, НЕ*56*ЗАМЕДЛЯЯ скорости.",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-23T16:22:04.915Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1743,
+    "fields": {
+      "orthogram": "36",
+      "text": "не/широкий, но глубокий затон",
+      "masked_word": "не*36*широкий, но глубокий затон",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-11T18:54:16.370Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1898,
+    "fields": {
+      "orthogram": "401",
+      "text": "полу/герой",
+      "masked_word": "полу*401*герой",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:31:10.686Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1904,
+    "fields": {
+      "orthogram": "401",
+      "text": "пол-России",
+      "masked_word": "пол*401*России",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:35:22.764Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1912,
+    "fields": {
+      "orthogram": "44",
+      "text": "кое\\с какими",
+      "masked_word": "кое*44*с какими",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T21:41:49.737Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1918,
+    "fields": {
+      "orthogram": "62",
+      "text": "кое-где",
+      "masked_word": "кое*62*где",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T21:49:30.108Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1922,
+    "fields": {
+      "orthogram": "621",
+      "text": "в/миг",
+      "masked_word": "в*621*миг",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:05:41.328Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1924,
+    "fields": {
+      "orthogram": "621",
+      "text": "без\\устали",
+      "masked_word": "без*621*устали",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:06:23.470Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1915,
+    "fields": {
+      "orthogram": "62",
+      "text": "точь-в-точь",
+      "masked_word": "точь*62*в-точь",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T21:48:23.160Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1927,
+    "fields": {
+      "orthogram": "64",
+      "text": "что на/счет каникул",
+      "masked_word": "что на*64*счет каникул",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:18:03.064Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1929,
+    "fields": {
+      "orthogram": "64",
+      "text": "на/встречу испытаниям",
+      "masked_word": "на*64*встречу испытаниям",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:20:14.903Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1931,
+    "fields": {
+      "orthogram": "65",
+      "text": "в\\течение дня",
+      "masked_word": "в*65*течение дня",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:27:04.447Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1935,
+    "fields": {
+      "orthogram": "68",
+      "text": "что\\бы такое придумать",
+      "masked_word": "что*68*бы такое придумать",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:33:39.641Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1937,
+    "fields": {
+      "orthogram": "69",
+      "text": "спой-ка нам песню",
+      "masked_word": "спой*69*ка нам песню",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:35:57.887Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1939,
+    "fields": {
+      "orthogram": "692",
+      "text": "все-таки",
+      "masked_word": "все*692*таки",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:38:52.759Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1941,
+    "fields": {
+      "orthogram": "70",
+      "text": "ай-ай",
+      "masked_word": "ай*70*ай",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-19T22:41:24.888Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1943,
+    "fields": {
+      "orthogram": "38",
+      "text": "серебряный",
+      "masked_word": "серебря*38*ый",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T22:47:21.207Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1945,
+    "fields": {
+      "orthogram": "38",
+      "text": "государственный",
+      "masked_word": "государстве*38*ый",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-11-19T22:48:11.377Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 922,
+    "fields": {
+      "orthogram": "24",
+      "text": "прожигает",
+      "masked_word": "прож*24*гает",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "5,6,7,8,9,10,11",
+      "created_at": "2025-10-28T21:18:29.763Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 666,
+    "fields": {
+      "orthogram": "2",
+      "text": "теория",
+      "masked_word": "т*2*ория",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "6,7,8,9,10,11",
+      "created_at": "2025-10-28T09:20:05.736Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
+    "pk": 1946,
+    "fields": {
+      "orthogram": "54",
+      "text": "Не\\раскрывшийся ещё розовый бутон притягивал взгляд.",
+      "masked_word": "Не*54*раскрывшийся ещё розовый бутон притягивал взгляд.",
+      "incorrect_variant": null,
+      "explanation": "",
+      "difficulty": 1,
+      "is_for_quiz": false,
+      "is_active": true,
+      "is_user_added": false,
+      "added_by": null,
+      "source_field": "",
+      "grades": "7,8,9,10,11",
+      "created_at": "2025-11-23T16:00:52.014Z"
+    }
+  },
+  {
+    "model": "main.orthogramexample",
     "pk": 1825,
     "fields": {
       "orthogram": "54",
-      "text": "ещё | распустившиеся почки",
-      "masked_word": "ещё *54*распустившиеся почки",
+      "text": "Ещё не\\распустившиеся почки.",
+      "masked_word": "Ещё не*54*распустившиеся почки.",
       "incorrect_variant": null,
       "explanation": "",
       "difficulty": 1,

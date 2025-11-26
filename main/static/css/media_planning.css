@@ -27,3 +27,31 @@
     .item-20 { order: 20; }
 }
 
+@media (max-width: 480px) {
+    .table-container-punktum {
+        grid-template-columns: 2fr 4fr 4fr; /* 3 колонки */
+        gap: 5px;
+        width: 100%;
+    }
+
+    /* Элемент 1 — занимает первую колонку */
+    .item-punktum-1 {
+        grid-column: 1;
+    }
+
+    /* Элемент 2 — вторую колонку */
+    .item-punktum-2 {
+        grid-column: 2;
+    }
+
+    /* Элемент 3 — третью колонку */
+    .item-punktum-3 {
+        grid-column: 3;
+    }
+
+    /* Элемент 4 — занимает всю ширину (вторая строка) */
+    .item-punktum-4 {
+        grid-column: span 3; /* Занимает 3 колонки */
+        grid-row: 2;          /* Вторая строка */
+    }
+}

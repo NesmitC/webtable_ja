@@ -30,26 +30,55 @@ logger = logging.getLogger('django')
 
 # === Утилиты ===
 
+
 def extract_correct_letter(text, masked_word):
-    """Извлекает правильную букву или '/' по позиции маски *N*."""
+    """
+    Извлекает символ из text по позиции маски *N* в masked_word.
+    Поддерживает: '/', '\\' (раздельно), 'ъ', 'ь' и др.
+    """
     try:
-        match = re.search(r'\*\d+\*', masked_word)
-        if not match:
+        mask_match = re.search(r'\*\d+\*', masked_word)
+        if not mask_match:
             return ''
-        words_in_text = text.split()
-        words_in_masked = masked_word.split()
-        for i, masked_w in enumerate(words_in_masked):
-            if '*' in masked_w and i < len(words_in_text):
-                mask_match = re.search(r'\*\d+\*', masked_w)
-                if mask_match:
-                    pos = mask_match.start()
-                    orig_word = words_in_text[i]
-                    if pos < len(orig_word):
-                        return orig_word[pos]
-        return text[0] if text else ''
-    except Exception as e:
-        logger.warning(f"Ошибка в extract_correct_letter: {e}")
+
+        words_text = text.split()
+        words_mask = masked_word.split()
+
+        for i, word_mask in enumerate(words_mask):
+            if '*' in word_mask:
+                if i >= len(words_text):
+                    return ''
+                word_text = words_text[i]
+                pos = word_mask.index('*')
+                if pos < len(word_text):
+                    return word_text[pos]
         return ''
+    except Exception as e:
+        print(f"Ошибка в extract_correct_letter: {e}")
+        return ''
+
+
+
+# def extract_correct_letter(text, masked_word):
+#     """Извлекает правильную букву или символ по позиции маски *N*."""
+#     try:
+#         match = re.search(r'\*\d+\*', masked_word)
+#         if not match:
+#             return ''
+#         words_in_text = text.split()
+#         words_in_masked = masked_word.split()
+#         for i, masked_w in enumerate(words_in_masked):
+#             if '*' in masked_w and i < len(words_in_text):
+#                 mask_match = re.search(r'\*\d+\*', masked_w)
+#                 if mask_match:
+#                     pos = mask_match.start()
+#                     orig_word = words_in_text[i]
+#                     if pos < len(orig_word):
+#                         return orig_word[pos]
+#         return text[0] if text else ''
+#     except Exception as e:
+#         print(f"Ошибка в extract_correct_letter: {e}")
+#         return ''
 
 
 def validate_orthogram_ids(ids):
@@ -185,7 +214,6 @@ def get_orthogram_letters(request, orth_id):
 
 
 # === Генерация упражнений ===
-
 @login_required
 def generate_exercise(request):
     if request.method != 'POST':
@@ -197,9 +225,11 @@ def generate_exercise(request):
         if not orthogram_ids:
             return JsonResponse({'error': 'Нет корректных ID орфограмм'}, status=400)
 
-        total_needed = 16
+        TASK_13_ORTHOGRAMS = {21, 32, 36, 46, 54, 56, 57, 58, 581, 582}
+        is_task_13 = set(orthogram_ids).issubset(TASK_13_ORTHOGRAMS)
+        total_needed = 5 if is_task_13 else 16
 
-        # 1. Сначала берём персональные примеры пользователя
+        # Сбор примеров
         user_examples = OrthogramExample.objects.filter(
             orthogram_id__in=orthogram_ids,
             is_user_added=True,
@@ -207,7 +237,6 @@ def generate_exercise(request):
             is_active=True
         ).order_by('?')[:total_needed]
 
-        # 2. Добираем общие примеры, если нужно
         remaining = total_needed - user_examples.count()
         common_examples = OrthogramExample.objects.filter(
             orthogram_id__in=orthogram_ids,
@@ -219,15 +248,23 @@ def generate_exercise(request):
         if not all_examples:
             return JsonResponse({'error': 'Нет доступных слов'}, status=404)
 
-        # Поддерживаем порядок: сначала свои слова (для мотивации), потом общие
-        # При желании можно random.shuffle(all_examples)
+        # Режим по строкам (только для одной орфограммы из TASK_13)
+        SPLIT_NE_ORTHOGRAMS = {21, 32, 36, 46, 54, 56, 57, 58, 581, 582}
+        is_ne_split_lines = (len(orthogram_ids) == 1 and orthogram_ids[0] in SPLIT_NE_ORTHOGRAMS)
 
-        words_text = ', '.join(ex.masked_word for ex in all_examples)
+        if is_ne_split_lines:
+            words_lines = [ex.masked_word.strip() for ex in all_examples]
+            words_text = None
+        else:
+            words_text = ', '.join(ex.masked_word.strip() for ex in all_examples)
+            words_lines = None
+
+        # ← УБРАНО всё про 1400
         correct_letters = [extract_correct_letter(ex.text, ex.masked_word) for ex in all_examples]
 
         request.session['current_exercise'] = {
             'exercise_id': f'dynamic_{",".join(map(str, orthogram_ids))}',
-            'correct_words': [ex.masked_word for ex in all_examples],
+            'example_ids': [ex.id for ex in all_examples],
             'correct_letters': correct_letters,
             'orthogram_ids': orthogram_ids,
         }
@@ -235,13 +272,17 @@ def generate_exercise(request):
         title_map = {
             '1': 'Безударные гласные',
             '661': 'Производные предлоги',
-            '662': 'Производные предлоги'
+            '662': 'Производные предлоги',
+            '13': 'Слитное, раздельное, дефисное написание',
+            '14': 'Слитное, раздельное, дефисное написание'
         }
         exercise_title = title_map.get(str(orthogram_ids[0]), 'Упражнение')
         show_next_button = str(orthogram_ids[0]) not in {'1', '2'}
 
         html = render_to_string('exercise_snippet.html', {
             'words_text': words_text,
+            'words_lines': words_lines,
+            'is_orth21_lines': is_ne_split_lines,
             'exercise_id': request.session['current_exercise']['exercise_id'],
             'exercise_title': exercise_title,
             'show_next_button': show_next_button,
@@ -333,7 +374,7 @@ def generate_alphabetical_exercise(request):
         return JsonResponse({'error': 'Внутренняя ошибка сервера'}, status=500)
 
 
-# === Проверка и обратная связь ===
+# === Проверка и обратная связь (стабильная версия) ===
 @csrf_exempt
 @login_required
 def check_exercise(request):
@@ -351,51 +392,20 @@ def check_exercise(request):
             return JsonResponse({'error': 'Нет активного упражнения'}, status=400)
 
         correct_letters = current_exercise.get('correct_letters', [])
-        correct_words = current_exercise.get('correct_words', [])
-        orthogram_ids = current_exercise.get('orthogram_ids', [])
-
         if len(user_letters) != len(correct_letters):
-            return JsonResponse({'error': 'Несоответствие количества букв'}, status=400)
-
-        # Определяем основную орфограмму (берём первую)
-        main_orth_id = str(orthogram_ids[0]) if orthogram_ids else '1'
-        try:
-            orthogram = Orthogram.objects.get(id=main_orth_id)
-        except Orthogram.DoesNotExist:
-            orthogram = Orthogram.objects.get(id='1')  # fallback
+            return JsonResponse({'error': 'Несоответствие количества ответов'}, status=400)
 
         results = []
-        with transaction.atomic():
-            for i, (user_letter, correct_letter) in enumerate(zip(user_letters, correct_letters)):
-                user_clean = user_letter.strip().lower()
-                correct_clean = correct_letter.strip().lower()
-                is_correct = user_clean == correct_clean
-                results.append(is_correct)
-
-                # --- Сохраняем ответ ---
-                word_text = correct_words[i] if i < len(correct_words) else f"word_{i}"
-                # Находим или создаём пример (для связи)
-                example, _ = OrthogramExample.objects.get_or_create(
-                    orthogram=orthogram,
-                    text=word_text,
-                    defaults={'masked_word': word_text, 'is_active': False}
-                )
-                # Сохраняем ответ пользователя
-                StudentAnswer.objects.create(
-                    user=request.user,
-                    orthogram=orthogram,
-                    phrase=example,
-                    selected_answer=user_clean,
-                    is_correct=is_correct,
-                    answered_at=timezone.now()
-                )
+        for user_letter, correct_letter in zip(user_letters, correct_letters):
+            # Сравниваем как есть — без .lower()
+            is_correct = user_letter.strip() == correct_letter.strip()
+            results.append(is_correct)
 
         return JsonResponse(results, safe=False)
 
     except Exception as e:
-        logger.error(f"Ошибка в check_exercise: {e}")
+        logger.error(f"Ошибка в check_exercise: {e}", exc_info=True)
         return JsonResponse({'error': 'Ошибка проверки'}, status=500)
-    
 
 
 @csrf_exempt
@@ -544,9 +554,6 @@ def get_daily_quiz(request):
         return JsonResponse({'error': 'Ошибка генерации вопроса'}, status=500)
     
     
-    
-# views.py
-import re
 
 def parse_words_from_text(text):
     """Извлекает отдельные слова или конструкции из текста."""
