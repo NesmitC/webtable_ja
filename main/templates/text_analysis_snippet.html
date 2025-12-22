@@ -1,0 +1,51 @@
+<!-- main\templates\text_analysis_snippet.html -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+
+<div class="text-analysis-exercise" data-exercise-id="{{ exercise_id }}">
+    <!-- Текст -->
+    <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
+        {{ text_task.text_content }}
+    </div>
+    
+    <!-- Вопросы -->
+    <div class="questions">
+        {% for question in questions %}
+        <div class="question" data-question-number="{{ question.number }}">
+            <h4>{{ question.number }}. {{ question.text }}</h4>
+            
+            {% if question.type == 'missing_word' %}
+                <!-- Поле ввода для вопроса 1 -->
+                <input type="text" class="answer-input" 
+                       data-question="1" 
+                       placeholder="Введите слово..." 
+                       style="width: 200px; padding: 5px;">
+            
+            {% elif question.type == 'multiple_choice' or question.type == 'text_characteristics' %}
+                <!-- Чекбоксы для вопросов 2 и 3 -->
+                <div class="options">
+                    {% for option in question.options %}
+                    <div class="option">
+                        <label>
+                            <input type="checkbox" 
+                                   value="{{ option.number }}" 
+                                   data-question="{{ question.number }}">
+                            {{ option.number }}) {{ option.text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <hr>
+        {% endfor %}
+    </div>
+    
+    <!-- Кнопка проверки -->
+    <button class="check-text-analysis" style="margin-top: 20px; padding: 10px 20px;">
+        Проверить ответы
+    </button>
+    
+    <!-- Результат -->
+    <div class="result" style="margin-top: 20px; display: none;"></div>
+</div>

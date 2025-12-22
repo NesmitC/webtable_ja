@@ -1,4 +1,68 @@
 /* Мобильная версия */
+
+/* Для мобильных (телефоны) */
+@media (max-width: 768px) {
+    .task-buttons {
+        grid-template-columns: repeat(6, 1fr); /* 6 колонок */
+        grid-template-rows: repeat(4, auto); /* 4 ряда */
+        gap: 3px;
+    }
+    
+    .check-task {
+        padding: 5px 2px;
+        font-size: 0.75em;
+        min-height: 32px;
+    }
+    
+    .check-task[data-orthogram="23_24"],
+    .check-task[data-orthogram="1_3"] {
+        font-size: 0.65em;
+        padding: 4px 1px;
+    }
+}
+
+/* Для очень маленьких телефонов */
+@media (max-width: 480px) {
+    .task-buttons {
+        grid-template-columns: repeat(4, 1fr); /* 4 колонки */
+        grid-template-rows: repeat(6, auto); /* 6 рядов */
+        gap: 2px;
+    }
+    
+    .check-task {
+        padding: 4px 1px;
+        font-size: 0.7em;
+        min-height: 30px;
+        border-radius: 3px;
+    }
+    
+    .check-task[data-orthogram="23_24"],
+    .check-task[data-orthogram="1_3"] {
+        font-size: 0.6em;
+        padding: 3px 1px;
+    }
+}
+
+/* Для вертикальной ориентации телефонов */
+@media (max-width: 360px) and (orientation: portrait) {
+    .task-buttons {
+        grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+        grid-template-rows: repeat(8, auto); /* 8 рядов */
+        gap: 1px;
+    }
+    
+    .check-task {
+        padding: 3px 0;
+        font-size: 0.65em;
+        min-height: 28px;
+    }
+    
+    .check-task.green {
+        background: rgb(170, 236, 170);
+    }
+}
+
+
 @media screen and (max-width: 480px) {
     .table-container {
         grid-template-columns: 1fr;

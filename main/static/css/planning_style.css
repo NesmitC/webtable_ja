@@ -1,4 +1,6 @@
+/* main\static\css\planning_style.css */
 /* Минималистичный CSS Grid для таблицы планирования */
+
 .title-planing {
     margin: 10px 0;
 }
@@ -61,6 +63,10 @@
     justify-content: center; /* центровка по горизонтали */
     background-color: rgb(255, 255, 0); /* желтый фон */
     border: 1px solid black; /* тонкая черная обводка */
+}
+
+.blue {
+    background-color: #8fbafa;
 }
 
 .text-orf-effects {
@@ -261,7 +267,8 @@
 
 .task-buttons {
     display: grid;
-    grid-template-columns: repeat(9, 1fr);
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(2, auto);
     gap: 0;
     max-width: 100%;
 }
@@ -297,12 +304,31 @@
     cursor: pointer;
 }
 
-/* .practice-text {
-    white-space: pre-line;
-    margin: 10px 0;
-    font-size: 1.1em;
-    line-height: 1.6;
-} */
+
+/* ----------------------------------------------- */
+.exercise-instruction {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 16px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+}
+
+
+/* Компенсация padding родительского .block-answer */
+.block-answer .text-analysis-exercise {
+    margin-left: -5px !important;
+    padding-left: 0 !important;
+}
+
+
+/* Компенсация padding родительского .block-answer */
+.block-answer .text-analysis-exercise {
+    margin-left: -5px !important;
+    padding-left: 0 !important;
+}
 
 /* ------- Стилизация ответа нейроасситента -------- */
 
@@ -331,4 +357,31 @@
 
 .green {
     background: rgb(170, 236, 170);
+}
+
+
+/* картинка для заданий 16-21 */
+.punktum-image-container {
+    margin-bottom: 20px;
+    text-align: center;
+}
+.punktum-image-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Подсветка результатов орфоэпии */
+.orthoepy-correct {
+    background-color: #d4edda !important; /* светло-зелёный */
+}
+.orthoepy-incorrect {
+    background-color: #f8d7da !important; /* светло-красный */
+}
+
+/* Опционально: мягкие скругления */
+.test-option {
+    padding: 6px 0;
+    border-radius: 4px;
 }

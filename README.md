@@ -132,4 +132,33 @@ http://127.0.0.1:8000/api/assistant/?action=planning
 
 ![alt text](image.png)
 
+*******************************************************************
+# Создай дамп данных
+python manage.py dumpdata main.OrthogramExample --format=json --indent=2 > ortho_examples.json
+
+# Проверь что файл создан
+ls -lh ortho_examples.json
+
+# Перейди в папку проекта
+cd C:\Users\alex\Jango\webtable_ja_project
+
+# ЧЕРЕЗ ФАЙЛЗИЛЛА СКОПИРОВАТЬ с сервера в корень компа
+
+# НА ЛОКАОЛЬНОМ КОМПЕ
+# Очисти фикстуру от проблемных внешних ключей
+python clean_fixture.py
+
+# (Опционально) Очисти старые данные
+python manage.py shell
+>>> from main.models import OrthogramExample
+>>> OrthogramExample.objects.all().delete()
+>>> exit()
+
+# Загрузи очищенный дамп
+python manage.py loaddata ortho_examples_clean.json
+
+
+
+
+
 '''

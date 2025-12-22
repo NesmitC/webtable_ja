@@ -1,0 +1,24 @@
+<!-- correction_test_snippet.html -->
+<div class="correction-exercise" data-exercise-id="711">
+    <h3>Задание 7: Исправь ошибку</h3>
+    <p>В одном из выделенных ниже слов допущена грамматическая ошибка. Исправьте ошибку и запишите слово правильно.</p>
+
+    <div class="word-list" style="margin: 15px 0; font-size: 1.1em; line-height: 1.6;">
+        {% for word in words %}
+            <div>{{ word }}</div>
+        {% endfor %}
+    </div>
+
+    <input 
+        type="text" 
+        id="correction-input" 
+        class="correction-input" 
+        placeholder="Напишите правильный вариант" 
+        autocomplete="off"
+        style="width: 35%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"
+    >
+</div>
+    <button class="check-correction" style="margin-top: 0;">Проверить</button>
+    <div class="correction-result" style="margin-top: 15px; display: none; font-weight: bold;"></div>
+
+

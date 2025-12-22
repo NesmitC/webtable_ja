@@ -9,7 +9,7 @@ urlpatterns = [
     # Главная страница
     path('', views.index, name='index'),
     # Админка
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),  # ← ЭТА СТРОКА ОБЯЗАТЕЛЬНА!
     path(
         'accounts/login/',
         auth_views.LoginView.as_view(template_name='registration/login.html'),
@@ -39,4 +39,15 @@ urlpatterns = [
     path('api/weekly-report/', views.weekly_report, name='weekly_report'),
     path('api/generate-alphabetical-exercise/', views.generate_alphabetical_exercise, name='generate_alphabetical_exercise'),
     path('api/my-weekly-report/', views.get_weekly_report, name='my_weekly_report'),
+    path('api/generate-exercise-multi/', views.generate_exercise_multi, name='generate_exercise_multi'),
+    path('api/generate-punktum-exercise/', views.generate_punktum_exercise, name='generate_punktum_exercise'),
+    path('api/generate-punktum-exercise-multi/', views.generate_punktum_exercise_multi, name='generate_punktum_exercise_multi'),
+    path('api/generate-text-analysis/', views.generate_text_analysis, name='generate_text_analysis'),
+    path('api/check-text-analysis/', views.check_text_analysis, name='check_text_analysis'),
+    path('api/generate-text-analysis-23-24/', views.generate_text_analysis_23_24, name='generate_text_analysis_23_24'),
+    path('api/check-text-analysis-23-24/', views.check_text_analysis_23_24, name='check_text_analysis_23_24'),
+    path('api/generate-orthoepy-test/', views.generate_orthoepy_test, name='generate_orthoepy_test'),
+    path('api/check-orthoepy-test/', views.check_orthoepy_test, name='check_orthoepy_test'),
+    path('api/generate-correction-test/', views.generate_correction_test_view, name='generate_correction_test'),
+    path('api/check-correction/', views.check_correction_view, name='check_correction'),
 ]

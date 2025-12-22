@@ -1,24 +1,62 @@
-<!-- templates/exercise_snippet.html -->
-
-{% comment %} <article class="article-practice">
-    <p class="practice-text" data-exercise="{{ exercise_id }}">
-        {{ words_text }}
-    </p>
-    <div class="practice-buttons">
-        <button class="check-answers">Проверить</button>
-    </div>
-</article> {% endcomment %}
+<!-- main/templates/exercise_snippet.html -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
 
 <article class="article-practice">
+    <!-- Контейнер для изображения (только для пунктограмм 16–20) -->
+    {% if is_punktum_exercise and punktogram_id in '1600,1700,1800,1900,2000' %}
+        <div class="punktum-image-container">
+            {% if punktogram_id == '1600' %}
+                <img src="{% static 'images/punktum_task_16.webp' %}" alt="Задание 16">
+            {% elif punktogram_id == '1700' %}
+                <img src="{% static 'images/punktum_task_17.webp' %}" alt="Задание 17">
+            {% elif punktogram_id == '1800' %}
+                <img src="{% static 'images/punktum_task_18.webp' %}" alt="Задание 18">
+            {% elif punktogram_id == '1900' %}
+                <img src="{% static 'images/punktum_task_19.webp' %}" alt="Задание 19">
+            {% elif punktogram_id == '2000' %}
+                <img src="{% static 'images/punktum_task_20.webp' %}" alt="Задание 20">
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Текст упражнения -->
     <div class="practice-text-container" data-exercise="{{ exercise_id }}">
-        {% if is_orth21_lines %}
-            {% for line in words_lines %}
-                <p class="practice-line">{{ line }}</p>
+        {% if exercise_instruction %}
+            <p class="exercise-instruction">{{ exercise_instruction }}</p>
+        {% endif %}
+
+        {% if is_punktum_exercise and is_punktum_with_paragraphs and structured_examples %}
+            {# === ПУНКТОГРАММЫ С АБЗАЦАМИ (только 18) === #}
+            {% for example in structured_examples %}
+                <div class="punktum-example punktum-with-paragraphs">
+                    {% for paragraph in example %}
+                        <p class="practice-line">{{ paragraph|safe }}</p>
+                    {% endfor %}
+                </div>
             {% endfor %}
+
+        {% elif is_punktum_exercise and not is_punktum_with_paragraphs and words_lines %}
+            {# === ПУНКТОГРАММЫ БЕЗ АБЗАЦЕВ (16, 17, 21 и др.) === #}
+            {% for line in words_lines %}
+                <p class="practice-line">{{ line|safe }}</p>
+            {% endfor %}
+
+        {% elif is_orth21_lines and words_lines %}
+            {# === ОРФОГРАММЫ с построчным форматом (включая 13, 1400 и др.) === #}
+            {% for line in words_lines %}
+                <p class="practice-line">{{ line|safe }}</p>
+            {% endfor %}
+
+        {% elif words_text %}
+            {# === ОДНОСТРОЧНЫЕ УПРАЖНЕНИЯ (стандартные орфограммы 1–25 и др.) === #}
+            <p class="practice-line">{{ words_text|safe }}</p>
+
         {% else %}
-            <p class="practice-line">{{ words_text }}</p>
+            <p class="practice-line">Упражнение загружено.</p>
         {% endif %}
     </div>
+
     <div class="practice-buttons">
         <button class="check-answers">Проверить</button>
     </div>

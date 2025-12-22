@@ -1,0 +1,23 @@
+<!-- main/templates/orthoepy_test_snippet.html -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+
+<!-- main/templates/orthoepy_test_snippet.html -->
+<div class="orthoepy-test-exercise" data-exercise-id="{{ exercise_id }}">
+  <h3 class="title-practice">Задание 4. Орфоэпия</h3>
+  {% if user_grade %}
+    <p class="exercise-info">Для {{ user_grade }}-го класса</p>
+  {% endif %}
+  <div class="test-questions">
+    {% for variant in variants %}
+      <div class="test-option" data-variant="{{ variant }}">
+        <label class="option-label">
+          <input type="checkbox" value="{{ variant }}" class="orthoepy-checkbox">
+          {{ forloop.counter }}) {{ variant }}
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+  <button class="check-orthoepy-test">Проверить</button>
+  <div class="orthoepy-result"></div>
+</div>
