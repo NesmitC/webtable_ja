@@ -1,4 +1,4 @@
-/* Мобильная версия */
+/* Мобильная версия main\static\css\media_planning.css */
 
 /* Для мобильных (телефоны) */
 @media (max-width: 768px) {
@@ -117,5 +117,142 @@
     .item-punktum-4 {
         grid-column: span 3; /* Занимает 3 колонки */
         grid-row: 2;          /* Вторая строка */
+    }
+}
+
+/* ===== ЗАДАНИЕ 8 - АДАПТИВНОСТЬ ===== */
+
+/* Планшеты (до 1024px) */
+@media (max-width: 1024px) {
+    .task-match-container {
+        gap: 20px;
+    }
+    
+    .task-match-left-column,
+    .task-match-right-column {
+        padding: 12px;
+    }
+    
+    .task-eight-select,
+    .task-match-select {
+        width: 45px;
+        font-size: 0.9em;
+    }
+}
+
+/* Планшеты и мобильные (до 768px) - вертикальное расположение */
+@media (max-width: 768px) {
+    .task-match-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .task-match-left-column,
+    .task-match-right-column {
+        width: 100%;
+        padding: 12px;
+    }
+    
+    /* Левая колонка сверху */
+    .task-match-left-column {
+        order: 1;
+    }
+    
+    /* Правая колонка снизу */
+    .task-match-right-column {
+        order: 2;
+    }
+    
+    .task-match-row {
+        margin: 8px 0;
+    }
+    
+    .task-eight-select,
+    .task-match-select {
+        width: 50px;
+        padding: 6px 3px;
+        font-size: 0.95em;
+    }
+    
+    .task-match-content {
+        font-size: 0.95em;
+        line-height: 1.3;
+    }
+}
+
+/* Мобильные телефоны (до 480px) */
+@media (max-width: 480px) {
+    .task-eight-exercise h3 {
+        font-size: 1.1em;
+        margin-bottom: 10px;
+    }
+    
+    .task-eight-exercise > p {
+        font-size: 0.85em;
+        margin-bottom: 15px;
+        line-height: 1.3;
+    }
+    
+    .task-match-left-column,
+    .task-match-right-column {
+        padding: 10px;
+    }
+    
+    .task-match-column-title {
+        font-size: 0.9em;
+        margin-bottom: 12px;
+    }
+    
+    .task-eight-select,
+    .task-match-select {
+        width: 45px;
+        padding: 5px 2px;
+        font-size: 0.9em;
+        margin-right: 8px;
+    }
+    
+    .task-match-letter {
+        font-weight: bold;
+        margin-right: 6px;
+        min-width: 20px;
+    }
+    
+    .task-match-item-number {
+        width: 20px;
+        margin-right: 6px;
+    }
+    
+    .task-match-content {
+        font-size: 0.9em;
+        line-height: 1.25;
+    }
+    
+    .task-eight-error-row {
+        flex-wrap: wrap;
+    }
+    
+    .check-task-eight,
+    .check-match-button {
+        width: 100%;
+        padding: 12px;
+        font-size: 1em;
+    }
+}
+
+/* Очень маленькие экраны (до 360px) */
+@media (max-width: 360px) {
+    .task-eight-select,
+    .task-match-select {
+        width: 40px;
+        font-size: 0.85em;
+    }
+    
+    .task-match-content {
+        font-size: 0.85em;
+    }
+    
+    .task-match-letter,
+    .task-match-item-number {
+        font-size: 0.9em;
     }
 }

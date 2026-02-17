@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django import forms
 from django.db import models 
-from .models import CorrectAnswer, Orthogram, OrthogramExample, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise
+from .models import CorrectAnswer, Orthogram, OrthogramExample, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise, TaskGrammaticEight, TaskGrammaticEightExample, TaskGrammaticTwoTwo, TaskGrammaticTwoTwoExample, TaskPaponim, WordOk
 from django.contrib.admin.actions import delete_selected
 
 
@@ -67,6 +67,7 @@ class OrthogramExampleAdmin(admin.ModelAdmin):
         }
 
 
+# ===== ЗАДАНИЯ 16-21 ==================================================
 @admin.register(Punktum)
 class PunktumAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'rule')
@@ -125,68 +126,52 @@ class TextQuestionAdmin(admin.ModelAdmin):
     search_fields = ['question_text', 'task__title']
 
 
-# =======================================================================
-# @admin.register(OrthoepyWord)
-# class OrthoepyWordAdmin(admin.ModelAdmin):
-#     list_display = ['word_base', 'correct_variant', 'get_variants_count', 'difficulty', 'is_active', 'is_for_quiz']
-#     list_filter = ['difficulty', 'is_active', 'is_for_quiz']
-#     search_fields = ['word_base', 'correct_variant']
-#     list_editable = ['is_active', 'is_for_quiz', 'difficulty']
-#     fieldsets = (
-#         ('Основная информация', {
-#             'fields': ('word_base', 'correct_variant', 'incorrect_variants', 'explanation')
-#         }),
-#         ('Настройки', {
-#             'fields': ('difficulty', 'is_active', 'is_for_quiz')
-#         }),
-#     )
-    
-#     def get_variants_count(self, obj):
-#         return len(obj.get_incorrect_variants_list()) + 1
-#     get_variants_count.short_description = 'Всего вариантов'
-    
-    
 
-# admin.py - обновленная админка
+# ===== ЗАДАНИЕ 4 ===================================================
 @admin.register(OrthoepyWord)
 class OrthoepyWordAdmin(admin.ModelAdmin):
-    list_display = ('correct_variant', 'incorrect_variants_short', 'is_active', 'is_for_quiz', 'grades')
-    list_filter = ('is_active', 'is_for_quiz', 'grades')
-    search_fields = ('correct_variant', 'incorrect_variants')
+    list_display = ['word', 'lemma', 'is_correct_display', 'is_active', 'grades']
+    list_filter = ['is_correct', 'is_active', 'grades']
+    search_fields = ['word', 'lemma']
+    list_editable = ['is_active']
     
-    # 🔥 Только is_active редактируем в списке (is_for_quiz оставляем для будущего)
-    list_editable = ('is_active', 'grades')
-    
-    fieldsets = (
-        ('Слово', {
-            'fields': ('correct_variant', 'incorrect_variants'),
-            'description': '''
-                <strong>Правильный вариант:</strong> бралА<br>
-                <strong>Неправильные через запятую:</strong> брАла, бранА
-            '''
-        }),
-        ('Настройки', {
-            'fields': ('grades', 'is_active', 'is_for_quiz'),
-            'description': '''
-                <strong>is_active</strong> - используется в тестах (включите!)<br>
-                <strong>is_for_quiz</strong> - для будущих квизов (пока не используется)<br>
-                <strong>grades</strong> - для каких классов (9,10,11)
-            '''
-        }),
-    )
-    
-    def incorrect_variants_short(self, obj):
-        """Короткое отображение неправильных вариантов"""
-        variants = obj.get_incorrect_variants_list()
-        return ', '.join(variants[:2]) if variants else '—'
-    
-    incorrect_variants_short.short_description = 'Неправильные варианты'
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).order_by('correct_variant')
+    def is_correct_display(self, obj):
+        return "✓ Правильное" if obj.is_correct else "✗ Неправильное"
+    is_correct_display.short_description = "Тип"
+    is_correct_display.admin_order_field = 'is_correct'
 
 
-# admin.py
+# ===== ЗАДАНИЕ 5 ===================================================
+@admin.register(TaskPaponim)
+class TaskPaponimAdmin(admin.ModelAdmin):
+    list_display = ['preview', 'root', 'has_error', 'is_active', 'is_for_quiz']
+    list_editable = ['is_active', 'is_for_quiz']
+    list_filter = ['is_active', 'is_for_quiz', 'root']
+    search_fields = ['text', 'correct_word', 'root']
+
+    def preview(self, obj):
+        return obj.text[:80] + '...' if len(obj.text) > 80 else obj.text
+    preview.short_description = "Предложение"
+
+    def has_error(self, obj):
+        return obj.has_error
+    has_error.boolean = True
+    has_error.short_description = "С ошибкой"
+
+
+# ===== ЗАДАНИЕ 6 ===================================================
+@admin.register(WordOk)
+class WordOkAdmin(admin.ModelAdmin):
+    list_display = ['preview', 'task_type', 'correct_variants', 'is_active', 'is_for_quiz']
+    list_editable = ['is_active', 'is_for_quiz']
+    list_filter = ['task_type', 'is_active', 'is_for_quiz', 'grades']
+    search_fields = ['text', 'correct_variants']
+
+    def preview(self, obj):
+        return obj.text[:80] + '...' if len(obj.text) > 80 else obj.text
+
+
+# ===== ЗАДАНИЕ 7 ===================================================
 @admin.register(CorrectionExercise)
 class CorrectionExerciseAdmin(admin.ModelAdmin):
     list_display = (
@@ -229,3 +214,49 @@ class CorrectionExerciseAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).order_by('incorrect_text')
+
+
+# ===== ЗАДАНИЕ 8 ===================================================
+@admin.register(TaskGrammaticEight)
+class TaskGrammaticEightAdmin(admin.ModelAdmin):
+    list_display = ['id', 'get_id_display', 'is_active']
+    list_editable = ['is_active']
+    list_filter = ['is_active']  # можно добавить ещё filter по id или description
+    search_fields = ['id', 'get_id_display']  # поиск по описанию
+
+
+@admin.register(TaskGrammaticEightExample)
+class TaskGrammaticEightExampleAdmin(admin.ModelAdmin):
+    list_display = ['preview', 'has_error', 'error_type', 'is_active', 'is_for_quiz']
+    list_filter = ['has_error', 'error_type', 'is_active', 'is_for_quiz', 'grades']
+    list_editable = ['is_active', 'is_for_quiz']
+    
+    def preview(self, obj):
+        return (obj.text[:60] + '…') if len(obj.text) > 60 else obj.text
+
+# ===== ЗАДАНИЕ 22 ===================================================
+@admin.register(TaskGrammaticTwoTwo)
+class TaskGrammaticTwoTwoAdmin(admin.ModelAdmin):
+    list_display = ['id', 'display_name', 'is_active']
+    list_editable = ['is_active']
+    list_filter = ['is_active']
+    
+    def display_name(self, obj):
+        # ИСПРАВЛЕНО: используем dict
+        return dict(obj.DEVICE_TYPES).get(obj.id, obj.id)
+    display_name.short_description = 'Название'
+
+@admin.register(TaskGrammaticTwoTwoExample)
+class TaskGrammaticTwoTwoExampleAdmin(admin.ModelAdmin):
+    list_display = ['preview', 'display_device_type', 'author', 'is_active', 'is_for_quiz']
+    list_filter = ['is_active', 'is_for_quiz', 'device_type']
+    list_editable = ['is_active', 'is_for_quiz']
+    
+    def preview(self, obj):
+        return (obj.text[:60] + '…') if len(obj.text) > 60 else obj.text
+    
+    def display_device_type(self, obj):
+        if obj.device_type:
+            return dict(obj.device_type.DEVICE_TYPES).get(obj.device_type.id, obj.device_type.id)
+        return '-'
+    display_device_type.short_description = 'Средство выразительности'

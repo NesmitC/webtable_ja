@@ -142,6 +142,7 @@
     display: inline-block; /* Чтобы не ломалась строка */
     vertical-align: baseline; /* Выравнивание по базовой линии текста */
     cursor: pointer;
+    white-space: nowrap;
 }
 
 /* Оформление смайлов */
@@ -157,11 +158,24 @@
     transition: color 0.3s ease; /* Анимация цвета */
     font-size: 1.2em; /* Размер шрифта соответствует тексту */
     cursor: pointer;
+    white-space: nowrap;
 }
 
 /* Стили списков вариантов ответов */
 .practice-line {
     letter-spacing: 0.01em;
+    word-break: keep-all;
+    overflow-wrap: normal;
+}
+
+.diagnostic-full-test hr {
+    margin: 0 0 20px 0;
+}
+
+/* Для контейнера с текстом упражнения */
+.practice-text-container {
+    word-break: keep-all;
+    overflow-wrap: normal;
 }
 
 .smiley-options {
@@ -179,12 +193,14 @@
     margin: 0;
     z-index: 1000;
     min-width: 60px;
+    white-space: nowrap;
 }
 
 .smiley-options li {
     padding: 8px 12px;
     cursor: pointer;
     border-bottom: 1px solid #eee;
+    white-space: nowrap;
 }
 
 /* Серый фон — выбрано, но не проверено */
@@ -219,11 +235,16 @@
 /* ------- задания к 6 классу -------- */
 .orthogram-buttons {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: repeat(13, 1fr);
     gap: 0;
     max-width: 100%;
 }
 
+.table-container-onetwo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, auto);
+}
 
 /* ------- задания к егэ -------- */
 .block-task, .block-answer, .block-answer-still, .orthogram-buttons-container {
@@ -267,7 +288,7 @@
 
 .task-buttons {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: repeat(11, 1fr);
     grid-template-rows: repeat(2, auto);
     gap: 0;
     max-width: 100%;
@@ -372,16 +393,134 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Подсветка результатов орфоэпии */
-.orthoepy-correct {
-    background-color: #d4edda !important; /* светло-зелёный */
-}
-.orthoepy-incorrect {
-    background-color: #f8d7da !important; /* светло-красный */
-}
-
 /* Опционально: мягкие скругления */
 .test-option {
     padding: 6px 0;
     border-radius: 4px;
 }
+
+
+/* ОБЩИЕ СТИЛИ для заданий с соответствиями (8, 22 и другие) */
+.task-match-container {
+    display: flex;
+    gap: 30px;
+    margin: 20px 0;
+}
+
+.task-match-left-column {
+    flex: 1;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+}
+
+.task-match-right-column {
+    flex: 1;
+}
+
+.task-match-column-title {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.task-match-row {
+    margin: 10px 0;
+    display: flex;
+    align-items: flex-start;
+}
+
+.task-match-select {
+    width: 50px;
+    margin-right: 12px;
+    padding: 5px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.task-match-content {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.task-match-content strong {
+    font-weight: bold;
+}
+
+.task-match-author {
+    font-style: italic;
+    color: #666;
+    margin-top: 4px;
+    font-size: 0.9em;
+}
+
+.task-match-item-number {
+    font-weight: bold;
+    margin-right: 8px;
+    width: 25px;
+    display: inline-block;
+}
+
+.check-match-button {
+    margin-top: 15px;
+    padding: 10px 20px;
+}
+
+.task-match-result {
+    margin-top: 15px;
+    display: none;
+}
+
+/* Классы для подсветки результатов */
+.task-match-correct {
+    background-color: #e8f5e9 !important;
+    border: 1px solid #c8e6c9 !important;
+}
+
+.task-match-incorrect {
+    background-color: #ffebee !important;
+    border: 1px solid #ffcdd2 !important;
+}
+
+.task-match-select-correct {
+    border-color: #4CAF50 !important;
+}
+
+.task-match-select-incorrect {
+    border-color: #f44336 !important;
+}
+
+.task-match-correct-hint {
+    color: #4CAF50;
+    margin-left: 10px;
+    font-size: 0.9em;
+}
+
+
+/* убираем отступы от чекбоксов Сдвинуть влево	Shift + Tab */
+.question input[type="checkbox"],
+.orthoepy-checkbox {
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    position: relative;
+    top: 2px;
+}
+
+.question[data-question-number="4"] label,
+.test-option .option-label {
+    display: block;
+    margin-bottom: 2px;
+    line-height: 1.4;
+}
+
+/* Только рамка для ВЫБРАННЫХ чекбоксов */
+input[type="checkbox"]:checked.task-match-correct {
+    outline: 2px solid #4CAF50 !important;
+}
+
+input[type="checkbox"]:checked.task-match-incorrect {
+    outline: 2px solid #f44336 !important;
+}
+

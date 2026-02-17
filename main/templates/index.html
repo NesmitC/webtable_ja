@@ -6,6 +6,7 @@
     <title>Нейростат</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="/static/css/planning_style.css">
 </head>
 <body>
     <div class="page">
@@ -16,6 +17,7 @@
                     <a href="{% url 'planning_5kl' %}">5 класс</a>
                     <a href="{% url 'planning_6kl' %}">6 класс</a>
                     <a href="{% url 'planning_7kl' %}">7 класс</a>
+                    <a href="{% url 'planning_8kl' %}">8 класс</a>
                     <a href="{% url 'ege' %}">ЕГЭ (русский)</a>
                 </div>
 
@@ -36,6 +38,10 @@
         </header>
 
         <main>
+            <a href="{% url 'starting_diagnostic' %}" class="check-task green">Входящая диагностика</a>
+            <a href="{% url 'starting_diagnostic' %}" class="check-task green">Текущая диагностика</a>
+            {% comment %} <button class="check-task green" data-diagnostic="result-diagnostic">Итоговая диагностика</button> {% endcomment %}
+
             <h1>Добро пожаловать в электронные планинги!</h1>
             <p>Для школьников 5–7 классов</p>
             <p>Полноценно пользоваться планингом можно, зарегистрировавшись на сайте. После регистрации на почту придет письмо с подтверждением:</p>

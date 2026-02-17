@@ -11,8 +11,9 @@
     <link rel="stylesheet" href="/static/css/reset.css">
 </head>
 <body>
-    <header>
+    <header class="header">
         <a href="/">← Назад</a>
+        <a href="{% url 'targetn' %}" class="way_games">Попади в цель → Н и НН</a>
     </header>
 
     <main>
@@ -23,6 +24,8 @@
             
             <article class="orthogram-buttons-container">
                 <div class="orthogram-buttons">
+                    <button class="orthogram-button green" data-orthogram="1_7">1</button>
+                    <button class="orthogram-button green" data-orthogram="2_7">2</button>
                     <button class="orthogram-button">19</button>
                     <button class="orthogram-button">49</button>
                     <button class="orthogram-button">50</button>
@@ -55,6 +58,34 @@
         <section class="block-answer"></section>
 
         <h2 class="title-planing">Планинг</h2>
+
+        <article class="article-table-container">
+            <h2 class="title-table-container">Орфограммы 1-2</h2>
+            <section class="table-container-onetwo">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">1</span></h3>
+                    <p class="subtitle-orf">Проверяемая безударная гласная в <span class="text-orf-effects">корне</span> слова</p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">2</span></h3>
+                    <p class="subtitle-orf">Непроверяемые гласные и согласные в <span class="text-orf-effects">корне</span></p>    
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Подобрать проверочное слово, где эта гласная <span class="text-orf-effects">под ударением</span></p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">Вспомнить или найти в словаре</p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="/static/images/1.png" alt="орфограмма 1" loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="/static/images/2.png" alt="орфограмма 2" loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-1_7" class="input-text" name="user-input-orf-1_7" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-2_7" class="input-text" name="user-input-orf-2_7" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
 
         <article class="article-table-container">
             <h2 class="title-table-container">Орфограммы 19, 49-52</h2>

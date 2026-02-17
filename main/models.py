@@ -1,4 +1,6 @@
 from django.db import models
+import random
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -111,8 +113,6 @@ class CorrectAnswer(models.Model):
 
 
 
-
-
 class Orthogram(models.Model):
     id = models.CharField(max_length=10, primary_key=True)  # '1', '2', '6', '271'
     name = models.CharField(max_length=200)
@@ -146,6 +146,11 @@ class OrthogramExample(models.Model):
     masked_word = models.CharField(max_length=300)             # например: "в*1*да"
     incorrect_variant = models.CharField(max_length=300, blank=True, null=True)
     explanation = models.TextField(blank=True)
+    correct_letters = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Правильные буквы (через запятую)"
+    )
 
     difficulty = models.PositiveSmallIntegerField(default=1)
     is_for_quiz = models.BooleanField(default=False)
@@ -227,6 +232,11 @@ class PunktumExample(models.Model):
     text = models.TextField()
     masked_word = models.TextField()
     explanation = models.TextField(blank=True, help_text="Правильные ответы через запятую: !, ?")
+    correct_letters = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Правильные символы пунктуации (через запятую)"
+    )
     difficulty = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
     is_user_added = models.BooleanField(default=False, verbose_name="Добавлен пользователем")
@@ -281,7 +291,7 @@ class StudentAnswer(models.Model):
     def __str__(self):
         return f"{self.user.username} → {self.selected_answer} ({'✓' if self.is_correct else '✗'})"
 
-# ==============================================================================
+# ========== ЗАДАНИЯ 1-3 ====================================================
 class TextAnalysisTask(models.Model):
     """Текст с заданиями 1-3"""
     title = models.CharField(max_length=200, verbose_name="Название")
@@ -306,6 +316,7 @@ class TextQuestion(models.Model):
         ('missing_word', 'Подобрать слово'),
         ('multiple_choice', 'Множественный выбор'),
         ('text_characteristics', 'Характеристики текста'),
+        ('free_text', 'Свободный текст (выписать из текста)'),
     )
     
     task = models.ForeignKey(TextAnalysisTask, on_delete=models.CASCADE, related_name='questions')
@@ -338,126 +349,206 @@ class QuestionOption(models.Model):
     def __str__(self):
         return f"Вариант {self.option_number}"
 
-# ==============================================================================
+# ====== ЗАДАНИЕ 4 =============================================================
 class OrthoepyWord(models.Model):
-    correct_variant = models.CharField(
+    word = models.CharField(
         max_length=100,
         unique=True,
-        verbose_name="Слово с правильным ударением"
+        verbose_name="Слово с ударением"
     )
-    incorrect_variants = models.CharField(
-        max_length=500,
+    lemma = models.CharField(
+        max_length=100,
+        verbose_name="Лемма (слово без ударения)",
+        help_text="Например: аэропорты, баловать"
+    )
+    is_correct = models.BooleanField(
+        default=True,
+        verbose_name="Правильное ударение",
+        help_text="✓ — правильное, ✗ — неправильное"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Активно"
+    )
+    grades = models.CharField(
+        max_length=50,
         blank=True,
-        verbose_name="Неправильные варианты"
+        verbose_name="Классы",
+        help_text="Например: 5,6,7"
     )
-    is_active = models.BooleanField(default=True, verbose_name="Активно")
-    is_for_quiz = models.BooleanField(
-        default=False,
-        verbose_name="Для квизов",
-        help_text="Используется в будущих квизах (не в основном тесте)"
-    )
-    grades = models.CharField(max_length=50, blank=True, verbose_name="Классы")
 
     class Meta:
         verbose_name = "Слово для орфоэпии"
         verbose_name_plural = "Слова для орфоэпии"
-        ordering = ['correct_variant']
+        ordering = ['word']
 
     def __str__(self):
-        return self.correct_variant
-
-    def get_incorrect_variants_list(self):
-        return [v.strip() for v in self.incorrect_variants.split(',') if v.strip()]
-
-    def get_all_variants(self):
-        return [self.correct_variant] + self.get_incorrect_variants_list()
+        status = "✓" if self.is_correct else "✗"
+        return f"{status} {self.word}"
 
     def get_grades_list(self):
         return [int(g.strip()) for g in self.grades.split(',') if g.strip().isdigit()]
 
     @staticmethod
-    def generate_test(num_options=5, correct_min=2, correct_max=4, user_grade=None):
+    def generate_test(num_options=5, correct_min=2, correct_max=4, 
+                     user_grade=None, test_type='main'):
+        """
+        Генерирует тест по орфоэпии
+        
+        Гарантии:
+        - 2-4 правильных варианта
+        - 1-3 неправильных варианта
+        - НЕТ повторений лемм в одном тесте
+        """
         from django.db.models import Q
         import random
 
-        # Получаем активные слова
-        words = OrthoepyWord.objects.filter(is_active=True)
+        # Фильтруем только активные слова
+        queryset = OrthoepyWord.objects.filter(is_active=True)
+        
+        # Фильтрация по классам
         if user_grade:
-            words = words.filter(Q(grades__contains=user_grade) | Q(grades='') | Q(grades__isnull=True))
-        words = list(words)
-
-        if len(words) < num_options:
+            queryset = queryset.filter(
+                Q(grades__contains=str(user_grade)) | 
+                Q(grades='') | 
+                Q(grades__isnull=True)
+            )
+        
+        # Разделяем на правильные и неправильные
+        correct_words = list(queryset.filter(is_correct=True))
+        incorrect_words = list(queryset.filter(is_correct=False))
+        
+        # Проверяем, достаточно ли слов
+        if len(correct_words) < correct_min or len(incorrect_words) < 1:
             return None
-
-        # 🔴 Шаг 1: Выбираем случайные РАЗНЫЕ слова
-        selected_words = random.sample(words, num_options)
         
-        # 🔴 Шаг 2: Для каждого слова выбираем ОДИН вариант
-        all_variants = []
+        # Случайное количество правильных ответов (2-4)
+        num_correct = random.randint(correct_min, correct_max)
+        num_incorrect = num_options - num_correct
+        
+        # Если неправильных слов меньше, чем нужно — корректируем
+        if len(incorrect_words) < num_incorrect:
+            num_incorrect = len(incorrect_words)
+            num_correct = num_options - num_incorrect
+        
+        # === ВЫБИРАЕМ УНИКАЛЬНЫЕ ЛЕММЫ ===
         selected_correct = []
+        used_lemmas = set()
         
-        for word in selected_words:
-            # Все варианты для этого слова
-            word_variants = word.get_all_variants()
-            
-            # Если у слова только один вариант (правильный)
-            if len(word_variants) == 1:
-                variant = word.correct_variant
-                selected_correct.append(variant)
-            else:
-                # Выбираем случайный вариант
-                variant = random.choice(word_variants)
-                if variant == word.correct_variant:
-                    selected_correct.append(variant)
-            
-            all_variants.append(variant)
+        # Выбираем правильные варианты с уникальными леммами
+        random.shuffle(correct_words)
+        for word in correct_words:
+            if len(selected_correct) >= num_correct:
+                break
+            if word.lemma not in used_lemmas:
+                selected_correct.append(word)
+                used_lemmas.add(word.lemma)
         
-        # 🔴 Шаг 3: Корректируем количество правильных ответов
-        current_correct = len(selected_correct)
+        # Выбираем неправильные варианты с уникальными леммами
+        selected_incorrect = []
+        random.shuffle(incorrect_words)
+        for word in incorrect_words:
+            if len(selected_incorrect) >= num_incorrect:
+                break
+            if word.lemma not in used_lemmas:
+                selected_incorrect.append(word)
+                used_lemmas.add(word.lemma)
         
-        # Если правильных слишком мало
-        if current_correct < correct_min:
-            needed = correct_min - current_correct
-            changed = 0
-            
-            for i, word in enumerate(selected_words):
-                if changed >= needed:
-                    break
-                    
-                current_variant = all_variants[i]
-                # Если текущий вариант неправильный
-                if current_variant != word.correct_variant:
-                    # Меняем на правильный
-                    all_variants[i] = word.correct_variant
-                    if word.correct_variant not in selected_correct:
-                        selected_correct.append(word.correct_variant)
-                    changed += 1
+        # Проверяем, что набрали достаточно вариантов
+        if len(selected_correct) < num_correct or len(selected_incorrect) < num_incorrect:
+            return None
         
-        # Если правильных слишком много
-        elif current_correct > correct_max:
-            extra = current_correct - correct_max
-            
-            for i, word in enumerate(selected_words):
-                if extra <= 0:
-                    break
-                    
-                current_variant = all_variants[i]
-                # Если текущий вариант правильный и есть неправильные альтернативы
-                if current_variant == word.correct_variant and word.get_incorrect_variants_list():
-                    # Меняем на случайный неправильный
-                    all_variants[i] = random.choice(word.get_incorrect_variants_list())
-                    selected_correct.remove(word.correct_variant)
-                    extra -= 1
+        # Объединяем и перемешиваем
+        all_variants = selected_correct + selected_incorrect
+        random.shuffle(all_variants)
+        
+        # Формируем результат
+        variants = [word.word for word in all_variants]
+        correct_answers = [word.word for word in selected_correct]
         
         return {
-            'variants': all_variants,
-            'correct_answers': selected_correct,
-            'correct_ids': [],
+            'variants': variants,
+            'correct_answers': correct_answers,
         }
 
-# ==============================================================================
+# ===== ЗАДАНИЕ 5 ==============================================================
+class TaskPaponim(models.Model):
+    text = models.TextField(
+        verbose_name="Предложение с выделенным словом",
+        help_text="Выделите слово жирным, используя **двойные звёздочки**: ...**гарантийного**..."
+    )
+    correct_word = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        verbose_name="Правильное слово (пароним)"
+    )
+    root = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name="Корень (для исключения в одном тесте)",
+        help_text="Примеры: 'деть', 'гарант', 'абон'"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    is_for_quiz = models.BooleanField(default=False, verbose_name="Использовать в квизах")
+    grades = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name="Классы"
+    )
 
-# main/models.py
+    @property
+    def has_error(self):
+        return bool(self.correct_word.strip())
+
+    def __str__(self):
+        return (self.text[:60] + '...') if len(self.text) > 60 else self.text
+
+    class Meta:
+        verbose_name = "ПАРОНИМЫ задание 5"
+        verbose_name_plural = "ПАРОНИМЫ задание 5"
+
+
+# ===== ЗАДАНИЕ 6 ==============================================================
+class WordOk(models.Model):
+    TYPE_CHOICES = [
+        ('6100', 'Исключить лишнее слово'),
+        ('6200', 'Заменить неверное слово'),
+    ]
+
+    text = models.TextField(
+        verbose_name="Предложение с лексической ошибкой"
+    )
+    task_type = models.CharField(
+        max_length=4,
+        choices=TYPE_CHOICES,
+        verbose_name="Тип задания"
+    )
+    # Для 6100: одно слово (лишнее)
+    # Для 6200: список слов через запятую (все допустимые замены)
+    correct_variants = models.TextField(
+        verbose_name="Правильные слова (через запятую, без пробелов)",
+        help_text="Для 6100 — одно слово. Для 6200 — варианты: одержать,совершить,добиться"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    is_for_quiz = models.BooleanField(default=False, verbose_name="Использовать в квизах")
+    grades = models.CharField(max_length=50, blank=True, verbose_name="Классы")
+
+    def get_correct_words(self):
+        return [w.strip().lower() for w in self.correct_variants.split(',') if w.strip()]
+
+    def __str__(self):
+        return (self.text[:60] + '...') if len(self.text) > 60 else self.text
+
+    class Meta:
+        verbose_name = "Задание 6: Лексические нормы"
+        verbose_name_plural = "Задание 6: Лексические нормы"
+
+
+# ===== ЗАДАНИЕ 7 ==============================================================
+
 class CorrectionExercise(models.Model):
     """Упражнение: исправь ошибку 7 (свободный ввод)"""
 
@@ -546,3 +637,192 @@ class CorrectionExercise(models.Model):
             'exercise_id': wrong_item.exercise_id,
             'incorrect_word': wrong_item.incorrect_text,  # для проверки (не показываем!)
         }
+
+
+# ===== ЗАДАНИЕ 8 ==============================================================
+
+class TaskGrammaticEight(models.Model):
+    ERROR_TYPES = [
+        ('8100', 'Нарушение в построении предложения с подлежащим и сказуемым'),
+        ('8200', 'Ошибка в построении предложения с причастным оборотом'),
+        ('8300', 'Ошибка в построении предложения с деепричастным оборотом'),
+        ('8400', 'Нарушение в построении предложения с однородными членами'),
+        ('8500', 'Нарушение видо-временной соотнесённости глагольных форм'),
+        ('8600', 'Нарушение в построении предложения с приложением'),
+        ('8700', 'Нарушение в управлении (предлог + падеж)'),
+        ('8800', 'Ошибка в построении предложения с косвенной речью'),
+        ('8900', 'Нарушение в построении сложного предложения'),
+        ('8910', 'Нарушение в употреблении числительного'),
+    ]
+    id = models.CharField(max_length=10, choices=ERROR_TYPES, primary_key=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.get_id_display()
+
+    class Meta:
+        verbose_name = "Тип ошибки (задание 8)"
+        verbose_name_plural = "Типы ошибок (задание 8)"
+
+
+class TaskGrammaticEightExample(models.Model):
+    text = models.TextField()
+    has_error = models.BooleanField(default=True)
+    error_type = models.ForeignKey(
+        TaskGrammaticEight,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        limit_choices_to={'is_active': True}
+    )
+    explanation = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    is_for_quiz = models.BooleanField(default=False)  # по умолчанию — не для квиза
+    grades = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return self.text[:50]
+
+    class Meta:
+        verbose_name = "Пример для задания 8"
+        verbose_name_plural = "Примеры для задания 8"
+
+    @staticmethod
+    def generate_task_eight_test(user_grade=None):
+        import random
+        from django.db.models import Q
+        
+        # Используем локальный импорт для избежания циклических зависимостей
+        from .models import TaskGrammaticEight, TaskGrammaticEightExample
+
+        # 1. Выбираем 5 случайных активных типа ошибок
+        all_types = list(TaskGrammaticEight.objects.filter(is_active=True))
+        if len(all_types) < 5:
+            print(f"Активных типов меньше 5: {len(all_types)}")
+            return None
+        
+        selected_types = random.sample(all_types, 5)
+        selected_ids = [t.id for t in selected_types]
+        print(f"Выбранные типы ошибок: {selected_ids}")
+
+        # 2. Базовый queryset примеров
+        examples_qs = TaskGrammaticEightExample.objects.filter(is_active=True)
+        
+        # 3. Примеры с ошибками — только для выбранных типов
+        erroneous_qs = examples_qs.filter(has_error=True, error_type__id__in=selected_ids)
+        
+        print(f"Примеров с ошибками для выбранных типов: {erroneous_qs.count()}")
+        
+        # Собираем по одному примеру на каждый тип ошибки
+        selected_erroneous = []
+        for t_id in selected_ids:
+            example = erroneous_qs.filter(error_type_id=t_id).first()
+            if not example:
+                print(f"Не найдено примера для типа ошибки: {t_id}")
+                return None
+            selected_erroneous.append(example)
+
+        # 4. Примеры без ошибок
+        correct_examples = list(examples_qs.filter(has_error=False))
+        print(f"Примеров без ошибок: {len(correct_examples)}")
+        
+        if len(correct_examples) < 4:
+            print(f"Недостаточно примеров без ошибок: {len(correct_examples)}")
+            return None
+            
+        selected_correct = random.sample(correct_examples, 4)
+
+        # 5. Перемешиваем
+        all_selected = selected_erroneous + selected_correct
+        random.shuffle(all_selected)
+
+        # 6. Назначаем буквы А–Д
+        letters = ['А', 'Б', 'В', 'Г', 'Д']
+        type_to_letter = {selected_ids[i]: letters[i] for i in range(5)}
+
+        # 7. Формируем данные
+        answer_key = {}
+        for ex in all_selected:
+            if ex.has_error:
+                answer_key[str(ex.id)] = type_to_letter.get(ex.error_type_id)
+            else:
+                answer_key[str(ex.id)] = None
+
+        error_type_names = {
+            type_to_letter[t_id]: TaskGrammaticEight.objects.get(id=t_id).get_id_display()
+            for t_id in selected_ids
+        }
+
+        return {
+            'sentences': [{'id': ex.id, 'text': ex.text} for ex in all_selected],
+            'answer_key': answer_key,
+            'error_type_names': error_type_names
+        }
+
+
+# ===== ЗАДАНИЕ 22 ==============================================================
+class TaskGrammaticTwoTwo(models.Model):
+    DEVICE_TYPES = [
+        ('2201', 'эпитет'),
+        ('2202', 'метафора'),
+        ('2203', 'развернутая метафора'),
+        ('2204', 'метонимия'),
+        ('2205', 'синекдоха'),
+        ('2206', 'олицетворение'),
+        ('2207', 'сравнение'),
+        ('2208', 'гипербола'),
+        ('2209', 'литота'),
+        ('2210', 'оксюморон'),
+        ('2211', 'ирония'),
+        ('2212', 'антитеза'),
+        ('2213', 'анафора'),
+        ('2214', 'эпифора'),
+        ('2215', 'градация'),
+        ('2216', 'парцелляция'),
+        ('2217', 'риторическое обращение'),
+        ('2218', 'риторический вопрос'),
+        ('2219', 'инверсия'),
+        ('2220', 'лексический повтор'),
+        ('2221', 'вопросно-ответная форма изложения'),
+        ('2222', 'цитирование'),
+        ('2223', 'синтаксический параллелизм'),
+        ('2224', 'многосоюзие'),
+        ('2225', 'бессоюзие'),
+        ('2226', 'аллитерация'),
+        ('2227', 'ассонанс'),
+        ('2228', 'индивидуально-авторское слово'),
+    ]
+
+    id = models.CharField(max_length=10, choices=DEVICE_TYPES, primary_key=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        # Простой и надежный способ
+        return self.get_id_display()  # Это ДОЛЖНО работать для поля с choices!
+
+    class Meta:
+        verbose_name = "Средство выразительности (задание 22)"
+        verbose_name_plural = "Средства выразительности (задание 22)"
+
+
+class TaskGrammaticTwoTwoExample(models.Model):
+    text = models.TextField()
+    device_type = models.ForeignKey(
+        TaskGrammaticTwoTwo,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        limit_choices_to={'is_active': True}
+    )
+    explanation = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    is_for_quiz = models.BooleanField(default=False)
+    grades = models.CharField(max_length=50, blank=True)
+    author = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.text[:50]
+
+    class Meta:
+        verbose_name = "Пример для задания 22"
+        verbose_name_plural = "Примеры для задания 22"

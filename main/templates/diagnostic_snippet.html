@@ -1,0 +1,434 @@
+<!-- main/templates/diagnostic_snippet.html -->
+{% load static %}
+{% load custom_filters %}
+<div class="diagnostic-full-test">
+    <!-- Задания 1–3 -->
+    {% if text_task_1_3 %}
+        <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
+            {{ text_task_1_3.text_content|bold_words|safe }}
+        </div>
+        {% for q in text_questions_1_3 %}
+            <div class="question" data-question-number="{{ q.question_number }}">
+            <h4>{{ q.question_number }}. {{ q.question_text }}</h4>
+            {% if q.question_type == 'missing_word' %}
+                <input type="text" data-question="{{ q.question_number }}" placeholder="Ответ">
+            {% else %}
+                {% for opt in q.options.all %}
+                <label>
+                    <input type="checkbox" value="{{ opt.option_number }}" data-question="{{ q.question_number }}">
+                    <span>{{ opt.option_number }}) {{ opt.option_text }}</span>
+                </label><br>
+                {% endfor %}
+            {% endif %}
+            </div>
+            <hr>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Задание 4 -->
+    {% if orthoepy_variants %}
+    <div class="question" data-question-number="4">
+        <h4>4. Укажите варианты ответов, в которых ВЕРНО выделена буква, обозначающая ударный гласный звук.</h4>
+        {% for variant in orthoepy_variants %}
+        <label>
+            <input type="checkbox" 
+                   value="{{ variant }}" 
+                   data-question="4"
+                   data-option-id="{{ forloop.counter }}">
+            <span class="variant-text">{{ forloop.counter }}) {{ variant }}</span>
+        </label>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- Задание 5 -->
+    {% if paponim_sentences %}
+    <div class="question" data-question-number="5">
+        <h4>5. В одном из приведённых ниже предложений НЕВЕРНО употреблено выделенное слово. Исправьте лексическую ошибку, подобрав к выделенному слову пароним. Запишите подобранное слово, соблюдая нормы современного русского литературного языка.</h4>
+        {% for sentence in paponim_sentences %}
+            <div style="margin: 10px 0;">
+            {{ sentence.text|safe }}
+            </div>
+        {% endfor %}
+        <input type="text" data-question="5" placeholder="Напишите исправленное слово" style="width: 100%; padding: 8px; margin-top: 10px;">
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- Задание 6 -->
+    {% if wordok %}
+    <div class="question" data-question-number="6">
+        {% if wordok_task_type == 'exclude' %}
+            <h4>6. Отредактируйте предложение: исправьте лексическую ошибку, исключив лишнее слово. Выпишите это слово.</h4>
+        {% else %}
+            <h4>6. Отредактируйте предложение: исправьте лексическую ошибку, заменив употреблённое неверно слово. Запишите подобранное слово.</h4>
+        {% endif %}
+        <p>{{ wordok.text|safe }}</p>
+        <input type="text" data-question="6" placeholder="Введите слово">
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- Задание 7 -->
+    {% if correction_sentences %}
+    <div class="question" data-question-number="7">
+        <h4>7. В одном из выделенных ниже слов допущена грамматическая ошибка. Исправьте ошибку и запишите слово правильно.</h4>
+        {% for sentence in correction_sentences %}
+            <div style="margin: 10px 0;">
+            {{ sentence }}
+            </div>
+        {% endfor %}
+        <input type="text" data-question="7" placeholder="Напишите исправленное слово (например: строго)" style="width: 100%; padding: 8px; margin-top: 10px;">
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 8 === -->
+    {% if task8_html %}
+    <div class="question" data-question-number="8">
+        <!-- Вставляем готовый HTML -->
+        {{ task8_html|safe }}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 9: НОВОЕ ФОРМАТИРОВАНИЕ === -->
+    {% if task9_lines %}
+    <div class="question" data-question-number="9">
+        <h4>9. Выберите правильную букву, кликнув на смайлик.</h4>
+        {% for line in task9_lines %}
+            <div>{{ forloop.counter }}) <span class="practice-line">{{ line.display_line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 10 === -->
+    {% if task10_lines %}
+    <div class="question" data-question-number="10">
+        <h4>10. Выберите правильную букву, кликнув на смайлик.</h4>
+        {% for line in task10_lines %}
+            <div>{{ forloop.counter }}) <span class="practice-line">{{ line.display_line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 11 === -->
+    {% if task11_lines %}
+    <div class="question" data-question-number="11">
+        <h4>11. Выберите правильную букву, кликнув на смайлик.</h4>
+        {% for line in task11_lines %}
+        <div>{{ forloop.counter }}) <span class="practice-line">{{ line.display_line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 12 === -->
+    {% if task12_lines %}
+    <div class="question" data-question-number="12">
+        <h4>12. Выберите правильную букву, кликнув на смайлик.</h4>
+        {% for line in task12_lines %}
+            <div>{{ forloop.counter }}) <span class="practice-line">{{ line.display_line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 13 === -->
+    {% if task13_lines %}
+    <div class="question" data-question-number="13">
+        <h4>13. Выберите правильную букву, кликнув на смайлик.</h4>
+        {% for line in task13_lines %}
+            <div>{{ forloop.counter }}) <span class="practice-line">{{ line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 14 === -->
+    {% if task14_lines %}
+    <div class="question" data-question-number="14">
+        <h4>14. Определите, слитно, раздельно или через дефис пишутся слова. Выберите правильный вариант, кликнув на смайлик.</h4>
+        {% for line in task14_lines %}
+            <div>{{ forloop.counter }}) <span class="practice-line">{{ line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 15 === -->
+    {% if task15_lines %}
+    <div class="question" data-question-number="15">
+        <h4>15. Выберите правильную букву, кликнув на смайлик.</h4>
+        {% for line in task15_lines %}
+            <div><span class="practice-line">{{ line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 16 === -->
+    {% if task16_data %}
+    <div class="question" data-question-number="16">
+        <h4>16. Расставьте знаки препинания. Укажите цифру(-ы), на месте которой(-ых) 
+        в предложении должна(-ы) стоять запятая(-ые).</h4>
+        
+        <!-- Картинка -->
+        {% if task16_data.image_name %}
+            <div><img src="{% static task16_data.image_name %}" alt="Задание 16"></div>
+        {% endif %}
+        
+        <!-- Контент с нумерацией -->
+        {% for line in task16_data.lines %}
+            <div>{{ forloop.counter }}) <span class="practice-line">{{ line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 17 === -->
+    {% if task17_data %}
+    <div class="question" data-question-number="17">
+        <h4>17. Расставьте знаки препинания: укажите все цифры, на месте которых 
+        в предложении должны стоять запятые.</h4>
+        
+        <!-- Картинка -->
+        {% if task17_data.image_name %}
+            <div><img src="{% static task17_data.image_name %}" alt="Задание 17"></div>
+        {% endif %}
+        
+        <!-- Контент БЕЗ нумерации -->
+        {% for line in task17_data.lines %}
+            <div><span class="practice-line">{{ line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 18 === -->
+    {% if task18_data %}
+    <div class="question" data-question-number="18">
+        <h4>18. Расставьте знаки препинания: укажите все цифры, на месте которых 
+        в предложении должны стоять запятые.</h4>
+        
+        <!-- Картинка -->
+        {% if task18_data.image_name %}
+        <div><img src="{% static task18_data.image_name %}" alt="Задание 18"></div>
+        {% endif %}
+        
+        <!-- Вариант С абзацами (если есть флаг и данные) -->
+        {% if task18_is_punktum_with_paragraphs and task18_structured_examples %}
+            {% for example in task18_structured_examples %}
+                <div class="punktum-example" style="margin-bottom: 20px;">
+                    {% for paragraph in example %}
+                        <p class="practice-line">{{ paragraph|safe }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 19 === -->
+    {% if task19_data %}
+    <div class="question" data-question-number="19">
+        <h4>19. Расставьте знаки препинания: укажите все цифры, на месте которых 
+        в предложении должны стоять запятые.</h4>
+        
+        <!-- Картинка -->
+        {% if task19_data.image_name %}
+        <div><img src="{% static task19_data.image_name %}" alt="Задание 19"></div>
+        {% endif %}
+        
+        <!-- Контент БЕЗ нумерации -->
+        {% for line in task19_data.lines %}
+            <div><span class="practice-line">{{ line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 20 === -->
+    {% if task20_data %}
+    <div class="question" data-question-number="20">
+        <h4>20. Расставьте знаки препинания: укажите все цифры, на месте которых 
+        в предложении должны стоять запятые.</h4>
+        
+        <!-- Картинка -->
+        {% if task20_data.image_name %}
+        <div><img src="{% static task20_data.image_name %}" alt="Задание 20"></div>
+        {% endif %}
+        
+        <!-- Контент БЕЗ нумерации -->
+        {% for line in task20_data.lines %}
+            <div><span class="practice-line">{{ line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 21 === -->
+    {% if task21_data %}
+    <div class="question" data-question-number="21">
+        <!-- Динамический заголовок -->
+        {% if task21_data.title %}
+            <h4>{{ task21_data.title }}</h4>
+        {% endif %}
+        
+        <!-- Картинка -->
+        {% if task21_data.image_name %}
+        <div style="margin: 15px 0; text-align: center;">
+            <img src="{% static task21_data.image_name %}" alt="Задание 21" 
+                style="max-width: 100%; height: auto;">
+        </div>
+        {% endif %}
+        
+        <!-- Контент БЕЗ нумерации -->
+        {% for line in task21_data.lines %}
+            <div><span class="practice-line">{{ line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- === ЗАДАНИЕ 22 === -->
+    {% if task22_html %}
+    <div class="question" data-question-number="22">
+        {{ task22_html|safe }}
+    </div>
+    <hr>
+    {% endif %}
+
+    <!-- Задания 23–26 -->
+    {% if text_task_23_26 %}
+    <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px; margin-top: 30px;">
+        <h3 style="margin-bottom: 10px;">Задания 23–26</h3>
+        {{ text_task_23_26.text_content }}
+    </div>
+    {% for q in text_questions_23_26 %}
+    <div class="question" data-question-number="{{ q.question_number }}">
+        <h4>{{ q.question_number }}. {{ q.question_text }}</h4>
+        
+        {% if q.question_type == 'missing_word' %}
+            <input type="text" data-question="{{ q.question_number }}" placeholder="Ответ">
+        
+        {% elif q.question_type == 'free_text' %}
+            <!-- Задания 25 и 26: текстовое поле -->
+            <input type="text" data-question="{{ q.question_number }}" placeholder="Введите ответ...">
+        
+        {% else %}
+            <!-- Задания 23 и 24: чекбоксы -->
+            {% for opt in q.options.all %}
+            <label>
+                <input type="checkbox" value="{{ opt.option_number }}" data-question="{{ q.question_number }}">
+                <span>{{ opt.option_number }}) {{ opt.option_text }}</span>
+            </label><br>
+            {% endfor %}
+        
+        {% endif %}
+    </div>
+    <hr>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Задание 27 -->
+    <div class="question" data-question-number="27">
+        <h4>27. Балл за сочинение (0–22)</h4>
+        <input type="number" min="0" max="22" data-question="27" placeholder="Напишите свой балл 0–22">
+    </div>
+
+
+
+
+    {% if task8_html %}
+    <!-- Подключаем модуль задания 8 -->
+    <script src="{% static 'js/planning_eight.js' %}"></script>
+    <script>
+        // Инициализируем после загрузки
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.PlanningEight && typeof window.PlanningEight.setup === 'function') {
+                setTimeout(function() {
+                    window.PlanningEight.setup();
+                }, 100); // Небольшая задержка для гарантии загрузки
+            }
+        });
+    </script>
+    {% endif %}
+    <script id="task10-letter-groups" type="application/json">
+        {{ task10_letter_groups|safe }}
+    </script>
+    <script id="task10-subgroup-letters" type="application/json">
+        {{ task10_subgroup_letters|safe }}
+    </script>
+    <script id="task11-letter-groups" type="application/json">
+        {{ task11_letter_groups|safe }}
+    </script>
+    <script id="task11-subgroup-letters" type="application/json">
+        {{ task11_subgroup_letters|safe }}
+    </script>
+    <script id="task12-letter-groups" type="application/json">
+        {{ task12_letter_groups|safe }}
+    </script>
+    <script id="task12-subgroup-letters" type="application/json">
+        {{ task12_subgroup_letters|safe }}
+    </script>
+    <script id="task13-letter-groups" type="application/json">
+        {{ task13_letter_groups|safe }}
+    </script>
+    <script id="task13-subgroup-letters" type="application/json">
+        {{ task13_subgroup_letters|safe }}
+    </script>
+    <script id="task14-letter-groups" type="application/json">
+        {{ task14_letter_groups|safe }}
+    </script>
+    <script id="task14-subgroup-letters" type="application/json">
+        {{ task14_subgroup_letters|safe }}
+    </script>
+    <script id="task15-letter-groups" type="application/json">
+        {{ task15_letter_groups|safe }}
+    </script>
+    <script id="task15-subgroup-letters" type="application/json">
+        {{ task15_subgroup_letters|safe }}
+    </script>
+    <script id="task16-letter-groups" type="application/json">
+        {{ task16_letter_groups|safe }}
+    </script>
+    <script id="task16-subgroup-letters" type="application/json">
+        {{ task16_subgroup_letters|safe }}
+    </script>
+    <script id="task17-letter-groups" type="application/json">
+        {{ task17_letter_groups|safe }}
+    </script>
+    <script id="task17-subgroup-letters" type="application/json">
+        {{ task17_subgroup_letters|safe }}
+    </script>
+    <script id="task18-letter-groups" type="application/json">
+        {{ task18_letter_groups|safe }}
+    </script>
+    <script id="task18-subgroup-letters" type="application/json">
+        {{ task18_subgroup_letters|safe }}
+    </script>
+    <script id="task19-letter-groups" type="application/json">
+        {{ task19_letter_groups|safe }}
+    </script>
+    <script id="task19-subgroup-letters" type="application/json">
+        {{ task19_subgroup_letters|safe }}
+    </script>
+    <script id="task20-letter-groups" type="application/json">
+        {{ task20_letter_groups|safe }}
+    </script>
+    <script id="task20-subgroup-letters" type="application/json">
+        {{ task20_subgroup_letters|safe }}
+    </script>
+    <script id="task21-letter-groups" type="application/json">
+        {{ task21_letter_groups|safe }}
+    </script>
+    <script id="task21-subgroup-letters" type="application/json">
+        {{ task21_subgroup_letters|safe }}
+    </script>
+
+</div>

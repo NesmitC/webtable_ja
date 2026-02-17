@@ -1,0 +1,602 @@
+body {
+    height: 100vh;
+    background: #a7f4ad;
+}
+
+.page {
+    max-width: 1440px;
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 0 15px;
+
+    /* border: 1px solid rgb(135, 135, 243); */
+}
+
+/* -------------------- мишень --------------------------------- */
+
+.play-title {
+    font-size: 18px;
+    text-align: center;
+}
+
+.back {
+    display: block;
+    width: 80px;
+    background: rgb(189, 203, 230);
+    padding: 2px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.play {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    /* position: relative; */
+}
+
+/* .wrapper {
+    border: 1px solid blue;
+} */
+
+#target {
+    width: 600px;
+    height: 600px;
+    position: relative;
+}
+
+.svg__base {
+    width: 603px;
+    height: 600px;
+    padding: 50px;
+}
+
+.svg__segm,
+.svg__segm-pr,
+.svg__segm-z {
+    position: absolute;
+    transition: 1s;
+    opacity: 1;
+}
+
+.svg__segm.active {
+    transform: scale(1.1);
+    transition: 1s;
+    z-index: 1;
+}
+
+.svg__segm.blurred {
+    opacity: 0;
+}
+
+body.editing .svg__segm.blurred {
+    opacity: 0.5;
+}
+
+#color:hover {
+    fill: palevioletred;
+}
+
+.pril-iskl {
+    width: 156px;
+    height: 180px;
+    top: 120px;
+    left: 51px;
+    /* border: 1px solid rgb(255, 71, 47); */
+}
+
+.kratk-ot-prich {
+    width: 178px;
+    height: 115px;
+    top: 48px;
+    left: 124px;
+}
+
+.suff-onn-enn {
+    width: 139px;
+    height: 101px;
+    top: 102px;
+    left: 163px;
+}
+
+.sush-n {
+    width: 141px;
+    height: 141px;
+    top: 159px;
+    left: 163px;
+}
+
+.prich-s-prist {
+    width: 181px;
+    height: 116px;
+    top: 48px;
+    left: 300px;
+}
+
+.prich-sov {
+    width: 119px;
+    height: 184px;
+    top: 116px;
+    left: 432px;
+}
+
+.prich-ovaeva {
+    width: 195px;
+    height: 196px;
+    top: 103px;
+    left: 302px;
+    /* border: 1px solid rgb(255, 71, 47); */
+}
+
+.prich-zavis {
+    width: 141px;
+    height: 141px;
+    top: 159px;
+    left: 300px;
+}
+
+.prich-nesov {
+    width: 250px;
+    height: 250px;
+    top: 298px;
+    left: 52px;
+}
+
+.prich-iskl {
+    width: 195px;
+    height: 196px;
+    top: 297px;
+    left: 107px;
+}
+
+.prich-kratk {
+    width: 140px;
+    height: 141px;
+    top: 297px;
+    left: 163px;
+}
+
+.pril-vetren {
+    width: 141px;
+    height: 141px;
+    top: 297px;
+    left: 300px;
+}
+
+.pril-nulsuf {
+    width: 195px;
+    height: 196px;
+    top: 297px;
+    left: 301px;
+}
+
+.pril-an {
+    width: 82px;
+    height: 124px;
+    top: 297px;
+    left: 469px;
+}
+
+.pril-jan {
+    width: 120px;
+    height: 120px;
+    top: 391px;
+    left: 401px;
+}
+
+.pril-in {
+    width: 138px;
+    height: 89px;
+    top: 459px;
+    left: 300px;
+    /* border: 1px solid rgb(255, 71, 47); */
+}
+
+
+/* -------------------- ушки --------------------------------- */
+.ushki {
+    position: relative;
+}
+
+.inf {
+    position: absolute;
+    width: 100px;
+    height: 80px;
+    border: none;
+    clip-path: polygon(0 29%, 100% 28%, 100% 83%, 84% 80%, 68% 79%, 50% 78%, 35% 79%, 18% 80%, 0 83%);
+    background: rgba(244, 213, 218, 0.957);
+    cursor: pointer;
+}
+
+.pril1 {
+    top: -433px;
+    left: -5px;
+    rotate: 290deg;
+}
+
+.pril2 {
+    top: -538px;
+    left: 62px;
+    rotate: 316deg;
+}
+
+.pril3 {
+    top: -604px;
+    left: 176px;
+    rotate: 344deg;
+}
+
+.prich4 {
+    top: -580px;
+    left: 385px;
+    rotate: 28deg;
+}
+
+.prich5 {
+    top: -450px;
+    left: 502px;
+    rotate: 67deg;
+}
+
+.pril6 {
+    top: -208px;
+    left: 490px;
+    rotate: 119deg;
+}
+
+.pril7 {
+    top: -110px;
+    left: 400px;
+    rotate: 148deg;
+}
+
+.prich8 {
+    top: -110px;
+    left: 105px;
+    rotate: 212deg;
+}
+
+.prich9 {
+    top: -210px;
+    left: 12px;
+    rotate: 242deg;
+}
+
+/* ------------- Модальные окна для ушек + правила игры + вывод результатов ------------------- */
+
+.modal {
+    padding: 20px 20px 15px 30px;
+    border-radius: 15px;
+
+    background: rgb(232, 242, 216);
+    border: none;
+    display: block;
+    width: 50%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: .5s;
+}
+
+.modal[open] {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal::backdrop {
+    background: rgba(139, 137, 137, 0.3);
+    transition: .5s;
+}
+
+.btn-promo-close {
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: block;
+    margin: 0 0 0 auto;
+    font-size: 30px;
+}
+
+.modal-card {
+    text-align: center;
+}
+
+.modal__text {
+    padding: 20px 0;
+}
+
+.pravila {
+    text-align: left;
+}
+
+.modal__title {
+    text-align: center;
+}
+
+/* -------------------- Медальки --------------------------- */
+
+.wrapper-medal {
+    width: 415px;
+    height: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 0 auto;
+    gap: 10px;
+    /* border: 1px solid rgb(255, 71, 47); */
+}
+
+.medal {
+    width: 15px;
+    height: 15px;
+    border: .1px solid rgb(120, 106, 106);
+    border-radius: 50%;
+    background: #a2e8a8;
+}
+
+
+/* -------------------- Стрелка --------------------------- */
+
+.drive-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+#drive {
+    position: absolute;
+    top: 55%;
+    left: 54%;
+    pointer-events: all;
+}
+
+.arrow {
+    width: 300px;
+    height: 300px;
+    position: relative;
+    background: rgb(243, 167, 167);
+    clip-path: polygon(32% 44%, 100% 42%, 98% 78%, 28% 68%, 25% 84%, 0 50%, 36% 27%);
+    cursor: pointer;
+    z-index: 1;
+    touch-action: none;
+}
+
+.arrow__text {
+    width: 70%;
+    height: 30%;
+    transform: rotate(4deg);
+    position: absolute;
+    top: 43%;
+    left: 25%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 23px;
+    cursor: pointer;
+    /* border: 1px solid gray; */
+}
+
+#tag {
+    width: 15px;
+    height: 15px;
+    /* border: 1px solid gray; */
+    border-radius: 50%;
+    position: absolute;
+    top: 48%;
+    left: -1%;
+}
+
+/* ---------------- панель навигации --------------------------- */
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.nav-btn {
+    display: block;
+    width: 170px;
+    border: 1px solid gray;
+    border-radius: 4px;
+    background: rgb(197, 197, 243);
+    padding: 15px;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.nav-btn.highlight {
+    background: rgb(197, 243, 239);
+}
+
+.nav-btn:hover {
+    background: rgb(172, 172, 246);
+}
+
+.nav-btn.highlight:hover {
+    background: rgb(102, 239, 227);
+}
+
+/* ============ мишень ПРЕ и ПРИ ======================== */
+
+.svg__base-pr {
+    width: 500px;
+    height: 500px;
+    padding: 50px;
+
+    border: 1px solid red;
+}
+
+.pribliz {
+    width: 110px;
+    height: 140px;
+    top: 18.6%;
+    left: 8.6%;
+    /* border: 1px solid rgb(255, 71, 47); */
+}
+
+.prisoed {
+    width: 141px;
+    height: 112px;
+    top: 8.5%;
+    left: 18.5%;
+}
+
+.nepoln {
+    width: 141px;
+    height: 112px;
+    top: 8.5%;
+    left: 41.5%;
+}
+
+.bliz {
+    width: 110px;
+    height: 140px;
+    top: 18.4%;
+    left: 56.6%;
+}
+
+.prizapomn {
+    width: 271px;
+    height: 129px;
+    top: 20.5%;
+    left: 19.1%;
+}
+
+.prezapomn {
+    width: 254px;
+    height: 129px;
+    top: 41.6%;
+    left: 20.7%;
+}
+
+.ochen {
+    width: 126px;
+    height: 165px;
+    top: 41.6%;
+    left: 8.6%;
+}
+
+.pere {
+    width: 225px;
+    height: 97px;
+    top: 58.9%;
+    left: 23.1%;
+}
+
+.torgestv {
+    width: 126px;
+    height: 169px;
+    top: 41.3%;
+    left: 53.8%;
+}
+
+/* ============ мишень Ь мягкий знак ===================== */
+
+.svg__base-z {
+    width: 450px;
+    height: 450px;
+    padding: 25px;
+
+    /* border: 1px solid red; */
+}
+
+.such-3-skl {
+    width: 200px;
+    height: 209px;
+    top: 3.5%;
+    left: 4.3%;
+    /* border: 1px solid rgb(255, 71, 47); */
+}
+
+.glagol-neopr {
+    width: 169px;
+    height: 170px;
+    top: 9.4%;
+    left: 9.5%;
+}
+
+.narechie {
+    width: 107px;
+    height: 110px;
+    top: 19.5%;
+    left: 19.9%;
+}
+
+.chastica {
+    width: 107px;
+    height: 110px;
+    top: 19.5%;
+    left: 37.4%;
+}
+
+.glagol-povelit {
+    width: 169px;
+    height: 170px;
+    top: 9.4%;
+    left: 37.5%;
+}
+
+.glagol-2-lica {
+    width: 200px;
+    height: 209px;
+    top: 3.5%;
+    left: 37.3%;
+}
+
+.such-rodit {
+    width: 111px;
+    height: 173px;
+    top: 37.3%;
+    left: 4.5%;
+}
+
+.such-ich {
+    width: 169px;
+    height: 170px;
+    top: 37.4%;
+    left: 9.5%;
+}
+
+.such-2-skl {
+    width: 182px;
+    height: 59px;
+    top: 61.1%;
+    left: 20.5%;
+}
+
+.mestoimenie {
+    width: 211px;
+    height: 110px;
+    top: 37.1%;
+    left: 20%;
+}
+
+.narechie-iskl {
+    width: 169px;
+    height: 170px;
+    top: 37.4%;
+    left: 37.5%;
+}
+
+.kratk-pril {
+    width: 133px;
+    height: 184px;
+    top: 37.3%;
+    left: 48.5%;
+}

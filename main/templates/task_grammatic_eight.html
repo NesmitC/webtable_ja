@@ -1,0 +1,45 @@
+<!-- templates/task_grammatic_eight.html -->
+<div class="task-eight-exercise">
+    <h3>Задание 8: Установите соответствие между грамматическими ошибками и предложениями</h3>
+    <p>К каждой позиции, обозначенной буквой (А–Д), подберите соответствующую позицию из второго столбца (номер предложения 1–9).</p>
+
+    <div class="task-match-container">
+        <!-- ЛЕВАЯ КОЛОНКА: типы ошибок А–Д -->
+        <div class="task-match-left-column">
+            <h4 class="task-match-column-title">ТИПЫ ОШИБОК</h4>
+            
+            {% for letter, name in error_type_names.items %}
+                <div class="task-match-row task-eight-error-row" data-error-letter="{{ letter }}">
+                    <select class="task-eight-select" data-error-letter="{{ letter }}">
+                        <option value="-">—</option>
+                        {% for i in "123456789" %}
+                            <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="task-match-letter">{{ letter }})</span>
+                    <div class="task-match-content">
+                        {{ name }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА: предложения 1–9 -->
+        <div class="task-match-right-column">
+            <h4 class="task-match-column-title">ПРЕДЛОЖЕНИЯ</h4>
+            
+            {% for item in sentences %}
+                <div class="task-match-row task-eight-sentence-row" data-sentence-number="{{ item.position }}">
+                    <span class="task-match-item-number">{{ item.position }})</span>
+                    <span class="task-match-content">{{ item.text }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Кнопка проверки - ТОЛЬКО если show_check_button = True -->
+    {% if show_check_button|default:True %}
+    <button class="check-task-eight check-match-button">Проверить</button>
+    <div class="task-eight-result" style="display: none;"></div>
+    {% endif %}
+</div>

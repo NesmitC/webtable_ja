@@ -1,0 +1,62 @@
+<!-- main/templates/task_grammatic_twotwo_snippet.html -->
+<!-- main/templates/task_grammatic_twotwo_snippet.html -->
+<div class="task-twotwo-exercise">
+    <h3>Задание 22: Установите соответствие между примерами и средствами выразительности</h3>
+    <p>К каждой позиции первого столбца подберите соответствующую позицию из второго столбца.</p>
+
+    <div class="task-match-container">
+        
+        <!-- ЛЕВАЯ КОЛОНКА: Примеры -->
+        <div class="task-match-left-column">
+            <h4>ПРЕДЛОЖЕНИЯ</h4>
+            
+            {% for item in sentences %}
+                <div class="task-match-row">
+                    <select class="task-twotwo-select" 
+                            data-error-letter="{% if forloop.counter == 1 %}А{% elif forloop.counter == 2 %}Б{% elif forloop.counter == 3 %}В{% elif forloop.counter == 4 %}Г{% elif forloop.counter == 5 %}Д{% endif %}">
+                        <option value="-">—</option>
+                        {% for num, name in device_names_list %}
+                            <option value="{{ num }}">{{ num }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="task-match-letter">
+                        {% if forloop.counter == 1 %}А.
+                        {% elif forloop.counter == 2 %}Б.
+                        {% elif forloop.counter == 3 %}В.
+                        {% elif forloop.counter == 4 %}Г.
+                        {% elif forloop.counter == 5 %}Д.
+                        {% endif %}
+                    </span>
+                    <div class="task-match-content">
+                        {{ item.text }}
+                        {% if item.author %}
+                            <div class="task-match-author">({{ item.author }})</div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА: Средства выразительности -->
+        <div class="task-match-right-column">
+            <h4>ИЗОБРАЗИТЕЛЬНО-ВЫРАЗИТЕЛЬНЫЕ СРЕДСТВА ЯЗЫКА</h4>
+            
+            <div>
+                {% for num, name in device_names_list %}
+                    <div class="task-match-row">
+                        <span class="task-match-item-number">{{ num }}.</span>
+                        <span class="task-match-content">{{ name }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Кнопка только для тренажёров (не для диагностики) -->
+    {% if show_check_button|default:True %}
+    <button class="check-task-twotwo">Проверить</button>
+    <div class="task-twotwo-result" style="display: none;"></div>
+    {% endif %}
+
+</div>
