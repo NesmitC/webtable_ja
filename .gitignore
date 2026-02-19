@@ -41,7 +41,6 @@ htmlcov/
 # Local Django settings (если используешь)
 local_settings.py
 settings/local.py
-download.py
 
 # Logs
 logs/
