@@ -158,7 +158,77 @@ python manage.py shell
 python manage.py loaddata ortho_examples_clean.json
 
 
-
+project_root/
+├── main/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── assistant.py
+│   ├── asgi.py
+│   ├── custom_filters.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── views.py
+│   ├── wsgi.py
+│   ├── __pycache__/
+│   ├── migrations/
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── planning_style.css
+│   │   ├── js/
+│   │   │   ├── games.js
+│   │   │   ├── correctionModule.js
+│   │   │   ├── diagnostic.js
+│   │   │   ├── planning_eight.js
+│   │   │   ├── planning_orthoe.js
+│   │   │   ├── planning_twotwo.js
+│   │   │   └── planning.js
+│   │   └── images/
+│   │       ├── punktum_task_16.webp
+│   │       ├── punktum_task_17.webp
+│   │       ├── punktum_task_18.webp
+│   │       ├── punktum_task_19.webp
+│   │       ├── punktum_task_20.webp
+│   │       ├── punktum_task_21_0.webp
+│   │       ├── punktum_task_21_1.webp
+│   │       └── punktum_task_21_2.webp
+│   └── templates/
+│       ├── diagnostic/
+│       │   ├── diagnostic_ege.html
+│       │   ├── diagnostic_oge.html
+│       │   ├── diagnostic_snippet_ege.html
+│       │   └── diagnostic_snippet_oge.html
+│       ├── exercise_snippet.html
+│       ├── registration/
+│       │   ├── correction_test_snippet.html
+│       │   ├── diagnostic_snippet.html
+│       │   ├── diagnostic_starting.html
+│       │   ├── ege.html
+│       │   ├── index.html
+│       │   ├── orthoepy_test_snippet.html
+│       │   ├── planning_5k.html
+│       │   ├── planning_6k.html
+│       │   ├── planning_7k.html
+│       │   ├── planning_8k.html
+│       │   ├── planning_orthoe.html
+│       │   ├── planning_twotwo.html
+│       │   ├── profile.html
+│       │   ├── task_grammatic_eight_test_snippet.html
+│       │   ├── task_paponim_snippet.html
+│       │   └── task_wordok_snippet.html
+│       ├── chat_widget.html
+│       ├── index.html
+│       └── profile.html
+├── webtable_ja_project/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── manage.py
+├── requirements.txt
+└── .env
 
 
 '''
