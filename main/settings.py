@@ -14,10 +14,8 @@ SECRET_KEY = config('SECRET_KEY')
 
 # Для локальной разработки должно быть DEBUG=True - Включаем режим разработки.
 # Django не будет обслуживать статику через runserver
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
-
+DEBUG = False
+ALLOWED_HOSTS = ['91.197.96.233', 'webtable-ja.ru', 'localhost', '127.0.0.1']
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Для collectstatic
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')         # Для загруженных файлов
@@ -64,7 +62,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'main.wsgi.application'
 
-
 # Database
 # DATABASES = {
 #     'default': {
@@ -83,8 +80,6 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
