@@ -1,19 +1,19 @@
 #!/usr/bin/env python
-"""Обновляет тестовые данные заданий 9-11 текстами с фото ОГЭ (Шмелёв)."""
+"""Обновляет тестовые данные заданий 10-12 текстами с фото ОГЭ (Шмелёв)."""
 import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'main.settings')
 django.setup()
 from main.models import OgeTextAnalysisTask, OgeTextQuestion, OgeQuestionOption
 
-# Удаляем старые данные для 9-11
-OgeQuestionOption.objects.filter(question__question_number__in=[9, 10, 11]).delete()
-OgeTextQuestion.objects.filter(question_number__in=[9, 10, 11]).delete()
+# Удаляем старые данные для 10-12
+OgeQuestionOption.objects.filter(question__question_number__in=[10, 11, 12]).delete()
+OgeTextQuestion.objects.filter(question_number__in=[10, 11, 12]).delete()
 OgeTextAnalysisTask.objects.filter(title__icontains='дружб').delete()
 OgeTextAnalysisTask.objects.filter(title__icontains='книг').delete()
 
-# === ТЕКСТ Шмелёва для заданий 9-11 ===
+# === ТЕКСТ Шмелёва для заданий 10-12 ===
 text_9_11, _ = OgeTextAnalysisTask.objects.update_or_create(
-    title="Текст И.С. Шмелёва (задания 9–11)",
+    title="Текст И.С. Шмелёва (задания 10–12)",
     defaults={
         'text_content': (
             '(1)Впервые я увидал дядю, когда мне было лет девять. '
@@ -68,9 +68,9 @@ text_9_11, _ = OgeTextAnalysisTask.objects.update_or_create(
     }
 )
 
-# === Задание 9: содержание текста ===
+# === Задание 10: содержание текста ===
 q9, _ = OgeTextQuestion.objects.update_or_create(
-    task=text_9_11, question_number=9,
+    task=text_9_11, question_number=10,
     defaults={
         'question_type': 'multiple_choice',
         'question_text': 'Какие из высказываний соответствуют содержанию текста? Укажите номера ответов, кликнув по чек-боксам.',
@@ -88,9 +88,9 @@ OgeQuestionOption.objects.filter(question=q9).delete()
 for num, text, correct in opts_9:
     OgeQuestionOption.objects.create(question=q9, option_number=num, option_text=text, is_correct=correct)
 
-# === Задание 10: метафора ===
+# === Задание 11: метафора ===
 q10, _ = OgeTextQuestion.objects.update_or_create(
-    task=text_9_11, question_number=10,
+    task=text_9_11, question_number=11,
     defaults={
         'question_type': 'multiple_choice',
         'question_text': 'Укажите варианты ответов, в которых средством выразительности речи является метафора, кликнув по чек-боксам.',
@@ -108,9 +108,9 @@ OgeQuestionOption.objects.filter(question=q10).delete()
 for num, text, correct in opts_10:
     OgeQuestionOption.objects.create(question=q10, option_number=num, option_text=text, is_correct=correct)
 
-# === Задание 11: фразеологизм ===
+# === Задание 12: фразеологизм ===
 q11, _ = OgeTextQuestion.objects.update_or_create(
-    task=text_9_11, question_number=11,
+    task=text_9_11, question_number=12,
     defaults={
         'question_type': 'free_text',
         'question_text': 'В предложениях 26–34 найдите фразеологизм с лексическим значением «свободно, без стеснения, хорошо». Выпишите этот фразеологизм.',
@@ -119,7 +119,7 @@ q11, _ = OgeTextQuestion.objects.update_or_create(
 )
 
 print(f"✓ Текст: «{text_9_11.title}»")
-print(f"✓ Задание 9: {OgeQuestionOption.objects.filter(question=q9).count()} опций")
-print(f"✓ Задание 10: {OgeQuestionOption.objects.filter(question=q10).count()} опций")
-print(f"✓ Задание 11: свободный ответ")
-print("✅ Данные 9–11 обновлены!")
+print(f"✓ Задание 10: {OgeQuestionOption.objects.filter(question=q9).count()} опций")
+print(f"✓ Задание 11: {OgeQuestionOption.objects.filter(question=q10).count()} опций")
+print(f"✓ Задание 12: свободный ответ")
+print("✅ Данные 10–12 обновлены!")

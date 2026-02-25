@@ -302,8 +302,8 @@ class TextAnalysisTask(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="Активно")
     
     class Meta:
-        verbose_name = "Текст для анализа 1-3"
-        verbose_name_plural = "Тексты для анализа 1-3"
+        verbose_name = "Текст для анализа 2-4"
+        verbose_name_plural = "Тексты для анализа 2-4"
         ordering = ['order']
     
     def __str__(self):
@@ -322,7 +322,7 @@ class TextQuestion(models.Model):
     task = models.ForeignKey(TextAnalysisTask, on_delete=models.CASCADE, related_name='questions')
     question_type = models.CharField(max_length=50, choices=QUESTION_TYPES)
     question_text = models.TextField(verbose_name="Текст вопроса")
-    question_number = models.IntegerField(verbose_name="Номер вопроса (1, 2, 3)")
+    question_number = models.IntegerField(verbose_name="Номер вопроса (2, 3, 4)")
     correct_answer = models.TextField(verbose_name="Правильный ответ")
     
     class Meta:
@@ -471,7 +471,7 @@ class OrthoepyWord(models.Model):
             'correct_answers': correct_answers,
         }
 
-# ===== ЗАДАНИЕ 5 ==============================================================
+# ===== ЗАДАНИЕ 6 ==============================================================
 class TaskPaponim(models.Model):
     text = models.TextField(
         verbose_name="Предложение с выделенным словом",
@@ -507,11 +507,11 @@ class TaskPaponim(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "ПАРОНИМЫ задание 5"
-        verbose_name_plural = "ПАРОНИМЫ задание 5"
+        verbose_name = "ПАРОНИМЫ задание 6"
+        verbose_name_plural = "ПАРОНИМЫ задание 6"
 
 
-# ===== ЗАДАНИЕ 6 ==============================================================
+# ===== ЗАДАНИЕ 7 ==============================================================
 class WordOk(models.Model):
     TYPE_CHOICES = [
         ('6100', 'Исключить лишнее слово'),
@@ -543,14 +543,14 @@ class WordOk(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "Задание 6: Лексические нормы"
-        verbose_name_plural = "Задание 6: Лексические нормы"
+        verbose_name = "Задание 7: Лексические нормы"
+        verbose_name_plural = "Задание 7: Лексические нормы"
 
 
-# ===== ЗАДАНИЕ 7 ==============================================================
+# ===== ЗАДАНИЕ 8 ==============================================================
 
 class CorrectionExercise(models.Model):
-    """Упражнение: исправь ошибку 7 (свободный ввод)"""
+    """Упражнение: исправь ошибку 8 (свободный ввод)"""
 
     # Неправильный вариант (то, что видит ученик)
     incorrect_text = models.CharField(
@@ -591,8 +591,8 @@ class CorrectionExercise(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "ЗАДАНИЕ 7: исправь ошибку"
-        verbose_name_plural = "ЗАДАНИЕ 7: исправь ошибку"
+        verbose_name = "ЗАДАНИЕ 8: исправь ошибку"
+        verbose_name_plural = "ЗАДАНИЕ 8: исправь ошибку"
 
     def __str__(self):
         return f"{self.incorrect_text} → {self.correct_text}"
@@ -639,7 +639,7 @@ class CorrectionExercise(models.Model):
         }
 
 
-# ===== ЗАДАНИЕ 8 ==============================================================
+# ===== ЗАДАНИЕ 9 ==============================================================
 
 class TaskGrammaticEight(models.Model):
     ERROR_TYPES = [
@@ -661,8 +661,8 @@ class TaskGrammaticEight(models.Model):
         return self.get_id_display()
 
     class Meta:
-        verbose_name = "Тип ошибки (задание 8)"
-        verbose_name_plural = "Типы ошибок (задание 8)"
+        verbose_name = "Тип ошибки (задание 9)"
+        verbose_name_plural = "Типы ошибок (задание 9)"
 
 
 class TaskGrammaticEightExample(models.Model):
@@ -684,8 +684,8 @@ class TaskGrammaticEightExample(models.Model):
         return self.text[:50]
 
     class Meta:
-        verbose_name = "Пример для задания 8"
-        verbose_name_plural = "Примеры для задания 8"
+        verbose_name = "Пример для задания 9"
+        verbose_name_plural = "Примеры для задания 9"
 
     @staticmethod
     def generate_task_eight_test(user_grade=None):
@@ -760,7 +760,7 @@ class TaskGrammaticEightExample(models.Model):
         }
 
 
-# ===== ЗАДАНИЕ 22 ==============================================================
+# ===== ЗАДАНИЕ 23 ==============================================================
 class TaskGrammaticTwoTwo(models.Model):
     DEVICE_TYPES = [
         ('2201', 'эпитет'),
@@ -801,8 +801,8 @@ class TaskGrammaticTwoTwo(models.Model):
         return self.get_id_display()  # Это ДОЛЖНО работать для поля с choices!
 
     class Meta:
-        verbose_name = "Средство выразительности (задание 22)"
-        verbose_name_plural = "Средства выразительности (задание 22)"
+        verbose_name = "Средство выразительности (задание 23)"
+        verbose_name_plural = "Средства выразительности (задание 23)"
 
 
 class TaskGrammaticTwoTwoExample(models.Model):
@@ -824,15 +824,15 @@ class TaskGrammaticTwoTwoExample(models.Model):
         return self.text[:50]
 
     class Meta:
-        verbose_name = "Пример для задания 22"
-        verbose_name_plural = "Примеры для задания 22"
+        verbose_name = "Пример для задания 23"
+        verbose_name_plural = "Примеры для задания 23"
 
 
 # ========================================================================
 # ОГЭ — ОТДЕЛЬНЫЕ МОДЕЛИ (физически разные таблицы)
 # ========================================================================
 
-# ===== ТЕКСТЫ (Задания ОГЭ 1, 2, 5, 9, 10, 11) ==========================
+# ===== ТЕКСТЫ (Задания ОГЭ 2, 3, 6, 10, 11, 12) ==========================
 
 class OgeTextAnalysisTask(models.Model):
     """Текст с заданиями ОГЭ"""
@@ -864,7 +864,7 @@ class OgeTextQuestion(models.Model):
     task = models.ForeignKey(OgeTextAnalysisTask, on_delete=models.CASCADE, related_name='questions')
     question_type = models.CharField(max_length=50, choices=QUESTION_TYPES)
     question_text = models.TextField(verbose_name="Текст вопроса")
-    question_number = models.IntegerField(verbose_name="Номер вопроса (1–11)")
+    question_number = models.IntegerField(verbose_name="Номер вопроса (2–12)")
     correct_answer = models.TextField(verbose_name="Правильный ответ")
 
     class Meta:
@@ -893,7 +893,7 @@ class OgeQuestionOption(models.Model):
         return f"Вариант {self.option_number}"
 
 
-# ===== ЗАДАНИЕ ОГЭ 3: Выпадающие списки ================================
+# ===== ЗАДАНИЕ ОГЭ 4: Выпадающие списки ================================
 
 class OgeTaskGrammaticEight(models.Model):
     ERROR_TYPES = [
@@ -910,8 +910,8 @@ class OgeTaskGrammaticEight(models.Model):
         return self.get_id_display()
 
     class Meta:
-        verbose_name = "ОГЭ: Пунктуационное правило (задание 4)"
-        verbose_name_plural = "ОГЭ: Пунктуационные правила (задание 4)"
+        verbose_name = "ОГЭ: Пунктуационное правило (задание 5)"
+        verbose_name_plural = "ОГЭ: Пунктуационные правила (задание 5)"
 
 
 class OgeTaskGrammaticEightExample(models.Model):
@@ -933,11 +933,11 @@ class OgeTaskGrammaticEightExample(models.Model):
         return self.text[:50]
 
     class Meta:
-        verbose_name = "ОГЭ: Пример для задания 3"
-        verbose_name_plural = "ОГЭ: Примеры для задания 3"
+        verbose_name = "ОГЭ: Пример для задания 4"
+        verbose_name_plural = "ОГЭ: Примеры для задания 4"
 
 
-# ===== ЗАДАНИЕ ОГЭ 4: Пунктуация (смайлики) ============================
+# ===== ЗАДАНИЕ ОГЭ 5: Пунктуация (смайлики) ============================
 
 class OgePunktum(models.Model):
     """
@@ -966,8 +966,8 @@ class OgePunktum(models.Model):
         return f"{self.id}: {self.name}"
 
     class Meta:
-        verbose_name = "ОГЭ: Пунктограмма (задание 4)"
-        verbose_name_plural = "ОГЭ: Пунктограммы (задание 4)"
+        verbose_name = "ОГЭ: Пунктограмма (задание 5)"
+        verbose_name_plural = "ОГЭ: Пунктограммы (задание 5)"
 
 
 class OgePunktumExample(models.Model):
@@ -1020,11 +1020,11 @@ class OgePunktumExample(models.Model):
         return f"{self.text[:40]} (пунктограмма {self.punktum.id}, классы: {grades_display})"
 
     class Meta:
-        verbose_name = "ОГЭ: Пример пунктуации (задание 4)"
-        verbose_name_plural = "ОГЭ: Примеры пунктуации (задание 4)"
+        verbose_name = "ОГЭ: Пример пунктуации (задание 5)"
+        verbose_name_plural = "ОГЭ: Примеры пунктуации (задание 5)"
 
 
-# ===== ЗАДАНИЕ ОГЭ 6: Орфография (смайлики букв) =======================
+# ===== ЗАДАНИЕ ОГЭ 7: Орфография (смайлики букв) =======================
 
 class OgeOrthogram(models.Model):
     id = models.CharField(max_length=10, primary_key=True)
@@ -1049,8 +1049,8 @@ class OgeOrthogram(models.Model):
         return f"{self.id}: {self.name}"
 
     class Meta:
-        verbose_name = "ОГЭ: Орфограмма (задание 6)"
-        verbose_name_plural = "ОГЭ: Орфограммы (задание 6)"
+        verbose_name = "ОГЭ: Орфограмма (задание 7)"
+        verbose_name_plural = "ОГЭ: Орфограммы (задание 7)"
 
 
 class OgeOrthogramExample(models.Model):
@@ -1101,11 +1101,11 @@ class OgeOrthogramExample(models.Model):
         return f"{self.text} (орф. {self.orthogram.id}, классы: {grades_display})"
 
     class Meta:
-        verbose_name = "ОГЭ: Пример орфограммы (задание 6)"
-        verbose_name_plural = "ОГЭ: Примеры орфограмм (задание 6)"
+        verbose_name = "ОГЭ: Пример орфограммы (задание 7)"
+        verbose_name_plural = "ОГЭ: Примеры орфограмм (задание 7)"
 
 
-# ===== ЗАДАНИЯ ОГЭ 7, 8: Инпуты ========================================
+# ===== ЗАДАНИЯ ОГЭ 8, 9: Инпуты ========================================
 
 class OgeCorrectionExercise(models.Model):
     """ОГЭ: Исправь ошибку (свободный ввод)"""
@@ -1137,8 +1137,8 @@ class OgeCorrectionExercise(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "ОГЭ: Задание 7 — исправь ошибку"
-        verbose_name_plural = "ОГЭ: Задание 7 — исправь ошибку"
+        verbose_name = "ОГЭ: Задание 8 — исправь ошибку"
+        verbose_name_plural = "ОГЭ: Задание 8 — исправь ошибку"
 
     def __str__(self):
         return f"{self.incorrect_text} → {self.correct_text}"
@@ -1197,5 +1197,5 @@ class OgeWordOk(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "ОГЭ: Задание 8 — лексические нормы"
-        verbose_name_plural = "ОГЭ: Задание 8 — лексические нормы"
+        verbose_name = "ОГЭ: Задание 9 — лексические нормы"
+        verbose_name_plural = "ОГЭ: Задание 9 — лексические нормы"

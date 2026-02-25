@@ -5,7 +5,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'main.settings')
 django.setup()
 from main.models import OgeCorrectionExercise, OgeWordOk
 
-# Задание 7
+# Задание 8
 OgeCorrectionExercise.objects.all().delete()
 OgeCorrectionExercise.objects.create(
     incorrect_text='вишня',                                        # слово в скобках
@@ -14,9 +14,9 @@ OgeCorrectionExercise.objects.create(
     exercise_id='711',
     is_active=True,
 )
-print('✓ Задание 7 обновлено')
+print('✓ Задание 8 обновлено')
 
-# Задание 8
+# Задание 9
 OgeWordOk.objects.all().delete()
 OgeWordOk.objects.create(
     task_type='6200',
@@ -24,5 +24,5 @@ OgeWordOk.objects.create(
     correct_variants='кофе по-турецки',
     is_active=True,
 )
-print('✓ Задание 8 обновлено')
+print('✓ Задание 9 обновлено')
 print('✅ Готово!')

@@ -3,7 +3,7 @@
 {% load custom_filters %}
 <div class="diagnostic-full-test">
 
-    <!-- Задания 1–2 (чекбоксы по тексту) -->
+    <!-- Задания 2–3 (чекбоксы по тексту) -->
     {% if text_task_1_2 %}
     <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
         {{ text_task_1_2.text_content|bold_words|safe }}
@@ -26,10 +26,10 @@
     {% endfor %}
     {% endif %}
 
-    <!-- Задание 3: Синтаксический анализ (Сопоставление) -->
+    <!-- Задание 4: Синтаксический анализ (Сопоставление) -->
     {% if task3_error_type_names %}
-    <div class="question" data-question-number="3">
-        <h4>3. Установите соответствие между пунктуационными правилами и предложениями, которые могут служить примерами
+    <div class="question" data-question-number="4">
+        <h4>4. Установите соответствие между пунктуационными правилами и предложениями, которые могут служить примерами
             для приведённых пунктуационных правил. К каждой позиции первого столбца подберите соответствующую позицию из
             второго столбца.</h4>
 
@@ -64,18 +64,18 @@
     <hr>
     {% endif %}
 
-    <!-- Задание 4: Пунктуация — смайлики -->
+    <!-- Задание 5: Пунктуация — смайлики -->
     {% if task4_data %}
-    <div class="question" data-question-number="4">
+    <div class="question" data-question-number="5">
         {% if task4_data.title %}
         <h4>{{ task4_data.title }}</h4>
         {% else %}
-        <h4>4. Расставьте знаки препинания. Кликните на смайлик и выберите правильный знак.</h4>
+        <h4>5. Расставьте знаки препинания. Кликните на смайлик и выберите правильный знак.</h4>
         {% endif %}
 
         {% if task4_data.image_name %}
         <div style="margin: 15px 0; text-align: center;">
-            <img src="{% static task4_data.image_name %}" alt="Задание 4" style="max-width: 100%; height: auto;">
+            <img src="{% static task4_data.image_name %}" alt="Задание 5" style="max-width: 100%; height: auto;">
         </div>
         {% endif %}
 
@@ -86,7 +86,7 @@
     <hr>
     {% endif %}
 
-    <!-- Задание 5: Чекбоксы по тексту -->
+    <!-- Задание 6: Чекбоксы по тексту -->
     {% if text_task_5 %}
     <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
         {{ text_task_5.text_content|bold_words|safe }}
@@ -109,10 +109,10 @@
     {% endfor %}
     {% endif %}
 
-    <!-- Задание 6: Смайлики букв -->
+    <!-- Задание 7: Смайлики букв -->
     {% if task6_lines %}
-    <div class="question" data-question-number="6">
-        <h4>6. Выберите правильную букву, кликнув на смайлик.</h4>
+    <div class="question" data-question-number="7">
+        <h4>7. Выберите правильную букву, кликнув на смайлик.</h4>
         {% for line in task6_lines %}
         <div>{{ forloop.counter }}) <span class="practice-line">{{ line.display_line|safe }}</span></div>
         {% endfor %}
@@ -120,32 +120,32 @@
     <hr>
     {% endif %}
 
-    <!-- Задание 7: Раскройте скобки -->
+    <!-- Задание 8: Раскройте скобки -->
     {% if task7_word %}
-    <div class="question" data-question-number="7">
-        <h4>7. Раскройте скобки и запишите слово «{{ task7_word }}» в соответствующей форме, соблюдая нормы
+    <div class="question" data-question-number="8">
+        <h4>8. Раскройте скобки и запишите слово «{{ task7_word }}» в соответствующей форме, соблюдая нормы
             современного
             русского литературного языка.</h4>
         {% if task7_sentence %}
         <p style="margin: 10px 0; font-size: 1.05em;">{{ task7_sentence }}</p>
         {% endif %}
-        <input type="text" data-question="7" placeholder="Впиши слово"
+        <input type="text" data-question="8" placeholder="Впиши слово"
             style="width: 60%; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;">
     </div>
     <hr>
     {% endif %}
 
-    <!-- Задание 8: Словосочетание -->
+    <!-- Задание 9: Словосочетание -->
     {% if wordok_8 %}
-    <div class="question" data-question-number="8">
-        <h4>8. {{ wordok_8.text }}</h4>
-        <input type="text" data-question="8" placeholder="Впиши словосочетание"
+    <div class="question" data-question-number="9">
+        <h4>9. {{ wordok_8.text }}</h4>
+        <input type="text" data-question="9" placeholder="Впиши словосочетание"
             style="width: 60%; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;">
     </div>
     <hr>
     {% endif %}
 
-    <!-- Задания 9–10: Чекбоксы по тексту (без отдельного заголовка секции) -->
+    <!-- Задания 10–11: Чекбоксы по тексту (без отдельного заголовка секции) -->
     {% if text_task_9_10 %}
     <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
         {{ text_task_9_10.text_content|bold_words|safe }}
@@ -168,7 +168,7 @@
     {% endfor %}
     {% endif %}
 
-    <!-- Задание 11: Инпут (без повторного текста — он уже выше) -->
+    <!-- Задание 12: Инпут (без повторного текста — он уже выше) -->
     {% if text_questions_11 %}
     {% for q in text_questions_11 %}
     <div class="question" data-question-number="{{ q.question_number }}">

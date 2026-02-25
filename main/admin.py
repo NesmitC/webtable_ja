@@ -67,7 +67,7 @@ class OrthogramExampleAdmin(admin.ModelAdmin):
         }
 
 
-# ===== ЗАДАНИЯ 16-21 ==================================================
+# ===== ЗАДАНИЯ 17-22 ==================================================
 @admin.register(Punktum)
 class PunktumAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'rule')
@@ -127,7 +127,7 @@ class TextQuestionAdmin(admin.ModelAdmin):
 
 
 
-# ===== ЗАДАНИЕ 4 ===================================================
+# ===== ЗАДАНИЕ 5 ===================================================
 @admin.register(OrthoepyWord)
 class OrthoepyWordAdmin(admin.ModelAdmin):
     list_display = ['word', 'lemma', 'is_correct_display', 'is_active', 'grades']
@@ -141,7 +141,7 @@ class OrthoepyWordAdmin(admin.ModelAdmin):
     is_correct_display.admin_order_field = 'is_correct'
 
 
-# ===== ЗАДАНИЕ 5 ===================================================
+# ===== ЗАДАНИЕ 6 ===================================================
 @admin.register(TaskPaponim)
 class TaskPaponimAdmin(admin.ModelAdmin):
     list_display = ['preview', 'root', 'has_error', 'is_active', 'is_for_quiz']
@@ -159,7 +159,7 @@ class TaskPaponimAdmin(admin.ModelAdmin):
     has_error.short_description = "С ошибкой"
 
 
-# ===== ЗАДАНИЕ 6 ===================================================
+# ===== ЗАДАНИЕ 7 ===================================================
 @admin.register(WordOk)
 class WordOkAdmin(admin.ModelAdmin):
     list_display = ['preview', 'task_type', 'correct_variants', 'is_active', 'is_for_quiz']
@@ -171,7 +171,7 @@ class WordOkAdmin(admin.ModelAdmin):
         return obj.text[:80] + '...' if len(obj.text) > 80 else obj.text
 
 
-# ===== ЗАДАНИЕ 7 ===================================================
+# ===== ЗАДАНИЕ 8 ===================================================
 @admin.register(CorrectionExercise)
 class CorrectionExerciseAdmin(admin.ModelAdmin):
     list_display = (
@@ -216,7 +216,7 @@ class CorrectionExerciseAdmin(admin.ModelAdmin):
         return super().get_queryset(request).order_by('incorrect_text')
 
 
-# ===== ЗАДАНИЕ 8 ===================================================
+# ===== ЗАДАНИЕ 9 ===================================================
 @admin.register(TaskGrammaticEight)
 class TaskGrammaticEightAdmin(admin.ModelAdmin):
     list_display = ['id', 'get_id_display', 'is_active']
@@ -234,7 +234,7 @@ class TaskGrammaticEightExampleAdmin(admin.ModelAdmin):
     def preview(self, obj):
         return (obj.text[:60] + '…') if len(obj.text) > 60 else obj.text
 
-# ===== ЗАДАНИЕ 22 ===================================================
+# ===== ЗАДАНИЕ 23 ===================================================
 @admin.register(TaskGrammaticTwoTwo)
 class TaskGrammaticTwoTwoAdmin(admin.ModelAdmin):
     list_display = ['id', 'display_name', 'is_active']

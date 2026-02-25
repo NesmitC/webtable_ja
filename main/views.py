@@ -595,29 +595,29 @@ def generate_exercise(request):
         # === УМНЫЙ ЗАГОЛОВОК ДЛЯ ЕГЭ ===
         exercise_title = f"Орфограмма № {orthogram_ids[0]}"  # fallback
 
-        # Задание 9: Орфографические нормы
+        # Задание 10: Корни
         if set(orthogram_ids) == {1, 2, 12, 13, 14, 15, 24, 26, 27, 271}:
-            exercise_title = "Задание № 9. Корни"
+            exercise_title = "Задание № 10. Корни"
 
-        # Задание 10: Приставки
+        # Задание 11: Приставки
         elif set(orthogram_ids) == {10, 11, 28, 29, 6}:
-            exercise_title = "Задание № 10. Приставки."
+            exercise_title = "Задание № 11. Приставки."
 
-        # Задание 11: Суффиксы
+        # Задание 12: Суффиксы
         elif set(orthogram_ids) == {31, 33, 34, 35, 37, 39, 48, 481, 482, 483, 484, 60, 61, 610, 485}:
-            exercise_title = "Задание № 11. Суффиксы."
+            exercise_title = "Задание № 12. Суффиксы."
 
-        # Задание 12: Спряжения. Причастия
+        # Задание 13: Спряжения. Причастия
         elif set(orthogram_ids) == {25, 49, 50, 51, 511, 512, 513}:
-            exercise_title = "Задание № 12. Спряжения. Причастия"
+            exercise_title = "Задание № 13. Спряжения. Причастия"
 
-        # Задание 13: Слитно - раздельно
+        # Задание 14: Слитно - раздельно
         elif set(orthogram_ids) == {21, 32, 36, 46, 54, 56, 57, 58, 581, 582}:
-            exercise_title = "Задание № 13. Слитно - раздельно"
+            exercise_title = "Задание № 14. Слитно - раздельно"
 
-        # Задание 14: Слитно - раздельно - дефис
+        # Задание 15: Слитно - раздельно - дефис
         elif orthogram_ids == [1400]:
-            exercise_title = "Задание № 14. Слитно - раздельно - дефис"
+            exercise_title = "Задание № 15. Слитно - раздельно - дефис"
             
         # Для одной орфограммы
         else:
@@ -1494,7 +1494,7 @@ def generate_task9_exercise(request):
         html = render_to_string('exercise_snippet.html', {
             'words_text': ', '.join(formatted_items),
             'exercise_id': 'task9_ege',
-            'exercise_title': 'Задание № 9. Корни',
+            'exercise_title': 'Задание № 10. Корни',
             'show_next_button': False,
         })
         
@@ -5544,10 +5544,10 @@ def get_oge_text_analysis_questions(task_type):
     task_type: '1_2' (задания 1,2), '5' (задание 5), '9_10' (задания 9,10), '11' (задание 11)
     """
     number_map = {
-        '1_2': [1, 2],
-        '5': [5],
-        '9_10': [9, 10],
-        '11': [11],
+        '1_2': [2, 3],
+        '5': [6],
+        '9_10': [10, 11],
+        '11': [12],
     }
     required_numbers = number_map.get(task_type, [])
     if not required_numbers:
@@ -5613,7 +5613,7 @@ def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=Fal
     if not examples:
         return None
 
-    task_number = '4'
+    task_number = '5'
     all_lines = []
     all_correct_symbols = []
     letter_groups = {}
@@ -5650,26 +5650,33 @@ def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=Fal
         all_lines.append(masked)
         all_correct_symbols.extend(correct)
 
+    try:
+        from main.models import OgePunktum
+        punktum = OgePunktum.objects.get(id=punktum_id)
+        letters = punktum.get_letters_list()
+    except Exception:
+        letters = ['5', '8', 'дз']
+
     # Для ОГЭ задания 4: картинки по типу знака
     image_mapping = {
-        '2100': 'images/punktum_task_21_0.webp',  # Тире
-        '2101': 'images/punktum_task_21_1.webp',  # Двоеточие
-        '2102': 'images/punktum_task_21_2.webp',  # Запятые
+        '2100': 'images/punktum_task_OGE_0.webp',  # Тире
+        '2101': 'images/punktum_task_OGE_1.webp',  # Двоеточие
+        '2102': 'images/punktum_task_OGE_2.webp',  # Запятые
         '2103': 'images/punktum_task_21_3.webp',  # Кавычки
     }
 
     title_mapping = {
-        '2100': '4. Кликни на смайлик, выбери подходящий знак для постановки ТИРЕ.',
-        '2101': '4. Кликни на смайлик, выбери подходящий знак для постановки ДВОЕТОЧИЯ.',
-        '2102': '4. Кликни на смайлик, выбери подходящий знак для постановки ЗАПЯТЫХ.',
-        '2103': '4. Кликни на смайлик, выбери подходящий знак для постановки КАВЫЧЕК.',
+        '2100': '5. Кликни на смайлик, выбери подходящий знак для постановки ТИРЕ.',
+        '2101': '5. Кликни на смайлик, выбери подходящий знак для постановки ДВОЕТОЧИЯ.',
+        '2102': '5. Кликни на смайлик, выбери подходящий знак для постановки ЗАПЯТЫХ.',
+        '2103': '5. Кликни на смайлик, выбери подходящий знак для постановки КАВЫЧЕК.',
     }
 
     result = {
         'lines': all_lines,
         'correct_symbols': all_correct_symbols,
         'letter_groups': letter_groups,
-        'subgroup_letters': {f'punktum_{task_number}': [':', '«»', '—', ',']},
+        'subgroup_letters': {f'punktum_{task_number}': letters},
         'image_name': image_mapping.get(punktum_id),
         'add_numbering': add_numbering,
         'task_number': task_number,
@@ -5695,7 +5702,7 @@ def generate_oge_diagnostic(request):
         if request.user.is_authenticated and hasattr(request.user, 'profile'):
             user_grade = request.user.profile.grade
 
-        # === Задания 1, 2: Чекбоксы (из OgeTextAnalysisTask) ===
+        # === Задания 2, 3: Чекбоксы (из OgeTextAnalysisTask) ===
         text_task_1_2, text_questions_1_2 = get_oge_text_analysis_questions('1_2')
         if text_task_1_2:
             context['text_task_1_2'] = text_task_1_2
@@ -5704,14 +5711,14 @@ def generate_oge_diagnostic(request):
                 str(q.question_number): q.correct_answer for q in text_questions_1_2
             }
 
-        # === Задание 3: Синтаксический анализ (Сопоставление) ===
+        # === Задание 4: Синтаксический анализ (Сопоставление) ===
         task3_data = generate_oge_task3_matching()
         if task3_data:
             context['task3_error_type_names'] = task3_data.get('error_type_names', {})
             context['task3_sentences'] = task3_data.get('sentences', [])
             session_data['task3_correct'] = task3_data['correct_answers']
 
-        # === Задание 4: Пунктуация — смайлики ===
+        # === Задание 5: Пунктуация — смайлики ===
         available_punktum_ids = list(OgePunktum.objects.all().values_list('id', flat=True))
         selected_type = random.choice(available_punktum_ids) if available_punktum_ids else None
         task4_data = generate_oge_task4_with_image(
@@ -5725,7 +5732,7 @@ def generate_oge_diagnostic(request):
             context['task4_letter_groups'] = json.dumps(task4_data['letter_groups'])
             context['task4_subgroup_letters'] = json.dumps(task4_data['subgroup_letters'])
 
-        # === Задание 5: Чекбокс (из OgeTextAnalysisTask) ===
+        # === Задание 6: Чекбокс (из OgeTextAnalysisTask) ===
         text_task_5, text_questions_5 = get_oge_text_analysis_questions('5')
         if text_task_5:
             context['text_task_5'] = text_task_5
@@ -5734,7 +5741,7 @@ def generate_oge_diagnostic(request):
                 str(q.question_number): q.correct_answer for q in text_questions_5
             }
 
-        # === Задание 6: Смайлики букв (из OgeOrthogramExample) ===
+        # === Задание 7: Смайлики букв (из OgeOrthogramExample) ===
         try:
             oge_orth_examples = list(
                 OgeOrthogramExample.objects.filter(is_active=True).order_by('?')[:3]
@@ -5782,7 +5789,7 @@ def generate_oge_diagnostic(request):
         except Exception as e:
             logger.error(f"Ошибка генерации задания 6 ОГЭ: {e}")
 
-        # === Задание 7: Инпут — раскройте скобки (из OgeCorrectionExercise) ===
+        # === Задание 8: Инпут — раскройте скобки (из OgeCorrectionExercise) ===
         try:
             task7_item = OgeCorrectionExercise.objects.filter(is_active=True).order_by('?').first()
             if task7_item:
@@ -5792,7 +5799,7 @@ def generate_oge_diagnostic(request):
         except Exception as e:
             logger.error(f"Ошибка генерации задания 7 ОГЭ: {e}")
 
-        # === Задание 8: Инпут — словосочетание (из OgeWordOk) ===
+        # === Задание 9: Инпут — словосочетание (из OgeWordOk) ===
         try:
             wordok = OgeWordOk.objects.filter(is_active=True).order_by('?').first()
             if wordok and wordok.correct_variants.strip():
@@ -5801,7 +5808,7 @@ def generate_oge_diagnostic(request):
         except Exception as e:
             logger.error(f"Ошибка генерации задания 8 ОГЭ: {e}")
 
-        # === Задания 9, 10: Чекбоксы по тексту (из OgeTextAnalysisTask) ===
+        # === Задания 10, 11: Чекбоксы по тексту (из OgeTextAnalysisTask) ===
         text_task_9_10, text_questions_9_10 = get_oge_text_analysis_questions('9_10')
         if text_task_9_10:
             context['text_task_9_10'] = text_task_9_10
@@ -5810,7 +5817,7 @@ def generate_oge_diagnostic(request):
                 str(q.question_number): q.correct_answer for q in text_questions_9_10
             }
 
-        # === Задание 11: Инпут по тексту (из OgeTextAnalysisTask) ===
+        # === Задание 12: Инпут по тексту (из OgeTextAnalysisTask) ===
         text_task_11, text_questions_11 = get_oge_text_analysis_questions('11')
         if text_task_11:
             context['text_task_11'] = text_task_11
@@ -5875,17 +5882,17 @@ def check_oge_diagnostic(request):
                 score = 1 if is_correct else 0
                 max_s = 1
                 
-                # Задание 5 - Орфограммы
+                # Задание 6 - Орфограммы
                 extras = ''
-                if q_num == 5:
+                if q_num == 6:
                     from main.models import OgeQuestionOption
-                    options = OgeQuestionOption.objects.filter(question__question_number=5).order_by('option_number')
+                    options = OgeQuestionOption.objects.filter(question__question_number=6).order_by('option_number')
                     orth_parts = []
                     for opt in options:
                         if opt.orthogram_numbers:
                             orth_parts.append(f"{opt.option_number} - {opt.orthogram_numbers}")
                     if orth_parts:
-                        extras = "ОРФОГРАММЫ №№: " + "; ".join(orth_parts)
+                        extras = "ОРФОГРАММЫ:<br>" + "<br>".join(orth_parts)
 
                 results[q_num_str] = {
                     'is_correct': is_correct,
@@ -5898,12 +5905,12 @@ def check_oge_diagnostic(request):
                 max_score += max_s
                 analytics_parts.append((q_num, is_correct))
 
-        # === Задания 1–2, 5, 9–10 ===
-        process_checkbox_task(session.get('answers_1_2', {}), [1, 2])
-        process_checkbox_task(session.get('answers_5', {}), [5])
-        process_checkbox_task(session.get('answers_9_10', {}), [9, 10])
+        # === Задания 2–3, 6, 10–11 ===
+        process_checkbox_task(session.get('answers_1_2', {}), [2, 3])
+        process_checkbox_task(session.get('answers_5', {}), [6])
+        process_checkbox_task(session.get('answers_9_10', {}), [10, 11])
 
-        # === Задание 3: Выпадающие списки ===
+        # === Задание 4: Выпадающие списки ===
         task3_correct = session.get('task3_correct', {})
         if task3_correct:
             task3_correct_count = 0
@@ -5911,7 +5918,7 @@ def check_oge_diagnostic(request):
             letters = ['А', 'Б', 'В']
             correct_pairs = []
             for letter in letters:
-                key = f"3-{letter}"
+                key = f"4-{letter}"
                 user_answer = user_answers_dict.get(key, '-')
                 correct_answer = task3_correct.get(letter, '')
                 if correct_answer:
@@ -5923,24 +5930,24 @@ def check_oge_diagnostic(request):
 
             final_score = 1 if task3_correct_count == 3 else 0
 
-            results['3'] = {
+            results['4'] = {
                 'is_correct': final_score > 0,
                 'score': final_score,
                 'max_score': 1,
-                'correct_answer': "<br>" + "<br>".join(correct_pairs) if correct_pairs else ""
+                'correct_answer': ""
             }
             results.update({k: {'is_correct': v['is_correct']} for k, v in task3_details.items()})
             total_score += final_score
             max_score += 1
-            analytics_parts.append((3, final_score > 0))
+            analytics_parts.append((4, final_score > 0))
 
-        # === Задание 4: Пунктуация (смайлики) ===
+        # === Задание 5: Пунктуация (смайлики) ===
         if 'task4_correct' in session:
             expected_symbols = session['task4_correct']
             task4_correct_count = 0
             task4_results = {}
             for i in range(1, len(expected_symbols) + 1):
-                key = f"4-{i}"
+                key = f"5-{i}"
                 user_answer = user_answers_dict.get(key, '😊')
                 user_clean = str(user_answer).strip()
                 correct_symbol = expected_symbols[i-1] if i <= len(expected_symbols) else '?'
@@ -5949,24 +5956,24 @@ def check_oge_diagnostic(request):
                 if is_correct: task4_correct_count += 1
 
             task4_score = 1 if task4_correct_count == len(expected_symbols) else 0
-            results['4'] = {
+            results['5'] = {
                 'is_correct': task4_score == 1,
                 'score': task4_score, 'max_score': 1,
-                'correct_answer': ''.join(expected_symbols)
+                'correct_answer': ""
             }
             results.update(task4_results)
             total_score += task4_score
             max_score += 1
-            analytics_parts.append((4, task4_score == 1))
+            analytics_parts.append((5, task4_score == 1))
 
-        # === Задание 6: Смайлики букв ===
+        # === Задание 7: Смайлики букв ===
         if 'task6_correct' in session:
             expected_letters = session['task6_correct']
             total_masks = len(expected_letters)
             task6_correct_count = 0
             task6_results = {}
             for i in range(1, total_masks + 1):
-                key = f"6-{i}"
+                key = f"7-{i}"
                 user_answer = user_answers_dict.get(key, '😊')
                 user_clean = str(user_answer).strip().lower()
                 correct_letter = expected_letters[i - 1].lower() if i <= len(expected_letters) else ''
@@ -5975,48 +5982,48 @@ def check_oge_diagnostic(request):
                 if is_correct: task6_correct_count += 1
 
             task6_score = 1 if task6_correct_count == total_masks else 0
-            results['6'] = {
+            results['7'] = {
                 'is_correct': task6_score == 1,
                 'score': task6_score, 'max_score': 1,
-                'correct_answer': ''.join(expected_letters)
+                'correct_answer': ""
             }
             results.update(task6_results)
             total_score += task6_score
             max_score += 1
-            analytics_parts.append((6, task6_score == 1))
+            analytics_parts.append((7, task6_score == 1))
 
-        # === Задание 7: Инпут ===
+        # === Задание 8: Инпут ===
         if 'answer_7' in session:
             correct = session['answer_7'].strip().lower()
-            user_ans = user_answers_dict.get('7', '').strip().lower()
+            user_ans = user_answers_dict.get('8', '').strip().lower()
             user_words_list = user_ans.split()
             user_word = user_words_list[-1] if user_words_list else ''
             is_correct = _normalize_text(user_word) == _normalize_text(correct)
             score = 1 if is_correct else 0
-            results['7'] = {
+            results['8'] = {
                 'is_correct': is_correct, 'score': score, 'max_score': 1,
                 'correct_answer': correct
             }
             total_score += score
             max_score += 1
-            analytics_parts.append((7, is_correct))
+            analytics_parts.append((8, is_correct))
 
-        # === Задание 8: Инпут (лексика) ===
+        # === Задание 9: Инпут (лексика) ===
         if 'answer_8' in session:
             correct = session['answer_8']
-            user_ans = user_answers_dict.get('8', '').strip()
+            user_ans = user_answers_dict.get('9', '').strip()
             variants = [v.strip() for v in correct.split(',') if v.strip()]
             is_correct = _normalize_text(user_ans) in [_normalize_text(v) for v in variants]
             score = 1 if is_correct else 0
-            results['8'] = {
+            results['9'] = {
                 'is_correct': is_correct, 'score': score, 'max_score': 1,
                 'correct_answer': variants[0] if variants else correct
             }
             total_score += score
             max_score += 1
-            analytics_parts.append((8, is_correct))
+            analytics_parts.append((9, is_correct))
 
-        # === Задание 11: Инпут по тексту ===
+        # === Задание 12: Инпут по тексту ===
         answers_11 = session.get('answers_11', {})
         for q_num_str, correct in answers_11.items():
             user_ans = str(user_answers_dict.get(q_num_str, '')).strip()
@@ -6029,7 +6036,7 @@ def check_oge_diagnostic(request):
             }
             total_score += score
             max_score += 1
-            analytics_parts.append((11, is_correct))
+            analytics_parts.append((int(q_num_str), is_correct))
 
         # Формируем строку аналитики: 1+ 2- 3+ 4- ...
         analytics_parts.sort(key=lambda x: x[0])

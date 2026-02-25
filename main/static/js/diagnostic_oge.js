@@ -194,8 +194,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateSelects();
                 }
 
-                // Задание 3 ОГЭ (тот же формат, что задание 8 ЕГЭ)
-                setupSelects('[data-question-number="3"]', '.error-select');
+                // Задание 4 ОГЭ (тот же формат, что задание 8 ЕГЭ)
+                setupSelects('[data-question-number="4"]', '.error-select');
             }
 
             setTimeout(setupOgeUniqueSelects, 100);
@@ -250,11 +250,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     });
 
-                    // Выпадающие списки (задание 3)
+                    // Выпадающие списки (задание 4)
                     block.querySelectorAll('.error-select').forEach(sel => {
                         const letter = sel.dataset.letter;
                         if (letter && sel.value && sel.value !== '-') {
-                            answers[`3-${letter}`] = sel.value;
+                            answers[`4-${letter}`] = sel.value;
                         }
                     });
                 });
@@ -288,18 +288,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                 // Добавляем Баллы и правильный ответ в конец блока
                                 let scoreHtml = `<div style="margin-top: 15px; font-weight: bold;">`;
                                 const scoreColor = val.score === val.max_score ? '#4CAF50' : '#f44336';
-                                scoreHtml += `<span style="color: ${scoreColor}">Баллов: ${val.score}. `;
-                                if (val.score < val.max_score || key === '3' || key === '5') {
-                                    if (key === '4' || key === '6') {
-                                        // Форматируем ответы в столбик: 1 - а, 2 - б...
-                                        const ansArr = String(val.correct_answer).split('');
-                                        const formattedAns = ansArr.map((char, index) => `${index + 1} - ${char}`).join('<br>');
-                                        scoreHtml += `Правильные ответы:<br>${formattedAns}</span>`;
-                                    } else {
-                                        scoreHtml += `Правильный ответ: ${val.correct_answer}</span>`;
-                                    }
-                                } else {
-                                    scoreHtml += `</span>`;
+                                scoreHtml += `<span style="color: ${scoreColor}">Баллов: ${val.score}. </span>`;
+                                if (key !== '4' && key !== '5' && key !== '7' && (val.score < val.max_score || key === '6')) {
+                                    scoreHtml += `<span style="color: ${scoreColor}">`;
+                                    scoreHtml += `Правильный ответ: ${val.correct_answer}</span>`;
                                 }
                                 if (val.extras) {
                                     scoreHtml += `<br><span style="color: ${scoreColor}">${val.extras}</span>`;
@@ -317,51 +309,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                 // Подсветка чекбоксов и инпутов внутри блока
                                 const correctAnsStr = String(val.correct_answer).toLowerCase();
-                                const correctArr = (key === '1' || key === '2' || key === '5' || key === '9' || key === '10') ? correctAnsStr.split('') : [];
+                                const correctArr = (key === '2' || key === '3' || key === '6' || key === '10' || key === '11') ? correctAnsStr.split('') : [];
 
-                                // Инпуты (7, 8, 11)
+                                // Инпуты (8, 9, 12)
                                 const textInput = qBlock.querySelector('input[type="text"][data-question]');
-                                if (textInput && (key === '7' || key === '8' || key === '11')) {
+                                if (textInput && (key === '8' || key === '9' || key === '12')) {
                                     textInput.style.backgroundColor = val.is_correct ? '#c8e6c9' : '#ffcdd2';
                                     textInput.style.borderColor = val.is_correct ? '#4CAF50' : '#f44336';
                                 }
 
-                                // Чекбоксы (1, 2, 5, 9, 10)
+                                // Чекбоксы (2, 3, 6, 10, 11)
                                 const checkboxes = qBlock.querySelectorAll('input[type="checkbox"]');
                                 checkboxes.forEach(cb => {
                                     const valStr = cb.value;
                                     const label = cb.closest('label') || cb.parentElement;
                                     const isCorrectCb = correctArr.includes(valStr);
 
-                                    // Галочка в чек-боксе, который правильный вообще
-                                    if (isCorrectCb && !cb.checked) {
-                                        // Пользователь не выбрал, но это правильный ответ. Покажем зелёную галочку.
-                                        const span = cb.nextElementSibling;
-                                        if (span && !span.textContent.startsWith('☑')) {
-                                            span.innerHTML = '<span style="color:#4CAF50; font-weight:bold;">☑</span> ' + span.innerHTML;
-                                        }
-                                    }
-
-                                    // Зеленая/красная обводка при ответе пользователя
+                                    // Подсветка самого чекбокса и его текста
                                     if (cb.checked) {
-                                        label.style.border = isCorrectCb ? '2px solid #4CAF50' : '2px solid #f44336';
-                                        label.style.borderRadius = '4px';
-                                        label.style.padding = '2px 4px';
-                                        label.style.display = 'inline-block';
-
-                                        const span = cb.nextElementSibling;
-                                        if (span) {
-                                            const icon = isCorrectCb ? '<span style="color:#4CAF50; font-weight:bold;">☑</span> ' : '<span style="color:#f44336; font-weight:bold;">☒</span> ';
-                                            if (!span.textContent.startsWith('☑') && !span.textContent.startsWith('☒')) {
-                                                span.innerHTML = icon + span.innerHTML;
-                                            }
+                                        cb.style.outline = isCorrectCb ? '2px solid #4CAF50' : '2px solid #f44336';
+                                        cb.style.outlineOffset = '2px';
+                                        if (label) {
+                                            label.style.color = isCorrectCb ? '#4CAF50' : '#f44336';
+                                            label.style.fontWeight = 'bold';
                                         }
                                     }
                                 });
                             }
 
-                            // Выпадающие списки (задание 3)
-                            if (key.startsWith('3-')) {
+                            // Выпадающие списки (задание 4)
+                            if (key.startsWith('4-')) {
                                 const sel = contentDiv.querySelector(`select[data-letter="${key.split('-')[1]}"]`);
                                 if (sel) {
                                     sel.style.backgroundColor = val.is_correct ? '#c8e6c9' : '#ffcdd2';
@@ -369,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 }
                             }
 
-                            // Смайлики (задания 4, 6)
+                            // Смайлики (задания 5, 7)
                             const smiley = contentDiv.querySelector(`.smiley-button[data-mask-id="${key}"]`);
                             if (smiley) {
                                 const icon = smiley.querySelector('.smiley-icon');

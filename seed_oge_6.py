@@ -1,51 +1,45 @@
 #!/usr/bin/env python
-"""Обновляет задание 6 — каждая позиция имеет свой набор букв."""
+"""Обновляет задание 6 — правописание с фото ОГЭ."""
 import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'main.settings')
 django.setup()
-from main.models import OgeOrthogram, OgeOrthogramExample
+from main.models import OgeTextAnalysisTask, OgeTextQuestion, OgeQuestionOption
 
-OgeOrthogramExample.objects.all().delete()
-OgeOrthogram.objects.all().delete()
+# Удаляем старое задание 6
+OgeQuestionOption.objects.filter(question__question_number=6).delete()
+OgeTextQuestion.objects.filter(question_number=6).delete()
+OgeTextAnalysisTask.objects.filter(title__icontains='язык').delete()
 
-orth1, _ = OgeOrthogram.objects.get_or_create(
-    id='101',
-    defaults={'name': 'Безударная гласная', 'rule': 'Орфография', 'letters': 'а,о,е,и,я'}
+# Задание 6 — без текста, только вопрос с чекбоксами
+text_6, _ = OgeTextAnalysisTask.objects.update_or_create(
+    title="Правописание (задание 6)",
+    defaults={
+        'text_content': '',  # пустой — текст не нужен
+        'order': 2,
+        'is_active': True,
+    }
 )
 
-# Формат correct_letters: "правильная|вариант1/вариант2/вариант3, ..."
-# Каждая позиция через запятую
-
-# Пример 1: текст про шмеля с разными буквами
-OgeOrthogramExample.objects.create(
-    orthogram=orth1,
-    text=(
-        'Хотя шмель вышел из зимнего сна благодаря теплу, но всё-таки было '
-        'прохладно, и шмель начал согревать себя сам, быстро сокращая мышцы '
-        'груди и оставляя неподвижными крылья. Он разогревался, как мотор, '
-        'и желание полёта возникало в нём всё настойчивее.'
-    ),
-    masked_word=(
-        'Хотя шмель вышел из зимнего сна бл*101*годаря теплу, но всё-таки было '
-        'прохладно, и шмель нач*101*л с*101*гревать себя сам, быстро сокр*101*щая мышцы '
-        'груди и ост*101*вляя неп*101*движными крыл*101*я. Он р*101*зогревался, как м*101*тор, '
-        'и желание п*101*лёта возникало в нём всё настойчивее.'
-    ),
-    correct_letters=(
-        'а|а/о/е,'    # бл_годаря → а
-        'а|а/о/е,'    # нач_л → а
-        'о|а/о/е,'    # с_гревать → о
-        'а|а/о/е,'    # сокр_щая → а
-        'а|а/о/е,'    # ост_вляя → а
-        'о|а/о/е,'    # неп_движными → о
-        'ь|ь/ъ,'      # крыл_я → ь
-        'а|а/о/е,'    # р_зогревался → а
-        'о|а/о/е,'    # м_тор → о
-        'о|а/о/е'     # п_лёта → о
-    ),
-    is_active=True,
+q6, _ = OgeTextQuestion.objects.update_or_create(
+    task=text_6, question_number=6,
+    defaults={
+        'question_type': 'multiple_choice',
+        'question_text': 'Укажите варианты ответов, в которых дано верное объяснение написания выделенного слова, кликнув по чек-боксам.',
+        'correct_answer': '235',
+    }
 )
 
+opts = [
+    (1, 'ССЫЛКА (в Сибирь) — на конце приставки перед буквой, обозначающей глухой согласный, пишется буква С.', False, '11'),
+    (2, 'НЕЖНО-ЗЕЛЁНЫЙ — сложное имя прилагательное, обозначающее оттенок цвета, пишется через дефис.', True, '39'),
+    (3, '(о высокой) ЦЕЛИ — в форме дательного падежа единственного числа имени существительного 3-го склонения пишется окончание -И.', True, '17'),
+    (4, 'РАССЕЯВШИЙ (сомнения) — выбор гласной перед суффиксом -вш- действительного причастия прошедшего времени зависит от принадлежности к спряжению глагола, от основы которого оно образовано.', False, '25, 49.1'),
+    (5, 'СЕРДЦЕ — непроизносимый согласный в корне слова проверяется словом сердечко, в котором он слышится отчётливо.', True, '4'),
+]
 
-print(f"✓ Задание 6: {OgeOrthogramExample.objects.count()} примеров с индивидуальными буквами для каждой позиции")
+OgeQuestionOption.objects.filter(question=q6).delete()
+for num, text, correct, orth_num in opts:
+    OgeQuestionOption.objects.create(question=q6, option_number=num, option_text=text, is_correct=correct, orthogram_numbers=orth_num)
+
+print(f"✓ Задание 6: {len(opts)} опций")
 print("✅ Готово!")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Обновляет тестовые данные заданий 1-3 текстами с фото ОГЭ."""
+"""Обновляет тестовые данные заданий 2-4 текстами с фото ОГЭ."""
 import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'main.settings')
 django.setup()
@@ -8,16 +8,16 @@ from main.models import (
     OgeTaskGrammaticEight, OgeTaskGrammaticEightExample,
 )
 
-# Удаляем старые данные для задач 1-2
-OgeQuestionOption.objects.filter(question__question_number__in=[1, 2]).delete()
-OgeTextQuestion.objects.filter(question_number__in=[1, 2]).delete()
-# Удаляем старый текст для 1-2
+# Удаляем старые данные для задач 2-3
+OgeQuestionOption.objects.filter(question__question_number__in=[2, 3]).delete()
+OgeTextQuestion.objects.filter(question_number__in=[2, 3]).delete()
+# Удаляем старый текст для 2-3
 old = OgeTextAnalysisTask.objects.filter(title__icontains='природе')
 old.delete()
 
-# === ТЕКСТ для заданий 1-2 (общий) ===
+# === ТЕКСТ для заданий 2-3 (общий) ===
 text_1_2, _ = OgeTextAnalysisTask.objects.update_or_create(
-    title="Текст о ягодах (задания 1–2)",
+    title="Текст о ягодах (задания 2–3)",
     defaults={
         'text_content': (
             '(1)С незапамятных времён человек употребляет в пищу дикорастущие плоды '
@@ -34,9 +34,9 @@ text_1_2, _ = OgeTextAnalysisTask.objects.update_or_create(
     }
 )
 
-# Задание 1: грамматическая основа (чекбоксы)
+# Задание 2: грамматическая основа (чекбоксы)
 q1, _ = OgeTextQuestion.objects.update_or_create(
-    task=text_1_2, question_number=1,
+    task=text_1_2, question_number=2,
     defaults={
         'question_type': 'multiple_choice',
         'question_text': (
@@ -61,9 +61,9 @@ for num, text, correct in opts_1:
         option_text=text, is_correct=correct
     )
 
-# Задание 2: характеристики предложений (чекбоксы)
+# Задание 3: характеристики предложений (чекбоксы)
 q2, _ = OgeTextQuestion.objects.update_or_create(
-    task=text_1_2, question_number=2,
+    task=text_1_2, question_number=3,
     defaults={
         'question_type': 'multiple_choice',
         'question_text': (
@@ -87,9 +87,9 @@ for num, text, correct in opts_2:
         option_text=text, is_correct=correct
     )
 
-print(f"✓ Задания 1–2: текст «{text_1_2.title}», {OgeQuestionOption.objects.filter(question__task=text_1_2).count()} опций")
+print(f"✓ Задания 2–3: текст «{text_1_2.title}», {OgeQuestionOption.objects.filter(question__task=text_1_2).count()} опций")
 
-# === ЗАДАНИЕ 3: пунктуационные правила ===
+# === ЗАДАНИЕ 4: пунктуационные правила ===
 OgeTaskGrammaticEightExample.objects.all().delete()
 OgeTaskGrammaticEight.objects.all().delete()
 
@@ -124,7 +124,7 @@ for eid, text, has_error in examples:
         explanation=f'Правило {eid}' if has_error else '', is_active=True,
     )
 
-print(f"✓ Задание 3: {OgeTaskGrammaticEight.objects.count()} правил, "
+print(f"✓ Задание 4: {OgeTaskGrammaticEight.objects.count()} правил, "
       f"{OgeTaskGrammaticEightExample.objects.count()} предложений")
 
-print("\n✅ Данные заданий 1–3 обновлены!")
+print("\n✅ Данные заданий 2–4 обновлены!")
