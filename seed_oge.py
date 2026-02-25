@@ -3,12 +3,12 @@ import subprocess
 import sys
 
 scripts = [
-    'seed_oge_1_3.py',
-    'seed_oge_4.py',
+    'seed_oge_2_4.py',
     'seed_oge_5.py',
     'seed_oge_6.py',
-    'seed_oge_7_8.py',
-    'seed_oge_9_11.py'
+    'seed_oge_7.py',
+    'seed_oge_8_9.py',
+    'seed_oge_10_12.py'
 ]
 
 print("Начинаем загрузку всех заданий ОГЭ...")
