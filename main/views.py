@@ -941,158 +941,6 @@ def extract_from_text_and_masks(text, masked_word, orthogram_id):
     
     return parts
 
-# === Генерация упражнений на МНОЖЕСТВО ПУНКТОГРАММ (задания 16–21) ===
-# @login_required
-# def generate_punktum_exercise_multi(request):
-#     """
-#     Генерирует упражнение для заданий 16–21 ЕГЭ.
-#     - Задание 16: 5 примеров
-#     - Задания 17–20, 21xx: 1 пример
-#     Возвращает данные в формате, совместимом с шаблоном и check_exercise.
-#     """
-#     if request.method != 'POST':
-#         return JsonResponse({'error': 'Только POST'}, status=405)
-    
-#     try:
-#         data = json.loads(request.body)
-#         orthogram_ids = data.get('orthogram_ids', [])
-        
-#         if not isinstance(orthogram_ids, list) or not orthogram_ids:
-#             return JsonResponse({'error': 'Неверный формат orthogram_ids'}, status=400)
-        
-#         punktum_id = str(orthogram_ids[0])
-#         SUPPORTED = {'1600', '1700', '1800', '1900', '2000', '2100', '2101', '2102'}
-        
-#         if punktum_id not in SUPPORTED:
-#             return JsonResponse({'error': 'Поддерживаются только задания 16–21'}, status=400)
-        
-#         # Определяем количество требуемых примеров
-#         total_needed = 5 if punktum_id == '1600' else 1
-        
-#         # Получаем активные примеры с запасом
-#         examples = PunktumExample.objects.filter(
-#             punktum__id=punktum_id,
-#             is_active=True
-#         ).order_by('?')[:total_needed * 3]
-        
-#         valid_examples = []
-#         correct_letters = []
-        
-#         # Используем маску с дефисом для задания 21, как ожидает frontend
-#         if punktum_id.startswith('21'):
-#             # Для задания 21 используем формат "21-XXXX", где XXXX - тип задания
-#             mask_pattern = f"*21-{punktum_id}*"  # например *21-2100*
-#         else:
-#             mask_pattern = f"*{punktum_id}*"
-        
-#         for ex in examples:
-#             explanation_text = (ex.explanation or '').strip()
-#             if not explanation_text:
-#                 continue
-            
-#             parts = [p.strip() for p in explanation_text.split(',') if p.strip()]
-#             mask_count = ex.masked_word.count(mask_pattern)
-            
-#             if mask_count != len(parts) or mask_count == 0:
-#                 continue
-            
-#             # Все проверки пройдены
-#             valid_examples.append(ex)
-#             correct_letters.extend(parts)  # ← КЛЮЧЕВОЕ: extend, не append
-            
-#             if len(valid_examples) >= total_needed:
-#                 break
-        
-#         if not valid_examples:
-#             return JsonResponse({
-#                 'error': f'Нет корректных примеров для пунктограммы {punktum_id} (проверьте explanation и маски)'
-#             }, status=400)
-        
-#         # Инструкция и картинка для задания 21
-#         instruction = ""
-#         image_name = None
-        
-#         # Задания 16-20: картинки без инструкции
-#         if punktum_id == '1600':
-#             image_name = 'images/punktum_task_16.webp'
-#         elif punktum_id == '1700':
-#             image_name = 'images/punktum_task_17.webp'
-#         elif punktum_id == '1800':
-#             image_name = 'images/punktum_task_18.webp'
-#         elif punktum_id == '1900':
-#             image_name = 'images/punktum_task_19.webp'
-#         elif punktum_id == '2000':
-#             image_name = 'images/punktum_task_20.webp'
-#         # Задание 21: картинки с инструкцией
-#         elif punktum_id == '2100':
-#             instruction = "На месте смайликов ТИРЕ. Выберите подходящий номер пунктограммы"
-#             image_name = 'images/punktum_task_21_0.webp'
-#         elif punktum_id == '2101':
-#             instruction = "На месте смайликов ДВОЕТОЧИЕ. Выберите подходящий номер пунктограммы"
-#             image_name = 'images/punktum_task_21_1.webp'
-#         elif punktum_id == '2102':
-#             instruction = "На месте смайликов ЗАПЯТЫЕ. Выберите подходящий номер пунктограммы"
-#             image_name = 'images/punktum_task_21_2.webp'
-        
-#         # Сохраняем в сессию — correct_letters должен быть плоским списком
-#         request.session['current_exercise'] = {
-#             'exercise_id': f'punktum_multi_{punktum_id}',
-#             'example_ids': [ex.id for ex in valid_examples],
-#             'correct_letters': correct_letters,
-#             'orthogram_ids': [punktum_id],
-#         }
-        
-#         # Для шаблона - заменяем маски на правильный формат
-#         words_lines = []
-#         for ex in valid_examples:
-#             masked = ex.masked_word.strip()
-#             if punktum_id.startswith('21'):
-#                 # Заменяем *2100* на *21-2100* и т.д.
-#                 masked = masked.replace(f"*{punktum_id}*", f"*21-{punktum_id}*")
-#             words_lines.append(masked)
-            
-#         structured_examples = [
-#             [p.strip() for p in ex.masked_word.split('\n') if p.strip()]
-#             for ex in valid_examples
-#         ]
-        
-#         is_punktum_with_paragraphs = (punktum_id == '1800')
-#         task_num = punktum_id[:2]  # '1600' → '16'
-        
-#         # === ОПРЕДЕЛЯЕМ НАБОР ЦИФР ДЛЯ ЗАДАНИЯ 21 ===
-#         task21_subgroup_letters = None
-#         if punktum_id.startswith('21'):
-#             task21_digits = {
-#                 '2100': ['5', '8', '8.1', '9.2', '10', '13', '16', '18'],
-#                 '2101': ['5', '9.1', '19'],
-#                 '2102': ['2', '4.0', '4.1', '4.2', '5', '6', '7', '11', '12', '13', '14', '15', '16', '17']
-#             }
-#             task21_subgroup_letters = json.dumps({'punktum_21': task21_digits.get(punktum_id, [])})
-        
-#         html = render_to_string('exercise_snippet.html', {
-#             'structured_examples': structured_examples,
-#             'words_lines': words_lines,
-#             'is_punktum_exercise': True,
-#             'punktogram_id': punktum_id,
-#             'exercise_id': f'punktum_multi_{punktum_id}',
-#             # 'exercise_title': f'Задание № {task_num}',
-#             'exercise_instruction': instruction,
-#             'show_next_button': False,
-#             'is_punktum_with_paragraphs': is_punktum_with_paragraphs,
-#             'image_name': image_name,
-#             # === ПРАВИЛЬНЫЕ ЦИФРЫ ДЛЯ КАЖДОГО ТИПА ЗАДАНИЯ 21 ===
-#             'task21_letter_groups': json.dumps({}) if punktum_id.startswith('21') else None,
-#             'task21_subgroup_letters': task21_subgroup_letters,
-#         })
-        
-#         return JsonResponse({'html': html})
-    
-#     except json.JSONDecodeError:
-#         return JsonResponse({'error': 'Неверный JSON'}, status=400)
-#     except Exception as e:
-#         logger.error(f"Ошибка в generate_punktum_exercise_multi: {e}", exc_info=True)
-#         return JsonResponse({'error': 'Ошибка сервера'}, status=500)
-
 
 @login_required
 def generate_punktum_exercise_multi(request):
@@ -3113,8 +2961,12 @@ def generate_starting_diagnostic(request):
 
         # === Получаем класс пользователя ===
         user_grade = None
-        if request.user.is_authenticated and hasattr(request.user, 'profile'):
-            user_grade = request.user.profile.grade
+        if request.user.is_authenticated:
+            # Залогиненный пользователь - берём из профиля
+            user_grade = getattr(request.user.profile, 'grade', None)
+        else:
+            # Анонимный пользователь - ставим None (будут задания для всех классов)
+            user_grade = None
         
         # === ЗАДАНИЕ 4: ОРФОЭПИЯ (НОВАЯ ЛОГИКА) ===
         test_data = OrthoepyWord.generate_test(
