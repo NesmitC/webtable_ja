@@ -302,8 +302,8 @@ class TextAnalysisTask(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="Активно")
     
     class Meta:
-        verbose_name = "Текст для анализа 1-3"
-        verbose_name_plural = "Тексты для анализа 1-3"
+        verbose_name = "Текст для анализа 2-4"
+        verbose_name_plural = "Тексты для анализа 2-4"
         ordering = ['order']
     
     def __str__(self):
@@ -322,7 +322,7 @@ class TextQuestion(models.Model):
     task = models.ForeignKey(TextAnalysisTask, on_delete=models.CASCADE, related_name='questions')
     question_type = models.CharField(max_length=50, choices=QUESTION_TYPES)
     question_text = models.TextField(verbose_name="Текст вопроса")
-    question_number = models.IntegerField(verbose_name="Номер вопроса (1, 2, 3)")
+    question_number = models.IntegerField(verbose_name="Номер вопроса (2, 3, 4)")
     correct_answer = models.TextField(verbose_name="Правильный ответ")
     
     class Meta:
@@ -471,7 +471,7 @@ class OrthoepyWord(models.Model):
             'correct_answers': correct_answers,
         }
 
-# ===== ЗАДАНИЕ 5 ==============================================================
+# ===== ЗАДАНИЕ 6 ==============================================================
 class TaskPaponim(models.Model):
     text = models.TextField(
         verbose_name="Предложение с выделенным словом",
@@ -507,11 +507,11 @@ class TaskPaponim(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "ПАРОНИМЫ задание 5"
-        verbose_name_plural = "ПАРОНИМЫ задание 5"
+        verbose_name = "ПАРОНИМЫ задание 6"
+        verbose_name_plural = "ПАРОНИМЫ задание 6"
 
 
-# ===== ЗАДАНИЕ 6 ==============================================================
+# ===== ЗАДАНИЕ 7 ==============================================================
 class WordOk(models.Model):
     TYPE_CHOICES = [
         ('6100', 'Исключить лишнее слово'),
@@ -543,14 +543,14 @@ class WordOk(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "Задание 6: Лексические нормы"
-        verbose_name_plural = "Задание 6: Лексические нормы"
+        verbose_name = "Задание 7: Лексические нормы"
+        verbose_name_plural = "Задание 7: Лексические нормы"
 
 
-# ===== ЗАДАНИЕ 7 ==============================================================
+# ===== ЗАДАНИЕ 8 ==============================================================
 
 class CorrectionExercise(models.Model):
-    """Упражнение: исправь ошибку 7 (свободный ввод)"""
+    """Упражнение: исправь ошибку 8 (свободный ввод)"""
 
     # Неправильный вариант (то, что видит ученик)
     incorrect_text = models.CharField(
@@ -591,8 +591,8 @@ class CorrectionExercise(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "ЗАДАНИЕ 7: исправь ошибку"
-        verbose_name_plural = "ЗАДАНИЕ 7: исправь ошибку"
+        verbose_name = "ЗАДАНИЕ 8: исправь ошибку"
+        verbose_name_plural = "ЗАДАНИЕ 8: исправь ошибку"
 
     def __str__(self):
         return f"{self.incorrect_text} → {self.correct_text}"
@@ -639,7 +639,7 @@ class CorrectionExercise(models.Model):
         }
 
 
-# ===== ЗАДАНИЕ 8 ==============================================================
+# ===== ЗАДАНИЕ 9 ==============================================================
 
 class TaskGrammaticEight(models.Model):
     ERROR_TYPES = [
@@ -661,8 +661,8 @@ class TaskGrammaticEight(models.Model):
         return self.get_id_display()
 
     class Meta:
-        verbose_name = "Тип ошибки (задание 8)"
-        verbose_name_plural = "Типы ошибок (задание 8)"
+        verbose_name = "Тип ошибки (задание 9)"
+        verbose_name_plural = "Типы ошибок (задание 9)"
 
 
 class TaskGrammaticEightExample(models.Model):
@@ -684,8 +684,8 @@ class TaskGrammaticEightExample(models.Model):
         return self.text[:50]
 
     class Meta:
-        verbose_name = "Пример для задания 8"
-        verbose_name_plural = "Примеры для задания 8"
+        verbose_name = "Пример для задания 9"
+        verbose_name_plural = "Примеры для задания 9"
 
     @staticmethod
     def generate_task_eight_test(user_grade=None):
@@ -760,7 +760,7 @@ class TaskGrammaticEightExample(models.Model):
         }
 
 
-# ===== ЗАДАНИЕ 22 ==============================================================
+# ===== ЗАДАНИЕ 23 ==============================================================
 class TaskGrammaticTwoTwo(models.Model):
     DEVICE_TYPES = [
         ('2201', 'эпитет'),
@@ -801,8 +801,8 @@ class TaskGrammaticTwoTwo(models.Model):
         return self.get_id_display()  # Это ДОЛЖНО работать для поля с choices!
 
     class Meta:
-        verbose_name = "Средство выразительности (задание 22)"
-        verbose_name_plural = "Средства выразительности (задание 22)"
+        verbose_name = "Средство выразительности (задание 23)"
+        verbose_name_plural = "Средства выразительности (задание 23)"
 
 
 class TaskGrammaticTwoTwoExample(models.Model):
@@ -824,5 +824,378 @@ class TaskGrammaticTwoTwoExample(models.Model):
         return self.text[:50]
 
     class Meta:
-        verbose_name = "Пример для задания 22"
-        verbose_name_plural = "Примеры для задания 22"
+        verbose_name = "Пример для задания 23"
+        verbose_name_plural = "Примеры для задания 23"
+
+
+# ========================================================================
+# ОГЭ — ОТДЕЛЬНЫЕ МОДЕЛИ (физически разные таблицы)
+# ========================================================================
+
+# ===== ТЕКСТЫ (Задания ОГЭ 2, 3, 6, 10, 11, 12) ==========================
+
+class OgeTextAnalysisTask(models.Model):
+    """Текст с заданиями ОГЭ"""
+    title = models.CharField(max_length=200, verbose_name="Название")
+    text_content = models.TextField(verbose_name="Текст")
+    author = models.CharField(max_length=100, blank=True, verbose_name="Автор")
+    source = models.CharField(max_length=200, blank=True, verbose_name="Источник")
+    order = models.IntegerField(default=0, verbose_name="Порядок")
+    is_active = models.BooleanField(default=True, verbose_name="Активно")
+
+    class Meta:
+        verbose_name = "ОГЭ: Текст для анализа"
+        verbose_name_plural = "ОГЭ: Тексты для анализа"
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title
+
+
+class OgeTextQuestion(models.Model):
+    """Вопрос к тексту ОГЭ"""
+    QUESTION_TYPES = (
+        ('missing_word', 'Подобрать слово'),
+        ('multiple_choice', 'Множественный выбор'),
+        ('text_characteristics', 'Характеристики текста'),
+        ('free_text', 'Свободный текст (выписать из текста)'),
+    )
+
+    task = models.ForeignKey(OgeTextAnalysisTask, on_delete=models.CASCADE, related_name='questions')
+    question_type = models.CharField(max_length=50, choices=QUESTION_TYPES)
+    question_text = models.TextField(verbose_name="Текст вопроса")
+    question_number = models.IntegerField(verbose_name="Номер вопроса (2–12)")
+    correct_answer = models.TextField(verbose_name="Правильный ответ")
+
+    class Meta:
+        verbose_name = "ОГЭ: Вопрос к тексту"
+        verbose_name_plural = "ОГЭ: Вопросы к тексту"
+        ordering = ['question_number']
+
+    def __str__(self):
+        return f"Вопрос {self.question_number} к {self.task.title}"
+
+
+class OgeQuestionOption(models.Model):
+    """Варианты ответов для вопросов ОГЭ"""
+    question = models.ForeignKey(OgeTextQuestion, on_delete=models.CASCADE, related_name='options')
+    option_text = models.TextField(verbose_name="Текст варианта")
+    option_number = models.IntegerField(verbose_name="Номер варианта")
+    is_correct = models.BooleanField(default=False, verbose_name="Правильный")
+    orthogram_numbers = models.CharField(max_length=255, blank=True, verbose_name="№№ орфограмм (для ответа)")
+
+    class Meta:
+        verbose_name = "ОГЭ: Вариант ответа"
+        verbose_name_plural = "ОГЭ: Варианты ответов"
+        ordering = ['option_number']
+
+    def __str__(self):
+        return f"Вариант {self.option_number}"
+
+
+# ===== ЗАДАНИЕ ОГЭ 4: Выпадающие списки ================================
+
+class OgeTaskGrammaticEight(models.Model):
+    ERROR_TYPES = [
+        ('8100', 'В неполном предложении на месте пропуска члена предложения ставится тире.'),
+        ('8200', 'Между подлежащим и сказуемым, выраженными именами существительными в именительном падеже, при нулевой связке ставится тире.'),
+        ('8300', 'Обстоятельство, выраженное деепричастным оборотом, обособляется.'),
+        ('8400', 'Определение, выраженное причастным оборотом, стоящее после определяемого слова, обособляется.'),
+        ('8500', 'Вводное слово выделяется запятыми.'),
+    ]
+    id = models.CharField(max_length=10, choices=ERROR_TYPES, primary_key=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.get_id_display()
+
+    class Meta:
+        verbose_name = "ОГЭ: Пунктуационное правило (задание 5)"
+        verbose_name_plural = "ОГЭ: Пунктуационные правила (задание 5)"
+
+
+class OgeTaskGrammaticEightExample(models.Model):
+    text = models.TextField()
+    has_error = models.BooleanField(default=True)
+    error_type = models.ForeignKey(
+        OgeTaskGrammaticEight,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        limit_choices_to={'is_active': True}
+    )
+    explanation = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    is_for_quiz = models.BooleanField(default=False)
+    grades = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return self.text[:50]
+
+    class Meta:
+        verbose_name = "ОГЭ: Пример для задания 4"
+        verbose_name_plural = "ОГЭ: Примеры для задания 4"
+
+
+# ===== ЗАДАНИЕ ОГЭ 5: Пунктуация (смайлики) ============================
+
+class OgePunktum(models.Model):
+    """
+    Пунктограмма ОГЭ — тире, двоеточие, запятая, КАВЫЧКИ.
+    """
+    id = models.CharField(max_length=10, primary_key=True)
+    name = models.CharField(max_length=200)
+    rule = models.TextField()
+
+    letters = models.CharField(
+        max_length=200,
+        default='!, ?, —, :, «»',
+        help_text="Символы через запятую: !, ?, —, :, «» (кавычки)"
+    )
+    grades = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Через запятую: 5,6,7"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_letters_list(self):
+        return [letter.strip() for letter in self.letters.split(',') if letter.strip()]
+
+    def __str__(self):
+        return f"{self.id}: {self.name}"
+
+    class Meta:
+        verbose_name = "ОГЭ: Пунктограмма (задание 5)"
+        verbose_name_plural = "ОГЭ: Пунктограммы (задание 5)"
+
+
+class OgePunktumExample(models.Model):
+    """Пример для пунктуационного задания ОГЭ."""
+    punktum = models.ForeignKey(
+        OgePunktum,
+        on_delete=models.CASCADE,
+    )
+    text = models.TextField()
+    masked_word = models.TextField()
+    explanation = models.TextField(blank=True, help_text="Правильные ответы через запятую: !, ?, «»")
+    correct_letters = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Правильные символы пунктуации (через запятую)"
+    )
+    difficulty = models.PositiveSmallIntegerField(default=1)
+    is_active = models.BooleanField(default=True)
+    is_user_added = models.BooleanField(default=False, verbose_name="Добавлен пользователем")
+    added_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Кем добавлен"
+    )
+    source_field = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Поле-источник"
+    )
+    grades = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Через запятую: 5,6,7"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_grades_list(self):
+        if self.grades:
+            return [
+                int(g.strip())
+                for g in self.grades.split(',')
+                if g.strip().isdigit()
+            ]
+        return []
+
+    def __str__(self):
+        grades_display = self.grades or 'все'
+        return f"{self.text[:40]} (пунктограмма {self.punktum.id}, классы: {grades_display})"
+
+    class Meta:
+        verbose_name = "ОГЭ: Пример пунктуации (задание 5)"
+        verbose_name_plural = "ОГЭ: Примеры пунктуации (задание 5)"
+
+
+# ===== ЗАДАНИЕ ОГЭ 7: Орфография (смайлики букв) =======================
+
+class OgeOrthogram(models.Model):
+    id = models.CharField(max_length=10, primary_key=True)
+    name = models.CharField(max_length=200)
+    rule = models.TextField()
+    letters = models.CharField(
+        max_length=200,
+        default='а,о,е,и,я',
+        help_text="Буквы через запятую"
+    )
+    grades = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Через запятую: 5,6,7"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_letters_list(self):
+        return [letter.strip() for letter in self.letters.split(',') if letter.strip()]
+
+    def __str__(self):
+        return f"{self.id}: {self.name}"
+
+    class Meta:
+        verbose_name = "ОГЭ: Орфограмма (задание 7)"
+        verbose_name_plural = "ОГЭ: Орфограммы (задание 7)"
+
+
+class OgeOrthogramExample(models.Model):
+    orthogram = models.ForeignKey(OgeOrthogram, on_delete=models.CASCADE)
+    text = models.CharField(max_length=300)
+    masked_word = models.CharField(max_length=300)
+    incorrect_variant = models.CharField(max_length=300, blank=True, null=True)
+    explanation = models.TextField(blank=True)
+    correct_letters = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Правильные буквы (через запятую)"
+    )
+    difficulty = models.PositiveSmallIntegerField(default=1)
+    is_for_quiz = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_user_added = models.BooleanField(default=False, verbose_name="Добавлен пользователем")
+    added_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Кем добавлен"
+    )
+    source_field = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Поле-источник"
+    )
+    grades = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Через запятую: 5,6,7"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_grades_list(self):
+        if self.grades:
+            return [
+                int(g.strip())
+                for g in self.grades.split(',')
+                if g.strip().isdigit()
+            ]
+        return []
+
+    def __str__(self):
+        grades_display = self.grades or 'все'
+        return f"{self.text} (орф. {self.orthogram.id}, классы: {grades_display})"
+
+    class Meta:
+        verbose_name = "ОГЭ: Пример орфограммы (задание 7)"
+        verbose_name_plural = "ОГЭ: Примеры орфограмм (задание 7)"
+
+
+# ===== ЗАДАНИЯ ОГЭ 8, 9: Инпуты ========================================
+
+class OgeCorrectionExercise(models.Model):
+    """ОГЭ: Исправь ошибку (свободный ввод)"""
+    incorrect_text = models.CharField(
+        max_length=200,
+        verbose_name="Неправильный текст (с ошибкой)"
+    )
+    correct_text = models.CharField(
+        max_length=200,
+        verbose_name="Правильный текст"
+    )
+    explanation = models.CharField(
+        max_length=300,
+        blank=True,
+        verbose_name="Пояснение"
+    )
+    exercise_id = models.CharField(
+        max_length=20,
+        default='711',
+        verbose_name="ID задания"
+    )
+    grades = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Классы (через запятую)"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Активно")
+    is_for_quiz = models.BooleanField(default=False, verbose_name="Для квизов")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "ОГЭ: Задание 8 — исправь ошибку"
+        verbose_name_plural = "ОГЭ: Задание 8 — исправь ошибку"
+
+    def __str__(self):
+        return f"{self.incorrect_text} → {self.correct_text}"
+
+    @staticmethod
+    def generate_correction_test(num_options=5, wrong_count=1, user_grade=None):
+        from django.db.models import Q
+        import random
+        exercises = OgeCorrectionExercise.objects.filter(is_active=True)
+        if user_grade:
+            exercises = exercises.filter(
+                Q(grades__contains=user_grade) | Q(grades='') | Q(grades__isnull=True)
+            )
+        exercises = list(exercises)
+        if len(exercises) < num_options:
+            return None
+
+        wrong_item = random.choice(exercises)
+        correct_pool = [ex for ex in exercises if ex.id != wrong_item.id]
+        if len(correct_pool) < num_options - wrong_count:
+            return None
+        correct_items = random.sample(correct_pool, num_options - wrong_count)
+
+        all_words = [ex.correct_text for ex in correct_items]
+        all_words.append(wrong_item.incorrect_text)
+        random.shuffle(all_words)
+
+        return {
+            'words': all_words,
+            'correct_answer': wrong_item.correct_text,
+            'exercise_id': wrong_item.exercise_id,
+            'incorrect_word': wrong_item.incorrect_text,
+        }
+
+
+class OgeWordOk(models.Model):
+    TYPE_CHOICES = [
+        ('6100', 'Исключить лишнее слово'),
+        ('6200', 'Заменить неверное слово'),
+    ]
+
+    text = models.TextField(verbose_name="Предложение с лексической ошибкой")
+    task_type = models.CharField(max_length=4, choices=TYPE_CHOICES, verbose_name="Тип задания")
+    correct_variants = models.TextField(
+        verbose_name="Правильные слова (через запятую)",
+        help_text="Для 6100 — одно слово. Для 6200 — варианты: одержать,совершить"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    is_for_quiz = models.BooleanField(default=False, verbose_name="Для квизов")
+    grades = models.CharField(max_length=50, blank=True, verbose_name="Классы")
+
+    def get_correct_words(self):
+        return [w.strip().lower() for w in self.correct_variants.split(',') if w.strip()]
+
+    def __str__(self):
+        return (self.text[:60] + '...') if len(self.text) > 60 else self.text
+
+    class Meta:
+        verbose_name = "ОГЭ: Задание 9 — лексические нормы"
+        verbose_name_plural = "ОГЭ: Задание 9 — лексические нормы"

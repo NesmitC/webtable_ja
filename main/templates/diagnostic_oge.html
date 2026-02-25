@@ -1,0 +1,45 @@
+<!-- main/templates/diagnostic_oge.html -->
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Входящая диагностика — ОГЭ по русскому языку</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/planning_style.css">
+    <link rel="stylesheet" href="/static/css/media_planning.css">
+    <link rel="stylesheet" href="/static/css/reset.css">
+</head>
+
+<body>
+    <header>
+        <a href="{% url 'index' %}">← Назад</a>
+    </header>
+    <main>
+        <section class="block-task">
+            <h2 class="title-planing">Входящая диагностическая работа ОГЭ</h2>
+            <p class="instruction">
+                Перед вами полный вариант диагностической работы ОГЭ по русскому языку.<br>
+                Рекомендуем выполнять задания по порядку.
+            </p>
+            <div id="diagnostic-content" class="block-answer">
+                <button id="start-diagnostic-btn" class="check-task green">
+                    Начать диагностику ОГЭ
+                </button>
+            </div>
+            <div id="result-section" style="display: none; margin-top: 30px;">
+                <h3>Результаты проверки</h3>
+                <div id="result-details"></div>
+            </div>
+        </section>
+    </main>
+
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    <script src="{% static 'js/planning.js' %}?v=4"></script>
+    <script src="{% static 'js/diagnostic_oge.js' %}?v=4"></script>
+</body>
+
+</html>
