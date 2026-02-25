@@ -2961,12 +2961,8 @@ def generate_starting_diagnostic(request):
 
         # === Получаем класс пользователя ===
         user_grade = None
-        if request.user.is_authenticated:
-            # Залогиненный пользователь - берём из профиля
-            user_grade = getattr(request.user.profile, 'grade', None)
-        else:
-            # Анонимный пользователь - ставим None (будут задания для всех классов)
-            user_grade = None
+        if request.user.is_authenticated and hasattr(request.user, 'profile'):
+            user_grade = request.user.profile.grade
         
         # === ЗАДАНИЕ 4: ОРФОЭПИЯ (НОВАЯ ЛОГИКА) ===
         test_data = OrthoepyWord.generate_test(
