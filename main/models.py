@@ -471,7 +471,7 @@ class OrthoepyWord(models.Model):
             'correct_answers': correct_answers,
         }
 
-# ===== ЗАДАНИЕ 6 ==============================================================
+# ===== ЗАДАНИЕ 5 ==============================================================
 class TaskPaponim(models.Model):
     text = models.TextField(
         verbose_name="Предложение с выделенным словом",
@@ -507,11 +507,11 @@ class TaskPaponim(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "ПАРОНИМЫ задание 6"
-        verbose_name_plural = "ПАРОНИМЫ задание 6"
+        verbose_name = "ПАРОНИМЫ задание 5"
+        verbose_name_plural = "ПАРОНИМЫ задание 5"
 
 
-# ===== ЗАДАНИЕ 7 ==============================================================
+# ===== ЗАДАНИЕ 6 ==============================================================
 class WordOk(models.Model):
     TYPE_CHOICES = [
         ('6100', 'Исключить лишнее слово'),
@@ -543,14 +543,14 @@ class WordOk(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "Задание 7: Лексические нормы"
-        verbose_name_plural = "Задание 7: Лексические нормы"
+        verbose_name = "Задание 6: Лексические нормы"
+        verbose_name_plural = "Задание 6: Лексические нормы"
 
 
-# ===== ЗАДАНИЕ 8 ==============================================================
+# ===== ЗАДАНИЕ 7 ==============================================================
 
 class CorrectionExercise(models.Model):
-    """Упражнение: исправь ошибку 8 (свободный ввод)"""
+    """Упражнение: исправь ошибку 7 (свободный ввод)"""
 
     # Неправильный вариант (то, что видит ученик)
     incorrect_text = models.CharField(
@@ -591,8 +591,8 @@ class CorrectionExercise(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "ЗАДАНИЕ 8: исправь ошибку"
-        verbose_name_plural = "ЗАДАНИЕ 8: исправь ошибку"
+        verbose_name = "ЗАДАНИЕ 7: исправь ошибку"
+        verbose_name_plural = "ЗАДАНИЕ 7: исправь ошибку"
 
     def __str__(self):
         return f"{self.incorrect_text} → {self.correct_text}"
@@ -639,7 +639,7 @@ class CorrectionExercise(models.Model):
         }
 
 
-# ===== ЗАДАНИЕ 9 ==============================================================
+# ===== ЗАДАНИЕ 8 ==============================================================
 
 class TaskGrammaticEight(models.Model):
     ERROR_TYPES = [
@@ -661,8 +661,8 @@ class TaskGrammaticEight(models.Model):
         return self.get_id_display()
 
     class Meta:
-        verbose_name = "Тип ошибки (задание 9)"
-        verbose_name_plural = "Типы ошибок (задание 9)"
+        verbose_name = "Тип ошибки (задание 8)"
+        verbose_name_plural = "Типы ошибок (задание 8)"
 
 
 class TaskGrammaticEightExample(models.Model):
@@ -684,8 +684,8 @@ class TaskGrammaticEightExample(models.Model):
         return self.text[:50]
 
     class Meta:
-        verbose_name = "Пример для задания 9"
-        verbose_name_plural = "Примеры для задания 9"
+        verbose_name = "Пример для задания 8"
+        verbose_name_plural = "Примеры для задания 8"
 
     @staticmethod
     def generate_task_eight_test(user_grade=None):

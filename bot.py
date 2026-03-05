@@ -1,70 +1,138 @@
 # bot.py
-import os
-import requests
-import secrets
+import os, django, httpx, secrets, random
 from decouple import config
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from asgiref.sync import sync_to_async
 
-# Настройки
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'main.settings')
+django.setup()
+from django.core.cache import cache
+from main.models import UserProfile
+
 BOT_TOKEN = config('TELEGRAM_BOT_TOKEN')
-DJANGO_API_URL = config('DJANGO_API_URL')
+API_URL = config('DJANGO_API_URL', default='http://127.0.0.1:8000')
+
+@sync_to_async
+def get_profile(tg_id):
+    try: return UserProfile.objects.select_related('user').get(telegram_id=tg_id)
+    except UserProfile.DoesNotExist: return None
+
+async def _do_quiz(tg_id, message):
+    profile = await get_profile(tg_id)
+    if not profile: return await message.reply_text("❌ /start для привязки")
+    
+    async with httpx.AsyncClient(timeout=5) as client:
+        try:
+            r = await client.post(f"{API_URL}/api/daily-quiz/", json={'user_id': profile.user.id})
+            data = r.json()
+        except: return await message.reply_text("⚠️ Ошибка загрузки")
+    
+    if 'error' in data: return await message.reply_text("🎉 Вопросы закончились")
+    
+    # 🔧 Сохраняем example_id в кэш для логирования ответа
+    example_id = data.get('example_id')
+    if example_id:
+        cache.set(f"quiz_example_{tg_id}", example_id, 300)
+    
+    # Убираем строку с плейсхолдером 😊
+    lines = data['question'].split('\n')
+    question = '\n'.join(line for line in lines if '😊' not in line).strip()
+    
+    # Рандомизируем варианты
+    options = data.get('options', [])
+    random.shuffle(options)
+    
+    # Добавляем эмодзи для оформления
+    icons = ['🔹', '🔸', '▫️', '▪️', '🔘']
+    kb = [[InlineKeyboardButton(f"{icons[i % len(icons)]} {o['text']}", 
+                                callback_data=f"ans_{i}_{int(o['is_correct'])}")] 
+          for i, o in enumerate(options)]
+    
+    cache.set(f"quiz_exp_{tg_id}", data.get('explanation',''), 300)
+    await message.reply_text(f"⚡ <b>ВОПРОС</b>\n\n{question}", reply_markup=InlineKeyboardMarkup(kb), parse_mode="HTML")
+
+async def _do_report(tg_id, message):
+    profile = await get_profile(tg_id)
+    if not profile: return await message.reply_text("❌ Аккаунт не привязан")
+    async with httpx.AsyncClient(timeout=5) as client:
+        try:
+            r = await client.post(f"{API_URL}/api/weekly-report/", json={'telegram_id': tg_id})
+            data = r.json()
+        except: return await message.reply_text("⚠️ Ошибка отчёта")
+    if data.get('status') == 'inactive': return await message.reply_text(f"⚠️ {data['message']}")
+    msg = f"📊 <b>Отчёт</b>\nЗаданий: {data['total']}\nПравильно: {data['correct']}\nУспешность: {data['success_rate']}%\n"
+    for o in data.get('weak_orthograms',[]): msg += f"• {o.get('orthogram__name') or o.get('name','?')}: {o['errors']} ошибок\n"
+    await message.reply_text(msg, parse_mode="HTML")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    telegram_id = update.effective_user.id
-    username = update.effective_user.username or "no_username"
-
-    # Генерация ссылки для привязки аккаунта
+    tg_id = update.effective_user.id
+    profile = await get_profile(tg_id)
+    menu_kb = InlineKeyboardMarkup([[
+        InlineKeyboardButton("⚡ Вопрос дня", callback_data="cmd_quiz"),
+        InlineKeyboardButton("📊 Статистика", callback_data="cmd_report")
+    ]]) if profile else None
+    if profile:
+        return await update.message.reply_text(f"✅ Привет, {profile.user.username}!", reply_markup=menu_kb)
     token = secrets.token_urlsafe(16)
-    link = f"http://127.0.0.1:8000/telegram-link/?token={token}&telegram_id={telegram_id}"
+    cache.set(f"tg_link_{token}", tg_id, 300)
+    link_kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔗 Привязать", url=f"{API_URL}/profile/link-telegram/?token={token}")]])
+    await update.message.reply_text("👋 Привяжи аккаунт:", reply_markup=link_kb)
+
+async def quiz_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await _do_quiz(update.effective_user.id, update.message)
+
+async def report_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await _do_report(update.effective_user.id, update.message)
+
+async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    cb = q.data
+    tg_id = q.from_user.id
     
-    await update.message.reply_text(
-        f"Привет! Чтобы привязать Telegram к твоему аккаунту на сайте, перейди по ссылке:\n{link}"
-    )
-
-    # Отправка вопроса дня
+    # 🔧 Получаем профиль для логирования
+    profile = await get_profile(tg_id)
+    if not profile:
+        return await q.edit_message_text("❌ Ошибка: аккаунт не найден")
+    
+    # Кнопки меню
+    if cb == "cmd_quiz":
+        await q.message.reply_text("⏳ Загружаю...")
+        return await _do_quiz(tg_id, q.message)
+    if cb == "cmd_report":
+        await q.message.reply_text("⏳ Готовлю...")
+        return await _do_report(tg_id, q.message)
+    
+    # Ответ на вопрос
     try:
-        response = requests.post(f"{DJANGO_API_URL}/api/daily-quiz/", json={'user_id': 1})  # временно user_id=1
-        data = response.json()
+        _, oid, ok = cb.split('_')
+        ok = bool(int(ok))
+        exp = cache.get(f"quiz_exp_{tg_id}", "Правило применено.")
+        cache.delete(f"quiz_exp_{tg_id}")
+        
+        # 🔧 Достаём example_id из кэша
+        example_id = cache.get(f"quiz_example_{tg_id}")
+        
+        # 🔧 Логируем ответ в Django
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            await client.post(
+                f"{API_URL}/api/log-quiz-answer/",
+                json={
+                    'user_id': profile.user.id,
+                    'example_id': example_id,
+                    'is_correct': ok
+                }
+            )
+        
+        await q.edit_message_text(f"{'✅ Верно!' if ok else '❌ Ошибка.'}\n\n📚 {exp}", parse_mode="HTML")
+    except: 
+        await q.edit_message_text("⚠️ Ошибка")
 
-        if 'error' in data:
-            await update.message.reply_text("Сегодня нет вопроса дня. Попробуй завтра!")
-            return
-
-        options = data['options']
-        keyboard = [
-            [InlineKeyboardButton(options[0]['text'], callback_data='correct')],
-            [InlineKeyboardButton(options[1]['text'], callback_data='incorrect')]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await update.message.reply_text(
-            "⚡ ВОПРОС ДНЯ:\n\nКак правильно пишется (нажми):\n\n" + data['question'],
-            reply_markup=reply_markup
-        )
-
-        context.user_data['explanation'] = data['explanation']
-
-    except Exception as e:
-        await update.message.reply_text("Произошла ошибка при загрузке вопроса.")
-        print(f"Ошибка бота: {e}")
-
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработка нажатия на кнопку"""
-    query = update.callback_query
-    await query.answer()
-
-    is_correct = (query.data == 'correct')
-    explanation = context.user_data.get('explanation', 'Правило: после предлогов на согласную пишется Е/Ё.')
-
-    if is_correct:
-        await query.edit_message_text("✅ Правильно! Молодец!\n\n" + explanation)
-    else:
-        await query.edit_message_text("❌ Неправильно.\n\n" + explanation)
-
-# Запуск бота
 if __name__ == '__main__':
-    application = Application.builder().token(BOT_TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(button_handler))
-    application.run_polling()
+    app = Application.builder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("quiz", quiz_cmd))
+    app.add_handler(CommandHandler("report", report_cmd))
+    app.add_handler(CallbackQueryHandler(on_button))
+    app.run_polling(drop_pending_updates=True)

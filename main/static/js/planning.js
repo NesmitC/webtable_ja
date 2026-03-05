@@ -620,41 +620,91 @@ function setupPaponimCheck() {
 }
 
 // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ОРФОЭПИИ ===
-async function loadOrthoepyTest() {
+// async function loadOrthoepyTest() {
+//     const answerSection = document.querySelector('.block-answer');
+//     if (!answerSection) return;
+//     answerSection.innerHTML = '<p>Загрузка теста по орфоэпии...</p>';
+//     try {
+//         const csrf = getCookie('csrftoken');
+//         if (!csrf) {
+//             answerSection.innerHTML = '<p class="error">Сессия истекла.</p>';
+//             return;
+//         }
+
+//         // ← ФОРМИРУЕМ ПОЛЕЗНУЮ НАГРУЗКУ С ПАРАМЕТРОМ КЛАССА
+//         const payload = {};
+//         if (grade) {
+//             payload.grade = grade;
+//             console.log('🎯 Загрузка орфоэпии для', grade, 'класса');
+//         }
+
+//         const res = await fetch('/api/generate-orthoepy-test/', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'X-CSRFToken': csrf
+//             },
+//             body: JSON.stringify({})
+//         });
+//         if (!res.ok) {
+//             throw new Error(`HTTP error! status: ${res.status}`);
+//         }
+//         const data = await res.json();
+//         if (data.html) {
+//             answerSection.innerHTML = data.html;
+//             setupOrthoepyListeners();
+//         } else if (data.error) {
+//             answerSection.innerHTML = `<p class="error">${data.error}</p>`;
+//         } else {
+//             answerSection.innerHTML = '<p class="error">Неизвестная ошибка при загрузке теста.</p>';
+//         }
+//     } catch (e) {
+//         console.error('Ошибка загрузки теста орфоэпии:', e);
+//         answerSection.innerHTML = '<p class="error">Не удалось загрузить тест. Попробуйте обновить страницу.</p>';
+//     }
+// }
+
+
+async function loadOrthoepyTest(grade = null) {
     const answerSection = document.querySelector('.block-answer');
     if (!answerSection) return;
+    
     answerSection.innerHTML = '<p>Загрузка теста по орфоэпии...</p>';
+    
     try {
         const csrf = getCookie('csrftoken');
         if (!csrf) {
             answerSection.innerHTML = '<p class="error">Сессия истекла.</p>';
             return;
         }
+        
+        const payload = grade ? { grade } : {};
+        
         const res = await fetch('/api/generate-orthoepy-test/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrf
             },
-            body: JSON.stringify({})
+            body: JSON.stringify(payload)
         });
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        
         const data = await res.json();
+        
         if (data.html) {
             answerSection.innerHTML = data.html;
             setupOrthoepyListeners();
-        } else if (data.error) {
-            answerSection.innerHTML = `<p class="error">${data.error}</p>`;
         } else {
-            answerSection.innerHTML = '<p class="error">Неизвестная ошибка при загрузке теста.</p>';
+            answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки теста'}</p>`;
         }
-    } catch (e) {
-        console.error('Ошибка загрузки теста орфоэпии:', e);
-        answerSection.innerHTML = '<p class="error">Не удалось загрузить тест. Попробуйте обновить страницу.</p>';
+    } catch {
+        answerSection.innerHTML = '<p class="error">Не удалось загрузить тест</p>';
     }
 }
+
+
 
 function setupOrthoepyListeners() {
     const btn = document.querySelector('.check-orthoepy-test');
@@ -663,20 +713,25 @@ function setupOrthoepyListeners() {
     }
 }
 
+
 async function checkOrthoepyTest() {
     const container = document.querySelector('.orthoepy-test-exercise');
     if (!container) return;
+    
     const selected = [...container.querySelectorAll('.orthoepy-checkbox:checked')]
         .map(el => el.value);
+    
     if (!selected.length) {
-        alert('Выберите хотя бы один вариант.');
+        alert('Выберите хотя бы один вариант');
         return;
     }
+    
     const btn = document.querySelector('.check-orthoepy-test');
     if (btn) {
         btn.disabled = true;
-        btn.textContent = 'Проверяем...';
+        btn.textContent = 'Проверка...';
     }
+    
     try {
         const csrf = getCookie('csrftoken');
         const res = await fetch('/api/check-orthoepy-test/', {
@@ -687,15 +742,15 @@ async function checkOrthoepyTest() {
             },
             body: JSON.stringify({ selected })
         });
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        
         const result = await res.json();
         displayOrthoepyResults(result);
+        
     } catch (e) {
-        alert('Ошибка при проверке: ' + e.message);
+        alert('Ошибка при проверке');
     } finally {
-        const btn = document.querySelector('.check-orthoepy-test');
         if (btn) {
             btn.disabled = false;
             btn.textContent = 'Проверить';
@@ -703,24 +758,103 @@ async function checkOrthoepyTest() {
     }
 }
 
+// function displayOrthoepyResults(results) {
+//     const resultDiv = document.querySelector('.orthoepy-result');
+//     if (!resultDiv) return;
+//     Object.values(results.results || {}).forEach(item => {
+//         const optionDiv = document.querySelector(`[data-variant="${item.variant}"]`);
+//         if (optionDiv) {
+//             optionDiv.classList.remove('orthoepy-correct', 'orthoepy-incorrect');
+//             if (item.is_correct_variant) {
+//                 optionDiv.classList.add('orthoepy-correct');
+//             } else {
+//                 optionDiv.classList.add('orthoepy-incorrect');
+//             }
+//         }
+//     });
+//     resultDiv.innerHTML = `<p><strong>Балл:</strong> ${results.summary?.user_score || 0}</p>`;
+//     resultDiv.style.display = 'block';
+//     resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+// }
+
+// Отображение результатов
 function displayOrthoepyResults(results) {
-    const resultDiv = document.querySelector('.orthoepy-result');
-    if (!resultDiv) return;
-    Object.values(results.results || {}).forEach(item => {
-        const optionDiv = document.querySelector(`[data-variant="${item.variant}"]`);
-        if (optionDiv) {
-            optionDiv.classList.remove('orthoepy-correct', 'orthoepy-incorrect');
-            if (item.is_correct_variant) {
-                optionDiv.classList.add('orthoepy-correct');
-            } else {
-                optionDiv.classList.add('orthoepy-incorrect');
-            }
+    const container = document.querySelector('.orthoepy-test-exercise');
+    const isSchoolMode = container?.dataset.schoolMode === 'true';
+    
+    const task4Results = results.results?.['4'];
+    if (!task4Results?.variant_results) return;
+    
+    const variantResults = task4Results.variant_results;
+    const options = document.querySelectorAll('.test-option');
+    
+    // Считаем количество правильных ответов
+    let correctCount = 0;
+    let totalSelected = 0;
+    
+    options.forEach((option, index) => {
+        const variantResult = variantResults[`4-${index + 1}`];
+        if (!variantResult) return;
+        
+        const checkbox = option.querySelector('.orthoepy-checkbox');
+        const textSpan = option.querySelector('.variant-text');
+        if (!checkbox || !textSpan) return;
+        
+        textSpan.style.color = variantResult.is_correct ? '#28a745' : '#dc3545';
+        textSpan.style.fontWeight = '600';
+        
+        if (checkbox.checked) {
+            totalSelected++;
+            if (variantResult.is_correct) correctCount++;
+            
+            checkbox.style.outline = 'none';
+            checkbox.style.border = variantResult.is_correct ? 
+                '3px solid #10b981' : '3px solid #ef4444';
+            checkbox.style.boxShadow = variantResult.is_correct ? 
+                '0 0 6px 2px rgba(16, 185, 129, 0.7)' : 
+                '0 0 6px 2px rgba(239, 68, 68, 0.7)';
         }
     });
-    resultDiv.innerHTML = `<p><strong>Балл:</strong> ${results.summary?.user_score || 0}</p>`;
-    resultDiv.style.display = 'block';
-    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    
+    document.querySelectorAll('.orthoepy-checkbox').forEach(cb => cb.disabled = true);
+    
+    const checkBtn = document.querySelector('.check-orthoepy-test');
+    if (checkBtn) {
+        checkBtn.textContent = 'Проверено';
+        checkBtn.disabled = true;
+    }
+    
+    // === ПОКАЗ РЕЗУЛЬТАТА ===
+    if (isSchoolMode) {
+        // Для школьного режима - создаем элемент для результата, если его нет
+        let resultDiv = document.querySelector('.orthoepy-result');
+        
+        if (!resultDiv) {
+            // Создаем новый элемент
+            resultDiv = document.createElement('div');
+            resultDiv.className = 'orthoepy-result';
+            container.appendChild(resultDiv);
+        }
+        
+        // Показываем сообщение
+        const allCorrect = correctCount === totalSelected && totalSelected > 0;
+        resultDiv.innerHTML = allCorrect ? 
+            '<p style="color: #28a745; font-weight: bold; font-size: 1.1em; margin-top: 15px;">✓ Правильно!</p>' : 
+            '<p style="color: #dc3545; font-weight: bold; font-size: 1.1em; margin-top: 15px;">✗ Неправильно, есть ошибки</p>';
+        
+        resultDiv.style.display = 'block';
+        
+    } else {
+        // Для ЕГЭ - используем существующий элемент
+        const resultDiv = document.querySelector('.orthoepy-result');
+        if (resultDiv) {
+            resultDiv.innerHTML = `<p><strong>Балл:</strong> ${results.user_score ?? task4Results.score ?? 0}</p>`;
+            resultDiv.style.display = 'block';
+        }
+    }
 }
+
+
 
 // === ФУНКЦИЯ ПРОВЕРКИ ЗАДАНИЯ 6 ===
 function setupWordOkCheck() {
@@ -778,11 +912,14 @@ if (!answerSection) {
 answerSection.innerHTML = '<p>Загрузка...</p>';
 
 // === ЗАДАНИЕ 4: Орфоэпия ===
-if (orthogramIds === '4000') {
+if (orthogramIds === '4000' || orthogramIds.startsWith('4_')) {
+    // Извлекаем класс: '4_6' → 6, '4_7' → 7 и т.д.
+    const grade = orthogramIds.startsWith('4_') ? parseInt(orthogramIds.split('_')[1]) : null;
+    
     if (window.OrthoepyModule && typeof window.OrthoepyModule.loadOrthoepyTest === 'function') {
-        await OrthoepyModule.loadOrthoepyTest();
+        await OrthoepyModule.loadOrthoepyTest(grade);
     } else {
-        await loadOrthoepyTest();
+        await loadOrthoepyTest(grade);
     }
     return;
 }

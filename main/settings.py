@@ -14,7 +14,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 # Для локальной разработки должно быть DEBUG=True - Включаем режим разработки.
 # Django не будет обслуживать статику через runserver
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['91.197.96.233', 'webtable-ja.ru', 'localhost', '127.0.0.1']
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Для collectstatic
@@ -175,4 +175,11 @@ LOGGING = {
             'propagate': True,
         },
     },
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'bot-cache',
+    }
 }
