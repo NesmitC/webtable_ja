@@ -276,6 +276,30 @@ class PunktumExample(models.Model):
         return f"{self.text} (пунктограмма {self.punktum.id}, классы: {grades_display})"
 
 
+class UserWord(models.Model):
+    """Слова из планинга пользователя"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    field_name = models.CharField(max_length=100)  # например user-input-orf-13
+    text = models.CharField(max_length=255)  # слово как ввел пользователь
+    
+    # Связь с эталонной базой (если есть)
+    reference_word = models.ForeignKey(
+        'OrthogramExample', 
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        help_text="Ссылка на слово в эталонной базе, если найдено"
+    )
+    
+    # Флаги
+    is_in_master_db = models.BooleanField(default=False)  # есть ли в базе админа
+    is_active = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user', 'field_name', 'text']  # избегаем дублей
+        
+
 class StudentAnswer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     orthogram = models.ForeignKey(Orthogram, on_delete=models.CASCADE, verbose_name="Орфограмма")

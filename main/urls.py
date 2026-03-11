@@ -71,6 +71,10 @@ urlpatterns = [
     path('api/generate-chered-exercise/', views.generate_chered_exercise, name='generate_chered_exercise'),
     path('api/daily-quiz/', views.get_daily_quiz, name='daily_quiz'),
     path('api/log-quiz-answer/', views.log_quiz_answer, name='log_quiz_answer'),
+    path('api/save-example/', views.save_example, name='save_example'),
+    path('api/load-examples/', views.load_examples, name='load_examples'),
+    path('api/update-example/', views.update_example, name='update_example'),
+    path('api/delete-example/', views.delete_example, name='delete_example'),
 
     # ОГЭ
     path('diagnostic/oge/', views.oge_diagnostic_page, name='oge_diagnostic'),

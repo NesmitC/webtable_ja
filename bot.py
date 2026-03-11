@@ -4,6 +4,9 @@ from decouple import config
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from asgiref.sync import sync_to_async
+import logging
+logger = logging.getLogger(__name__)
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'main.settings')
 django.setup()
@@ -18,39 +21,97 @@ def get_profile(tg_id):
     try: return UserProfile.objects.select_related('user').get(telegram_id=tg_id)
     except UserProfile.DoesNotExist: return None
 
+# async def _do_quiz(tg_id, message):
+#     profile = await get_profile(tg_id)
+#     if not profile: return await message.reply_text("❌ /start для привязки")
+    
+#     async with httpx.AsyncClient(timeout=5) as client:
+#         try:
+#             r = await client.post(f"{API_URL}/api/daily-quiz/", json={'user_id': profile.user.id})
+#             data = r.json()
+#         except: return await message.reply_text("⚠️ Ошибка загрузки")
+    
+#     if 'error' in data: return await message.reply_text("🎉 Вопросы закончились")
+    
+#     # 🔧 Сохраняем example_id в кэш для логирования ответа
+#     example_id = data.get('example_id')
+#     if example_id:
+#         cache.set(f"quiz_example_{tg_id}", example_id, 300)
+    
+#     # Убираем строку с плейсхолдером 😊
+#     lines = data['question'].split('\n')
+#     question = '\n'.join(line for line in lines if '😊' not in line).strip()
+    
+#     # Рандомизируем варианты
+#     options = data.get('options', [])
+#     random.shuffle(options)
+    
+#     # Добавляем эмодзи для оформления
+#     icons = ['🔹', '🔸', '▫️', '▪️', '🔘']
+#     kb = [[InlineKeyboardButton(f"{icons[i % len(icons)]} {o['text']}", 
+#                                 callback_data=f"ans_{i}_{int(o['is_correct'])}")] 
+#           for i, o in enumerate(options)]
+    
+#     cache.set(f"quiz_exp_{tg_id}", data.get('explanation',''), 300)
+#     await message.reply_text(f"⚡ <b>ВОПРОС</b>\n\n{question}", reply_markup=InlineKeyboardMarkup(kb), parse_mode="HTML")
+
+
+
+# bot.py - добавить в функцию _do_quiz после получения данных
+
 async def _do_quiz(tg_id, message):
     profile = await get_profile(tg_id)
-    if not profile: return await message.reply_text("❌ /start для привязки")
+    if not profile: 
+        return await message.reply_text("❌ /start для привязки")
     
     async with httpx.AsyncClient(timeout=5) as client:
         try:
             r = await client.post(f"{API_URL}/api/daily-quiz/", json={'user_id': profile.user.id})
             data = r.json()
-        except: return await message.reply_text("⚠️ Ошибка загрузки")
+            # Логируем полученные данные
+            print(f"📦 Получены данные от API: {data}")
+        except Exception as e:
+            print(f"❌ Ошибка загрузки: {e}")
+            return await message.reply_text("⚠️ Ошибка загрузки")
     
-    if 'error' in data: return await message.reply_text("🎉 Вопросы закончились")
+    if 'error' in data: 
+        return await message.reply_text("🎉 Вопросы закончились")
     
-    # 🔧 Сохраняем example_id в кэш для логирования ответа
+    # Сохраняем example_id в кэш
     example_id = data.get('example_id')
     if example_id:
         cache.set(f"quiz_example_{tg_id}", example_id, 300)
     
-    # Убираем строку с плейсхолдером 😊
-    lines = data['question'].split('\n')
-    question = '\n'.join(line for line in lines if '😊' not in line).strip()
+    # Получаем вопрос и варианты
+    question = data.get('question', '')
+    options = data.get('options', [])
+    
+    print(f"📝 Вопрос: {question}")
+    print(f"🔘 Варианты: {options}")
     
     # Рандомизируем варианты
-    options = data.get('options', [])
     random.shuffle(options)
     
-    # Добавляем эмодзи для оформления
+    # Создаём клавиатуру
     icons = ['🔹', '🔸', '▫️', '▪️', '🔘']
-    kb = [[InlineKeyboardButton(f"{icons[i % len(icons)]} {o['text']}", 
-                                callback_data=f"ans_{i}_{int(o['is_correct'])}")] 
-          for i, o in enumerate(options)]
+    kb = []
+    for i, o in enumerate(options):
+        text = o.get('text', '')
+        is_correct = o.get('is_correct', False)
+        kb.append([InlineKeyboardButton(
+            f"{icons[i % len(icons)]} {text}", 
+            callback_data=f"ans_{i}_{1 if is_correct else 0}"
+        )])
     
-    cache.set(f"quiz_exp_{tg_id}", data.get('explanation',''), 300)
-    await message.reply_text(f"⚡ <b>ВОПРОС</b>\n\n{question}", reply_markup=InlineKeyboardMarkup(kb), parse_mode="HTML")
+    cache.set(f"quiz_exp_{tg_id}", data.get('explanation', ''), 300)
+    
+    await message.reply_text(
+        f"⚡ <b>ВОПРОС</b>\n\n{question}", 
+        reply_markup=InlineKeyboardMarkup(kb), 
+        parse_mode="HTML"
+    )
+
+
 
 async def _do_report(tg_id, message):
     profile = await get_profile(tg_id)
@@ -86,6 +147,7 @@ async def report_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await _do_report(update.effective_user.id, update.message)
 
 async def on_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"🤖 Button pressed: {update.callback_query.data}")  # ← Добавь это
     q = update.callback_query
     await q.answer()
     cb = q.data
@@ -135,4 +197,6 @@ if __name__ == '__main__':
     app.add_handler(CommandHandler("quiz", quiz_cmd))
     app.add_handler(CommandHandler("report", report_cmd))
     app.add_handler(CallbackQueryHandler(on_button))
+    
+    # Эта строка должна работать
     app.run_polling(drop_pending_updates=True)

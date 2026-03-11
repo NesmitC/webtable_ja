@@ -22,7 +22,7 @@ import re
 import json
 import logging
 from .forms import CustomUserCreationForm, ProfileForm
-from .models import UserExample, UserProfile, OrthogramExample, Orthogram, StudentAnswer, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise, TaskGrammaticEightExample, TaskGrammaticTwoTwo, TaskGrammaticTwoTwoExample, TaskPaponim, WordOk
+from .models import UserExample, UserProfile, OrthogramExample, Orthogram, StudentAnswer, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise, TaskGrammaticEightExample, TaskGrammaticTwoTwo, TaskGrammaticTwoTwoExample, TaskPaponim, WordOk, UserWord
 from .models import (
     OgeTextAnalysisTask, OgeTextQuestion, OgeQuestionOption,
     OgeTaskGrammaticEight, OgeTaskGrammaticEightExample,
@@ -195,106 +195,68 @@ def profile(request):
     return render(request, 'profile.html', {'form': form})
 
 
-# === API: примеры и данные упражнений ===
-# @login_required
-# def save_example(request):
-#     if request.method == 'POST':
-#         field_name = request.POST.get('field_name')
-#         content = request.POST.get('content', '')
-#         UserExample.objects.update_or_create(
-#             user=request.user,
-#             field_name=field_name,
-#             defaults={'content': content}
-#         )
-#         return JsonResponse({'status': 'success'})
-#     return JsonResponse({'status': 'error'}, status=400)
-
-
-# === API: примеры и данные упражнений ===
 @login_required
-def save_example(request):
-    """Сохраняет примеры пользователя: орфограммы, пунктограммы + UserExample"""
+def update_example(request):
+    """Обновляет текст слова в планинге"""
     if request.method != 'POST':
         return JsonResponse({'status': 'error'}, status=400)
     
-    field_name = request.POST.get('field_name')
-    content = request.POST.get('content', '').strip()
-    
-    if not field_name or not content:
+    try:
+        data = json.loads(request.body)
+        example_id = data.get('example_id')
+        new_text = data.get('text', '').strip()
+        
+        if not example_id or not new_text:
+            return JsonResponse({'status': 'error', 'message': 'Нет данных'}, status=400)
+        
+        example = OrthogramExample.objects.get(
+            id=example_id, 
+            added_by=request.user, 
+            is_user_added=True
+        )
+        
+        example.text = new_text
+        example.masked_word = new_text  # или можно сгенерировать маску
+        example.save()
+        
+        logger.info(f"✅ Updated example #{example_id}: '{new_text}'")
+        return JsonResponse({'status': 'success'})
+        
+    except OrthogramExample.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Не найдено'}, status=404)
+    except Exception as e:
+        logger.error(f"❌ Update error: {e}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+def delete_example(request):
+    """Удаляет слово из планинга"""
+    if request.method != 'POST':
         return JsonResponse({'status': 'error'}, status=400)
     
     try:
-        # 🔹 1. Сохраняем в UserExample (для истории/резерва)
-        UserExample.objects.update_or_create(
-            user=request.user,
-            field_name=field_name,
-            defaults={'content': content}
-        )
+        data = json.loads(request.body)
+        example_id = data.get('example_id')
         
-        # 🔹 2. Сохранение ОРФОГРАММ
-        if field_name.startswith('user-input-orf-'):
-            orth_id = field_name.replace('user-input-orf-', '')
-            orthogram = Orthogram.objects.get(id=orth_id)
-            
-            # Удаляем старые записи пользователя для этой орфограммы
-            OrthogramExample.objects.filter(
-                added_by=request.user,
-                source_field=field_name,
-                is_user_added=True
-            ).delete()
-            
-            # Создаём новые (каждое слово — отдельная запись)
-            words = parse_words_from_text(content)
-            for word in words:
-                OrthogramExample.objects.create(
-                    orthogram=orthogram,
-                    text=word,
-                    masked_word=word,
-                    is_active=True,
-                    is_user_added=True,
-                    added_by=request.user,
-                    source_field=field_name
-                )
-            logger.info(f"✅ Орфограммы: сохранено {len(words)} слов")
+        if not example_id:
+            return JsonResponse({'status': 'error', 'message': 'Нет ID'}, status=400)
         
-        # 🔹 3. Сохранение ПУНКТОГРАММ
-        elif field_name.startswith('user-input-punktum-'):
-            punktum_id = field_name.replace('user-input-punktum-', '')
-            punktum = Punktum.objects.get(id=punktum_id)
-            
-            PunktumExample.objects.filter(
-                added_by=request.user,
-                source_field=field_name,
-                is_user_added=True
-            ).delete()
-            
-            sentences = [s.strip() for s in content.split('\n') if s.strip()]
-            for sent in sentences:
-                PunktumExample.objects.create(
-                    punktum=punktum,
-                    text=sent,
-                    masked_word=sent,
-                    is_active=True,
-                    is_user_added=True,
-                    added_by=request.user,
-                    source_field=field_name,
-                    explanation="!"
-                )
-            logger.info(f"✅ Пунктограммы: сохранено {len(sentences)} предложений")
+        deleted, _ = OrthogramExample.objects.filter(
+            id=example_id,
+            added_by=request.user,
+            is_user_added=True
+        ).delete()
         
-        return JsonResponse({'status': 'success'})
-        
-    except (Orthogram.DoesNotExist, Punktum.DoesNotExist) as e:
-        logger.error(f"❌ Объект не найден: {e}")
-        return JsonResponse({'status': 'error', 'message': 'Объект не найден'}, status=404)
+        if deleted:
+            logger.info(f"✅ Deleted example #{example_id}")
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Не найдено'}, status=404)
+            
     except Exception as e:
-        logger.error(f"❌ Ошибка сохранения: {e}")
+        logger.error(f"❌ Delete error: {e}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-@login_required
-def load_examples(request):
-    examples = UserExample.objects.filter(user=request.user).values('field_name', 'content')
-    return JsonResponse({item['field_name']: item['content'] for item in examples})
 
 
 def get_orthogram_letters(request, orth_id):
@@ -1757,11 +1719,285 @@ def get_weekly_report(request):
 
 # ==-=============== для КВИЗОВ =========================
 # === 2 типа вопросов по кругу ===
-QUIZ_TYPES = ['orthoepy', 'correction']
+# QUIZ_TYPES = ['orthoepy', 'correction']
+
+# @csrf_exempt
+# def get_daily_quiz(request):
+#     """Возвращает персонализированный квиз из планинга пользователя"""
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+#     try:
+#         data = json.loads(request.body)
+#         user_id = data.get('user_id')
+        
+#         if not user_id:
+#             return JsonResponse({'error': 'Нет user_id'}, status=400)
+        
+#         # Пробуем взять слово из планинга пользователя
+#         quiz = _get_personalized_preposition_quiz(user_id)
+        
+#         if not quiz:
+#             return JsonResponse({'error': 'Нет вопросов'}, status=404)
+        
+#         return JsonResponse(quiz)
+        
+#     except Exception as e:
+#         logger.error(f"get_daily_quiz error: {e}")
+#         return JsonResponse({'error': 'Ошибка генерации'}, status=500)
+
+
+# === 1. Ударения (орфоэпия) ===
+# def _get_orthoepy_quiz(user_grade=None):
+#     test = OrthoepyWord.generate_test(num_options=4, correct_min=1, correct_max=1, user_grade=user_grade)
+#     if not test or not test.get('variants'):
+#         return None
+    
+#     correct = test['correct_answers'][0]
+#     options = [{'text': v, 'is_correct': (v == correct)} for v in test['variants']]
+    
+#     obj = OrthoepyWord.objects.filter(word=correct, is_correct=True).first()
+#     explanation = getattr(obj, 'comment', '') or f"Правильно: {correct}"
+    
+#     return {
+#         'question': 'Где правильное ударение?',
+#         'options': options,
+#         'explanation': explanation
+#     }
+
+
+# === 2. Грамматика (задание 7: найди ошибку) ===
+# def _get_correction_quiz(user_grade=None):
+#     test = CorrectionExercise.generate_correction_test(num_options=4, wrong_count=1, user_grade=user_grade)
+#     if not test or not test.get('words'):
+#         return None
+    
+#     options = [{'text': w, 'is_correct': (w == test['incorrect_word'])} for w in test['words']]
+    
+#     return {
+#         'question': 'Найдите слово с ошибкой:',
+#         'options': options,
+#         'explanation': f"Ошибка: «{test['incorrect_word']}» → правильно «{test['correct_answer']}»"
+#     }
+
+
+# === ПЕРСОНАЛИЗИРОВАННЫЕ КВИЗЫ ИЗ ПЛАНИНГА ===
+# ========================================================================
+# ✅ ВСПОМОГАТЕЛЬНАЯ: парсинг слов
+# ========================================================================
+def parse_words_from_text(text):
+    """Разбивает текст на слова по переносам строк"""
+    if not text:
+        return []
+    lines = re.split(r'\r?\n', text)
+    return [line.strip() for line in lines if line.strip()]
+
+
+# ========================================================================
+# ✅ API: СОХРАНЕНИЕ ПРИМЕРОВ (ПЛАНИНГ)
+# ========================================================================
+# @login_required
+# def save_example(request):
+#     """Сохраняет слова пользователя в UserWord"""
+#     if request.method != 'POST':
+#         return JsonResponse({'status': 'error'}, status=400)
+    
+#     field_name = request.POST.get('field_name')
+#     content = request.POST.get('content', '').strip()
+    
+#     print(f"\n💾 СОХРАНЕНИЕ: field={field_name}")
+#     print(f"   content={content}")
+#     print(f"   user={request.user.username}")
+    
+#     if not field_name:
+#         return JsonResponse({'status': 'error', 'message': 'Нет field_name'}, status=400)
+    
+#     try:
+#         # 1. Сохраняем в UserExample (резерв)
+#         UserExample.objects.update_or_create(
+#             user=request.user,
+#             field_name=field_name,
+#             defaults={'content': content}
+#         )
+#         print("✅ UserExample сохранен")
+        
+#         # 2. Если это орфограмма - сохраняем в UserWord
+#         if field_name.startswith('user-input-orf-') and content:
+#             orth_id = field_name.replace('user-input-orf-', '')
+#             print(f"📝 Орфограмма ID: {orth_id}")
+            
+#             # Разбираем слова
+#             words = [w.strip() for w in content.split('\n') if w.strip()]
+#             print(f"📚 Слова: {words}")
+            
+#             # Удаляем старые записи
+#             deleted, _ = UserWord.objects.filter(
+#                 user=request.user,
+#                 field_name=field_name
+#             ).delete()
+#             print(f"🗑 Удалено старых: {deleted}")
+            
+#             # Создаем новые записи
+#             for word in words:
+#                 user_word = UserWord.objects.create(
+#                     user=request.user,
+#                     field_name=field_name,
+#                     text=word,
+#                     is_in_master_db=False,  # пока False, потом обновим
+#                     is_active=True
+#                 )
+#                 print(f"  ✅ Создано: {word} (id={user_word.id})")
+        
+#         return JsonResponse({'status': 'success'})
+        
+#     except Exception as e:
+#         print(f"❌ ОШИБКА: {e}")
+#         import traceback
+#         traceback.print_exc()
+#         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+def save_example(request):
+    """Сохраняет слова пользователя и автоматически связывает с эталонной базой"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=400)
+    
+    field_name = request.POST.get('field_name')
+    content = request.POST.get('content', '').strip()
+    
+    if not field_name:
+        return JsonResponse({'status': 'error'}, status=400)
+    
+    try:
+        # Сохраняем в UserExample
+        UserExample.objects.update_or_create(
+            user=request.user,
+            field_name=field_name,
+            defaults={'content': content}
+        )
+        
+        # Если это орфограмма
+        if field_name.startswith('user-input-orf-') and content:
+            orth_id = field_name.replace('user-input-orf-', '')
+            words = [w.strip() for w in content.split('\n') if w.strip()]
+            
+            # Удаляем старые записи
+            UserWord.objects.filter(
+                user=request.user,
+                field_name=field_name
+            ).delete()
+            
+            # Создаем новые с АВТОМАТИЧЕСКИМ поиском в эталонной базе
+            for word_text in words:
+                # Ищем в эталонной базе
+                reference = OrthogramExample.objects.filter(
+                    text=word_text,
+                    orthogram_id=orth_id
+                ).first()
+                
+                UserWord.objects.create(
+                    user=request.user,
+                    field_name=field_name,
+                    text=word_text,
+                    reference_word=reference,
+                    is_in_master_db=bool(reference),  # True если нашли
+                    is_active=True
+                )
+        
+        return JsonResponse({'status': 'success'})
+        
+    except Exception as e:
+        print(f"❌ Ошибка: {e}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+# ========================================================================
+# ✅ API: ЗАГРУЗКА ПРИМЕРОВ
+# ========================================================================
+@login_required
+def load_examples(request):
+    """Загружает слова пользователя для отображения в планинге"""
+    result = {}
+    
+    # Загружаем из UserExample (резерв)
+    for ue in UserExample.objects.filter(user=request.user):
+        result[ue.field_name] = ue.content
+    
+    # Можно добавить дополнительную информацию
+    return JsonResponse(result)
+
+
+# ========================================================================
+# ✅ API: КВИЗ ДЛЯ БОТА — ГЛАВНАЯ ФУНКЦИЯ
+# ========================================================================
+# def _get_personalized_preposition_quiz(user_id):
+#     """Берет слова пользователя из UserWord"""
+#     from .models import UserWord
+#     import random
+#     import re
+    
+#     # Берем только слова, которые есть в эталонной базе
+#     user_words = list(UserWord.objects.filter(
+#         user_id=user_id,
+#         is_in_master_db=True,
+#         reference_word__isnull=False
+#     ).select_related('reference_word', 'reference_word__orthogram'))
+    
+#     if not user_words:
+#         return None
+    
+#     user_word = random.choice(user_words)
+#     word = user_word.reference_word
+    
+#     # Формируем квиз
+#     masked = re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)
+    
+#     return {
+#         'question': f"Как пишется правильно:\n{masked}",
+#         'options': [
+#             {'text': word.text, 'is_correct': True},
+#             {'text': word.incorrect_variant, 'is_correct': False}
+#         ],
+#         'explanation': word.orthogram.rule if word.orthogram else 'Правило',
+#         'orthogram_id': word.orthogram_id,
+#         'example_id': word.id
+#     }
+
+
+def _get_personalized_preposition_quiz(user_id):
+    """Берет только слова, которые есть в эталонной базе"""
+    from .models import UserWord
+    import random
+    import re
+    
+    # Автоматический фильтр - только слова с reference_word
+    user_words = list(UserWord.objects.filter(
+        user_id=user_id,
+        reference_word__isnull=False  # автоматически берем только те, что есть в базе
+    ).select_related('reference_word', 'reference_word__orthogram'))
+    
+    if not user_words:
+        return None
+    
+    user_word = random.choice(user_words)
+    word = user_word.reference_word
+    
+    return {
+        'question': f"Как пишется правильно:\n{re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)}",
+        'options': [
+            {'text': word.text, 'is_correct': True},
+            {'text': word.incorrect_variant, 'is_correct': False}
+        ],
+        'explanation': word.orthogram.rule if word.orthogram else 'Правило',
+        'orthogram_id': word.orthogram_id,
+        'example_id': word.id
+    }
+    
 
 @csrf_exempt
 def get_daily_quiz(request):
-    """Возвращает персонализированный квиз из планинга пользователя"""
+    """API для получения квиза"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
@@ -1770,124 +2006,26 @@ def get_daily_quiz(request):
         user_id = data.get('user_id')
         
         if not user_id:
-            return JsonResponse({'error': 'Нет user_id'}, status=400)
+            return JsonResponse({'error': 'No user_id'}, status=400)
         
-        # Пробуем взять слово из планинга пользователя
+        # Вызываем функцию генерации квиза
         quiz = _get_personalized_preposition_quiz(user_id)
         
         if not quiz:
-            return JsonResponse({'error': 'Нет вопросов'}, status=404)
+            return JsonResponse({'error': 'No questions'}, status=404)
         
         return JsonResponse(quiz)
         
     except Exception as e:
-        logger.error(f"get_daily_quiz error: {e}")
-        return JsonResponse({'error': 'Ошибка генерации'}, status=500)
+        logger.error(f"Error in get_daily_quiz: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
 
-
-# === 1. Ударения (орфоэпия) ===
-def _get_orthoepy_quiz(user_grade=None):
-    test = OrthoepyWord.generate_test(num_options=4, correct_min=1, correct_max=1, user_grade=user_grade)
-    if not test or not test.get('variants'):
-        return None
-    
-    correct = test['correct_answers'][0]
-    options = [{'text': v, 'is_correct': (v == correct)} for v in test['variants']]
-    
-    obj = OrthoepyWord.objects.filter(word=correct, is_correct=True).first()
-    explanation = getattr(obj, 'comment', '') or f"Правильно: {correct}"
-    
-    return {
-        'question': 'Где правильное ударение?',
-        'options': options,
-        'explanation': explanation
-    }
-
-
-# === 2. Грамматика (задание 7: найди ошибку) ===
-def _get_correction_quiz(user_grade=None):
-    test = CorrectionExercise.generate_correction_test(num_options=4, wrong_count=1, user_grade=user_grade)
-    if not test or not test.get('words'):
-        return None
-    
-    options = [{'text': w, 'is_correct': (w == test['incorrect_word'])} for w in test['words']]
-    
-    return {
-        'question': 'Найдите слово с ошибкой:',
-        'options': options,
-        'explanation': f"Ошибка: «{test['incorrect_word']}» → правильно «{test['correct_answer']}»"
-    }
-
-
-# === ПЕРСОНАЛИЗИРОВАННЫЕ КВИЗЫ ИЗ ПЛАНИНГА ===
-
-def parse_words_from_text(text):
-    """Разбивает текст на слова по переносам строк (Enter)"""
-    import re
-    if not text:
-        return []
-    lines = re.split(r'\r?\n', text)
-    return [line.strip() for line in lines if line.strip()]
-
-
-def _get_personalized_preposition_quiz(user_id):
-    """Берёт случайное слово из планинга пользователя"""
-    from .models import OrthogramExample
-    import random
-    
-    examples = OrthogramExample.objects.filter(
-        added_by_id=user_id,
-        is_user_added=True,
-        is_active=True
-    ).select_related('orthogram')
-    
-    if not examples.exists():
-        return None
-    
-    example = random.choice(list(examples))
-    return _generate_preposition_quiz(example.orthogram, example=example)
-
-
-def _generate_preposition_quiz(orthogram, example=None):
-    """Генерирует квиз с маской 😊"""
-    import random
-    
-    if example and example.is_user_added:
-        correct_text = example.text
-        masked_text = example.masked_word or example.text
-        # 50% шанс показать маску или полное слово
-        question = f"Напиши правильно:\n{masked_text}" if random.random() > 0.5 else f"Как пишется:\n{correct_text}"
-    else:
-        correct_text = orthogram.name.replace('...', '').strip()
-        masked_text = orthogram.name.replace('...', '😊')
-        question = f"Как правильно пишется:\n\n{masked_text}"
-    
-    # Генерируем неправильный вариант
-    letters = getattr(orthogram, 'letters', 'е/и')
-    if '/' in letters:
-        l1, l2 = letters.split('/')[:2]
-        incorrect_text = correct_text.replace(l1.strip(), l2.strip()) if l1.strip() in correct_text else f"{correct_text} (ошибка)"
-    else:
-        incorrect_text = f"{correct_text} (ошибка)"
-    
-    options = [
-        {'text': correct_text, 'is_correct': True},
-        {'text': incorrect_text, 'is_correct': False},
-    ]
-    random.shuffle(options)
-    
-    return {
-        'question': question,
-        'options': options,
-        'explanation': getattr(orthogram, 'rule', 'Правило применено.'),
-        'orthogram_id': orthogram.id,
-        'example_id': example.id if example else None
-    }
-
-
+# ========================================================================
+# ✅ API: ЛОГИРОВАНИЕ ОТВЕТА БОТА
+# ========================================================================
 @csrf_exempt
 def log_quiz_answer(request):
-    """Логирует ответ пользователя (для повторений)"""
+    """Логирует ответ пользователя для адаптации квизов"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
@@ -1898,10 +2036,11 @@ def log_quiz_answer(request):
         is_correct = data.get('is_correct', False)
         
         if example_id and user_id:
-            from .models import OrthogramExample
-            example = OrthogramExample.objects.filter(id=example_id, added_by_id=user_id).first()
+            example = OrthogramExample.objects.filter(
+                id=example_id, 
+                added_by_id=user_id
+            ).first()
             if example and not is_correct:
-                # При ошибке — временно скрываем слово (1 час)
                 example.is_active = False
                 example.save()
         

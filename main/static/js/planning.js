@@ -1395,3 +1395,269 @@ function handleCheredExercise() {
         container.innerHTML = `<div class="error">Ошибка загрузки</div>`;
     });
 }
+
+// ========================================================================
+// ✅ ПЛАНИНГ: АВТО-СОХРАНЕНИЕ И АВТО-ЗАГРУЗКА (МИНИМАЛИСТИЧНО)
+// ========================================================================
+// (function() {
+//     'use strict';
+    
+//     // CSRF-токен для Django
+//     function getCookie(name) {
+//         let cookieValue = null;
+//         if (document.cookie) {
+//             const cookies = document.cookie.split(';');
+//             for (let cookie of cookies) {
+//                 cookie = cookie.trim();
+//                 if (cookie.startsWith(name + '=')) {
+//                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                     break;
+//                 }
+//             }
+//         }
+//         return cookieValue;
+//     }
+//     const csrftoken = getCookie('csrftoken');
+    
+//     // Сохранение поля в БД
+//     async function saveField(field) {
+//         const fieldName = field.name;
+//         const content = field.value.trim();
+//         if (!content) return;
+        
+//         try {
+//             await fetch('/api/save-example/', {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/x-www-form-urlencoded',
+//                     'X-CSRFToken': csrftoken
+//                 },
+//                 body: new URLSearchParams({
+//                     'field_name': fieldName,
+//                     'content': content
+//                 })
+//             });
+//         } catch (e) {
+//             console.error('Save error:', e);
+//         }
+//     }
+    
+//     // Загрузка сохранённых слов из БД в поля
+//     async function loadSavedExamples() {
+//         try {
+//             const response = await fetch('/api/load-examples/', {
+//                 method: 'GET',
+//                 headers: { 'X-CSRFToken': csrftoken }
+//             });
+//             if (!response.ok) return;
+            
+//             const examples = await response.json();
+            
+//             // Заполняем поля сохранёнными значениями
+//             Object.entries(examples).forEach(([fieldName, content]) => {
+//                 const field = document.querySelector(`[name="${fieldName}"]`);
+//                 if (field && content) {
+//                     field.value = content;
+//                 }
+//             });
+//         } catch (e) {
+//             console.error('Load error:', e);
+//         }
+//     }
+    
+//     // Инициализация
+//     function init() {
+//         const planFields = document.querySelectorAll(
+//             '.input-text[name^="user-input-orf-"], .input-text[name^="user-input-punktum-"]'
+//         );
+        
+//         if (planFields.length === 0) return;
+        
+//         // Авто-сохранение при потере фокуса
+//         planFields.forEach(field => {
+//             field.addEventListener('blur', function() {
+//                 saveField(this);
+//             });
+//         });
+        
+//         // Сохранение при закрытии вкладки
+//         window.addEventListener('beforeunload', function() {
+//             planFields.forEach(field => {
+//                 if (field.value.trim()) {
+//                     navigator.sendBeacon('/api/save-example/', new URLSearchParams({
+//                         'field_name': field.name,
+//                         'content': field.value.trim()
+//                     }));
+//                 }
+//             });
+//         });
+        
+//         // Авто-загрузка при старте страницы
+//         loadSavedExamples();
+//     }
+    
+//     // Запуск
+//     if (document.readyState === 'loading') {
+//         document.addEventListener('DOMContentLoaded', init);
+//     } else {
+//         init();
+//     }
+// })();
+
+// ========================================================================
+// ✅ АВТО-СОХРАНЕНИЕ ПЛАНИНГА — НА ГЛОБАЛЬНОМ УРОВНЕ!
+// ========================================================================
+(function() {
+    'use strict';
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    
+    async function saveField(field) {
+        const fieldName = field.name;
+        const content = field.value.trim();
+        
+        console.log(`💾 Saving ${fieldName}: "${content.substring(0, 30) || '(пусто)'}..."`);
+        
+        // 🔧 Получаем CSRF-токен
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        const csrftoken = getCookie('csrftoken');
+        console.log(`🔐 CSRF token: ${csrftoken ? '✅ есть' : '❌ нет'}`);
+        
+        if (!csrftoken) {
+            console.error('❌ CSRF token not found!');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/save-example/', {
+                method: 'POST',
+                credentials: 'same-origin',  // 🔧 ОБЯЗАТЕЛЬНО: отправляем куки!
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrftoken
+                },
+                body: new URLSearchParams({
+                    'field_name': fieldName,
+                    'content': content
+                })
+            });
+            
+            // 🔧 Проверяем, что ответ JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error(`❌ Ожидался JSON, получено: ${text.substring(0, 100)}`);
+                return;
+            }
+            
+            const result = await response.json();
+            if (result.status === 'success') {
+                console.log(`✅ Saved: ${fieldName}`);
+                field.style.borderColor = '#4caf50';
+                setTimeout(() => { field.style.borderColor = ''; }, 1000);
+            } else {
+                console.error(`❌ Save failed: ${result.message}`);
+            }
+        } catch (error) {
+            console.error(`🔥 Fetch error: ${error}`);
+        }
+    }
+
+    // 🔹 АВТО-ЗАГРУЗКА СОХРАНЁННЫХ СЛОВ
+    async function loadSavedExamples() {
+        console.log('🔄 Loading saved planning examples...');
+        
+        try {
+            const response = await fetch('/api/load-examples/', {
+                method: 'GET',
+                headers: { 'X-CSRFToken': csrftoken }
+            });
+            
+            if (!response.ok) {
+                console.warn('⚠️ Load examples failed:', response.status);
+                return;
+            }
+            
+            const examples = await response.json();
+            console.log('📦 Loaded:', Object.keys(examples).length, 'fields');
+            
+            // Заполняем поля сохранёнными значениями
+            Object.entries(examples).forEach(([fieldName, content]) => {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                if (field && content) {
+                    field.value = content;
+                    console.log(`✅ Restored: ${fieldName}`);
+                }
+            });
+        } catch (error) {
+            console.error('🔥 Load error:', error);
+        }
+    }
+    
+    function init() {
+        const planFields = document.querySelectorAll(
+            '.input-text[name^="user-input-orf-"], .input-text[name^="user-input-punktum-"]'
+        );
+        
+        if (planFields.length === 0) {
+            console.log('📋 Planning: no auto-save fields found');
+            return;
+        }
+        
+        // Авто-сохранение при blur
+        planFields.forEach(field => {
+            field.addEventListener('blur', function() {
+                saveField(this);
+            });
+        });
+        
+        // Сохранение при закрытии вкладки
+        window.addEventListener('beforeunload', function() {
+            planFields.forEach(field => {
+                navigator.sendBeacon('/api/save-example/', new URLSearchParams({
+                    'field_name': field.name,
+                    'content': field.value.trim()
+                }));
+            });
+        });
+        
+        // 🔹 Авто-загрузка при старте страницы
+        loadSavedExamples();
+        
+        console.log(`🚀 Planning auto-save/load ready (${planFields.length} fields)`);
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
