@@ -231,4 +231,15 @@ project_root/
 └── .env
 
 
+Для запуска на сервере используй systemd или supervisor:
+supervisor.conf:
+
+[program:telegram_bot]
+command=/path/to/venv/bin/python /path/to/bot.py
+directory=/path/to/project
+autostart=true
+autorestart=true
+user=www-data
+
+
 '''

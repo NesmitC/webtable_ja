@@ -1864,41 +1864,8 @@ def load_examples(request):
 # ========================================================================
 # ✅ API: КВИЗ ДЛЯ БОТА — ГЛАВНАЯ ФУНКЦИЯ
 # ========================================================================
-# def _get_personalized_preposition_quiz(user_id):
-#     """Берет слова пользователя из UserWord"""
-#     from .models import UserWord
-#     import random
-#     import re
-    
-#     # Берем только слова, которые есть в эталонной базе
-#     user_words = list(UserWord.objects.filter(
-#         user_id=user_id,
-#         is_in_master_db=True,
-#         reference_word__isnull=False
-#     ).select_related('reference_word', 'reference_word__orthogram'))
-    
-#     if not user_words:
-#         return None
-    
-#     user_word = random.choice(user_words)
-#     word = user_word.reference_word
-    
-#     # Формируем квиз
-#     masked = re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)
-    
-#     return {
-#         'question': f"Как пишется правильно:\n{masked}",
-#         'options': [
-#             {'text': word.text, 'is_correct': True},
-#             {'text': word.incorrect_variant, 'is_correct': False}
-#         ],
-#         'explanation': word.orthogram.rule if word.orthogram else 'Правило',
-#         'orthogram_id': word.orthogram_id,
-#         'example_id': word.id
-#     }
-
 def _get_personalized_preposition_quiz(user_id):
-    """Умный квиз с учетом веса слов"""
+    """Умный квиз с учетом веса слов и конкретным explanation"""
     from .models import UserWord, OrthogramExample, QuizHistory
     import random
     import re
@@ -1945,13 +1912,16 @@ def _get_personalized_preposition_quiz(user_id):
         
         print(f"✅ Из планинга (вес={user_word.weight:.1f}): {user_word.text}")
         
+        # 🔥 ИСПОЛЬЗУЕМ explanation ИЗ СЛОВА, ЕСЛИ ОНО ЕСТЬ
+        explanation = word.explanation if word.explanation else word.orthogram.rule
+        
         return {
             'question': f"Как пишется правильно:\n{re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)}",
             'options': [
                 {'text': word.text, 'is_correct': True},
                 {'text': word.incorrect_variant, 'is_correct': False}
             ],
-            'explanation': word.orthogram.rule if word.orthogram else 'Правило',
+            'explanation': explanation,  # ← теперь конкретное!
             'orthogram_id': word.orthogram_id,
             'example_id': word.id,
             'user_word_id': user_word.id
@@ -1960,10 +1930,9 @@ def _get_personalized_preposition_quiz(user_id):
     # ===== 2. Если слова из планинга кончились =====
     print("📚 Слова из планинга на сегодня показаны, берем из общей базы")
     
-    # ИСПРАВЛЕНО: shown_at -> answer_time
     shown_today_ids = QuizHistory.objects.filter(
         user_id=user_id,
-        answer_time__date=today  # было shown_at, стало answer_time
+        answer_time__date=today
     ).values_list('word_id', flat=True)
     
     base_words = list(OrthogramExample.objects.filter(
@@ -1980,13 +1949,16 @@ def _get_personalized_preposition_quiz(user_id):
         word = random.choice(base_words)
         print(f"✅ Из общей базы: {word.text}")
         
+        # 🔥 ИСПОЛЬЗУЕМ explanation ИЗ СЛОВА, ЕСЛИ ОНО ЕСТЬ
+        explanation = word.explanation if word.explanation else word.orthogram.rule
+        
         return {
             'question': f"Как пишется правильно:\n{re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)}",
             'options': [
                 {'text': word.text, 'is_correct': True},
                 {'text': word.incorrect_variant, 'is_correct': False}
             ],
-            'explanation': word.orthogram.rule if word.orthogram else 'Правило',
+            'explanation': explanation,  # ← теперь конкретное!
             'orthogram_id': word.orthogram_id,
             'example_id': word.id,
             'user_word_id': None
@@ -2181,7 +2153,7 @@ def format_quiz_report(stats):
 
 @csrf_exempt
 def weekly_report(request):
-    """API для получения статистики пользователя"""
+    """API для получения статистики пользователя (только 3 последних)"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
@@ -2195,40 +2167,83 @@ def weekly_report(request):
             return JsonResponse({'error': 'No user_id'}, status=400)
         
         # Получаем статистику
-        stats = get_user_quiz_stats(user_id)
-        print(f"✅ Статистика собрана: {stats}")
+        from django.utils import timezone
+        from datetime import timedelta
+        from .models import UserWord, QuizHistory, Orthogram
         
-        # Пробуем сериализовать для проверки
-        test_json = json.dumps(stats)
-        print(f"✅ JSON валиден: {test_json[:100]}")
+        today = timezone.now().date()
+        week_ago = today - timedelta(days=7)
         
-        return JsonResponse(stats)
+        # 1. Слова в планинге
+        total_words = UserWord.objects.filter(
+            user_id=user_id,
+            is_active=True
+        ).count()
         
-    except json.JSONDecodeError:
-        print("❌ Ошибка: неверный JSON в запросе")
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    except TypeError as e:
-        print(f"❌ Ошибка сериализации: {e}")
-        # Возвращаем пустую статистику
+        # 2. Статистика квизов за неделю
+        weekly_history = QuizHistory.objects.filter(
+            user_id=user_id,
+            answer_time__date__gte=week_ago
+        )
+        
+        total_attempts = weekly_history.count()
+        correct_attempts = weekly_history.filter(was_correct=True).count()
+        success_rate = round((correct_attempts / total_attempts * 100) if total_attempts > 0 else 0, 1)
+        
+        # 3. Сложные темы - ТОЛЬКО 3 ПОСЛЕДНИХ
+        ortho_errors = {}
+        
+        for answer in weekly_history.select_related('word__orthogram'):
+            if answer.word and answer.word.orthogram:
+                orthogram = answer.word.orthogram
+                ortho_id = orthogram.id
+                
+                if ortho_id not in ortho_errors:
+                    ortho_errors[ortho_id] = {
+                        'name': orthogram.name,
+                        'total': 0,
+                        'errors': 0,
+                        'orthogram_id': ortho_id,
+                        'last_error': answer.answer_time  # запоминаем время последней ошибки
+                    }
+                
+                ortho_errors[ortho_id]['total'] += 1
+                if not answer.was_correct:
+                    ortho_errors[ortho_id]['errors'] += 1
+                    ortho_errors[ortho_id]['last_error'] = answer.answer_time  # обновляем время
+        
+        # Преобразуем в список и сортируем по времени последней ошибки (сначала новые)
+        weak_list = []
+        for ortho_id, data in ortho_errors.items():
+            if data['errors'] > 0:  # только те, где есть ошибки
+                weak_list.append({
+                    'name': data['name'],
+                    'errors': data['errors'],
+                    'total': data['total'],
+                    'error_rate': round((data['errors'] / data['total'] * 100), 1) if data['total'] > 0 else 0,
+                    'orthogram_id': ortho_id,
+                    'last_error': data['last_error'].isoformat() if data['last_error'] else None
+                })
+        
+        # Сортируем по времени последней ошибки (сначала новые) и берем 3
+        weak_list.sort(key=lambda x: x['last_error'] or '', reverse=True)
+        weak_orthograms = weak_list[:3]
+        
+        print(f"✅ Статистика собрана: total_words={total_words}, attempts={total_attempts}, weak={len(weak_orthograms)}")
+        
         return JsonResponse({
-            'total_words': 0,
-            'total_attempts': 0,
-            'correct_answers': 0,
-            'success_rate': 0,
-            'weak_orthograms': []
+            'total_words': total_words,
+            'total_attempts': total_attempts,
+            'correct_answers': correct_attempts,
+            'success_rate': success_rate,
+            'weak_orthograms': weak_orthograms  # только 3 последних
         })
+        
     except Exception as e:
         print(f"❌ Ошибка в weekly_report: {e}")
         import traceback
         traceback.print_exc()
-        return JsonResponse({
-            'error': str(e),
-            'total_words': 0,
-            'total_attempts': 0,
-            'correct_answers': 0,
-            'success_rate': 0,
-            'weak_orthograms': []
-        }, status=500)
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 def get_user_quiz_stats(user_id):
@@ -2350,12 +2365,9 @@ def user_progress(request):
         'weekly_progress': progress
     })
 
-
-from django.db import models  # добавляем этот импорт в начале файла
-
 @csrf_exempt
 def user_praise(request):
-    """Возвращает слова для похвалы"""
+    """Возвращает слова для похвалы (из любой истории)"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
@@ -2366,18 +2378,15 @@ def user_praise(request):
         if not user_id:
             return JsonResponse({'error': 'No user_id'}, status=400)
         
-        from .models import QuizHistory, OrthogramExample
-        from django.utils import timezone
-        from datetime import timedelta
-        
         week_ago = timezone.now().date() - timedelta(days=7)
         
-        # Слова с высокой успешностью за неделю
+        # Берем все ответы за неделю
         history = QuizHistory.objects.filter(
             user_id=user_id,
             answer_time__date__gte=week_ago
         )
         
+        # Считаем статистику по каждому слову
         word_stats = {}
         for h in history:
             if h.word_id not in word_stats:
@@ -2386,6 +2395,7 @@ def user_praise(request):
             if h.was_correct:
                 word_stats[h.word_id]['correct'] += 1
         
+        # Отбираем слова с высокой успешностью (>=80% при минимум 3 попытках)
         mastered = []
         for word_id, stats in word_stats.items():
             if stats['total'] >= 3:
@@ -2401,8 +2411,11 @@ def user_praise(request):
                     except OrthogramExample.DoesNotExist:
                         continue
         
+        # Сортируем по убыванию успешности
+        mastered.sort(key=lambda x: x['success_rate'], reverse=True)
+        
         return JsonResponse({
-            'mastered_words': mastered[:5],
+            'mastered_words': mastered[:5],  # топ-5
             'total_mastered': len(mastered)
         })
         
@@ -2413,7 +2426,7 @@ def user_praise(request):
 
 @csrf_exempt
 def user_weak_words(request):
-    """Возвращает слова для повторения"""
+    """Возвращает слова для повторения (из любой истории)"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
@@ -2424,39 +2437,49 @@ def user_weak_words(request):
         if not user_id:
             return JsonResponse({'error': 'No user_id'}, status=400)
         
-        from .models import QuizHistory, OrthogramExample
-        from django.utils import timezone
-        from datetime import timedelta
-        from django.db.models import Count  # используем Count, не models.Count
-        
         week_ago = timezone.now().date() - timedelta(days=7)
         
-        # Слова с ошибками за неделю
-        wrong = QuizHistory.objects.filter(
+        # Слова с ошибками за неделю (где ошибок больше чем правильных ответов)
+        history = QuizHistory.objects.filter(
             user_id=user_id,
-            was_correct=False,
             answer_time__date__gte=week_ago
-        ).values('word_id').annotate(
-            error_count=Count('id')
-        ).order_by('-error_count')[:10]
+        )
         
+        # Считаем статистику по каждому слову
+        word_stats = {}
+        for h in history:
+            if h.word_id not in word_stats:
+                word_stats[h.word_id] = {'total': 0, 'correct': 0, 'errors': 0}
+            word_stats[h.word_id]['total'] += 1
+            if h.was_correct:
+                word_stats[h.word_id]['correct'] += 1
+            else:
+                word_stats[h.word_id]['errors'] += 1
+        
+        # Отбираем слова с ошибками (минимум 2 попытки и ошибок >= 50%)
         weak_words = []
-        for item in wrong:
-            try:
-                word = OrthogramExample.objects.get(id=item['word_id'])
-                weak_words.append({
-                    'text': word.text,
-                    'errors': item['error_count'],
-                    'orthogram_id': word.orthogram_id
-                })
-            except OrthogramExample.DoesNotExist:
-                continue
+        for word_id, stats in word_stats.items():
+            if stats['total'] >= 2 and stats['errors'] >= stats['correct']:
+                try:
+                    word = OrthogramExample.objects.get(id=word_id)
+                    weak_words.append({
+                        'text': word.text,
+                        'errors': stats['errors'],
+                        'total': stats['total'],
+                        'orthogram_id': word.orthogram_id
+                    })
+                except OrthogramExample.DoesNotExist:
+                    continue
         
-        return JsonResponse({'weak_words': weak_words})
+        # Сортируем по количеству ошибок
+        weak_words.sort(key=lambda x: x['errors'], reverse=True)
+        
+        return JsonResponse({'weak_words': weak_words[:10]})  # топ-10
         
     except Exception as e:
         print(f"❌ Ошибка в user_weak_words: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
 
 # =========== ЗАДАНИЯ 1-3 ================================================
 @login_required
