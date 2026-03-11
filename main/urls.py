@@ -41,7 +41,7 @@ urlpatterns = [
     path('api/daily-quiz/', views.get_daily_quiz, name='daily_quiz'),
     path('telegram-link/', views.link_telegram, name='link_telegram'),
     path('api/generate-exercise/', views.generate_exercise, name='generate_exercise'),
-    path('api/weekly-report/', views.get_weekly_report, name='weekly_report'),
+    path('api/weekly-report/', views.weekly_report, name='weekly_report'),
     path('api/generate-alphabetical-exercise/', views.generate_alphabetical_exercise, name='generate_alphabetical_exercise'),
     path('api/my-weekly-report/', views.get_weekly_report, name='my_weekly_report'),
     path('api/generate-exercise-multi/', views.generate_exercise_multi, name='generate_exercise_multi'),
@@ -75,6 +75,10 @@ urlpatterns = [
     path('api/load-examples/', views.load_examples, name='load_examples'),
     path('api/update-example/', views.update_example, name='update_example'),
     path('api/delete-example/', views.delete_example, name='delete_example'),
+    path('api/weekly-report/', views.weekly_report, name='weekly_report'),
+    path('api/user-progress/', views.user_progress, name='user_progress'),
+    path('api/weak-words/', views.user_weak_words, name='weak_words'),
+    path('api/user-praise/', views.user_praise, name='user_praise'),
 
     # ОГЭ
     path('diagnostic/oge/', views.oge_diagnostic_page, name='oge_diagnostic'),

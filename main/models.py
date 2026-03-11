@@ -278,27 +278,72 @@ class PunktumExample(models.Model):
 
 class UserWord(models.Model):
     """Слова из планинга пользователя"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    field_name = models.CharField(max_length=100)  # например user-input-orf-13
-    text = models.CharField(max_length=255)  # слово как ввел пользователь
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_words')
+    field_name = models.CharField(max_length=100, db_index=True)
+    text = models.CharField(max_length=255)
     
-    # Связь с эталонной базой (если есть)
+    # Связь с эталонной базой
     reference_word = models.ForeignKey(
-        'OrthogramExample', 
+        'OrthogramExample',
         null=True, blank=True,
-        on_delete=models.SET_NULL,
-        help_text="Ссылка на слово в эталонной базе, если найдено"
+        on_delete=models.SET_NULL
     )
     
     # Флаги
-    is_in_master_db = models.BooleanField(default=False)  # есть ли в базе админа
-    is_active = models.BooleanField(default=True)
+    in_master = models.BooleanField(default=False, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    
+    # 👇 НОВЫЕ ПОЛЯ ДЛЯ АДАПТИВНОСТИ
+    weight = models.FloatField(default=1.0, help_text="Вес слова (чем выше, тем чаще показывается)")
+    error_count = models.IntegerField(default=0, help_text="Сколько раз ошиблись")
+    success_count = models.IntegerField(default=0, help_text="Сколько раз ответили правильно")
+    last_shown = models.DateTimeField(null=True, blank=True)
+    last_error = models.DateTimeField(null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # для отслеживания изменений
+
+    class Meta:
+        verbose_name = "Слово пользователя"
+        verbose_name_plural = "Слова пользователей"
+        unique_together = ['user', 'field_name', 'text']
+        indexes = [
+            models.Index(fields=['user', 'in_master', 'is_active']),
+            models.Index(fields=['user', 'weight']),  # для сортировки по весу
+        ]
+
+    def update_weight(self):
+        """Обновляет вес слова на основе ошибок"""
+        # Базовая формула: вес = 1 + (ошибки * 2) - (успехи * 0.5)
+        # Но вес не может быть меньше 0.5
+        new_weight = 1.0 + (self.error_count * 2.0) - (self.success_count * 0.5)
+        self.weight = max(0.5, min(10.0, new_weight))  # ограничиваем от 0.5 до 10
+        self.save(update_fields=['weight', 'updated_at'])
+
+    def __str__(self):
+        return f"{self.user.username}: {self.text} (вес={self.weight:.1f})"
+    
+    
+class QuizHistory(models.Model):
+    """История ответов пользователя в квизах"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quiz_history')
+    word = models.ForeignKey('OrthogramExample', on_delete=models.CASCADE)
+    user_word = models.ForeignKey('UserWord', null=True, blank=True, on_delete=models.SET_NULL)
+    was_correct = models.BooleanField()
+    answer_time = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ['user', 'field_name', 'text']  # избегаем дублей
-        
+        verbose_name = "История квизов"
+        verbose_name_plural = "История квизов"
+        ordering = ['-answer_time']
+        indexes = [
+            models.Index(fields=['user', '-answer_time']),
+            models.Index(fields=['user', 'was_correct']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.word.text} - {'✅' if self.was_correct else '❌'}"
+
 
 class StudentAnswer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
