@@ -23,10 +23,10 @@ function getCookie(name) {
 function isAlphabeticalTask(orthogramIds) {
     const ids = orthogramIds.split(',');
     // Задание 9 считается алфавитным, если содержит ТОЛЬКО 1_11 и/или 2_11
-    const hasOnlyAlphabetical = ids.every(id => 
+    const hasOnlyAlphabetical = ids.every(id =>
         id.trim() === '1_11' || id.trim() === '2_11'
     );
-    const hasMainOrthograms = ids.some(id => 
+    const hasMainOrthograms = ids.some(id =>
         ['12', '13', '14', '15', '24', '26', '27', '271'].includes(id.trim())
     );
     return hasOnlyAlphabetical && !hasMainOrthograms;
@@ -115,27 +115,29 @@ const quickLettersMap = {
     '2_7': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
     '1_8': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
     '2_8': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
+    '1_9': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
+    '2_9': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
     '1_11': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
     '2_11': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
 };
 
 async function getLettersForOrthogram(orthId) {
     if (typeof orthId !== 'string') orthId = String(orthId);
-    
+
     // Кэш
     if (lettersCache.has(orthId)) return lettersCache.get(orthId);
-    
+
     // Задание 10 - для ЕГЭ используем подгруппы из task10_letter_groups
     if (orthId.startsWith('10_')) {
         try {
             const groupsElem = document.getElementById('task10-letter-groups');
             const lettersElem = document.getElementById('task10-subgroup-letters');
-            
+
             if (groupsElem && lettersElem) {
                 const groups = JSON.parse(groupsElem.textContent);
                 const subgroupLetters = JSON.parse(lettersElem.textContent);
                 const subgroupKey = groups[orthId];
-                
+
                 if (subgroupKey && subgroupLetters[subgroupKey]) {
                     lettersCache.set(orthId, subgroupLetters[subgroupKey]);
                     return subgroupLetters[subgroupKey];
@@ -144,7 +146,7 @@ async function getLettersForOrthogram(orthId) {
         } catch (e) {
             console.warn("Ошибка при получении подгруппы:", e);
         }
-        
+
         // Fallback для ЕГЭ - тоже по подгруппам!
         const baseOrthId = orthId.split('-')[0].split('_')[1];
         const fallback = {
@@ -154,7 +156,7 @@ async function getLettersForOrthogram(orthId) {
             "29": ["е", "и"],                     // для 29 - е/и
             "6": ["ъ", "ь", "/"]                  // для 6 - ъ/ь/
         };
-        const letters = fallback[baseOrthId] || ['а','о','е','и','я'];
+        const letters = fallback[baseOrthId] || ['а', 'о', 'е', 'и', 'я'];
         lettersCache.set(orthId, letters);
         return letters;
     }
@@ -228,7 +230,7 @@ async function getLettersForOrthogram(orthId) {
     //             // Пропускаем ошибку
     //         }
     //     }
-        
+
     //     // Fallback для каждого типа задания 21
     //     let letters;
     //     if (orthId.includes('2100') || document.querySelector('[data-punktogram="2100"]')) {
@@ -240,14 +242,14 @@ async function getLettersForOrthogram(orthId) {
     //     } else {
     //         letters = ['5', '8', '8.1', '9.2', '10', '13', '16', '18'];
     //     }
-        
+
     //     lettersCache.set(orthId, letters);
     //     return letters;
     // }
-    
+
     // === ЗАДАНИЕ 21: ПУНКТОГРАММЫ ЕГЭ (ТОЛЬКО С ДЕФИСОМ!) ===
     if (orthId.startsWith('21-')) {
-        
+
         // Пытаемся получить данные из скрипта в шаблоне
         const script = document.getElementById('task21-subgroup-letters');
         if (script) {
@@ -255,7 +257,7 @@ async function getLettersForOrthogram(orthId) {
             try {
                 const data = JSON.parse(script.textContent);
                 console.log('📦 Распарсенные данные:', data);
-                
+
                 if (data.punktum_21) {
                     console.log('🎯 Цифры для задания 21:', data.punktum_21);
                     lettersCache.set(orthId, data.punktum_21);
@@ -269,7 +271,7 @@ async function getLettersForOrthogram(orthId) {
         } else {
             console.warn('⚠️ script#task21-subgroup-letters НЕ НАЙДЕН!');
         }
-        
+
         // Fallback: определяем тип задания 21 по orthId или по наличию кнопки
         let letters;
         if (orthId.includes('2100') || document.querySelector('[data-punktogram="2100"]')) {
@@ -281,7 +283,7 @@ async function getLettersForOrthogram(orthId) {
         } else {
             letters = ['5', '8', '8.1', '9.2', '10', '13', '16', '18'];
         }
-        
+
         console.log('🔄 Используем fallback для задания 21:', letters);
         lettersCache.set(orthId, letters);
         return letters;
@@ -296,20 +298,20 @@ async function getLettersForOrthogram(orthId) {
 
     // Все остальные
     const baseId = orthId.includes('-') ? orthId.split('-')[0] : orthId;
-    
+
     try {
         const res = await fetch(`/api/orthogram/${baseId}/letters/`);
         if (res.ok) {
             const data = await res.json();
-            const letters = Array.isArray(data.letters) ? data.letters : ['а','о','е','и','я'];
+            const letters = Array.isArray(data.letters) ? data.letters : ['а', 'о', 'е', 'и', 'я'];
             lettersCache.set(orthId, letters);
             return letters;
         }
     } catch (err) {
         // Пропускаем ошибку
     }
-    
-    const letters = ['а','о','е','и','я'];
+
+    const letters = ['а', 'о', 'е', 'и', 'я'];
     lettersCache.set(orthId, letters);
     return letters;
 }
@@ -320,16 +322,16 @@ async function processLineWithMasks(lineText) {
     if (lineText.includes('smiley-button') || lineText.includes('😊')) {
         return lineText;
     }
-    
+
     if (!lineText.includes('*')) {
         return lineText;
     }
-    
+
     // Находим ВСЕ маски в исходном тексте
     const masks = [];
     let match;
     const regex = /\*([^*]+)\*/g;
-    
+
     while ((match = regex.exec(lineText)) !== null) {
         masks.push({
             orthId: match[1],
@@ -337,57 +339,57 @@ async function processLineWithMasks(lineText) {
             length: match[0].length
         });
     }
-    
+
     if (masks.length === 0) return lineText;
-    
+
     // Кэш для часто используемых орфограмм
     const lettersMap = {
         '1': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
         '2': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
         '6': ['ъ', 'ь', '/'],
     };
-    
+
     // Загружаем буквы только для новых орфограмм
     const uniqueIds = [...new Set(masks.map(m => m.orthId))].filter(id => !lettersMap[id]);
-    
+
     if (uniqueIds.length > 0) {
-        const promises = uniqueIds.map(id => 
+        const promises = uniqueIds.map(id =>
             getLettersForOrthogram(id).then(letters => {
-                lettersMap[id] = (letters && letters.length) ? letters : ['а','о','е','и','я'];
+                lettersMap[id] = (letters && letters.length) ? letters : ['а', 'о', 'е', 'и', 'я'];
             }).catch(() => {
-                lettersMap[id] = ['а','о','е','и','я'];
+                lettersMap[id] = ['а', 'о', 'е', 'и', 'я'];
             })
         );
         await Promise.all(promises);
     }
-    
+
     // ФОРМИРУЕМ РЕЗУЛЬТАТ
     let result = '';
     let lastIndex = 0;
-    
+
     for (const mask of masks) {
         const orthId = mask.orthId;
         const matchStart = mask.index;
         const matchEnd = mask.index + mask.length;
-        
+
         // Текст ДО текущей маски
         result += lineText.slice(lastIndex, matchStart);
-        
+
         // Получаем буквы для этой орфограммы
         let letters = lettersMap[orthId];
-        
+
         // === СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ ОРФОГРАММ 10/11/28/29/6 ===
         if (orthId.startsWith('10_')) {
             try {
                 const groupsElem = document.getElementById('task10-letter-groups');
                 const lettersElem = document.getElementById('task10-subgroup-letters');
-                
+
                 if (groupsElem && lettersElem) {
                     const groups = JSON.parse(groupsElem.textContent);
                     const subgroupLetters = JSON.parse(lettersElem.textContent);
-                    
+
                     const subgroupKey = groups[orthId];
-                    
+
                     if (subgroupKey && subgroupLetters[subgroupKey]) {
                         letters = subgroupLetters[subgroupKey];
                     } else {
@@ -400,11 +402,11 @@ async function processLineWithMasks(lineText) {
                             "29": ["е", "и"],
                             "6": ["ъ", "ь", "/"]
                         };
-                        letters = fallback[baseOrthId] || ['а','о','е','и','я'];
+                        letters = fallback[baseOrthId] || ['а', 'о', 'е', 'и', 'я'];
                     }
                 }
             } catch (e) {
-                
+
                 // Fallback при ошибке
                 const baseOrthId = orthId.split('-')[0].split('_')[1];
                 const fallback = {
@@ -414,10 +416,10 @@ async function processLineWithMasks(lineText) {
                     "29": ["е", "и"],
                     "6": ["ъ", "ь", "/"]
                 };
-                letters = fallback[baseOrthId] || ['а','о','е','и','я'];
+                letters = fallback[baseOrthId] || ['а', 'о', 'е', 'и', 'я'];
             }
         }
-        
+
         // Финальный fallback
         if (!letters || !Array.isArray(letters) || letters.length === 0) {
             letters = ['а', 'о', 'е', 'и', 'я'];
@@ -428,24 +430,24 @@ async function processLineWithMasks(lineText) {
         if (PUNKTUM_TASKS.some(task => orthId.startsWith(task))) {
             letters = [',', 'х'];
         }
-        
+
         // Создаем выпадающий список
-        const liItems = letters.map(letter => 
+        const liItems = letters.map(letter =>
             `<li data-letter="${letter}">${letter}</li>`
         ).join('');
-        
+
         // ЗАМЕНЯЕМ маску на смайлик
         result += `<span class="smiley-button" data-orth-id="${orthId}">
             <span class="smiley-icon">😊</span>
             <ul class="smiley-options">${liItems}</ul>
         </span>&nbsp;`;
-        
+
         lastIndex = matchEnd;
     }
-    
+
     // Остаток текста ПОСЛЕ последней маски
     result += lineText.slice(lastIndex);
-    
+
     return result;
 }
 
@@ -455,46 +457,46 @@ async function processPracticeContainer(container) {
     if (!container) {
         return false;
     }
-    
+
     // === ЗАЩИТА ОТ ПОВТОРНОЙ ОБРАБОТКИ ===
     if (container.dataset.processing === 'true') {
         return false;
     }
-    
+
     // Помечаем как обрабатываемый
     container.dataset.processing = 'true';
-    
+
     try {
         // === ПОЛУЧАЕМ СТРОКИ ===
         const lines = container.querySelectorAll('.practice-line');
         const linesArray = Array.from(lines);
-        
+
         // === ПРОВЕРКА: есть ли что обрабатывать? ===
         if (linesArray.length === 0) {
             container.dataset.processing = 'false';
             return false;
         }
-        
+
         // === ФИЛЬТР: только необработанные строки ===
-        const linesToProcess = linesArray.filter(line => 
-            !line.querySelector('.smiley-button') && 
+        const linesToProcess = linesArray.filter(line =>
+            !line.querySelector('.smiley-button') &&
             !line.hasAttribute('data-processed')
         );
-        
+
         if (linesToProcess.length === 0) {
             container.dataset.processing = 'false';
             return true;
         }
-        
+
         // === ОБРАБАТЫВАЕМ ПАРАЛЛЕЛЬНО ===
         const promises = linesToProcess.map(async (line) => {
             const originalText = line.textContent?.trim() || '';
-            
+
             if (!originalText) {
                 line.setAttribute('data-processed', 'empty');
                 return;
             }
-            
+
             try {
                 const html = await processLineWithMasks(originalText);
                 line.innerHTML = html;
@@ -505,15 +507,15 @@ async function processPracticeContainer(container) {
                 line.setAttribute('data-processed', 'error');
             }
         });
-        
+
         // Ждём завершения всех обработок
         await Promise.all(promises);
         return true;
-        
+
     } catch (err) {
         console.error('❌ Критическая ошибка в processPracticeContainer:', err);
         return false;
-        
+
     } finally {
         // === ВСЕГДА снимаем флаг (даже при ошибке!) ===
         container.dataset.processing = 'false';
@@ -562,21 +564,21 @@ function setupCheckAnswers(container = document) {
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
                 body: JSON.stringify({ user_words: userAnswers })
             })
-            .then(r => r.ok ? r.json() : r.text().then(text => { throw new Error(`HTTP ${r.status}: ${text}`); }))
-            .then(results => {
-                if (!Array.isArray(results)) throw new Error('Некорректный ответ');
-                const icons = article.querySelectorAll('.smiley-icon');
-                icons.forEach((icon, i) => {
-                    icon.classList.remove('selected', 'correct', 'incorrect');
-                    if (i < results.length) {
-                        icon.classList.add(results[i] ? 'correct' : 'incorrect');
-                    }
+                .then(r => r.ok ? r.json() : r.text().then(text => { throw new Error(`HTTP ${r.status}: ${text}`); }))
+                .then(results => {
+                    if (!Array.isArray(results)) throw new Error('Некорректный ответ');
+                    const icons = article.querySelectorAll('.smiley-icon');
+                    icons.forEach((icon, i) => {
+                        icon.classList.remove('selected', 'correct', 'incorrect');
+                        if (i < results.length) {
+                            icon.classList.add(results[i] ? 'correct' : 'incorrect');
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error('❌ Ошибка проверки:', err);
+                    alert('Ошибка при проверке.');
                 });
-            })
-            .catch(err => {
-                console.error('❌ Ошибка проверки:', err);
-                alert('Ошибка при проверке.');
-            });
         };
         button.addEventListener('click', button._clickHandler);
     });
@@ -763,93 +765,93 @@ function setupWordOkCheck() {
 // ===========================================================================
 document.addEventListener('click', async (e) => {
 
-// --- Орфограммы и пунктограммы ---
-const button = e.target.closest('[data-orthogram], [data-punktogram]');
-if (!button) return;
+    // --- Орфограммы и пунктограммы ---
+    const button = e.target.closest('[data-orthogram], [data-punktogram]');
+    if (!button) return;
 
-const orthogramIds = button.dataset.orthogram;
-const punktogramId = button.dataset.punktogram;
+    const orthogramIds = button.dataset.orthogram;
+    const punktogramId = button.dataset.punktogram;
 
-const answerSection = document.querySelector('.block-answer');
-if (!answerSection) {
-    console.error('❌ Не найден блок .block-answer');
-    return;
-}
-answerSection.innerHTML = '<p>Загрузка...</p>';
-
-// === ЗАДАНИЕ 4: Орфоэпия ===
-if (orthogramIds === '4000') {
-    if (window.OrthoepyModule && typeof window.OrthoepyModule.loadOrthoepyTest === 'function') {
-        await OrthoepyModule.loadOrthoepyTest();
-    } else {
-        await loadOrthoepyTest();
-    }
-    return;
-}
-
-// === ЗАДАНИЕ 5: Паронимы ===
-if (orthogramIds === '5000') {
-    answerSection.innerHTML = '<p>Загрузка задания 5...</p>';
-    const csrf = getCookie('csrftoken');
-    try {
-        const res = await fetch('/api/generate-task-paponim-test/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-            body: JSON.stringify({})
-        });
-        const data = await res.json();
-        if (data.html) {
-            answerSection.innerHTML = data.html;
-            setupPaponimCheck();
-        } else {
-            answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки'}</p>`;
-        }
-    } catch (err) {
-        console.error('Ошибка загрузки задания 5:', err);
-        answerSection.innerHTML = `<p class="error">Не удалось загрузить задание 5.</p>`;
-    }
-    return;
-}
-
-// === ЗАДАНИЕ 6: Лексические нормы ===
-if (orthogramIds === '6000') {
-    answerSection.innerHTML = '<p>Загрузка задания 6...</p>';
-    const csrf = getCookie('csrftoken');
-    try {
-        const res = await fetch('/api/generate-task-wordok-test/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-            body: JSON.stringify({})
-        });
-        const data = await res.json();
-        if (data.html) {
-            answerSection.innerHTML = data.html;
-            setupWordOkCheck();
-        } else {
-            answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки'}</p>`;
-        }
-    } catch (err) {
-        console.error('Ошибка загрузки задания 6:', err);
-        answerSection.innerHTML = `<p class="error">Не удалось загрузить задание 6.</p>`;
-    }
-    return;
-}
-
-// === Текстовый анализ: группы заданий ===
-const textAnalysisGroups = {
-    '1_3': 'loadTextAnalysis',
-    '23_24': 'loadTextAnalysis23_24',
-    '23_26': 'loadTextAnalysis23_26',
-};
-if (orthogramIds in textAnalysisGroups) {
-    const methodName = textAnalysisGroups[orthogramIds];
-    if (typeof TextAnalysisModule?.[methodName] === 'function') {
-        await TextAnalysisModule[methodName]();
+    const answerSection = document.querySelector('.block-answer');
+    if (!answerSection) {
+        console.error('❌ Не найден блок .block-answer');
         return;
     }
-    answerSection.innerHTML = '<p class="error">Модуль анализа не загружен</p>';
-    return;
-}
+    answerSection.innerHTML = '<p>Загрузка...</p>';
+
+    // === ЗАДАНИЕ 4: Орфоэпия ===
+    if (orthogramIds === '4000') {
+        if (window.OrthoepyModule && typeof window.OrthoepyModule.loadOrthoepyTest === 'function') {
+            await OrthoepyModule.loadOrthoepyTest();
+        } else {
+            await loadOrthoepyTest();
+        }
+        return;
+    }
+
+    // === ЗАДАНИЕ 5: Паронимы ===
+    if (orthogramIds === '5000') {
+        answerSection.innerHTML = '<p>Загрузка задания 5...</p>';
+        const csrf = getCookie('csrftoken');
+        try {
+            const res = await fetch('/api/generate-task-paponim-test/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({})
+            });
+            const data = await res.json();
+            if (data.html) {
+                answerSection.innerHTML = data.html;
+                setupPaponimCheck();
+            } else {
+                answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки'}</p>`;
+            }
+        } catch (err) {
+            console.error('Ошибка загрузки задания 5:', err);
+            answerSection.innerHTML = `<p class="error">Не удалось загрузить задание 5.</p>`;
+        }
+        return;
+    }
+
+    // === ЗАДАНИЕ 6: Лексические нормы ===
+    if (orthogramIds === '6000') {
+        answerSection.innerHTML = '<p>Загрузка задания 6...</p>';
+        const csrf = getCookie('csrftoken');
+        try {
+            const res = await fetch('/api/generate-task-wordok-test/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({})
+            });
+            const data = await res.json();
+            if (data.html) {
+                answerSection.innerHTML = data.html;
+                setupWordOkCheck();
+            } else {
+                answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки'}</p>`;
+            }
+        } catch (err) {
+            console.error('Ошибка загрузки задания 6:', err);
+            answerSection.innerHTML = `<p class="error">Не удалось загрузить задание 6.</p>`;
+        }
+        return;
+    }
+
+    // === Текстовый анализ: группы заданий ===
+    const textAnalysisGroups = {
+        '1_3': 'loadTextAnalysis',
+        '23_24': 'loadTextAnalysis23_24',
+        '23_26': 'loadTextAnalysis23_26',
+    };
+    if (orthogramIds in textAnalysisGroups) {
+        const methodName = textAnalysisGroups[orthogramIds];
+        if (typeof TextAnalysisModule?.[methodName] === 'function') {
+            await TextAnalysisModule[methodName]();
+            return;
+        }
+        answerSection.innerHTML = '<p class="error">Модуль анализа не загружен</p>';
+        return;
+    }
 
     // === ОЧИСТКА АЛФАВИТНОГО БЛОКА ===
     const alphabeticalSection = document.querySelector('.block-answer-still-content');
@@ -865,35 +867,35 @@ if (orthogramIds in textAnalysisGroups) {
     if (normalizedOrthogramIds === TASK9_IDS) {
         e.preventDefault();
         answerSection.innerHTML = '<p>Загрузка задания 9...</p>';
-        
+
         fetch('/api/generate-task9-exercise/', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json', 
-                'X-CSRFToken': getCookie('csrftoken') 
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({})
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Ошибка загрузки');
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                answerSection.innerHTML = `<p class="error">${data.error}</p>`;
-            } else {
-                answerSection.innerHTML = data.html;
-                
-                // Обработка смайликов
-                const container = answerSection.querySelector('.article-practice') || answerSection;
-                setTimeout(() => processPracticeContainer(container), 0);
-                setupCheckAnswers(container);
-            }
-        })
-        .catch(err => {
-            console.error('❌ Ошибка задания 9:', err);
-            answerSection.innerHTML = '<p class="error">Не удалось загрузить задание 9</p>';
-        });
+            .then(response => {
+                if (!response.ok) throw new Error('Ошибка загрузки');
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    answerSection.innerHTML = `<p class="error">${data.error}</p>`;
+                } else {
+                    answerSection.innerHTML = data.html;
+
+                    // Обработка смайликов
+                    const container = answerSection.querySelector('.article-practice') || answerSection;
+                    setTimeout(() => processPracticeContainer(container), 0);
+                    setupCheckAnswers(container);
+                }
+            })
+            .catch(err => {
+                console.error('❌ Ошибка задания 9:', err);
+                answerSection.innerHTML = '<p class="error">Не удалось загрузить задание 9</p>';
+            });
         return;
     }
 
@@ -906,7 +908,7 @@ if (orthogramIds in textAnalysisGroups) {
 
     try {
         let url, payload;
-        
+
         // Задание 21 — случайный подтип → используем MULTI
         if (punktogramId === '21') {
             const variants = ['2100', '2101', '2102'];
@@ -915,7 +917,7 @@ if (orthogramIds in textAnalysisGroups) {
             payload = { orthogram_ids: [id] };
         }
         // Пунктограммы 16–20
-        else if (punktogramId && ['1600','1700','1800','1900','2000'].includes(punktogramId)) {
+        else if (punktogramId && ['1600', '1700', '1800', '1900', '2000'].includes(punktogramId)) {
             url = '/api/generate-punktum-exercise-multi/';
             payload = { orthogram_ids: [punktogramId] };
         }
@@ -929,7 +931,7 @@ if (orthogramIds in textAnalysisGroups) {
             answerSection.innerHTML = '<p>Задание не поддерживается.</p>';
             return;
         }
-        
+
         // Задание 7
         if (orthogramIds === '711') {
             if (window.CorrectionModule && typeof window.CorrectionModule.loadCorrectionTest === 'function') {
@@ -939,7 +941,7 @@ if (orthogramIds in textAnalysisGroups) {
             }
             return;
         }
-        
+
         // Задание 8
         if (orthogramIds === '8000') {
             answerSection.innerHTML = '<p>Загрузка задания 8...</p>';
@@ -949,19 +951,19 @@ if (orthogramIds in textAnalysisGroups) {
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
                 body: JSON.stringify({})
             })
-            .then(r => r.json())
-            .then(data => {
-                answerSection.innerHTML = data.html || '<p>Ошибка загрузки</p>';
-                if (window.PlanningEight) {
-                    PlanningEight.setup();
-                }
-            })
-            .catch(err => {
-                answerSection.innerHTML = `<p>Ошибка: ${err.message}</p>`;
-            });
+                .then(r => r.json())
+                .then(data => {
+                    answerSection.innerHTML = data.html || '<p>Ошибка загрузки</p>';
+                    if (window.PlanningEight) {
+                        PlanningEight.setup();
+                    }
+                })
+                .catch(err => {
+                    answerSection.innerHTML = `<p>Ошибка: ${err.message}</p>`;
+                });
             return;
         }
-        
+
         // Задание 22
         if (orthogramIds === '2200') {
             answerSection.innerHTML = '<p>Загрузка задания 22...</p>';
@@ -971,39 +973,39 @@ if (orthogramIds in textAnalysisGroups) {
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
                 body: JSON.stringify({})
             })
-            .then(r => {
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return r.json();
-            })
-            .then(data => {
-                answerSection.innerHTML = data.html || '<p>Ошибка загрузки</p>';
-                setTimeout(() => {
-                    if (window.PlanningTwoTwo && typeof window.PlanningTwoTwo.setup === 'function') {
-                        window.PlanningTwoTwo.setup();
-                    } else {
-                        initTaskTwoTwoFallback();
-                    }
-                }, 50);
-            })
-            .catch(err => {
-                console.error('❌ Ошибка загрузки задания 22:', err);
-                answerSection.innerHTML = `<p>Ошибка: ${err.message}</p>`;
-            });
+                .then(r => {
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    return r.json();
+                })
+                .then(data => {
+                    answerSection.innerHTML = data.html || '<p>Ошибка загрузки</p>';
+                    setTimeout(() => {
+                        if (window.PlanningTwoTwo && typeof window.PlanningTwoTwo.setup === 'function') {
+                            window.PlanningTwoTwo.setup();
+                        } else {
+                            initTaskTwoTwoFallback();
+                        }
+                    }, 50);
+                })
+                .catch(err => {
+                    console.error('❌ Ошибка загрузки задания 22:', err);
+                    answerSection.innerHTML = `<p>Ошибка: ${err.message}</p>`;
+                });
             return;
         }
-        
+
         // Fallback для задания 22
         function initTaskTwoTwoFallback() {
             const container = document.querySelector('.task-twotwo-exercise') || document.querySelector('.task-match-exercise');
             if (!container) return;
             const btn = container.querySelector('.check-task-twotwo');
             if (btn) {
-                btn.onclick = function() {
+                btn.onclick = function () {
                     alert('Кнопка работает! (fallback)');
                 };
             }
         }
-        
+
         // Общий запрос
         const res = await fetch(url, {
             method: 'POST',
@@ -1012,12 +1014,12 @@ if (orthogramIds in textAnalysisGroups) {
         });
         if (!res.ok) throw new Error('Ошибка загрузки');
         const data = await res.json();
-        if (punktogramId && ['1600','1700','1800','1900','2000'].includes(punktogramId)) {
-            answerSection.innerHTML = `<h3>Задание № ${punktogramId.slice(0,2)}</h3>${data.html}`;
+        if (punktogramId && ['1600', '1700', '1800', '1900', '2000'].includes(punktogramId)) {
+            answerSection.innerHTML = `<h3>Задание № ${punktogramId.slice(0, 2)}</h3>${data.html}`;
         } else {
             answerSection.innerHTML = data.html;
         }
-        
+
         // === СОЗДАЁМ СКРИПТЫ ДЛЯ ЗАДАНИЯ 10 ===
         if (data.task10_letter_groups && Object.keys(data.task10_letter_groups).length > 0) {
             const article = answerSection.querySelector('.article-practice');
@@ -1027,7 +1029,7 @@ if (orthogramIds in textAnalysisGroups) {
                 script1.type = 'application/json';
                 script1.textContent = JSON.stringify(data.task10_letter_groups);
                 article.appendChild(script1);
-                
+
                 const script2 = document.createElement('script');
                 script2.id = 'task10-subgroup-letters';
                 script2.type = 'application/json';
@@ -1040,7 +1042,7 @@ if (orthogramIds in textAnalysisGroups) {
         const container = answerSection.querySelector('.article-practice') || answerSection;
         await processPracticeContainer(container);
         setupCheckAnswers(container);
-        
+
     } catch (err) {
         console.error('❌ Ошибка:', err);
         answerSection.innerHTML = `<p class="error">Ошибка: ${err.message}</p>`;
@@ -1057,10 +1059,10 @@ if (orthogramIds in textAnalysisGroups) {
 // ============================================================================
 
 // 1. Обработчик кнопок выбора блока (А-Д, Е-К и т.д.)
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     const btn = e.target.closest('.check-task-still');
     if (!btn) return;
-    
+
     e.preventDefault();
 
     // === ОЧИСТКА ОБЫЧНОГО БЛОКА ===
@@ -1068,10 +1070,10 @@ document.addEventListener('click', function(e) {
     if (answerSection) {
         answerSection.innerHTML = '';
     }
-    
+
     // Определяем параметры по тексту кнопки
     const text = btn.textContent.trim();
-    
+
     if (text.includes('А-О') || text.includes('П-С') || text.includes('Т-Я')) {
         const orthogramId = '1';
         const rangeCode = text.includes('А-О') ? 'A-O' : text.includes('П-С') ? 'P-S' : 'T-YA';
@@ -1087,15 +1089,15 @@ document.addEventListener('click', function(e) {
 });
 
 // 2. Обработчик кнопки "Проверить"
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     if (!e.target.classList.contains('check-answers')) return;
-    
+
     e.preventDefault();
     checkAlphabeticalExercise();
 });
 
 // 3. Обработчик смайликов (выбор буквы)
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     // Закрываем все списки при клике вне смайлика
     if (!e.target.closest('.smiley-button')) {
         document.querySelectorAll('.smiley-options').forEach(opt => {
@@ -1103,40 +1105,40 @@ document.addEventListener('click', function(e) {
         });
         return;
     }
-    
+
     // Открытие/закрытие списка
     if (e.target.classList.contains('smiley-icon')) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const btn = e.target.closest('.smiley-button');
         const opts = btn.querySelector('.smiley-options');
-        
+
         // Закрываем все другие списки
         document.querySelectorAll('.smiley-options').forEach(o => {
             if (o !== opts) o.style.display = 'none';
         });
-        
+
         // Переключаем текущий
         opts.style.display = opts.style.display === 'block' ? 'none' : 'block';
         return;
     }
-    
+
     // Выбор буквы
     if (e.target.tagName === 'LI' && e.target.closest('.smiley-options')) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const li = e.target;
         const letter = li.dataset.letter;
         const btn = li.closest('.smiley-button');
         const icon = btn.querySelector('.smiley-icon');
-        
+
         // Устанавливаем букву
         icon.textContent = letter;
         icon.classList.add('selected');
         icon.classList.remove('correct', 'incorrect');
-        
+
         // Закрываем список
         li.closest('.smiley-options').style.display = 'none';
     }
@@ -1148,10 +1150,10 @@ document.addEventListener('click', function(e) {
 async function checkAlphabeticalExercise() {
     const container = document.querySelector('.block-answer-still-content');
     if (!container) return;
-    
+
     const smileys = container.querySelectorAll('.smiley-button');
     if (smileys.length === 0) return;
-    
+
     // Собираем выбранные буквы
     const selectedLetters = [];
     smileys.forEach(smiley => {
@@ -1159,7 +1161,7 @@ async function checkAlphabeticalExercise() {
         const currentText = icon.textContent.trim();
         selectedLetters.push(currentText !== '😊' ? currentText : null);
     });
-    
+
     // Отправляем на сервер
     const response = await fetch('/api/check-alphabetical-exercise/', {
         method: 'POST',
@@ -1169,15 +1171,15 @@ async function checkAlphabeticalExercise() {
         },
         body: JSON.stringify({ selected_letters: selectedLetters })
     });
-    
+
     const data = await response.json();
     if (data.error) return;
-    
+
     // Подсвечиваем ответы
     smileys.forEach((smiley, index) => {
         const icon = smiley.querySelector('.smiley-icon');
         const currentText = icon.textContent.trim();
-        
+
         if (currentText !== '😊') {
             if (data.results[index]) {
                 icon.classList.add('correct');
@@ -1195,32 +1197,391 @@ async function checkAlphabeticalExercise() {
 function handleAlphabeticalExercise(orthogramId, rangeCode) {
     const container = document.querySelector('.block-answer-still-content');
     if (!container) return;
-    
+
     container.innerHTML = '<div class="loading">Загрузка...</div>';
-    
+
     fetch('/api/generate-alphabetical-exercise/', {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json', 
-            'X-CSRFToken': getCookie('csrftoken') 
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({ orthogram_id: orthogramId, range: rangeCode })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            container.innerHTML = `<div class="error">${data.error}</div>`;
-        } else {
-            container.innerHTML = data.html;
-            setTimeout(() => {
-                processPracticeContainer(container);
-            }, 0);
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                container.innerHTML = `<div class="error">${data.error}</div>`;
+            } else {
+                container.innerHTML = data.html;
+                setTimeout(() => {
+                    processPracticeContainer(container);
+                }, 0);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            container.innerHTML = `<div class="error">Ошибка загрузки</div>`;
+        });
+}
+
+// ========================================================================
+/**
+ * Обработчик для задания 2-3 ОГЭ
+ */
+function handleOgeTask2_3() {
+    const container = document.querySelector('.block-answer');
+    if (!container) return;
+
+    container.innerHTML = `<div class="loading" style="text-align:center; padding: 20px;">Загрузка задания 2-3...</div>`;
+
+    // Подсвечиваем кнопку
+    document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active'));
+
+    fetch('/api/generate-oge-task-2-3/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
         }
     })
-    .catch(error => {
-        console.error('Ошибка:', error);
-        container.innerHTML = `<div class="error">Ошибка загрузки</div>`;
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                container.innerHTML = `<div class="error" style="color:red;">${data.error}</div>`;
+            } else {
+                container.innerHTML = data.html;
+
+                // Навешиваем обработчик проверки
+                const checkBtn = container.querySelector('.check-task-single');
+                if (checkBtn) {
+                    checkBtn.addEventListener('click', async () => {
+                        checkBtn.disabled = true;
+                        checkBtn.textContent = 'Проверяем...';
+
+                        const answers = {};
+                        container.querySelectorAll('[data-question-number]').forEach(block => {
+                            const qNum = block.dataset.questionNumber;
+                            const checked = block.querySelectorAll('input[type="checkbox"]:checked');
+                            if (checked.length > 0) {
+                                answers[qNum] = Array.from(checked).map(cb => cb.value);
+                            }
+                        });
+
+                        try {
+                            const checkRes = await fetch('/api/check-oge-diagnostic/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCookie('csrftoken'),
+                                },
+                                body: JSON.stringify({ answers }),
+                            });
+
+                            const checkData = await checkRes.json();
+                            container.querySelectorAll('.task-score-display').forEach(el => el.remove());
+
+                            if (checkData.results) {
+                                for (const [key, val] of Object.entries(checkData.results)) {
+                                    const qBlock = container.querySelector(`[data-question-number="${key}"]`);
+                                    if (qBlock && val.score !== undefined) {
+                                        let scoreHtml = `<div class="task-score-display" style="margin-top: 15px; font-weight: bold;">`;
+                                        const scoreColor = val.score === (val.max_score || 1) ? '#4CAF50' : '#f44336';
+                                        scoreHtml += `<span style="color: ${scoreColor}">Баллов: ${val.score}. </span>`;
+                                        if (val.score < (val.max_score || 1)) {
+                                            scoreHtml += `<span style="color: ${scoreColor}">Правильный ответ: ${val.correct_answer}</span>`;
+                                        }
+                                        scoreHtml += `</div>`;
+                                        qBlock.insertAdjacentHTML('beforeend', scoreHtml);
+
+                                        const correctArr = String(val.correct_answer).toLowerCase().split('');
+                                        qBlock.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                            const label = cb.closest('label');
+                                            const isCorrectCb = correctArr.includes(cb.value.toLowerCase());
+                                            if (cb.checked) {
+                                                cb.style.outline = isCorrectCb ? '2px solid #4CAF50' : '2px solid #f44336';
+                                                cb.style.outlineOffset = '2px';
+                                                if (label) {
+                                                    label.style.color = isCorrectCb ? '#4CAF50' : '#f44336';
+                                                    label.style.fontWeight = 'bold';
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                            checkBtn.textContent = 'Готово!';
+                        } catch (e) {
+                            alert('Ошибка проверки');
+                            checkBtn.disabled = false;
+                            checkBtn.textContent = 'Проверить';
+                        }
+                    });
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            container.innerHTML = `<div class="error" style="color:red;">Ошибка загрузки</div>`;
+        });
+}
+
+/**
+ * Активирует интерактивные элементы в загруженном сниппете
+ */
+function activateOgeSnippetInteractivity(container, taskNumber) {
+    // 1. Смайлики (Задание 7)
+    setTimeout(() => {
+        const hasSmileyPlaceholder = container.querySelector('.practice-line') && container.querySelector('.practice-line').textContent.includes('*');
+        if (hasSmileyPlaceholder) {
+            const allLetterGroups = {
+                ...(getOgeJsonData('task4-letter-groups') || {}),
+                ...(getOgeJsonData('task6-letter-groups') || {})
+            };
+            const allSubgroupLetters = {
+                ...(getOgeJsonData('task4-subgroup-letters') || {}),
+                ...(getOgeJsonData('task6-subgroup-letters') || {})
+            };
+
+            container.querySelectorAll('.practice-line').forEach(line => {
+                const originalText = line.textContent || line.innerText || '';
+                const regex = /\*([^*]+)\*/g;
+                let result = originalText;
+                let match;
+
+                while ((match = regex.exec(originalText)) !== null) {
+                    const maskId = match[1];
+                    const fullMask = match[0];
+                    const groupName = allLetterGroups[maskId] || '';
+                    const letters = allSubgroupLetters[groupName] || ['а', 'о', 'е', 'и', 'я'];
+
+                    const optionsHtml = letters
+                        .map(letter => `<span class="smiley-option" data-value="${letter}">${letter}</span>`)
+                        .join('');
+
+                    const smileyHtml = `
+                        <span class="smiley-button" data-mask-id="${maskId}" title="Кликни для выбора">
+                            <span class="smiley-icon">😊</span>
+                            <span class="smiley-options" style="display:none; flex-direction: column; text-align: center; gap: 4px; padding: 6px; border-radius: 8px;">${optionsHtml}</span>
+                        </span>
+                    `;
+                    result = result.replace(fullMask, smileyHtml);
+                }
+                line.innerHTML = result;
+            });
+
+            container.querySelectorAll('.smiley-button').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const options = this.querySelector('.smiley-options');
+                    document.querySelectorAll('.smiley-options').forEach(el => {
+                        if (el !== options) el.style.display = 'none';
+                    });
+                    options.style.display = options.style.display === 'flex' ? 'none' : 'flex';
+
+                    options.querySelectorAll('.smiley-option').forEach(opt => {
+                        opt.onclick = function (ev) {
+                            ev.stopPropagation();
+                            const icon = btn.querySelector('.smiley-icon');
+                            icon.textContent = this.dataset.value;
+                            icon.classList.add('selected');
+                            options.style.display = 'none';
+                        };
+                    });
+                });
+            });
+
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.smiley-options').forEach(el => el.style.display = 'none');
+            });
+        }
+    }, 50);
+
+    // 2. Уникальные селекты (Задание 4)
+    if (taskNumber === '4') {
+        setTimeout(() => {
+            const selects = container.querySelectorAll('.error-select');
+            function updateSelects() {
+                const usedValues = new Set();
+                selects.forEach(sel => { if (sel.value && sel.value !== '-') usedValues.add(sel.value); });
+                selects.forEach(sel => {
+                    const curr = sel.value;
+                    sel.querySelectorAll('option').forEach(opt => {
+                        if (opt.value && opt.value !== '-') {
+                            opt.disabled = usedValues.has(opt.value) && opt.value !== curr;
+                        }
+                    });
+                });
+            }
+            selects.forEach(s => s.addEventListener('change', updateSelects));
+            updateSelects();
+        }, 100);
+    }
+}
+
+function getOgeJsonData(elementId) {
+    const el = document.getElementById(elementId);
+    if (!el) return null;
+    try { return JSON.parse(el.textContent); } catch (e) { return null; }
+}
+
+/**
+ * Универсальный обработчик для одиночных заданий ОГЭ
+ */
+function handleOgeSingleTask(taskNumber) {
+    const container = document.querySelector('.block-answer');
+    if (!container) return;
+
+    container.innerHTML = `<div class="loading" style="text-align:center; padding: 20px;">Загрузка задания ${taskNumber}...</div>`;
+
+    document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active'));
+
+    fetch('/api/generate-oge-single-task/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ task_number: taskNumber })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                container.innerHTML = `<div class="error" style="color:red;">${data.error}</div>`;
+            } else {
+                container.innerHTML = data.html;
+                activateOgeSnippetInteractivity(container, taskNumber);
+
+                const checkBtn = container.querySelector('.check-task-single');
+                if (checkBtn) {
+                    checkBtn.addEventListener('click', async () => {
+                        checkBtn.disabled = true;
+                        checkBtn.textContent = 'Проверяем...';
+
+                        const answers = {};
+                        container.querySelectorAll('[data-question-number]').forEach(block => {
+                            const qNum = block.dataset.questionNumber;
+                            const checked = block.querySelectorAll('input[type="checkbox"]:checked');
+                            if (checked.length > 0) {
+                                answers[qNum] = Array.from(checked).map(cb => cb.value);
+                            }
+                            const textInput = block.querySelector('input[type="text"][data-question]');
+                            if (textInput && textInput.value.trim()) {
+                                answers[textInput.dataset.question] = textInput.value.trim();
+                            }
+                            block.querySelectorAll('.smiley-button').forEach(sm => {
+                                const mId = sm.dataset.maskId;
+                                const icon = sm.querySelector('.smiley-icon');
+                                if (mId && icon && icon.textContent !== '😊') {
+                                    answers[mId] = icon.textContent;
+                                }
+                            });
+                            block.querySelectorAll('.error-select').forEach(sel => {
+                                const letter = sel.dataset.letter;
+                                if (letter && sel.value && sel.value !== '-') {
+                                    answers[`4-${letter}`] = sel.value;
+                                }
+                            });
+                        });
+
+                        try {
+                            const checkRes = await fetch('/api/check-oge-diagnostic/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': getCookie('csrftoken'),
+                                },
+                                body: JSON.stringify({ answers }),
+                            });
+
+                            const checkData = await checkRes.json();
+                            container.querySelectorAll('.task-score-display').forEach(el => el.remove());
+                            container.querySelectorAll('.task-result-message').forEach(el => el.remove());
+
+                            let hasErrors = false;
+
+                            if (checkData.results) {
+                                for (const [key, val] of Object.entries(checkData.results)) {
+                                    let domKey = key;
+                                    if (key.startsWith('4-')) domKey = '4';
+                                    // Smiley mask keys like "5-1", "5-2", "7-1" etc.
+                                    if (key.match(/^\d+-\d+$/)) domKey = key.split('-')[0];
+
+                                    const qBlock = container.querySelector(`[data-question-number="${domKey}"]`);
+                                    if (!qBlock) continue;
+
+                                    if (val.is_correct !== undefined && !val.is_correct) hasErrors = true;
+
+                                    if (key.startsWith('4-')) {
+                                        const sel = qBlock.querySelector(`select[data-letter="${key.split('-')[1]}"]`);
+                                        if (sel) {
+                                            sel.style.backgroundColor = val.is_correct ? '#c8e6c9' : '#ffcdd2';
+                                            sel.style.borderColor = val.is_correct ? '#4CAF50' : '#f44336';
+                                        }
+                                        continue;
+                                    }
+
+                                    // Подсветка смайликов (ключи вида "5-1", "7-2" и т.д.)
+                                    const smBtn = qBlock.querySelector(`.smiley-button[data-mask-id="${key}"]`);
+                                    if (smBtn) {
+                                        const icon = smBtn.querySelector('.smiley-icon');
+                                        if (icon) {
+                                            icon.style.backgroundColor = val.is_correct ? '#c8e6c9' : '#ffcdd2';
+                                            icon.style.borderRadius = '4px';
+                                        }
+                                        continue;
+                                    }
+
+                                    // Подсветка чекбоксов
+                                    if (val.correct_answer) {
+                                        const correctArr = String(val.correct_answer).toLowerCase().split('');
+                                        qBlock.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                            const label = cb.closest('label');
+                                            const isCorrectCb = correctArr.includes(cb.value.toLowerCase());
+                                            if (cb.checked) {
+                                                cb.style.outline = isCorrectCb ? '2px solid #4CAF50' : '2px solid #f44336';
+                                                cb.style.outlineOffset = '2px';
+                                                if (label) {
+                                                    label.style.color = isCorrectCb ? '#4CAF50' : '#f44336';
+                                                    label.style.fontWeight = 'bold';
+                                                }
+                                            }
+                                        });
+                                    }
+
+                                    // Подсветка инпутов
+                                    const ti = qBlock.querySelector('input[type="text"]');
+                                    if (ti) {
+                                        ti.style.backgroundColor = val.is_correct ? '#c8e6c9' : '#ffcdd2';
+                                        ti.style.borderColor = val.is_correct ? '#4CAF50' : '#f44336';
+                                    }
+                                }
+                            }
+
+                            // Итоговое сообщение
+                            const resultMsg = document.createElement('div');
+                            resultMsg.className = 'task-result-message';
+                            resultMsg.style.cssText = 'margin-top: 15px; font-weight: bold; font-size: 1.1em;';
+                            if (hasErrors) {
+                                resultMsg.innerHTML = '<span style="color: #f44336;">❌ Есть ошибки! По номерам пунктограмм найди информацию в планингах</span>';
+                            } else {
+                                resultMsg.innerHTML = '<span style="color: #4CAF50;">✅ Все правильно!</span>';
+                            }
+                            container.appendChild(resultMsg);
+                            checkBtn.textContent = 'Готово!';
+                        } catch (e) {
+                            alert('Ошибка проверки');
+                            checkBtn.disabled = false;
+                            checkBtn.textContent = 'Проверить';
+                        }
+                    });
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            container.innerHTML = `<div class="error" style="color:red;">Ошибка загрузки</div>`;
+        });
 }
 
 // ========================================================================
@@ -1229,32 +1590,32 @@ function handleAlphabeticalExercise(orthogramId, rangeCode) {
 function handleCheredExercise() {
     const container = document.querySelector('.block-answer-still-content');
     if (!container) return;
-    
+
     container.innerHTML = '<div class="loading">Загрузка...</div>';
-    
+
     fetch('/api/generate-chered-exercise/', {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json', 
-            'X-CSRFToken': getCookie('csrftoken') 
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({})
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            container.innerHTML = `<div class="error">${data.error}</div>`;
-        } else {
-            container.innerHTML = data.html;
-            setTimeout(() => {
-                const article = container.querySelector('.article-practice');
-                processPracticeContainer(article || container);
-                setupCheckAnswers(article || container);
-            }, 0);
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка:', error);
-        container.innerHTML = `<div class="error">Ошибка загрузки</div>`;
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                container.innerHTML = `<div class="error">${data.error}</div>`;
+            } else {
+                container.innerHTML = data.html;
+                setTimeout(() => {
+                    const article = container.querySelector('.article-practice');
+                    processPracticeContainer(article || container);
+                    setupCheckAnswers(article || container);
+                }, 0);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            container.innerHTML = `<div class="error">Ошибка загрузки</div>`;
+        });
 }

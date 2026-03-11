@@ -1,0 +1,43 @@
+<!-- main/templates/diagnostic_oge_task10-12_snippet.html -->
+{% load static %}
+{% load custom_filters %}
+<div class="diagnostic-task-snippet">
+    {% if text_task_9_10 %}
+    <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
+        {{ text_task_9_10.text_content|bold_words|safe }}
+    </div>
+    {% for q in text_questions_9_10 %}
+    <div class="question" data-question-number="{{ q.question_number }}">
+        <h4>{{ q.question_number }}. {{ q.question_text }}</h4>
+        {% if q.question_type == 'missing_word' or q.question_type == 'free_text' %}
+        <input type="text" data-question="{{ q.question_number }}" placeholder="Ответ">
+        {% else %}
+        {% for opt in q.options.all %}
+        <label>
+            <input type="checkbox" value="{{ opt.option_number }}" data-question="{{ q.question_number }}">
+            <span>{{ opt.option_number }}) {{ opt.option_text }}</span>
+        </label><br>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <hr>
+    {% endfor %}
+    {% endif %}
+
+    {% if text_questions_11 %}
+    {% for q in text_questions_11 %}
+    <div class="question" data-question-number="{{ q.question_number }}">
+        <h4>{{ q.question_number }}. {{ q.question_text }}</h4>
+        <input type="text" data-question="{{ q.question_number }}" placeholder="Впиши здесь"
+            style="width: 60%; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;">
+    </div>
+    <hr>
+    {% endfor %}
+    {% endif %}
+
+    {% if text_task_9_10 or text_questions_11 %}
+    <button class="check-task green check-task-single" data-task="10-12" style="margin-top: 20px;">Проверить</button>
+    {% else %}
+    <p>Не удалось загрузить задание. Попробуйте обновить страницу.</p>
+    {% endif %}
+</div>

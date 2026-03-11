@@ -1,0 +1,33 @@
+<!-- main/templates/diagnostic_oge_task5_snippet.html -->
+{% load static %}
+<div class="diagnostic-task-snippet article-practice">
+    {% if task4_data %}
+    <div class="question" data-question-number="5">
+        {% if task4_data.image_name %}
+        <div style="margin: 15px 0; text-align: center;">
+            <img src="{% static task4_data.image_name %}" alt="Задание 5"
+                style="max-width: 100%; max-height: 350px; height: auto;">
+        </div>
+        {% endif %}
+
+        {% if task4_data.title %}
+        <h4>{{ task4_data.title }}</h4>
+        {% else %}
+        <h4>5. Расставьте знаки препинания. Кликните на смайлик и выберите правильный знак.</h4>
+        {% endif %}
+
+        {% for line in task4_data.lines %}
+        <div style="margin-bottom: 8px; font-size: 1.1em; line-height: 1.5;">
+            <span class="practice-line">{{ line|safe }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <hr>
+    <button class="check-task green check-task-single" data-task="5" style="margin-top: 20px;">Проверить</button>
+
+    <script id="task4-letter-groups" type="application/json">{{ task4_letter_groups|safe }}</script>
+    <script id="task4-subgroup-letters" type="application/json">{{ task4_subgroup_letters|safe }}</script>
+    {% else %}
+    <p>Не удалось загрузить задание. Попробуйте обновить страницу.</p>
+    {% endif %}
+</div>

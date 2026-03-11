@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    {% load static %} <!-- ЭТО ОБЯЗАТЕЛЬНО! -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9 класс — NeuroStat</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=8">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=8">
+    <link rel="stylesheet" href="{% static 'css/media_planning.css' %}?v=8">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}?v=8">
+</head>
+
+<body>
+    <header class="header">
+        <a href="/">← Назад</a>
+    </header>
+
+    <main>
+
+        <section class="block-task">
+            <h2 class="title-planing">Выберите задание по номеру</h2>
+
+            <article class="block-task-num">
+                <div class="task-buttons">
+                    <button class="check-task green"
+                        onclick="handleOgeTask2_3(); this.classList.add('active');">2-3</button>
+                    <button class="check-task green"
+                        onclick="handleOgeSingleTask('4'); this.classList.add('active');">4</button>
+                    <div class="task-dropdown check-task green">
+                        <span style="pointer-events: none;">5</span>
+                        <div class="task-dropdown-menu">
+                            <div class="task-dropdown-item">
+                                Тире
+                                <div class="task-submenu">
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_2100'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Общее упр.</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_8'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 8</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_18'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 18</div>
+                                </div>
+                            </div>
+                            <div class="task-dropdown-item">
+                                Двоеточие
+                                <div class="task-submenu">
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_2101'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Общее упр.</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_19'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 19</div>
+                                </div>
+                            </div>
+                            <div class="task-dropdown-item">
+                                Запятые
+                                <div class="task-submenu">
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_2102'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Общее упр.</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_2'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 2</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_3'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 3</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_4'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 4</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_6_7'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 6,7</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_11_14'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 11-14</div>
+                                    <div class="task-dropdown-item"
+                                        onclick="handleOgeSingleTask('5_15'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                        Пунктограмма 15</div>
+                                </div>
+                            </div>
+                            <div class="task-dropdown-item"
+                                onclick="handleOgeSingleTask('5_mixed_dash_colon'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
+                                Тире/двоеточие
+                            </div>
+                        </div>
+                    </div>
+                    <button class="check-task green"
+                        onclick="handleOgeSingleTask('6'); this.classList.add('active');">6</button>
+                    <button class="check-task green"
+                        onclick="handleOgeSingleTask('7'); this.classList.add('active');">7</button>
+                    <button class="check-task green"
+                        onclick="handleOgeSingleTask('8'); this.classList.add('active');">8</button>
+                    <button class="check-task green"
+                        onclick="handleOgeSingleTask('9'); this.classList.add('active');">9</button>
+                    <button class="check-task green"
+                        onclick="handleOgeSingleTask('10-12'); this.classList.add('active');">10-12</button>
+                    <button class="check-task">13.1</button>
+                    <button class="check-task">13.2</button>
+                    <button class="check-task">13.3</button>
+                </div>
+            </article>
+            <p>* готовые задания отмечены зеленым</p>
+        </section>
+
+        <section class="block-answer"></section>
+
+
+        <!-- Скрытое поле с CSRF-токеном -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    </main>
+
+    <script src="{% static 'js/planning.js' %}?v=10"></script>
+</body>
+
+</html>

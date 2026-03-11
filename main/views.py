@@ -142,6 +142,10 @@ def planning_8kl(request):
     return render(request, 'planning_8kl.html')
 
 
+def planning_9kl(request):
+    return render(request, 'planning_9kl.html')
+
+
 def ege(request):
     return render(request, 'ege.html')
 
@@ -5553,7 +5557,7 @@ def get_oge_text_analysis_questions(task_type):
     if not required_numbers:
         return None, []
 
-    tasks = OgeTextAnalysisTask.objects.filter(is_active=True)
+    tasks = OgeTextAnalysisTask.objects.filter(is_active=True).order_by('?')
     for task in tasks:
         qs = task.questions.filter(question_number__in=required_numbers)
         if qs.count() == len(required_numbers):
@@ -5581,7 +5585,7 @@ def generate_oge_task3_matching():
     type_to_letter = {rules[i].id: letters[i] for i in range(3)}
 
     error_type_names = {
-        type_to_letter[t.id]: t.get_id_display()
+        type_to_letter[t.id]: str(t)
         for t in rules
     }
 
@@ -5600,15 +5604,19 @@ def generate_oge_task3_matching():
     }
 
 
-def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=False):
+def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=False, is_for_quiz=None, override_letters=None):
     """
     Универсальная функция для пунктуационных заданий ОГЭ (задание 4).
     Поддерживает тире, двоеточие, запятую, КАВЫЧКИ.
     """
-    examples = OgePunktumExample.objects.filter(
-        punktum__id=punktum_id,
-        is_active=True
-    ).order_by('?')[:num_sentences]
+    query_kwargs = {
+        'punktum__id': punktum_id,
+        'is_active': True
+    }
+    if is_for_quiz is not None:
+        query_kwargs['is_for_quiz'] = is_for_quiz
+
+    examples = OgePunktumExample.objects.filter(**query_kwargs).order_by('?')[:num_sentences]
 
     if not examples:
         return None
@@ -5650,27 +5658,58 @@ def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=Fal
         all_lines.append(masked)
         all_correct_symbols.extend(correct)
 
-    try:
-        from main.models import OgePunktum
-        punktum = OgePunktum.objects.get(id=punktum_id)
-        letters = punktum.get_letters_list()
-    except Exception:
-        letters = ['5', '8', 'дз']
+    if override_letters:
+        letters = override_letters
+    else:
+        try:
+            from main.models import OgePunktum
+            punktum = OgePunktum.objects.get(id=punktum_id)
+            letters = punktum.get_letters_list()
+        except Exception:
+            letters = ['5', '8', 'дз']
 
     # Для ОГЭ задания 4: картинки по типу знака
     image_mapping = {
-        '2100': 'images/punktum_task_OGE_0.webp',  # Тире
-        '2101': 'images/punktum_task_OGE_1.webp',  # Двоеточие
-        '2102': 'images/punktum_task_OGE_2.webp',  # Запятые
+        '2100': 'images/punktum_task_OGE_0.webp',  # Тире (общее)
+        '2101': 'images/punktum_task_OGE_1.webp',  # Двоеточие (общее)
+        '2102': 'images/punktum_task_OGE_2.webp',  # Запятые (общее)
         '2103': 'images/punktum_task_21_3.webp',  # Кавычки
+        '8': 'images/punktum_task_OGE_8.webp',    # Тире (пунктограмма 8)
+        '18': 'images/punktum_task_OGE_18.webp',   # Тире (пунктограмма 18)
+        '19': 'images/punktum_task_OGE_19.webp',   # Двоеточие (пунктограмма 19)
     }
 
     title_mapping = {
-        '2100': '5. Кликни на смайлик, выбери подходящий знак для постановки ТИРЕ.',
-        '2101': '5. Кликни на смайлик, выбери подходящий знак для постановки ДВОЕТОЧИЯ.',
-        '2102': '5. Кликни на смайлик, выбери подходящий знак для постановки ЗАПЯТЫХ.',
+        '2100': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ТИРЕ.',
+        '2101': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ДВОЕТОЧИЯ.',
+        '2102': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ЗАПЯТЫХ.',
         '2103': '5. Кликни на смайлик, выбери подходящий знак для постановки КАВЫЧЕК.',
+        '8': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ТИРЕ.',
+        '18': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ТИРЕ.',
+        '19': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ДВОЕТОЧИЯ.',
     }
+
+    # Набор файлов-картинок, которые реально существуют в static/images
+    _existing_comma_images = {
+        '2': 'images/punktum_task_OGE_02.webp',
+        '3': 'images/punktum_task_OGE_3.webp',
+        '4': 'images/punktum_task_OGE_4.webp',
+        '6': 'images/punktum_task_OGE_67.webp',
+        '7': 'images/punktum_task_OGE_67.webp',
+        '11': 'images/punktum_task_OGE_1114.webp',
+        '12': 'images/punktum_task_OGE_1114.webp',
+        '13': 'images/punktum_task_OGE_1114.webp',
+        '14': 'images/punktum_task_OGE_1114.webp',
+        '15': 'images/punktum_task_OGE_15.webp',
+    }
+    comma_ids = ['2', '3', '4', '6', '7', '11', '12', '13', '14', '15']
+    for c_id in comma_ids:
+        image_mapping[c_id] = _existing_comma_images.get(c_id, 'images/punktum_task_OGE_2.webp')
+        title_mapping[c_id] = '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ЗАПЯТЫХ.'
+
+    # Формируем подпись пунктограммы (только для конкретных, не общих)
+    general_ids = {'2100', '2101', '2102', '2103', 'mixed_dash_colon'}
+    punktum_label = f'{punktum_id} пунктограмма' if punktum_id not in general_ids else ''
 
     result = {
         'lines': all_lines,
@@ -5681,6 +5720,7 @@ def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=Fal
         'add_numbering': add_numbering,
         'task_number': task_number,
         'punktum_id': punktum_id,
+        'punktum_label': punktum_label,
     }
 
     if punktum_id in title_mapping:
@@ -5835,6 +5875,300 @@ def generate_oge_diagnostic(request):
 
     except Exception as e:
         logger.error(f"Ошибка генерации ОГЭ-диагностики: {e}", exc_info=True)
+        return JsonResponse({'error': f'Ошибка: {str(e)}'}, status=500)
+
+
+def generate_oge_task_2_3(request):
+    """Генерация только задания 2-3 ОГЭ для 9 класса"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Только POST'}, status=405)
+
+    try:
+        session_data = request.session.get('oge_task_2_3_session', {})
+        context = {}
+
+        text_task_1_2, text_questions_1_2 = get_oge_text_analysis_questions('1_2')
+        if text_task_1_2:
+            context['text_task_1_2'] = text_task_1_2
+            context['text_questions_1_2'] = text_questions_1_2
+            
+            session_data['answers_1_2'] = {
+                str(q.question_number): q.correct_answer for q in text_questions_1_2
+            }
+
+        request.session['oge_task_2_3_session'] = session_data
+
+        html = render_to_string('diagnostic_oge_task_2_3_snippet.html', context)
+        return JsonResponse({'html': html})
+
+    except Exception as e:
+        logger.error(f"Ошибка генерации задания 2-3 ОГЭ: {e}", exc_info=True)
+        return JsonResponse({'error': f'Ошибка: {str(e)}'}, status=500)
+
+
+def generate_oge_task5_mixed_dash_colon(is_for_quiz=None):
+    """
+    Смешанное задание: 5 предложений из тире (8, 18) и двоеточия (19).
+    Случайно: 2 тире + 3 двоеточия или 3 тире + 2 двоеточия.
+    Варианты ответов: — и :
+    """
+    import random
+
+    dash_ids = ['8', '18']
+    colon_ids = ['19']
+
+    # Случайный набор: 2+3 или 3+2
+    if random.choice([True, False]):
+        num_dash, num_colon = 2, 3
+    else:
+        num_dash, num_colon = 3, 2
+
+    query_kwargs = {'is_active': True}
+    if is_for_quiz is not None:
+        query_kwargs['is_for_quiz'] = is_for_quiz
+
+    dash_examples = list(
+        OgePunktumExample.objects.filter(
+            punktum__id__in=dash_ids,
+            **query_kwargs
+        ).order_by('?')[:num_dash]
+    )
+    colon_examples = list(
+        OgePunktumExample.objects.filter(
+            punktum__id__in=colon_ids,
+            **query_kwargs
+        ).order_by('?')[:num_colon]
+    )
+
+    all_examples = dash_examples + colon_examples
+    random.shuffle(all_examples)
+
+    if not all_examples:
+        return None
+
+    task_number = '5'
+    all_lines = []
+    all_correct_symbols = []
+    letter_groups = {}
+    mask_idx = 1
+
+    for ex in all_examples:
+        masked = ex.masked_word
+        punktum_id = str(ex.punktum_id)
+
+        # Определяем правильный символ: тире или двоеточие
+        if punktum_id in dash_ids:
+            correct_symbol = '—'
+        else:
+            correct_symbol = ':'
+
+        mask_count = masked.count(f'*{punktum_id}*')
+        for _ in range(mask_count):
+            mask_id = f"{task_number}-{mask_idx}"
+            masked = masked.replace(f'*{punktum_id}*', f'*{mask_id}*', 1)
+            letter_groups[mask_id] = 'punktum_5_mixed'
+            all_correct_symbols.append(correct_symbol)
+            mask_idx += 1
+
+        all_lines.append(masked)
+
+    letters = ['—', ':']
+
+    return {
+        'lines': all_lines,
+        'correct_symbols': all_correct_symbols,
+        'letter_groups': letter_groups,
+        'subgroup_letters': {'punktum_5_mixed': letters},
+        'image_name': 'images/punktum_task_OGE_1819.webp',
+        'add_numbering': False,
+        'task_number': task_number,
+        'punktum_id': 'mixed_dash_colon',
+        'punktum_label': '',
+        'title': '5. Кликни по смайликам, выбери подходящий знак для постановки ТИРЕ или ДВОЕТОЧИЯ.',
+    }
+
+
+def generate_oge_single_task(request):
+    """Генерация отдельных заданий ОГЭ (4, 6, 7, 8, 9, 10-12) для 9 класса"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Только POST'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        task_number = str(data.get('task_number', ''))
+
+        session_data = request.session.get('oge_diagnostic', {})
+        context = {}
+        template_name = f'diagnostic_oge_task{task_number}_snippet.html'
+
+        if task_number == '4':
+            task3_data = generate_oge_task3_matching()
+            if task3_data:
+                context['task3_error_type_names'] = task3_data.get('error_type_names', {})
+                context['task3_sentences'] = task3_data.get('sentences', [])
+                session_data['task3_correct'] = task3_data['correct_answers']
+        
+        elif task_number.startswith('5_'):
+            import random
+            punktum_id_raw = task_number.replace('5_', '')
+            
+            # === СПЕЦИАЛЬНЫЙ РЕЖИМ: Тире/двоеточие (смешанный) ===
+            if punktum_id_raw == 'mixed_dash_colon':
+                task4_data = generate_oge_task5_mixed_dash_colon(is_for_quiz=False)
+                if task4_data:
+                    context['task4_data'] = task4_data
+                    session_data['task4_correct'] = task4_data['correct_symbols']
+                    context['task4_letter_groups'] = json.dumps(task4_data['letter_groups'])
+                    context['task4_subgroup_letters'] = json.dumps(task4_data['subgroup_letters'])
+                
+                template_name = 'diagnostic_oge_task5_snippet.html'
+            else:
+                # === ОБЫЧНЫЙ РЕЖИМ: одна пунктограмма ===
+                choices_map = {
+                    '2100': ['8', '18'],
+                    '2101': ['19'],
+                    '2102': ['2', '3', '4', '6', '7', '11', '12', '13', '14', '15'],
+                    '6_7': ['6', '7'],
+                    '11_14': ['11', '12', '13', '14'],
+                }
+                
+                # === ПЕРЕОПРЕДЕЛЕНИЕ ВАРИАНТОВ ОТВЕТА ДЛЯ ОБЩИХ УПРАВЛЕНИЙ ===
+                override_letters_map = {
+                    '2100': ['5', '8', '8.1', '9.2', '10', '18', 'дз'],
+                    '2101': ['5', '9.1', '19', 'дз'],
+                    '2102': ['2', '3', '4.0', '4.1', '4.2', '5', '6', '7', '10', '11', '12', '13', '14', '15', '17', 'дз'],
+                    '19': ['19.1', '19.2', '19.3'],
+                }
+                
+                override_letters = override_letters_map.get(punktum_id_raw)
+                
+                punktum_id = punktum_id_raw
+                is_general = punktum_id_raw in ('2100', '2101', '2102', '2103', '6_7', '11_14')
+                
+                while punktum_id in choices_map:
+                    punktum_id = random.choice(choices_map[punktum_id])
+
+                task4_data = generate_oge_task4_with_image(
+                    punktum_id=punktum_id,
+                    num_sentences=1,
+                    add_numbering=False,
+                    is_for_quiz=False if is_general else None,
+                    override_letters=override_letters
+                )
+                if task4_data:
+                    # Для общего управления — принудительно ставим статичную картинку и заголовок
+                    if is_general:
+                        _general_images = {
+                            '2100': 'images/punktum_task_OGE_0.webp',
+                            '2101': 'images/punktum_task_OGE_1.webp',
+                            '2102': 'images/punktum_task_OGE_2.webp',
+                        }
+                        _general_titles = {
+                            '2100': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ТИРЕ.',
+                            '2101': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ДВОЕТОЧИЯ.',
+                            '2102': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ЗАПЯТЫХ.',
+                        }
+                        if punktum_id_raw in _general_images:
+                            task4_data['image_name'] = _general_images[punktum_id_raw]
+                        if punktum_id_raw in _general_titles:
+                            task4_data['title'] = _general_titles[punktum_id_raw]
+                    context['task4_data'] = task4_data
+                    session_data['task4_correct'] = task4_data['correct_symbols']
+                    context['task4_letter_groups'] = json.dumps(task4_data['letter_groups'])
+                    context['task4_subgroup_letters'] = json.dumps(task4_data['subgroup_letters'])
+                
+                template_name = 'diagnostic_oge_task5_snippet.html'
+        
+        elif task_number == '6':
+            text_task_5, text_questions_5 = get_oge_text_analysis_questions('5')
+            if text_task_5:
+                context['text_task_5'] = text_task_5
+                context['text_questions_5'] = text_questions_5
+                session_data['answers_5'] = {
+                    str(q.question_number): q.correct_answer for q in text_questions_5
+                }
+        
+        elif task_number == '7':
+            oge_orth_examples = list(
+                OgeOrthogramExample.objects.filter(is_active=True).order_by('?')[:3]
+            )
+            if oge_orth_examples:
+                task6_lines = []
+                task6_expected = []
+                task6_letter_groups = {}
+                task6_subgroup_letters = {}
+                mask_idx = 1
+                for ex in oge_orth_examples:
+                    masked = ex.masked_word
+                    orth_id = str(ex.orthogram_id)
+                    correct_letters_raw = (ex.correct_letters or '').split(',')
+                    import re
+                    mask_pattern = f'*{orth_id}*'
+                    num_masks = masked.count(mask_pattern)
+                    for pos in range(num_masks):
+                        mask_id = f"6-{mask_idx}"
+                        masked = masked.replace(mask_pattern, f'*{mask_id}*', 1)
+                        if pos < len(correct_letters_raw):
+                            raw = correct_letters_raw[pos].strip()
+                            if '|' in raw:
+                                correct_letter, choices_str = raw.split('|', 1)
+                                choices = [c.strip() for c in choices_str.split('/')]
+                            else:
+                                correct_letter = raw
+                                choices = ex.orthogram.get_letters_list()
+                        else:
+                            correct_letter = ''
+                            choices = ex.orthogram.get_letters_list()
+                        task6_letter_groups[mask_id] = f'orth_{mask_idx}'
+                        task6_subgroup_letters[f'orth_{mask_idx}'] = choices
+                        task6_expected.append(correct_letter)
+                        mask_idx += 1
+                    task6_lines.append({'display_line': masked})
+
+                context['task6_lines'] = task6_lines
+                session_data['task6_correct'] = task6_expected
+                context['task6_letter_groups'] = json.dumps(task6_letter_groups)
+                context['task6_subgroup_letters'] = json.dumps(task6_subgroup_letters)
+        
+        elif task_number == '8':
+            task7_item = OgeCorrectionExercise.objects.filter(is_active=True).order_by('?').first()
+            if task7_item:
+                context['task7_word'] = task7_item.incorrect_text
+                context['task7_sentence'] = task7_item.explanation
+                session_data['answer_7'] = task7_item.correct_text.lower().strip()
+                
+        elif task_number == '9':
+            wordok = OgeWordOk.objects.filter(is_active=True).order_by('?').first()
+            if wordok and wordok.correct_variants.strip():
+                context['wordok_8'] = wordok
+                session_data['answer_8'] = wordok.correct_variants
+                
+        elif task_number == '10-12':
+            text_task_9_10, text_questions_9_10 = get_oge_text_analysis_questions('9_10')
+            if text_task_9_10:
+                context['text_task_9_10'] = text_task_9_10
+                context['text_questions_9_10'] = text_questions_9_10
+                session_data['answers_9_10'] = {
+                    str(q.question_number): q.correct_answer for q in text_questions_9_10
+                }
+
+            text_task_11, text_questions_11 = get_oge_text_analysis_questions('11')
+            if text_task_11:
+                context['text_task_11'] = text_task_11
+                context['text_questions_11'] = text_questions_11
+                session_data['answers_11'] = {
+                    str(q.question_number): q.correct_answer for q in text_questions_11
+                }
+                
+        else:
+            return JsonResponse({'error': 'Неизвестное задание'}, status=400)
+
+        request.session['oge_diagnostic'] = session_data
+        html = render_to_string(template_name, context)
+        return JsonResponse({'html': html})
+
+    except Exception as e:
+        logger.error(f"Ошибка генерации задания {task_number} ОГЭ: {e}", exc_info=True)
         return JsonResponse({'error': f'Ошибка: {str(e)}'}, status=500)
 
 
