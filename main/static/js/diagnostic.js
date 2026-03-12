@@ -749,6 +749,46 @@ document.addEventListener('DOMContentLoaded', function () {
                     detailsHtml += `<p><strong>Задание 22:</strong> ${result.results['22'].correct_count || 0}/5 правильных = <strong>${result.results['22'].score || 0}/2</strong> баллов</p>`;
                 }
 
+                // === ВИЗУАЛИЗАЦИЯ РЕЗУЛЬТАТОВ ПО ЗАДАНИЯМ ===
+                let tasksHtml = '<div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">';
+
+                for (let i = 1; i <= 26; i++) {
+                    const q = String(i);
+                    
+                    // === ЗАДАНИЯ 8 и 22 (2 балла) ===
+                    if (i === 8 || i === 22) {
+                        const taskResult = result.results[q];
+                        if (taskResult && taskResult.score !== undefined) {
+                            const score = taskResult.score; // 0, 1, или 2
+                            // Формируем символы: 2 балла = "++", 1 балл = "+-", 0 баллов = "--"
+                            const symbols = score === 2 ? '++' : score === 1 ? '+-' : '--';
+                            const colors = score === 2 ? ['green', 'green'] : score === 1 ? ['green', 'red'] : ['red', 'red'];
+                            
+                            tasksHtml += `<span style="display:inline-block; margin: 2px;">${i}</span>`;
+                            for (let j = 0; j < 2; j++) {
+                                tasksHtml += `<span style="display:inline-block; width:20px; height:20px; line-height:20px; text-align:center; background:${colors[j]}; color:white; border-radius:3px; margin:0 1px; font-size:12px;">${symbols[j]}</span>`;
+                            }
+                            tasksHtml += ' ';
+                        }
+                    }
+                    // === ОСТАЛЬНЫЕ ЗАДАНИЯ (1 балл) ===
+                    else {
+                        const taskResult = result.results[q];
+                        if (taskResult && taskResult.is_correct !== undefined) {
+                            const isCorrect = taskResult.is_correct;
+                            const symbol = isCorrect ? '+' : '-';
+                            const color = isCorrect ? 'green' : 'red';
+                            
+                            tasksHtml += `<span style="display:inline-block; margin: 2px;">${i}</span>`;
+                            tasksHtml += `<span style="display:inline-block; width:20px; height:20px; line-height:20px; text-align:center; background:${color}; color:white; border-radius:3px; margin:0 1px; font-size:12px;">${symbol}</span>`;
+                            tasksHtml += ' ';
+                        }
+                    }
+                }
+
+                tasksHtml += '</div>';
+                detailsHtml = tasksHtml + detailsHtml;
+
                 detailsHtml += `<p><strong>Рекомендации NEUROSTAT:</strong> Анализ слабых зон доступен после прохождения всех диагностик.</p>`;
 
                 resultDetails.innerHTML = detailsHtml;
