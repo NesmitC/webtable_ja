@@ -906,33 +906,34 @@ document.addEventListener('click', async (e) => {
     const orthogramIds = button.dataset.orthogram;
     const punktogramId = button.dataset.punktogram;
 
-const answerSection = document.querySelector('.block-answer');
-if (!answerSection) {
-    console.error('❌ Не найден блок .block-answer');
-    return;
-}
-answerSection.innerHTML = '<p>Загрузка...</p>';
-
-// === ЗАДАНИЕ 4: Орфоэпия ===
-if (orthogramIds === '4000' || orthogramIds.startsWith('4_')) {
-    // Извлекаем класс: '4_6' → 6, '4_7' → 7 и т.д.
-    const grade = orthogramIds.startsWith('4_') ? parseInt(orthogramIds.split('_')[1]) : null;
-    
-    if (window.OrthoepyModule && typeof window.OrthoepyModule.loadOrthoepyTest === 'function') {
-        await OrthoepyModule.loadOrthoepyTest(grade);
-    } else {
-        await loadOrthoepyTest(grade);
+    const answerSection = document.querySelector('.block-answer');
+    if (!answerSection) {
+        console.error('❌ Не найден блок .block-answer');
+        return;
     }
     answerSection.innerHTML = '<p>Загрузка...</p>';
 
     // === ЗАДАНИЕ 4: Орфоэпия ===
-    if (orthogramIds === '4000') {
+    if (orthogramIds === '4000' || orthogramIds.startsWith('4_')) {
+        // Извлекаем класс: '4_6' → 6, '4_7' → 7 и т.д.
+        const grade = orthogramIds.startsWith('4_') ? parseInt(orthogramIds.split('_')[1]) : null;
+        
         if (window.OrthoepyModule && typeof window.OrthoepyModule.loadOrthoepyTest === 'function') {
-            await OrthoepyModule.loadOrthoepyTest();
+            await OrthoepyModule.loadOrthoepyTest(grade);
         } else {
-            await loadOrthoepyTest();
+            await loadOrthoepyTest(grade);
         }
-        return;
+        answerSection.innerHTML = '<p>Загрузка...</p>';
+
+        // === ЗАДАНИЕ 4: Орфоэпия ===
+        if (orthogramIds === '4000') {
+            if (window.OrthoepyModule && typeof window.OrthoepyModule.loadOrthoepyTest === 'function') {
+                await OrthoepyModule.loadOrthoepyTest();
+            } else {
+                await loadOrthoepyTest();
+            }
+            return;
+        }
     }
 
     // === ЗАДАНИЕ 5: Паронимы ===
@@ -1880,56 +1881,21 @@ function handleCheredExercise() {
 (function() {
     'use strict';
     
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie) {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+    // ← НЕ определяем getCookie здесь! Используем глобальную из начала файла
     const csrftoken = getCookie('csrftoken');
     
     async function saveField(field) {
         const fieldName = field.name;
         const content = field.value.trim();
-        
         console.log(`💾 Saving ${fieldName}: "${content.substring(0, 30) || '(пусто)'}..."`);
-        
-        // 🔧 Получаем CSRF-токен
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie) {
-                const cookies = document.cookie.split(';');
-                for (let cookie of cookies) {
-                    cookie = cookie.trim();
-                    if (cookie.startsWith(name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        
-        const csrftoken = getCookie('csrftoken');
-        console.log(`🔐 CSRF token: ${csrftoken ? '✅ есть' : '❌ нет'}`);
-        
         if (!csrftoken) {
             console.error('❌ CSRF token not found!');
             return;
         }
-        
         try {
             const response = await fetch('/api/save-example/', {
                 method: 'POST',
-                credentials: 'same-origin',  // 🔧 ОБЯЗАТЕЛЬНО: отправляем куки!
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': csrftoken
@@ -1939,15 +1905,12 @@ function handleCheredExercise() {
                     'content': content
                 })
             });
-            
-            // 🔧 Проверяем, что ответ JSON
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 const text = await response.text();
                 console.error(`❌ Ожидался JSON, получено: ${text.substring(0, 100)}`);
                 return;
             }
-            
             const result = await response.json();
             if (result.status === 'success') {
                 console.log(`✅ Saved: ${fieldName}`);
@@ -1960,26 +1923,20 @@ function handleCheredExercise() {
             console.error(`🔥 Fetch error: ${error}`);
         }
     }
-
-    // 🔹 АВТО-ЗАГРУЗКА СОХРАНЁННЫХ СЛОВ
+    
     async function loadSavedExamples() {
         console.log('🔄 Loading saved planning examples...');
-        
         try {
             const response = await fetch('/api/load-examples/', {
                 method: 'GET',
                 headers: { 'X-CSRFToken': csrftoken }
             });
-            
             if (!response.ok) {
                 console.warn('⚠️ Load examples failed:', response.status);
                 return;
             }
-            
             const examples = await response.json();
             console.log('📦 Loaded:', Object.keys(examples).length, 'fields');
-            
-            // Заполняем поля сохранёнными значениями
             Object.entries(examples).forEach(([fieldName, content]) => {
                 const field = document.querySelector(`[name="${fieldName}"]`);
                 if (field && content) {
@@ -1996,20 +1953,15 @@ function handleCheredExercise() {
         const planFields = document.querySelectorAll(
             '.input-text[name^="user-input-orf-"], .input-text[name^="user-input-punktum-"]'
         );
-        
         if (planFields.length === 0) {
             console.log('📋 Planning: no auto-save fields found');
             return;
         }
-        
-        // Авто-сохранение при blur
         planFields.forEach(field => {
             field.addEventListener('blur', function() {
                 saveField(this);
             });
         });
-        
-        // Сохранение при закрытии вкладки
         window.addEventListener('beforeunload', function() {
             planFields.forEach(field => {
                 navigator.sendBeacon('/api/save-example/', new URLSearchParams({
@@ -2018,10 +1970,7 @@ function handleCheredExercise() {
                 }));
             });
         });
-        
-        // 🔹 Авто-загрузка при старте страницы
         loadSavedExamples();
-        
         console.log(`🚀 Planning auto-save/load ready (${planFields.length} fields)`);
     }
     
@@ -2030,4 +1979,68 @@ function handleCheredExercise() {
     } else {
         init();
     }
-})();
+})();  // ← IIFE авто-сохранения закрывается ЗДЕСЬ
+
+// ========================================================================
+// ✅ ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ ТРЕНАЖЁРОВ ОГЭ (oge.html) — ОТДЕЛЬНО!
+// ========================================================================
+document.addEventListener('DOMContentLoaded', function() {
+    'use strict';
+    
+    var taskButtonsContainer = document.querySelector('.task-buttons');
+    if (!taskButtonsContainer) {
+        console.log('📋 OGE Trainer: не страница тренажёров');
+        return;
+    }
+    
+    var taskButtons = taskButtonsContainer.querySelectorAll('.check-task');
+    if (taskButtons.length === 0) {
+        console.log('📋 OGE Trainer: нет кнопок');
+        return;
+    }
+    
+    console.log('🚀 OGE Trainer: инициализация', taskButtons.length, 'кнопок');
+    
+    taskButtons.forEach(function(btn) {
+        if (btn._ogeClickHandler) {
+            btn.removeEventListener('click', btn._ogeClickHandler);
+        }
+        
+        btn._ogeClickHandler = function(e) {
+            e.preventDefault();
+            
+            var taskNumber = this.textContent.trim();
+            var orthogramData = this.dataset.orthogram;
+            
+            console.log('🎯 Клик: задание', taskNumber, 'data-orthogram:', orthogramData);
+            
+            document.querySelectorAll('.task-buttons .check-task').forEach(function(b) {
+                b.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            if (taskNumber === '2-3' || orthogramData === '2_3') {
+                if (typeof handleOgeTask2_3 === 'function') {
+                    handleOgeTask2_3();
+                } else {
+                    console.error('❌ handleOgeTask2_3 не найдена!');
+                }
+            } else if (['4', '5', '6', '7', '8', '9', '10-12'].indexOf(taskNumber) !== -1) {
+                if (typeof handleOgeSingleTask === 'function') {
+                    handleOgeSingleTask(taskNumber);
+                } else {
+                    console.error('❌ handleOgeSingleTask не найдена!');
+                }
+            } else if (['13.1', '13.2', '13.3'].indexOf(taskNumber) !== -1) {
+                var container = document.querySelector('.block-answer');
+                if (container) {
+                    container.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">Задание в разработке 🔧</p>';
+                }
+            }
+        };
+        
+        btn.addEventListener('click', btn._ogeClickHandler);
+    });
+    
+    console.log('✅ OGE Trainer: инициализация завершена');
+});  // ← Закрывается addEventListener, БЕЗ ()};
