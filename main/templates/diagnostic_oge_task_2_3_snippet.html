@@ -1,0 +1,31 @@
+<!-- main/templates/diagnostic_oge_task_2_3_snippet.html -->
+{% load static %}
+{% load custom_filters %}
+
+<div class="diagnostic-task-snippet">
+    {% if text_task_1_2 %}
+    <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
+        {{ text_task_1_2.text_content|bold_words|safe }}
+    </div>
+    {% for q in text_questions_1_2 %}
+    <div class="question" data-question-number="{{ q.question_number }}">
+        <h4>{{ q.question_number }}. {{ q.question_text }}</h4>
+        {% if q.question_type == 'missing_word' %}
+        <input type="text" data-question="{{ q.question_number }}" placeholder="Ответ">
+        {% else %}
+        {% for opt in q.options.all %}
+        <label>
+            <input type="checkbox" value="{{ opt.option_number }}" data-question="{{ q.question_number }}">
+            <span>{{ opt.option_number }}) {{ opt.option_text }}</span>
+        </label><br>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <hr>
+    {% endfor %}
+
+    <button class="check-task green" id="check-task-2-3-btn" style="margin-top: 20px;">Проверить</button>
+    {% else %}
+    <p>Не удалось загрузить задание. Попробуйте обновить страницу.</p>
+    {% endif %}
+</div>

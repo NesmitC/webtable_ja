@@ -965,18 +965,12 @@ class OgeQuestionOption(models.Model):
 # ===== ЗАДАНИЕ ОГЭ 4: Выпадающие списки ================================
 
 class OgeTaskGrammaticEight(models.Model):
-    ERROR_TYPES = [
-        ('8100', 'В неполном предложении на месте пропуска члена предложения ставится тире.'),
-        ('8200', 'Между подлежащим и сказуемым, выраженными именами существительными в именительном падеже, при нулевой связке ставится тире.'),
-        ('8300', 'Обстоятельство, выраженное деепричастным оборотом, обособляется.'),
-        ('8400', 'Определение, выраженное причастным оборотом, стоящее после определяемого слова, обособляется.'),
-        ('8500', 'Вводное слово выделяется запятыми.'),
-    ]
-    id = models.CharField(max_length=10, choices=ERROR_TYPES, primary_key=True)
+    id = models.CharField(max_length=10, primary_key=True)
+    name = models.CharField(max_length=300, blank=True, default='', verbose_name="Описание правила")
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.get_id_display()
+        return self.name or self.id
 
     class Meta:
         verbose_name = "ОГЭ: Пунктуационное правило (задание 5)"
@@ -1029,7 +1023,12 @@ class OgePunktum(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def get_letters_list(self):
-        return [letter.strip() for letter in self.letters.split(',') if letter.strip()]
+        raw = self.letters or ''
+        # Если в строке есть пробел — считаем что разделитель пробел
+        # (это позволяет использовать запятую как вариант ответа)
+        if ' ' in raw:
+            return [letter.strip() for letter in raw.split(' ') if letter.strip()]
+        return [letter.strip() for letter in raw.split(',') if letter.strip()]
 
     def __str__(self):
         return f"{self.id}: {self.name}"
@@ -1055,6 +1054,7 @@ class OgePunktumExample(models.Model):
     )
     difficulty = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)
+    is_for_quiz = models.BooleanField(default=True, verbose_name="Использовать в квизах")
     is_user_added = models.BooleanField(default=False, verbose_name="Добавлен пользователем")
     added_by = models.ForeignKey(
         User,

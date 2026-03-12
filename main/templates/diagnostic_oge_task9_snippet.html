@@ -1,0 +1,15 @@
+<!-- main/templates/diagnostic_oge_task9_snippet.html -->
+{% load static %}
+<div class="diagnostic-task-snippet">
+    {% if wordok_8 %}
+    <div class="question" data-question-number="9">
+        <h4>9. {{ wordok_8.text }}</h4>
+        <input type="text" data-question="9" placeholder="Впиши словосочетание"
+            style="width: 60%; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;">
+    </div>
+    <hr>
+    <button class="check-task green check-task-single" data-task="9" style="margin-top: 20px;">Проверить</button>
+    {% else %}
+    <p>Не удалось загрузить задание. Попробуйте обновить страницу.</p>
+    {% endif %}
+</div>

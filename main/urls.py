@@ -27,6 +27,7 @@ urlpatterns = [
     path('planning/6/', views.planning_6kl, name='planning_6kl'),
     path('planning/7/', views.planning_7kl, name='planning_7kl'),
     path('planning/8/', views.planning_8kl, name='planning_8kl'),
+    path('planning/9/', views.planning_9kl, name='planning_9kl'),
     path('ege/', views.ege, name='ege'),
     path('oge/', views.oge, name='oge'),
     path('diagnostic/starting/', views.starting_diagnostic, name='starting_diagnostic'),
@@ -83,5 +84,7 @@ urlpatterns = [
     # ОГЭ
     path('diagnostic/oge/', views.oge_diagnostic_page, name='oge_diagnostic'),
     path('api/generate-oge-diagnostic/', views.generate_oge_diagnostic, name='generate_oge_diagnostic'),
+    path('api/generate-oge-task-2-3/', views.generate_oge_task_2_3, name='generate_oge_task_2_3'),
+    path('api/generate-oge-single-task/', views.generate_oge_single_task, name='generate_oge_single_task'),
     path('api/check-oge-diagnostic/', views.check_oge_diagnostic, name='check_oge_diagnostic'),
 ]

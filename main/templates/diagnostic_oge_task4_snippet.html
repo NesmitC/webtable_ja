@@ -1,0 +1,43 @@
+<!-- main/templates/diagnostic_oge_task4_snippet.html -->
+{% load static %}
+<div class="diagnostic-task-snippet">
+    {% if task3_error_type_names %}
+    <div class="question" data-question-number="4">
+        <h4>4. Установите соответствие между пунктуационными правилами и предложениями, которые могут служить примерами
+            для приведённых пунктуационных правил. К каждой позиции первого столбца подберите соответствующую позицию из
+            второго столбца.</h4>
+
+        <div class="task-match-container">
+            <div class="task-match-left-column">
+                <h4 class="task-match-column-title">ПУНКТУАЦИОННЫЕ ПРАВИЛА</h4>
+                {% for letter, name in task3_error_type_names.items %}
+                <div class="task-match-row task-eight-error-row" data-error-letter="{{ letter }}">
+                    <select class="error-select" data-letter="{{ letter }}">
+                        <option value="-">—</option>
+                        {% for i in "12345" %}
+                        <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="task-match-letter">{{ letter }})</span>
+                    <div class="task-match-content">{{ name }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="task-match-right-column">
+                <h4 class="task-match-column-title">ПРЕДЛОЖЕНИЯ</h4>
+                {% for item in task3_sentences %}
+                <div class="task-match-row task-eight-sentence-row" data-sentence-number="{{ item.position }}">
+                    <span class="task-match-item-number">{{ item.position }})</span>
+                    <span class="task-match-content">{{ item.text }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <hr>
+    <button class="check-task green check-task-single" data-task="4" style="margin-top: 20px;">Проверить</button>
+    {% else %}
+    <p>Не удалось загрузить задание. Попробуйте обновить страницу.</p>
+    {% endif %}
+</div>

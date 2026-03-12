@@ -12,29 +12,49 @@
 }
 
 .item {
-    border: 1px solid black; /* Рамка вокруг каждого элемента */
-    font-size: .9em; /* Размер шрифта */
-    color: black; /* Цвет текста */
-    padding: 3px; /* Внутренние отступы */
-    text-align: center; /* Выравнивание текста по центру */
-    display: flex; /* Активируем Flexbox */
-    flex-direction: column; /* Направление расположения дочерних элементов вертикально */
-    align-items: center; /* Центруем по горизонтали */
+    border: 1px solid black;
+    /* Рамка вокруг каждого элемента */
+    font-size: .9em;
+    /* Размер шрифта */
+    color: black;
+    /* Цвет текста */
+    padding: 3px;
+    /* Внутренние отступы */
+    text-align: center;
+    /* Выравнивание текста по центру */
+    display: flex;
+    /* Активируем Flexbox */
+    flex-direction: column;
+    /* Направление расположения дочерних элементов вертикально */
+    align-items: center;
+    /* Центруем по горизонтали */
 }
 
 .text-orf {
     text-align: left;
 }
 
-.item-1, .item-2, .item-3, .item-4, .item-5 {
+.item-1,
+.item-2,
+.item-3,
+.item-4,
+.item-5 {
     background-color: rgb(47, 197, 33);
 }
 
-.item-6, .item-7, .item-8, .item-9, .item-10 {
+.item-6,
+.item-7,
+.item-8,
+.item-9,
+.item-10 {
     background-color: rgb(215, 54, 230);
 }
 
-.item-11, .item-12, .item-13, .item-14, .item-15 {
+.item-11,
+.item-12,
+.item-13,
+.item-14,
+.item-15 {
     background-color: rgb(255, 255, 0);
     width: 100%;
     height: 55px;
@@ -43,8 +63,10 @@
 
 .input-text {
     width: 100%;
-    resize: vertical; /* Возможность изменять высоту руками пользователя */
-    overflow-y: auto; /* Появляется прокрутка, если текста много */
+    resize: vertical;
+    /* Возможность изменять высоту руками пользователя */
+    overflow-y: auto;
+    /* Появляется прокрутка, если текста много */
     margin: 0 0;
 }
 
@@ -55,14 +77,22 @@
 }
 
 .circle {
-    width: 30px;      /* диаметр окружности */
-    height: 30px;     /* делаем квадрат для будущей окружности */
-    border-radius: 50%; /* преобразует прямоугольник в круг */
-    display: flex;    /* центрирование содержимого */
-    align-items: center; /* центровка по вертикали */
-    justify-content: center; /* центровка по горизонтали */
-    background-color: rgb(255, 255, 0); /* желтый фон */
-    border: 1px solid black; /* тонкая черная обводка */
+    width: 30px;
+    /* диаметр окружности */
+    height: 30px;
+    /* делаем квадрат для будущей окружности */
+    border-radius: 50%;
+    /* преобразует прямоугольник в круг */
+    display: flex;
+    /* центрирование содержимого */
+    align-items: center;
+    /* центровка по вертикали */
+    justify-content: center;
+    /* центровка по горизонтали */
+    background-color: rgb(255, 255, 0);
+    /* желтый фон */
+    border: 1px solid black;
+    /* тонкая черная обводка */
 }
 
 .blue {
@@ -70,18 +100,22 @@
 }
 
 .text-orf-effects {
-    font-weight: bold; /* Выделяем важное слово полужирным */
-    text-decoration: underline; /* Подчеркивание текста */
+    font-weight: bold;
+    /* Выделяем важное слово полужирным */
+    text-decoration: underline;
+    /* Подчеркивание текста */
 }
 
 .bold {
-    font-weight: bold; /* Выделяем полужирным */
+    font-weight: bold;
+    /* Выделяем полужирным */
 }
 
 /* ---------------- контейнер для пунктограмм ------------------- */
 .table-container-punktum {
     display: grid;
-    grid-template-columns: 5fr 25fr 15fr 55fr; /* = 5% | 25% | 15% | 55% */
+    grid-template-columns: 5fr 25fr 15fr 55fr;
+    /* = 5% | 25% | 15% | 55% */
     grid-auto-flow: row dense;
     margin: 5px 0;
 }
@@ -128,35 +162,51 @@
 .smiley-placeholder {
     width: 25px;
     display: inline-block;
-    vertical-align: baseline; /* Вертикальное выравнивание по базовой линии текста */
-    position: relative; /* Позиционирование относительное, чтобы можно было слегка подкорректировать расположение */
-    margin: 0; /* Без лишних отступов */
-    padding: 0; /* Без внутреннего заполнения */
-    line-height: normal; /* Высота строки совпадает с обычным текстом */
+    vertical-align: baseline;
+    /* Вертикальное выравнивание по базовой линии текста */
+    position: relative;
+    /* Позиционирование относительное, чтобы можно было слегка подкорректировать расположение */
+    margin: 0;
+    /* Без лишних отступов */
+    padding: 0;
+    /* Без внутреннего заполнения */
+    line-height: normal;
+    /* Высота строки совпадает с обычным текстом */
     margin-right: 5px;
     margin-left: -1px;
 }
 
 .smiley-button {
-    position: relative; /* Ключевое! Для правильного позиционирования выпадающего списка */
-    display: inline-block; /* Чтобы не ломалась строка */
-    vertical-align: baseline; /* Выравнивание по базовой линии текста */
+    position: relative;
+    /* Ключевое! Для правильного позиционирования выпадающего списка */
+    display: inline-block;
+    /* Чтобы не ломалась строка */
+    vertical-align: baseline;
+    /* Выравнивание по базовой линии текста */
     cursor: pointer;
     white-space: nowrap;
 }
 
 /* Оформление смайлов */
 .smiley-icon {
-    background-color: transparent; /* Прозрачный фон */
-    border: none; /* Без границ */
-    padding: 0; /* Без отступов */
+    background-color: transparent;
+    /* Прозрачный фон */
+    border: none;
+    /* Без границ */
+    padding: 0;
+    /* Без отступов */
     width: 24px;
     height: 24px;
-    display: inline-block; /* Расположение в одну линию с текстом */
-    text-align: center; /* Центрирование иконки */
-    line-height: 1.2; /* Однострочный режим */
-    transition: color 0.3s ease; /* Анимация цвета */
-    font-size: 1.2em; /* Размер шрифта соответствует тексту */
+    display: inline-block;
+    /* Расположение в одну линию с текстом */
+    text-align: center;
+    /* Центрирование иконки */
+    line-height: 1.2;
+    /* Однострочный режим */
+    transition: color 0.3s ease;
+    /* Анимация цвета */
+    font-size: 1.2em;
+    /* Размер шрифта соответствует тексту */
     cursor: pointer;
     white-space: nowrap;
 }
@@ -183,7 +233,8 @@
     position: absolute;
     /* Появляется ниже смайлика */
     /* top: 100%; */
-    top: calc(100% + 5px); /* Отступ сверху */
+    top: calc(100% + 5px);
+    /* Отступ сверху */
     left: 0;
     background: white;
     border: 1px solid #ccc;
@@ -205,7 +256,8 @@
 
 /* Серый фон — выбрано, но не проверено */
 .smiley-icon.selected {
-    background-color: #e9ecef; /* светло-серый */
+    background-color: #e9ecef;
+    /* светло-серый */
     color: #495057;
     border-radius: 3px;
     padding: 0 2px;
@@ -247,7 +299,10 @@
 }
 
 /* ------- задания к егэ -------- */
-.block-task, .block-answer, .block-answer-still, .orthogram-buttons-container {
+.block-task,
+.block-answer,
+.block-answer-still,
+.orthogram-buttons-container {
     background-color: #f0f0f0d2;
     border-radius: 5px;
     margin: 20px 0;
@@ -269,12 +324,13 @@
 
 .block-planning-subtitle {
     display: flex;
-    flex-wrap: wrap; /* Позволяет элементам переноситься на новую строку при необходимости */
+    flex-wrap: wrap;
+    /* Позволяет элементам переноситься на новую строку при необходимости */
     gap: 10px;
 }
 
 .planning-item {
-/* Дополнительные стили для элементов */
+    /* Дополнительные стили для элементов */
     padding: 3px 10px;
     border: 1px solid #ff62ff;
     background-color: #f1fc8f;
@@ -386,11 +442,12 @@
     margin-bottom: 20px;
     text-align: center;
 }
+
 .punktum-image-container img {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Опционально: мягкие скругления */
@@ -524,3 +581,74 @@ input[type="checkbox"]:checked.task-match-incorrect {
     outline: 2px solid #f44336 !important;
 }
 
+/* --- Dropdown for Task 5 --- */
+.task-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    margin: 5px !important;
+    /* Forces it to match standard <button> margins */
+    box-sizing: border-box;
+}
+
+.task-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    min-width: max-content;
+    max-width: 80vw;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    border-radius: 5px;
+    padding: 0;
+    text-align: left;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+}
+
+.task-dropdown:hover>.task-dropdown-menu {
+    display: flex !important;
+}
+
+.task-dropdown-item {
+    /* position: relative removed so submenus align to main menu */
+    padding: 6px 10px;
+    cursor: pointer;
+    color: #333;
+    font-size: 12px;
+    transition: background-color 0.2s;
+    border-right: 1px solid #eee;
+    white-space: nowrap;
+}
+
+.task-dropdown-item:last-child {
+    border-right: none;
+}
+
+.task-dropdown-item:hover {
+    background-color: #f1f1f1;
+}
+
+.task-submenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    min-width: max-content;
+    max-width: 80vw;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1100;
+    border-radius: 5px;
+    padding: 0;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+}
+
+.task-dropdown-item:hover>.task-submenu {
+    display: flex !important;
+}

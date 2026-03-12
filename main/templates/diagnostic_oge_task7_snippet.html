@@ -1,0 +1,24 @@
+<!-- main/templates/diagnostic_oge_task7_snippet.html -->
+{% load static %}
+<div class="diagnostic-task-snippet">
+    {% if task6_lines %}
+    <div class="question" data-question-number="7">
+        <h4>7. Выберите правильную букву, кликнув на смайлик.</h4>
+        {% for line in task6_lines %}
+        <div>{{ forloop.counter }}) <span class="practice-line">{{ line.display_line|safe }}</span></div>
+        {% endfor %}
+    </div>
+    <hr>
+    <button class="check-task green check-task-single" data-task="7" style="margin-top: 20px;">Проверить</button>
+
+    <!-- Передаем данные для JS (смайлики) -->
+    <script id="task6-letter-groups" type="application/json">
+        {{ task6_letter_groups|safe }}
+    </script>
+    <script id="task6-subgroup-letters" type="application/json">
+        {{ task6_subgroup_letters|safe }}
+    </script>
+    {% else %}
+    <p>Не удалось загрузить задание. Попробуйте обновить страницу.</p>
+    {% endif %}
+</div>

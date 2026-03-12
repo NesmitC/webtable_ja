@@ -221,8 +221,8 @@ class CorrectionExerciseAdmin(admin.ModelAdmin):
 class TaskGrammaticEightAdmin(admin.ModelAdmin):
     list_display = ['id', 'get_id_display', 'is_active']
     list_editable = ['is_active']
-    list_filter = ['is_active']  # можно добавить ещё filter по id или description
-    search_fields = ['id', 'get_id_display']  # поиск по описанию
+    list_filter = ['is_active']
+    search_fields = ['id']
 
 
 @admin.register(TaskGrammaticEightExample)
@@ -301,7 +301,7 @@ class OgeTextQuestionAdmin(admin.ModelAdmin):
 
 @admin.register(OgeTaskGrammaticEight)
 class OgeTaskGrammaticEightAdmin(admin.ModelAdmin):
-    list_display = ['id', 'get_id_display', 'is_active']
+    list_display = ['id', 'name', 'is_active']
     list_editable = ['is_active']
     list_filter = ['is_active']
 

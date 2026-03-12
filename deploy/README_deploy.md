@@ -17,6 +17,7 @@ Deployment guide (Ubuntu/Debian + Nginx + Gunicorn + PostgreSQL)
 - cp deploy/.env.example .env    # then edit values
 - python manage.py collectstatic --noinput
 - python manage.py migrate
+- python manage.py seed_punktum_all   # load punctuation rules + examples
 
 4) Gunicorn (temporary run)
 - .venv/bin/gunicorn main.wsgi:application --bind 127.0.0.1:8000

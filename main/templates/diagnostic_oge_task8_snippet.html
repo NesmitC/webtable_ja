@@ -1,0 +1,19 @@
+<!-- main/templates/diagnostic_oge_task8_snippet.html -->
+{% load static %}
+<div class="diagnostic-task-snippet">
+    {% if task7_word %}
+    <div class="question" data-question-number="8">
+        <h4>8. Раскройте скобки и запишите слово «{{ task7_word }}» в соответствующей форме, соблюдая нормы современного
+            русского литературного языка.</h4>
+        {% if task7_sentence %}
+        <p style="margin: 10px 0; font-size: 1.05em;">{{ task7_sentence }}</p>
+        {% endif %}
+        <input type="text" data-question="8" placeholder="Впиши слово"
+            style="width: 60%; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;">
+    </div>
+    <hr>
+    <button class="check-task green check-task-single" data-task="8" style="margin-top: 20px;">Проверить</button>
+    {% else %}
+    <p>Не удалось загрузить задание. Попробуйте обновить страницу.</p>
+    {% endif %}
+</div>
