@@ -1227,113 +1227,13 @@ function handleAlphabeticalExercise(orthogramId, rangeCode) {
 
 // ========================================================================
 /**
- * Обработчик для задания 2-3 ОГЭ
- */
-function handleOgeTask2_3() {
-    const container = document.querySelector('.block-answer');
-    if (!container) return;
-
-    container.innerHTML = `<div class="loading" style="text-align:center; padding: 20px;">Загрузка задания 2-3...</div>`;
-
-    // Подсвечиваем кнопку
-    document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active'));
-
-    fetch('/api/generate-oge-task-2-3/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        }
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                container.innerHTML = `<div class="error" style="color:red;">${data.error}</div>`;
-            } else {
-                container.innerHTML = data.html;
-
-                // Навешиваем обработчик проверки
-                const checkBtn = container.querySelector('.check-task-single');
-                if (checkBtn) {
-                    checkBtn.addEventListener('click', async () => {
-                        checkBtn.disabled = true;
-                        checkBtn.textContent = 'Проверяем...';
-
-                        const answers = {};
-                        container.querySelectorAll('[data-question-number]').forEach(block => {
-                            const qNum = block.dataset.questionNumber;
-                            const checked = block.querySelectorAll('input[type="checkbox"]:checked');
-                            if (checked.length > 0) {
-                                answers[qNum] = Array.from(checked).map(cb => cb.value);
-                            }
-                        });
-
-                        try {
-                            const checkRes = await fetch('/api/check-oge-diagnostic/', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRFToken': getCookie('csrftoken'),
-                                },
-                                body: JSON.stringify({ answers }),
-                            });
-
-                            const checkData = await checkRes.json();
-                            container.querySelectorAll('.task-score-display').forEach(el => el.remove());
-
-                            if (checkData.results) {
-                                for (const [key, val] of Object.entries(checkData.results)) {
-                                    const qBlock = container.querySelector(`[data-question-number="${key}"]`);
-                                    if (qBlock && val.score !== undefined) {
-                                        let scoreHtml = `<div class="task-score-display" style="margin-top: 15px; font-weight: bold;">`;
-                                        const scoreColor = val.score === (val.max_score || 1) ? '#4CAF50' : '#f44336';
-                                        scoreHtml += `<span style="color: ${scoreColor}">Баллов: ${val.score}. </span>`;
-                                        if (val.score < (val.max_score || 1)) {
-                                            scoreHtml += `<span style="color: ${scoreColor}">Правильный ответ: ${val.correct_answer}</span>`;
-                                        }
-                                        scoreHtml += `</div>`;
-                                        qBlock.insertAdjacentHTML('beforeend', scoreHtml);
-
-                                        const correctArr = String(val.correct_answer).toLowerCase().split('');
-                                        qBlock.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                                            const label = cb.closest('label');
-                                            const isCorrectCb = correctArr.includes(cb.value.toLowerCase());
-                                            if (cb.checked) {
-                                                cb.style.outline = isCorrectCb ? '2px solid #4CAF50' : '2px solid #f44336';
-                                                cb.style.outlineOffset = '2px';
-                                                if (label) {
-                                                    label.style.color = isCorrectCb ? '#4CAF50' : '#f44336';
-                                                    label.style.fontWeight = 'bold';
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-                            checkBtn.textContent = 'Готово!';
-                        } catch (e) {
-                            alert('Ошибка проверки');
-                            checkBtn.disabled = false;
-                            checkBtn.textContent = 'Проверить';
-                        }
-                    });
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            container.innerHTML = `<div class="error" style="color:red;">Ошибка загрузки</div>`;
-        });
-}
-
-/**
  * Активирует интерактивные элементы в загруженном сниппете
  */
 function activateOgeSnippetInteractivity(container, taskNumber) {
     // 1. Смайлики (Задание 7)
     setTimeout(() => {
-        const hasSmileyPlaceholder = container.querySelector('.practice-line') && container.querySelector('.practice-line').textContent.includes('*');
-        if (hasSmileyPlaceholder) {
+        const practiceLines = container.querySelectorAll('.practice-line');
+        if (practiceLines.length > 0) {
             const allLetterGroups = {
                 ...(getOgeJsonData('task4-letter-groups') || {}),
                 ...(getOgeJsonData('task6-letter-groups') || {})
@@ -1563,7 +1463,11 @@ function handleOgeSingleTask(taskNumber) {
                             resultMsg.className = 'task-result-message';
                             resultMsg.style.cssText = 'margin-top: 15px; font-weight: bold; font-size: 1.1em;';
                             if (hasErrors) {
-                                resultMsg.innerHTML = '<span style="color: #f44336;">❌ Есть ошибки! По номерам пунктограмм найди информацию в планингах</span>';
+                                if (taskNumber === '10-12') {
+                                    resultMsg.innerHTML = '<span style="color: #f44336;">❌ Есть ошибки!</span>';
+                                } else {
+                                    resultMsg.innerHTML = '<span style="color: #f44336;">❌ Есть ошибки! По номерам пунктограмм найди информацию в планингах</span>';
+                                }
                             } else {
                                 resultMsg.innerHTML = '<span style="color: #4CAF50;">✅ Все правильно!</span>';
                             }

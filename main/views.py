@@ -5878,34 +5878,6 @@ def generate_oge_diagnostic(request):
         return JsonResponse({'error': f'Ошибка: {str(e)}'}, status=500)
 
 
-def generate_oge_task_2_3(request):
-    """Генерация только задания 2-3 ОГЭ для 9 класса"""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Только POST'}, status=405)
-
-    try:
-        session_data = request.session.get('oge_task_2_3_session', {})
-        context = {}
-
-        text_task_1_2, text_questions_1_2 = get_oge_text_analysis_questions('1_2')
-        if text_task_1_2:
-            context['text_task_1_2'] = text_task_1_2
-            context['text_questions_1_2'] = text_questions_1_2
-            
-            session_data['answers_1_2'] = {
-                str(q.question_number): q.correct_answer for q in text_questions_1_2
-            }
-
-        request.session['oge_task_2_3_session'] = session_data
-
-        html = render_to_string('diagnostic_oge_task_2_3_snippet.html', context)
-        return JsonResponse({'html': html})
-
-    except Exception as e:
-        logger.error(f"Ошибка генерации задания 2-3 ОГЭ: {e}", exc_info=True)
-        return JsonResponse({'error': f'Ошибка: {str(e)}'}, status=500)
-
-
 def generate_oge_task5_mixed_dash_colon(is_for_quiz=None):
     """
     Смешанное задание: 5 предложений из тире (8, 18) и двоеточия (19).
@@ -6001,7 +5973,17 @@ def generate_oge_single_task(request):
         context = {}
         template_name = f'diagnostic_oge_task{task_number}_snippet.html'
 
-        if task_number == '4':
+        if task_number == '2-3':
+            text_task_1_2, text_questions_1_2 = get_oge_text_analysis_questions('1_2')
+            if text_task_1_2:
+                context['text_task_1_2'] = text_task_1_2
+                context['text_questions_1_2'] = text_questions_1_2
+                session_data['answers_1_2'] = {
+                    str(q.question_number): q.correct_answer for q in text_questions_1_2
+                }
+            template_name = 'diagnostic_oge_task_2_3_snippet.html'
+
+        elif task_number == '4':
             task3_data = generate_oge_task3_matching()
             if task3_data:
                 context['task3_error_type_names'] = task3_data.get('error_type_names', {})
