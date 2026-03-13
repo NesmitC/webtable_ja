@@ -4,12 +4,10 @@
 
 <div class="diagnostic-task-snippet">
     {% if text_task_5 %}
-    <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
-        {{ text_task_5.text_content|bold_words|safe }}
-    </div>
+
     {% for q in text_questions_5 %}
     <div class="question" data-question-number="{{ q.question_number }}">
-        <h4>5. {{ q.question_text }}</h4>
+        <h4>6. {{ q.question_text }}</h4>
         {% if q.question_type == 'missing_word' or q.question_type == 'free_text' %}
         <input type="text" data-question="{{ q.question_number }}" placeholder="Ответ">
         {% else %}
@@ -24,6 +22,12 @@
     <hr>
     {% endfor %}
     <button class="check-task green check-task-single" data-task="6" style="margin-top: 20px;">Проверить</button>
+
+    <div
+        style="margin-top: 20px; font-size: 0.9em; color: #555; background: #fffde7; padding: 10px; border-radius: 8px; border: 1px solid #ffd54f;">
+        <p style="margin: 0; font-weight: bold;">Проработать орфограммы можно, найдя их в планингах по номерам:</p>
+        <p style="margin: 5px 0 0 0;">1-25 - 5 класс<br>26-48 - 6 класс<br>49-70 - 7 класс</p>
+    </div>
     {% else %}
     <p>Не удалось загрузить задание. Попробуйте обновить страницу.</p>
     {% endif %}

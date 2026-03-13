@@ -84,7 +84,6 @@ urlpatterns = [
     # ОГЭ
     path('diagnostic/oge/', views.oge_diagnostic_page, name='oge_diagnostic'),
     path('api/generate-oge-diagnostic/', views.generate_oge_diagnostic, name='generate_oge_diagnostic'),
-    path('api/generate-oge-task-2-3/', views.generate_oge_task_2_3, name='generate_oge_task_2_3'),
     path('api/generate-oge-single-task/', views.generate_oge_single_task, name='generate_oge_single_task'),
     path('api/check-oge-diagnostic/', views.check_oge_diagnostic, name='check_oge_diagnostic'),
 ]
