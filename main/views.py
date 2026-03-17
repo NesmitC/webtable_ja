@@ -276,6 +276,15 @@ def get_orthogram_letters(request, orth_id):
         return JsonResponse({'letters': ['а', 'о', 'е', 'и', 'я']}, status=500)
 
 
+def get_oge_punktum_letters(request, punktum_id):
+    try:
+        from main.models import OgePunktum
+        punktum = OgePunktum.objects.get(id=punktum_id)
+        return JsonResponse({'letters': punktum.get_letters_list()})
+    except OgePunktum.DoesNotExist:
+        return JsonResponse({'letters': []}, status=404)
+
+
 # === Генерация упражнений ОРФОГРАММ 1 маска ===
 logger = logging.getLogger(__name__)
 
@@ -6235,7 +6244,11 @@ def generate_oge_diagnostic(request):
             session_data['task3_correct'] = task3_data['correct_answers']
 
         # === Задание 5: Пунктуация — смайлики ===
-        available_punktum_ids = list(OgePunktum.objects.all().values_list('id', flat=True))
+        available_punktum_ids = list(
+            OgePunktumExample.objects.filter(is_active=True)
+            .values_list('punktum_id', flat=True)
+            .distinct()
+        )
         selected_type = random.choice(available_punktum_ids) if available_punktum_ids else None
         task4_data = generate_oge_task4_with_image(
             punktum_id=selected_type,
@@ -6765,7 +6778,7 @@ def check_oge_diagnostic(request):
             task6_correct_count = 0
             task6_results = {}
             for i in range(1, total_masks + 1):
-                key = f"7-{i}"
+                key = f"6-{i}"
                 user_answer = user_answers_dict.get(key, '😊')
                 user_clean = str(user_answer).strip().lower()
                 correct_letter = expected_letters[i - 1].lower() if i <= len(expected_letters) else ''

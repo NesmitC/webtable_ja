@@ -317,20 +317,48 @@ class OgeTaskGrammaticEightExampleAdmin(admin.ModelAdmin):
 
 @admin.register(OgePunktum)
 class OgePunktumAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'rule')
+    list_display = ('id', 'name', 'letters', 'rule')
     search_fields = ('id', 'name')
 
 @admin.register(OgePunktumExample)
 class OgePunktumExampleAdmin(admin.ModelAdmin):
-    list_display = ('text', 'punktum', 'is_active', 'added_by', 'created_at')
-    list_filter = ('is_active', 'punktum', 'added_by', 'grades')
+    list_display = ('short_text', 'punktum', 'explanation', 'is_active', 'created_at')
+    list_filter = ('is_active', 'punktum', 'grades')
     search_fields = ('text', 'masked_word')
     ordering = ('-created_at',)
-    readonly_fields = ('created_at',)
+    readonly_fields = ('created_at', 'punktum_letters_display')
+    exclude = ('correct_letters', 'added_by', 'is_user_added', 'source_field')
+
+    fields = (
+        'punktum',
+        'punktum_letters_display',
+        'text',
+        'masked_word',
+        'explanation',
+        'difficulty',
+        'is_active',
+        'is_for_quiz',
+        'grades',
+        'created_at',
+    )
 
     formfield_overrides = {
-        models.TextField: {'widget': forms.Textarea(attrs={'rows': 5, 'cols': 80})},
+        models.TextField: {'widget': forms.Textarea(attrs={'rows': 3, 'cols': 80})},
     }
+
+    class Media:
+        js = ('js/admin_punktum_example.js',)
+
+    def short_text(self, obj):
+        return (obj.text[:70] + '…') if len(obj.text) > 70 else obj.text
+    short_text.short_description = 'Текст'
+
+    def punktum_letters_display(self, obj):
+        if obj.punktum_id:
+            letters = obj.punktum.get_letters_list()
+            return 'Варианты ответов: ' + ', '.join(letters)
+        return '—'
+    punktum_letters_display.short_description = 'Варианты из правила'
 
 
 @admin.register(OgeOrthogram)
