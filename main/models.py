@@ -276,6 +276,75 @@ class PunktumExample(models.Model):
         return f"{self.text} (пунктограмма {self.punktum.id}, классы: {grades_display})"
 
 
+class UserWord(models.Model):
+    """Слова из планинга пользователя"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_words')
+    field_name = models.CharField(max_length=100, db_index=True)
+    text = models.CharField(max_length=255)
+    
+    # Связь с эталонной базой
+    reference_word = models.ForeignKey(
+        'OrthogramExample',
+        null=True, blank=True,
+        on_delete=models.SET_NULL
+    )
+    
+    # Флаги
+    in_master = models.BooleanField(default=False, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    
+    # 👇 НОВЫЕ ПОЛЯ ДЛЯ АДАПТИВНОСТИ
+    weight = models.FloatField(default=1.0, help_text="Вес слова (чем выше, тем чаще показывается)")
+    error_count = models.IntegerField(default=0, help_text="Сколько раз ошиблись")
+    success_count = models.IntegerField(default=0, help_text="Сколько раз ответили правильно")
+    last_shown = models.DateTimeField(null=True, blank=True)
+    last_error = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # для отслеживания изменений
+
+    class Meta:
+        verbose_name = "Слово пользователя"
+        verbose_name_plural = "Слова пользователей"
+        unique_together = ['user', 'field_name', 'text']
+        indexes = [
+            models.Index(fields=['user', 'in_master', 'is_active']),
+            models.Index(fields=['user', 'weight']),  # для сортировки по весу
+        ]
+
+    def update_weight(self):
+        """Обновляет вес слова на основе ошибок"""
+        # Базовая формула: вес = 1 + (ошибки * 2) - (успехи * 0.5)
+        # Но вес не может быть меньше 0.5
+        new_weight = 1.0 + (self.error_count * 2.0) - (self.success_count * 0.5)
+        self.weight = max(0.5, min(10.0, new_weight))  # ограничиваем от 0.5 до 10
+        self.save(update_fields=['weight', 'updated_at'])
+
+    def __str__(self):
+        return f"{self.user.username}: {self.text} (вес={self.weight:.1f})"
+    
+    
+class QuizHistory(models.Model):
+    """История ответов пользователя в квизах"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quiz_history')
+    word = models.ForeignKey('OrthogramExample', on_delete=models.CASCADE)
+    user_word = models.ForeignKey('UserWord', null=True, blank=True, on_delete=models.SET_NULL)
+    was_correct = models.BooleanField()
+    answer_time = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "История квизов"
+        verbose_name_plural = "История квизов"
+        ordering = ['-answer_time']
+        indexes = [
+            models.Index(fields=['user', '-answer_time']),
+            models.Index(fields=['user', 'was_correct']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.word.text} - {'✅' if self.was_correct else '❌'}"
+
+
 class StudentAnswer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     orthogram = models.ForeignKey(Orthogram, on_delete=models.CASCADE, verbose_name="Орфограмма")
@@ -471,7 +540,7 @@ class OrthoepyWord(models.Model):
             'correct_answers': correct_answers,
         }
 
-# ===== ЗАДАНИЕ 6 ==============================================================
+# ===== ЗАДАНИЕ 5 ==============================================================
 class TaskPaponim(models.Model):
     text = models.TextField(
         verbose_name="Предложение с выделенным словом",
@@ -507,11 +576,11 @@ class TaskPaponim(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "ПАРОНИМЫ задание 6"
-        verbose_name_plural = "ПАРОНИМЫ задание 6"
+        verbose_name = "ПАРОНИМЫ задание 5"
+        verbose_name_plural = "ПАРОНИМЫ задание 5"
 
 
-# ===== ЗАДАНИЕ 7 ==============================================================
+# ===== ЗАДАНИЕ 6 ==============================================================
 class WordOk(models.Model):
     TYPE_CHOICES = [
         ('6100', 'Исключить лишнее слово'),
@@ -543,14 +612,14 @@ class WordOk(models.Model):
         return (self.text[:60] + '...') if len(self.text) > 60 else self.text
 
     class Meta:
-        verbose_name = "Задание 7: Лексические нормы"
-        verbose_name_plural = "Задание 7: Лексические нормы"
+        verbose_name = "Задание 6: Лексические нормы"
+        verbose_name_plural = "Задание 6: Лексические нормы"
 
 
-# ===== ЗАДАНИЕ 8 ==============================================================
+# ===== ЗАДАНИЕ 7 ==============================================================
 
 class CorrectionExercise(models.Model):
-    """Упражнение: исправь ошибку 8 (свободный ввод)"""
+    """Упражнение: исправь ошибку 7 (свободный ввод)"""
 
     # Неправильный вариант (то, что видит ученик)
     incorrect_text = models.CharField(
@@ -591,8 +660,8 @@ class CorrectionExercise(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "ЗАДАНИЕ 8: исправь ошибку"
-        verbose_name_plural = "ЗАДАНИЕ 8: исправь ошибку"
+        verbose_name = "ЗАДАНИЕ 7: исправь ошибку"
+        verbose_name_plural = "ЗАДАНИЕ 7: исправь ошибку"
 
     def __str__(self):
         return f"{self.incorrect_text} → {self.correct_text}"
@@ -639,7 +708,7 @@ class CorrectionExercise(models.Model):
         }
 
 
-# ===== ЗАДАНИЕ 9 ==============================================================
+# ===== ЗАДАНИЕ 8 ==============================================================
 
 class TaskGrammaticEight(models.Model):
     ERROR_TYPES = [
@@ -661,8 +730,8 @@ class TaskGrammaticEight(models.Model):
         return self.get_id_display()
 
     class Meta:
-        verbose_name = "Тип ошибки (задание 9)"
-        verbose_name_plural = "Типы ошибок (задание 9)"
+        verbose_name = "Тип ошибки (задание 8)"
+        verbose_name_plural = "Типы ошибок (задание 8)"
 
 
 class TaskGrammaticEightExample(models.Model):
@@ -684,8 +753,8 @@ class TaskGrammaticEightExample(models.Model):
         return self.text[:50]
 
     class Meta:
-        verbose_name = "Пример для задания 9"
-        verbose_name_plural = "Примеры для задания 9"
+        verbose_name = "Пример для задания 8"
+        verbose_name_plural = "Примеры для задания 8"
 
     @staticmethod
     def generate_task_eight_test(user_grade=None):

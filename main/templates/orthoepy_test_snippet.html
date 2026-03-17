@@ -1,5 +1,6 @@
 <!-- main/templates/orthoepy_test_snippet.html -->
-{% load static %}
+
+{% comment %} {% load static %}
 <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
 
 <div class="orthoepy-test-exercise" data-exercise-id="{{ exercise_id }}">
@@ -19,4 +20,45 @@
   </div>
   <button class="check-orthoepy-test">Проверить</button>
   <div class="orthoepy-result"></div>
+</div> {% endcomment %}
+
+<!-- main/templates/orthoepy_test_snippet.html -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+
+<div class="orthoepy-test-exercise" 
+    data-exercise-id="{{ exercise_id }}"
+    {% if is_school_mode %}data-school-mode="true"{% endif %}>
+  
+  {% if is_school_mode %}
+    <h3 class="title-practice">Отметь слова с правильным ударением:</h3>
+  {% else %}
+    <h3 class="title-practice">Задание 4. Орфоэпия</h3>
+    {% if user_grade %}
+      <p class="exercise-info">Для {{ user_grade }}-го класса</p>
+    {% endif %}
+  {% endif %}
+  
+  <div class="test-questions">
+    {% for variant in variants %}
+      <div class="test-option" data-variant="{{ variant }}" data-option-id="{{ forloop.counter }}">
+        <label class="option-label">
+          <input type="checkbox" value="{{ variant }}" class="orthoepy-checkbox">
+          <span class="variant-text">
+            {% if is_school_mode %}
+              {{ variant }}
+            {% else %}
+              {{ forloop.counter }}) {{ variant }}
+            {% endif %}
+          </span>
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+  
+  <button class="check-orthoepy-test">Проверить</button>
+  
+  {% if not is_school_mode %}
+    <div class="orthoepy-result"></div>
+  {% endif %}
 </div>

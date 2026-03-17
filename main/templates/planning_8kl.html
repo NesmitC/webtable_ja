@@ -18,15 +18,15 @@
     <main>
 
         <section class="block-orthogram-selector">
-            <h2 class="title-planing">Выберите задание по номеру орфограммы</h2>
+            <h2 class="title-planing">Выберите задание (1 и 2 - номера орфограмм)</h2>
             
             <article class="orthogram-buttons-container">
                 <div class="orthogram-buttons">
                     <button class="orthogram-button green" data-orthogram="1_8">1</button>
                     <button class="orthogram-button green" data-orthogram="2_8">2</button>
+                    <button class="orthogram-button green" data-orthogram="4_8">Орфоэпические нормы</button>
                 </div>
             </article>
-            <p>* готовые задания отмечены зеленым</p>
         </section>
         
         <section class="block-answer"></section>
@@ -69,5 +69,6 @@
     </main>
 
     <script src="{% static 'js/planning.js' %}"></script>
+    <script src="{% static 'js/planning_orthoepos.js' %}"></script>
 </body>
 </html>

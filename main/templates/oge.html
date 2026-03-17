@@ -1,0 +1,562 @@
+<!-- main\templates\oge.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}  <!-- ЭТО ОБЯЗАТЕЛЬНО! -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЕГЭ — NeuroStat</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/planning_style.css">
+    <link rel="stylesheet" href="/static/css/media_planning.css">
+    <link rel="stylesheet" href="/static/css/reset.css">
+</head>
+<body>
+    <header>
+        <a href="/">← Назад</a>
+    </header>
+
+    <main>
+        <article class="block-planning">
+            <h3 class="block-planning-title">Планинги по заданиям:</h3>
+            <ul class="block-planning-subtitle">
+                <li class="planning-item"><a href="#task7-8">7-8 (предлоги)</a></li>
+                <li class="planning-item"><a href="#task16">16</a></li>
+                <li class="planning-item"><a href="#task16">17</a></li>
+                <li class="planning-item"><a href="#task16">18</a></li>
+                <li class="planning-item"><a href="#task16">19</a></li>
+                <li class="planning-item"><a href="#task16">20</a></li>
+                <li class="planning-item"><a href="#task16">22</a></li>
+            </ul>
+        </article>
+
+        <section class="block-task">
+            <h2 class="title-planing">Выберите задание ОГЭ по номеру</h2>
+
+            <article class="block-task-num">
+                <div class="task-buttons">
+                    <button class="check-task green" data-orthogram="2_3">2-3</button>
+                    <button class="check-task green">4</button>
+                    <button class="check-task green">5</button>
+                    <button class="check-task green">6</button>
+                    <button class="check-task green" data-orthogram="711">7</button>
+                    <button class="check-task green">8</button>
+                    <button class="check-task green">9</button>
+                    <button class="check-task green">10-12</button>
+                    <button class="check-task">13.1</button>
+                    <button class="check-task">13.2</button>
+                    <button class="check-task">13.3</button>
+                </div>
+            </article>
+            <p>* готовые задания отмечены зеленым</p>
+        </section>
+
+        <section class="block-answer"></section>
+
+        <article id="task7-8" class="article-table-container">
+            <h2 class="title-table-container">ЗАДАНИЯ 7-8 (предлоги)</h2>
+            <section class="table-container">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">71(1)</span></h3>
+                    <p class="subtitle-orf">Грамматика существительных, глаголов, прилагательных</p>    
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">71(2)</span></h3>
+                    <p class="subtitle-orf">Числительные</p>    
+                </div>
+                <div class="item item-3">
+                    <h3 class="title-orf"><span class="circle">66(1)</span></h3>
+                    <p class="subtitle-orf">Производные предлоги + родительный падеж</p>    
+                </div>
+                <div class="item item-4">
+                    <h3 class="title-orf"><span class="circle">66(2)</span></h3>
+                    <p class="subtitle-orf">Производные предлоги + дательный падеж</p>
+                </div>
+                <div class="item item-5">
+                    <h3 class="title-orf"><span class="circle">66(3)</span></h3>
+                    <p class="subtitle-orf">Трудные случаи</p>
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Вспомнить или найти в словаре</p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">У сложных склоняются обе части</p>
+                </div>                
+                <div class="item item-8">
+                    <p class="text-orf">Вспомнить или найти в словаре</p>
+                </div>
+                <div class="item item-9">
+                    <p class="text-orf">Вспомнить или найти в словаре</p>
+                </div>
+                <div class="item item-10">
+                    <p class="text-orf">Свой словарик</p>
+                </div>
+                <div class="item item-16">
+                    <textarea id="item-text-711" class="input-text" name="user-input-orf-711" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-712" class="input-text" name="user-input-orf-712" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-18">
+                    <textarea id="item-text-661" class="input-text" name="user-input-orf-661" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-19">
+                    <textarea id="item-text-662" class="input-text" name="user-input-orf-662" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+                <div class="item item-20">
+                    <textarea id="item-text-663" class="input-text" name="user-input-orf-663" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+
+
+        <article id="task16" class="article-table-container">
+            <h2 class="title-table-container">ЗАДАНИЕ 16</h2>
+            <h3 class="subtitle-table-container">ОЧП. Пунктограммы:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">2</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Однородные члены предложения, соединенные одиночным соч. союзом, не разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> и <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> да (=и) <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> или <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> либо <span class="circle-punktum"></span></div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-2" class="input-text input-text-punktum" name="user-input-punktum-2" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">2.1</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Неоднородные определения не разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> <span class="circle-punktum"></span></div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-21" class="input-text input-text-punktum" name="user-input-punktum-21" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">2.2</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Однородные члены предложения разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> , <span class="circle-punktum"></span></div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-22" class="input-text input-text-punktum" name="user-input-punktum-22" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">2.3</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Однородные члены предложения, соединенные ПРОТИВИТЕЛЬНЫМИ союзами, разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> , а <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> , но <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> , да (=но) <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> , однако <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> , зато <span class="circle-punktum"></span></div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-23" class="input-text input-text-punktum" name="user-input-punktum-23" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">2.4</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Однородные члены предложения, соединенные ДВОЙНЫМИ союзами, разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">не только <span class="circle-punktum"></span> , но и <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3">как <span class="circle-punktum"></span> , так и <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3">то <span class="circle-punktum"></span> , то <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3">если не <span class="circle-punktum"></span> , то <span class="circle-punktum"></span></div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-24" class="input-text input-text-punktum" name="user-input-punktum-24" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">2.5</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Однородные члены предложения, соединенные ПОВТОРЯЮЩИМИСЯ союзами, разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">и <span class="circle-punktum"></span> , и <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3">и <span class="circle-punktum"></span> , и <span class="circle-punktum"></span> , и <span class="circle-punktum"></span></div>
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span> , и <span class="circle-punktum"></span> , и <span class="circle-punktum"></span></div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-25" class="input-text input-text-punktum" name="user-input-punktum-25" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">Обращение:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">3</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Обращения выделяются в обеих сторон запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">, О ,</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-3" class="input-text input-text-punktum" name="user-input-punktum-3" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">СЛОЖНЫЕ ПРЕДЛОЖЕНИЯ. БСП:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">4.0</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Простые предложения в составе БСП при перечислении событий разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">[ ] , [ ]</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-4" class="input-text input-text-punktum" name="user-input-punktum-4" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">СЛОЖНЫЕ ПРЕДЛОЖЕНИЯ. БСП:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">19</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Простые предложения в составе БСП разделяются ДВОЕТОЧИЕМ, если вторая часть указывает на причину, поясняет или дополняет первую</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">[ ] : [ ]</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-41" class="input-text input-text-punktum" name="user-input-punktum-41" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">СЛОЖНЫЕ ПРЕДЛОЖЕНИЯ. БСП:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">18</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Простые предложения в составе БСП разделяются ТИРЕ, если вторая часть указывает на время, условие, вывод, быструю смену событий или противопоставлена первой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">[ ] - [ ]</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-42" class="input-text input-text-punktum" name="user-input-punktum-42" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">СЛОЖНЫЕ ПРЕДЛОЖЕНИЯ. ССП:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">4.1</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Простые предложения в составе ССП разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">[ ] , и [ ]</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-43" class="input-text input-text-punktum" name="user-input-punktum-43" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">4.1.1</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Запятая не ставится, если в начале первого есть общий второстепенный член</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">[ОВЧ ] и [ ]</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-44" class="input-text input-text-punktum" name="user-input-punktum-44" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">СЛОЖНЫЕ ПРЕДЛОЖЕНИЯ. СПП:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">4.2</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Простые предложения в составе СПП разделяются запятой</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">[ ] , что ( )</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-45" class="input-text input-text-punktum" name="user-input-punktum-45" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">ПРЯМАЯ РЕЧЬ:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">5</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Прямая речь выделяется кавычками и отделяется от слов автора разными знаками препинания</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">А:"П"</div>
+                        <div class="item item-punktum-3">"П," - а</div>
+                        <div class="item item-punktum-3">"П, - а, - п"</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-5" class="input-text input-text-punktum" name="user-input-punktum-5" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">Причастный оборот:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">6</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Обособляется, если определяемое слово стоит перед ПО</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">Х , |
+                            <svg width="50" height="20">
+                                <path d="M0,15 Q3,8 6,15 T12,15 T18,15 T24,15 T30,15 T36,15 T42,15 T48,15" stroke="#000" fill="none" stroke-width="1"/>
+                            </svg>| ,
+                        </div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-6" class="input-text input-text-punktum" name="user-input-punktum-6" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">6.1</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Не обособляется, если определяемое слово стоит после ПО</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">|
+                            <svg width="50" height="20">
+                                <path d="M0,15 Q3,8 6,15 T12,15 T18,15 T24,15 T30,15 T36,15 T42,15 T48,15" stroke="#000" fill="none" stroke-width="1"/>
+                            </svg>| Х
+                        </div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-61" class="input-text input-text-punktum" name="user-input-punktum-61" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">6.2</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Обособляется, если определяемое слово стоит после ПО и явлется ЛИЧНЫМ или УКАЗАТ. МЕСТ или имеет дополнительный оттенок причины</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">, |
+                            <svg width="50" height="20">
+                                <path d="M0,15 Q3,8 6,15 T12,15 T18,15 T24,15 T30,15 T36,15 T42,15 T48,15" stroke="#000" fill="none" stroke-width="1"/>
+                            </svg>| , Х
+                        </div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-62" class="input-text input-text-punktum" name="user-input-punktum-62" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">6.3</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Между однородными ПО запятые не ставятся</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">, |
+                            <svg width="30" height="20">
+                                <path d="M0,15 Q3,8 6,15 T12,15 T18,15 T24,15 T30,15 T36,15 T42,15 T48,15" stroke="#000" fill="none" stroke-width="1"/>
+                            </svg>| и |
+                            <svg width="30" height="20">
+                                <path d="M0,15 Q3,8 6,15 T12,15 T18,15 T24,15 T30,15 T36,15 T42,15 T48,15" stroke="#000" fill="none" stroke-width="1"/>
+                            </svg>| ,
+                        </div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-63" class="input-text input-text-punktum" name="user-input-punktum-63" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">Деепричастный оборот:</h3>
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">7</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Обособляется всегда</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">, |_._._._._| ,</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-7" class="input-text input-text-punktum" name="user-input-punktum-7" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+        <article class="article-table-container">
+            <section class="table-container-punktum">
+                <div class="item item-punktum-1">
+                    <h3 class="title-orf"><span class="circle blue">7.1</span></h3>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Между однородными ДО запятые не ставятся</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">, |_._._._| и |_._._._| ,</div>
+                    </div>                    
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-71" class="input-text input-text-punktum" name="user-input-punktum-71" rows="3" placeholder="Напишите примеры"></textarea><br>
+                </div>
+            </section>
+        </article>
+        
+
+        
+        
+
+        <!-- Скрытое поле с CSRF-токеном -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    </main>
+
+    <!-- Сначала основной обработчик -->
+    <script src="{% static 'js/planning.js' %}"></script>
+
+    <!-- Потом модули -->
+    <script src="{% static 'js/planning_eight.js' %}"></script>
+    <script src="{% static 'js/planning_twotwo.js' %}"></script>
+    <script src="{% static 'js/correctionModule.js' %}"></script>
+    <script src="{% static 'js/planning_text.js' %}"></script>
+    
+    <script>
+    // Отладочная информация
+    console.log('📋 OGE Trainer page loaded');
+    console.log('handleOgeTask2_3:', typeof handleOgeTask2_3);
+    console.log('handleOgeSingleTask:', typeof handleOgeSingleTask);
+    </script>
+
+</body>
+</html>
