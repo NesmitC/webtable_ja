@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/check-exercise/', views.check_exercise, name='check_exercise'),
     path('api/assistant/', views.get_assistant_data, name='assistant'),
     path('api/orthogram/<str:orth_id>/letters/', views.get_orthogram_letters, name='orthogram_letters'),
+    path('api/oge-punktum/<str:punktum_id>/letters/', views.get_oge_punktum_letters, name='oge_punktum_letters'),
     path('api/get-advice/', views.get_advice, name='get_advice'),
     path('api/daily-quiz/', views.get_daily_quiz, name='daily_quiz'),
     path('telegram-link/', views.telegram_link, name='telegram_link'),
