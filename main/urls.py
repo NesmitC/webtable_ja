@@ -71,7 +71,6 @@ urlpatterns = [
     path('api/generate-task9-exercise/', views.generate_task9_exercise, name='generate_task9_exercise'),
     path('api/generate-chered-exercise/', views.generate_chered_exercise, name='generate_chered_exercise'),
     path('api/daily-quiz/', views.get_daily_quiz, name='daily_quiz'),
-    path('api/log-quiz-answer/', views.log_quiz_answer, name='log_quiz_answer'),
     path('api/save-example/', views.save_example, name='save_example'),
     path('api/load-examples/', views.load_examples, name='load_examples'),
     path('api/update-example/', views.update_example, name='update_example'),
@@ -80,6 +79,25 @@ urlpatterns = [
     path('api/user-progress/', views.user_progress, name='user_progress'),
     path('api/weak-words/', views.user_weak_words, name='weak_words'),
     path('api/user-praise/', views.user_praise, name='user_praise'),
+    path('api/get-orthoepy-pair/', views.get_orthoepy_pair, name='get_orthoepy_pair'),
+    path('api/get-word-by-id/', views.get_word_by_id, name='get_word_by_id'),
+    path('api/get-words-by-ids/', views.get_words_by_ids, name='get_words_by_ids'),
+
+    path('api/vk/status/', views.vk_status),
+    path('api/vk/generate-code/', views.vk_generate_code),
+    path('api/vk/verify-code/', views.vk_verify_code),
+    path('api/vk/get-user/', views.vk_get_user),
+    path('api/health/', views.vk_health),
+
+    # API квизов
+    path('api/get-quiz/', views.get_quiz, name='get_quiz'),
+    path('api/get-quiz-orthoepy-pair/', views.get_quiz_orthoepy_pair, name='get_quiz_orthoepy_pair'),
+    path('api/log-quiz-answer/', views.log_quiz_answer, name='log_quiz_answer'),
+    path('api/log-quiz-answer-site/', views.log_quiz_answer_site, name='log_quiz_answer_site'),
+    path('api/get-planning-quiz/', views.get_planning_quiz, name='get_planning_quiz'),
+    path('admin/planning-check/', views.admin_planning_check, name='admin_planning_check'),
+    path('api/quiz/<str:quiz_type>/snippet/', views.quiz_snippet_api, name='quiz_snippet_api'),
+    path('api/user-stats/', views.get_user_quiz_stats, name='user_stats'),
 
     # ОГЭ
     path('diagnostic/oge/', views.oge_diagnostic_page, name='oge_diagnostic'),

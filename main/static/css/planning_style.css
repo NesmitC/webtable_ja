@@ -302,7 +302,7 @@
 .block-task,
 .block-answer,
 .block-answer-still,
-.orthogram-buttons-container {
+.orthogram-buttons-container, .block-quizzes, .block-answer-quiz-content {
     background-color: #f0f0f0d2;
     border-radius: 5px;
     margin: 20px 0;

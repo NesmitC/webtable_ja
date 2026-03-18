@@ -51,6 +51,25 @@ class UserProfile(models.Model):
         blank=True, 
         unique=True, 
         verbose_name="Telegram ID")
+    
+    # 🔹 🔹 🔹 НОВЫЕ ПОЛЯ ДЛЯ VK 🔹 🔹 
+    vk_id = models.BigIntegerField(
+        null=True, 
+        blank=True, 
+        unique=True, 
+        verbose_name="VK ID"
+    )
+    link_code = models.CharField(
+        max_length=10, 
+        blank=True, 
+        null=True, 
+        verbose_name="Код привязки VK"
+    )
+    link_code_expires = models.DateTimeField(
+        null=True, 
+        blank=True, 
+        verbose_name="Срок действия кода"
+    )
 
     def __str__(self):
         return f"{self.user.username} Profile"

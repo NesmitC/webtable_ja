@@ -1,9 +1,27 @@
 # main/admin.py
 from django.contrib import admin
 from django import forms
-from django.db import models 
+from django.db import models
+from django.urls import reverse
+from django.utils.html import format_html
 from .models import CorrectAnswer, Orthogram, OrthogramExample, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise, TaskGrammaticEight, TaskGrammaticEightExample, TaskGrammaticTwoTwo, TaskGrammaticTwoTwoExample, TaskPaponim, WordOk
 from django.contrib.admin.actions import delete_selected
+
+
+class MainAdminSite(admin.AdminSite):
+    def get_app_list(self, request):
+        app_list = super().get_app_list(request)
+        app_list.append({
+            'name': 'Проверка планингов',
+            'app_label': 'planning_check',
+            'models': [{
+                'name': 'Проверить слова из планингов',
+                'object_name': 'planning_check',
+                'admin_url': reverse('admin:planning-check'),
+                'view_only': True,
+            }]
+        })
+        return app_list
 
 
 @admin.register(CorrectAnswer)
@@ -12,6 +30,59 @@ class CorrectAnswerAdmin(admin.ModelAdmin):
     list_filter = ['orthogram_number']
     search_fields = ['correct_word', 'description']
     ordering = ['orthogram_number', 'correct_word']
+
+
+# @admin.register(Orthogram)
+# class OrthogramAdmin(admin.ModelAdmin):
+#     list_display = ['id', 'name', 'letters', 'grades']
+#     list_editable = ['grades']
+#     search_fields = ['id', 'name']
+#     fieldsets = (
+#         (None, {
+#             'fields': ('id', 'name', 'rule', 'letters'),
+#             'description': '<strong>Важно:</strong> Введите буквы через запятую, например: <code>а,о,е,и,я</code> или <code>Ъ,Ь</code>.'
+#         }),
+#     )
+
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         return qs.extra(select={'id_as_int': "CAST(id AS INTEGER)"}).order_by('id_as_int')
+    
+#     class Media:
+#         css = {
+#             'all': ('main/static/css/admin.css',)
+#         }
+
+
+# @admin.register(OrthogramExample)
+# class OrthogramExampleAdmin(admin.ModelAdmin):
+#     list_display = ['text', 'orthogram', 'masked_word', 'grades', 'difficulty', 'is_for_quiz', 'is_active']
+#     actions = [delete_selected]
+#     fieldsets = (
+#         (None, {
+#             'fields': ('orthogram', 'text', 'masked_word', 'incorrect_variant', 'explanation', 'grades')
+#         }),
+#         ('Настройки', {
+#             'fields': ('difficulty', 'is_for_quiz', 'is_active'),
+#             'description': '<strong>Важно:</strong> Поле "Grades" указывает, для каких классов предназначен этот пример.'
+#         }),
+#     )
+#     list_filter = ['orthogram', 'difficulty', 'is_for_quiz', 'is_active']
+#     search_fields = ['text', 'masked_word', 'incorrect_variant', 'grades']
+#     list_editable = ['grades', 'is_for_quiz', 'is_active']
+
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         return (
+#             qs
+#             .extra(select={'orthogram_id_as_int': "CAST(orthogram_id AS INTEGER)"})
+#             .order_by('orthogram_id_as_int', 'text')
+#         )
+        
+#     class Media:
+#         css = {
+#             'all': ('css/admin.css',)
+#         }
 
 
 @admin.register(Orthogram)
@@ -60,11 +131,19 @@ class OrthogramExampleAdmin(admin.ModelAdmin):
             .extra(select={'orthogram_id_as_int': "CAST(orthogram_id AS INTEGER)"})
             .order_by('orthogram_id_as_int', 'text')
         )
+    
+    def planning_check_link(self):
+        return format_html(
+            '<a href="{}">🔍 Проверить слова из планингов</a>',
+            reverse('admin:planning-check')
+        )
+    planning_check_link.short_description = 'Проверка планингов'
         
     class Media:
         css = {
             'all': ('css/admin.css',)
         }
+
 
 
 # ===== ЗАДАНИЯ 17-22 ==================================================
@@ -317,20 +396,48 @@ class OgeTaskGrammaticEightExampleAdmin(admin.ModelAdmin):
 
 @admin.register(OgePunktum)
 class OgePunktumAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'rule')
+    list_display = ('id', 'name', 'letters', 'rule')
     search_fields = ('id', 'name')
 
 @admin.register(OgePunktumExample)
 class OgePunktumExampleAdmin(admin.ModelAdmin):
-    list_display = ('text', 'punktum', 'is_active', 'added_by', 'created_at')
-    list_filter = ('is_active', 'punktum', 'added_by', 'grades')
+    list_display = ('short_text', 'punktum', 'explanation', 'is_active', 'created_at')
+    list_filter = ('is_active', 'punktum', 'grades')
     search_fields = ('text', 'masked_word')
     ordering = ('-created_at',)
-    readonly_fields = ('created_at',)
+    readonly_fields = ('created_at', 'punktum_letters_display')
+    exclude = ('correct_letters', 'added_by', 'is_user_added', 'source_field')
+
+    fields = (
+        'punktum',
+        'punktum_letters_display',
+        'text',
+        'masked_word',
+        'explanation',
+        'difficulty',
+        'is_active',
+        'is_for_quiz',
+        'grades',
+        'created_at',
+    )
 
     formfield_overrides = {
-        models.TextField: {'widget': forms.Textarea(attrs={'rows': 5, 'cols': 80})},
+        models.TextField: {'widget': forms.Textarea(attrs={'rows': 3, 'cols': 80})},
     }
+
+    class Media:
+        js = ('js/admin_punktum_example.js',)
+
+    def short_text(self, obj):
+        return (obj.text[:70] + '…') if len(obj.text) > 70 else obj.text
+    short_text.short_description = 'Текст'
+
+    def punktum_letters_display(self, obj):
+        if obj.punktum_id:
+            letters = obj.punktum.get_letters_list()
+            return 'Варианты ответов: ' + ', '.join(letters)
+        return '—'
+    punktum_letters_display.short_description = 'Варианты из правила'
 
 
 @admin.register(OgeOrthogram)

@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.core.cache import cache
 from django.contrib.auth import login
 from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.admin.views.decorators import staff_member_required
 from django.utils import timezone
 from datetime import timedelta
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -20,7 +21,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 import re
-import json
+import json, secrets, datetime
 import logging
 from .forms import CustomUserCreationForm, ProfileForm
 from .models import UserExample, UserProfile, OrthogramExample, Orthogram, StudentAnswer, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise, TaskGrammaticEightExample, TaskGrammaticTwoTwo, TaskGrammaticTwoTwoExample, TaskPaponim, WordOk, UserWord, QuizHistory
@@ -1685,6 +1686,416 @@ def log_answer(request):
         return JsonResponse({'error': 'User not found'}, status=404)
 
 
+# === АВТОРИЗАЦИЯ ВК ===
+# === Эндпоинты для сайта (с авторизацией) ===
+
+@login_required
+def vk_status(request):
+    """Статус привязки ВК"""
+    p = request.user.profile
+    return JsonResponse({'is_linked': bool(p.vk_id)})
+
+
+@login_required
+def vk_generate_code(request):
+    """Генерация кода для привязки"""
+    p = request.user.profile
+    p.link_code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=8))
+    p.link_code_expires = timezone.now() + timedelta(hours=1)
+    p.save()
+    return JsonResponse({
+        'status': 'success',
+        'code': p.link_code,
+        'expires': p.link_code_expires.strftime('%H:%M')
+    })
+
+
+# === Эндпоинты для бота (без авторизации) ===
+
+@csrf_exempt
+def vk_verify_code(request):
+    """Бот проверяет код и привязывает VK ID"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        code = data.get('code', '').strip().upper()
+        vk_id = data.get('vk_id')
+        
+        if not code or not vk_id:
+            return JsonResponse({'error': 'Missing data'}, status=400)
+        
+        profile = UserProfile.objects.filter(
+            link_code=code,
+            link_code_expires__gt=timezone.now()
+        ).select_related('user').first()
+        
+        if profile:
+            profile.vk_id = vk_id
+            profile.link_code = None
+            profile.link_code_expires = None
+            profile.save()
+            return JsonResponse({
+                'success': True,
+                'user_id': profile.user.id,
+                'username': profile.user.username
+            })
+        
+        return JsonResponse({'success': False, 'error': 'Code invalid'})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def vk_get_user(request):
+    """Бот получает данные пользователя по VK ID"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        vk_id = data.get('vk_id')
+        
+        if not vk_id:
+            return JsonResponse({'error': 'No vk_id'}, status=400)
+        
+        profile = UserProfile.objects.filter(vk_id=vk_id).select_related('user').first()
+        
+        if profile:
+            return JsonResponse({
+                'found': True,
+                'user_id': profile.user.id,
+                'username': profile.user.username
+            })
+        
+        return JsonResponse({'found': False})
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def vk_health(request):
+    """Проверка API"""
+    return JsonResponse({'status': 'ok'})
+
+
+# === API: получение квиза в ЛК ===
+
+@login_required
+def quiz_snippet_api(request, quiz_type):
+    """Минималистичный сниппет квиза"""
+    templates = {
+        'planning': 'quiz/quiz_planning_snippet.html',
+        'orthography': 'quiz/quiz_orthography_snippet.html',
+        'orthoepy': 'quiz/quiz_orthoepy_snippet.html',
+        'grammar': 'quiz/quiz_grammar_snippet.html',
+    }
+    tpl = templates.get(quiz_type)
+    if not tpl:
+        return JsonResponse({'error': 'Неизвестный тип'}, status=400)
+    
+    html = render_to_string(tpl, {'quiz_type': quiz_type}, request=request)
+    return JsonResponse({'html': html})
+
+
+@login_required
+def get_quiz(request):
+    """Квиз по орфографии или грамматике"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=400)
+    
+    import json, random, re
+    import traceback
+    
+    try:
+        data = json.loads(request.body)
+        quiz_type = data.get('quiz_type', 'orthography')
+        
+        from .models import OrthogramExample
+        
+        # Базовый запрос: эталонные вопросы с explanation
+        base_query = OrthogramExample.objects.filter(
+            is_active=True,
+            is_user_added=False,
+            explanation__isnull=False,
+            incorrect_variant__isnull=False
+        ).exclude(
+            explanation='',
+            incorrect_variant=''
+        ).select_related('orthogram')
+        
+        # Фильтр по типу квиза
+        if quiz_type == 'grammar':
+            # Грамматика: орфограмма 661
+            base_query = base_query.filter(orthogram_id=661)
+        else:
+            # Орфография: всё кроме 661
+            base_query = base_query.exclude(orthogram_id=661)
+        
+        if not base_query.exists():
+            return JsonResponse({'error': f'Нет вопросов для раздела {quiz_type}'})
+        
+        # Выбираем случайное слово
+        reference = base_query.order_by('?').first()
+        
+        correct = reference.text
+        masked = re.sub(r'\*\d+\*', '😊', reference.masked_word or '') if reference.masked_word else correct
+        incorrect = reference.incorrect_variant.strip()
+        explanation = reference.explanation
+        
+        options = [
+            {'text': correct, 'is_correct': True},
+            {'text': incorrect, 'is_correct': False}
+        ]
+        random.shuffle(options)
+        
+        return JsonResponse({
+            'question': f'Как пишется правильно?\n{masked}',
+            'options': options,
+            'correct_answer': correct,
+            'explanation': explanation,
+            'example_id': reference.id
+        })
+        
+    except Exception as e:
+        print(f"Ошибка в get_quiz: {e}")
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def get_quiz_orthoepy_pair(request):
+    """Квиз по ударениям для сайта - полный рандом по всем словам"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=400)
+    
+    import random
+    from .models import OrthoepyWord
+    
+    # Получаем все слова с правильным ударением, у которых есть неправильный вариант
+    correct_words = OrthoepyWord.objects.filter(
+        is_active=True,
+        is_correct=True
+    )
+    
+    all_pairs = []
+    for correct in correct_words:
+        incorrect = OrthoepyWord.objects.filter(
+            lemma=correct.lemma,
+            is_correct=False,
+            is_active=True
+        ).first()
+        
+        if incorrect:
+            all_pairs.append({
+                'correct': correct,
+                'incorrect': incorrect
+            })
+    
+    if not all_pairs:
+        return JsonResponse({'error': 'Нет полных пар'})
+    
+    # Выбираем случайную пару
+    pair = random.choice(all_pairs)
+    correct = pair['correct']
+    incorrect = pair['incorrect']
+    
+    options = [
+        {'text': correct.word, 'is_correct': True},
+        {'text': incorrect.word, 'is_correct': False}
+    ]
+    random.shuffle(options)
+    
+    return JsonResponse({
+        'question': 'Как правильно поставить ударение?',
+        'options': options,
+        'example_id': correct.id,
+        'correct_answer': correct.word
+    })
+
+@login_required
+def log_quiz_answer_site(request):
+    """Логирует ответ пользователя на сайте"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=400)
+    
+    import json
+    try:
+        data = json.loads(request.body)
+        print(f"📝 САЙТ: ответ на квиз {data}")
+        
+        # TODO: сохранять в БД
+        
+        return JsonResponse({'status': 'ok'})
+    except Exception as e:
+        print(f"Ошибка в log_quiz_answer_site: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def get_planning_quiz(request):
+    """Квиз из планинга пользователя — циклический показ слов"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=400)
+    
+    import json, random, re
+    from django.utils import timezone
+    from .models import UserWord, QuizHistory
+    
+    try:
+        # Получаем все слова пользователя из планинга
+        user_words = UserWord.objects.filter(
+            user=request.user,
+            is_active=True
+        ).select_related('reference_word__orthogram')
+        
+        if not user_words.exists():
+            return JsonResponse({
+                'error': '📭 Начните заполнять планинг, и эти слова появятся здесь!'
+            })
+        
+        # Отбираем только те, у которых есть эталон с explanation и incorrect_variant
+        valid_words = []
+        for uw in user_words:
+            ref = uw.reference_word
+            if (ref and ref.explanation and ref.incorrect_variant 
+                and ref.is_active and not ref.is_user_added):
+                valid_words.append(uw)
+        
+        if not valid_words:
+            return JsonResponse({
+                'error': '📝 В вашем планинге пока нет слов для квиза. Добавьте слова, которые хотите запомнить!'
+            })
+        
+        # Получаем историю показов за сегодня
+        today = timezone.now().date()
+        history = QuizHistory.objects.filter(
+            user=request.user,
+            answer_time__date=today
+        ).order_by('answer_time')
+        
+        # Получаем ID слов, которые уже были показаны сегодня (в порядке показа)
+        shown_ids = list(history.values_list('user_word_id', flat=True))
+        
+        # Определяем следующее слово для показа (циклически)
+        if not shown_ids:
+            # Если история пуста, показываем случайное слово
+            user_word = random.choice(valid_words)
+        else:
+            # Находим последнее показанное слово
+            last_shown_id = shown_ids[-1]
+            
+            # Ищем индекс последнего показанного слова в списке valid_words
+            last_index = -1
+            for i, uw in enumerate(valid_words):
+                if uw.id == last_shown_id:
+                    last_index = i
+                    break
+            
+            # Выбираем следующее слово по кругу
+            next_index = (last_index + 1) % len(valid_words)
+            user_word = valid_words[next_index]
+        
+        ref = user_word.reference_word
+        
+        # Записываем в историю
+        QuizHistory.objects.create(
+            user=request.user,
+            word_id=ref.id,
+            user_word_id=user_word.id,
+            answer_time=timezone.now(),
+            was_correct=False
+        )
+        
+        correct = ref.text
+        masked = re.sub(r'\*\d+\*', '😊', ref.masked_word or '') if ref.masked_word else correct
+        incorrect = ref.incorrect_variant.strip()
+        explanation = ref.explanation
+        
+        options = [
+            {'text': correct, 'is_correct': True},
+            {'text': incorrect, 'is_correct': False}
+        ]
+        random.shuffle(options)
+        
+        return JsonResponse({
+            'question': f'Как пишется правильно?\n{masked}',
+            'options': options,
+            'correct_answer': correct,
+            'explanation': explanation,
+            'example_id': ref.id,
+            'user_word_id': user_word.id
+        })
+        
+    except Exception as e:
+        print(f"Ошибка в get_planning_quiz: {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)
+
+@staff_member_required
+def admin_planning_check(request):
+    """Проверка слов из планингов прямо в админке"""
+    
+    # Получаем все уникальные слова из планингов
+    planning_words = UserWord.objects.filter(
+        is_active=True
+    ).values('text').annotate(
+        user_count=Count('user', distinct=True)
+    ).order_by('-user_count')
+    
+    missing_words = []
+    
+    for item in planning_words:
+        word_text = item['text']
+        # Проверяем, есть ли слово в эталонной БД
+        exists = OrthogramExample.objects.filter(
+            text=word_text,
+            is_user_added=False
+        ).exists()
+        
+        if not exists:
+            missing_words.append({
+                'text': word_text,
+                'user_count': item['user_count']
+            })
+    
+    return render(request, 'admin/planning_check.html', {
+        'missing_words': missing_words,
+        'total_planning': planning_words.count(),
+        'total_missing': len(missing_words)
+    })
+
+
+# === СТАТИСТИКА для ЛК ===
+@login_required
+def log_quiz_answer_site(request):
+    """Сохраняет результат ответа в QuizHistory"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=400)
+    
+    import json
+    from .models import QuizHistory
+    from django.utils import timezone
+    
+    data = json.loads(request.body)
+    example_id = data.get('example_id')
+    is_correct = data.get('is_correct', False)
+    
+    if not example_id:
+        return JsonResponse({'error': 'Нет example_id'}, status=400)
+    
+    # Сохраняем в историю
+    QuizHistory.objects.create(
+        user=request.user,
+        example_id=example_id,
+        was_correct=is_correct,
+        answer_time=timezone.now()
+    )
+    
+    return JsonResponse({'status': 'ok'})
+
 # === отчёты для ЛК ===
 
 @login_required
@@ -1805,106 +2216,88 @@ def load_examples(request):
 # ✅ API: КВИЗ ДЛЯ БОТА — ГЛАВНАЯ ФУНКЦИЯ
 # ========================================================================
 def _get_personalized_preposition_quiz(user_id):
-    """Умный квиз с учетом веса слов и конкретным explanation"""
-    from .models import UserWord, OrthogramExample, QuizHistory
-    import random
-    import re
-    from django.utils import timezone
-    from django.db.models import Q
     
-    print(f"\n🔍 Поиск слов для user_id={user_id}")
+    print(f"\n🔍 Поиск слова для user_id={user_id}")
     
     today = timezone.now().date()
     
-    # ===== 1. Слова из планинга с учетом веса =====
-    user_words = list(UserWord.objects.filter(
-        user_id=user_id,
-        is_active=True,
-        in_master=True,
-        reference_word__isnull=False
-    ).select_related('reference_word', 'reference_word__orthogram'))
-    
-    # Фильтруем непоказанные сегодня
-    available = [uw for uw in user_words 
-                 if not uw.last_shown or uw.last_shown.date() != today]
-    
-    if available:
-        available.sort(key=lambda x: x.weight, reverse=True)
-        top_weight = available[:3]
-        
-        total_weight = sum(w.weight for w in top_weight)
-        if total_weight > 0:
-            r = random.uniform(0, total_weight)
-            cumulative = 0
-            for uw in top_weight:
-                cumulative += uw.weight
-                if r <= cumulative:
-                    user_word = uw
-                    break
-            else:
-                user_word = random.choice(top_weight)
-        else:
-            user_word = random.choice(available)
-        
-        word = user_word.reference_word
-        user_word.last_shown = timezone.now()
-        user_word.save(update_fields=['last_shown'])
-        
-        print(f"✅ Из планинга (вес={user_word.weight:.1f}): {user_word.text}")
-        
-        # 🔥 ИСПОЛЬЗУЕМ explanation ИЗ СЛОВА, ЕСЛИ ОНО ЕСТЬ
-        explanation = word.explanation if word.explanation else word.orthogram.rule
-        
-        return {
-            'question': f"Как пишется правильно:\n{re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)}",
-            'options': [
-                {'text': word.text, 'is_correct': True},
-                {'text': word.incorrect_variant, 'is_correct': False}
-            ],
-            'explanation': explanation,  # ← теперь конкретное!
-            'orthogram_id': word.orthogram_id,
-            'example_id': word.id,
-            'user_word_id': user_word.id
-        }
-    
-    # ===== 2. Если слова из планинга кончились =====
-    print("📚 Слова из планинга на сегодня показаны, берем из общей базы")
-    
-    shown_today_ids = QuizHistory.objects.filter(
+    # ===== 1. Получаем историю показов =====
+    # Все ID, показанные сегодня
+    shown_today_ids = list(QuizHistory.objects.filter(
         user_id=user_id,
         answer_time__date=today
-    ).values_list('word_id', flat=True)
+    ).values_list('word_id', flat=True))
     
-    base_words = list(OrthogramExample.objects.filter(
+    # Последнее показанное слово
+    last_shown = QuizHistory.objects.filter(
+        user_id=user_id
+    ).order_by('-answer_time').first()
+    
+    last_word_id = last_shown.word_id if last_shown else None
+    
+    print(f"📊 Показано сегодня: {len(shown_today_ids)}")
+    print(f"📊 Последнее слово ID: {last_word_id}")
+    
+    # ===== 2. Берем слова с вариантами =====
+    all_quiz_words = list(OrthogramExample.objects.filter(
         is_active=True
     ).exclude(
         incorrect_variant__isnull=True
     ).exclude(
         incorrect_variant=''
-    ).exclude(
-        id__in=shown_today_ids
     ).select_related('orthogram'))
     
-    if base_words:
-        word = random.choice(base_words)
-        print(f"✅ Из общей базы: {word.text}")
-        
-        # 🔥 ИСПОЛЬЗУЕМ explanation ИЗ СЛОВА, ЕСЛИ ОНО ЕСТЬ
-        explanation = word.explanation if word.explanation else word.orthogram.rule
-        
+    print(f"📊 Всего слов с вариантами: {len(all_quiz_words)}")
+    
+    if not all_quiz_words:
+        # Заглушка
         return {
-            'question': f"Как пишется правильно:\n{re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)}",
+            'question': "Как пишется правильно:\nв**а",
             'options': [
-                {'text': word.text, 'is_correct': True},
-                {'text': word.incorrect_variant, 'is_correct': False}
+                {'text': "вода", 'is_correct': True},
+                {'text': "вада", 'is_correct': False}
             ],
-            'explanation': explanation,  # ← теперь конкретное!
-            'orthogram_id': word.orthogram_id,
-            'example_id': word.id,
-            'user_word_id': None
+            'explanation': "Проверяемая гласная в корне слова",
+            'orthogram_id': 1,
+            'example_id': 0,
+            'user_word_id': None,
+            'source': 'fallback'
         }
     
-    return None
+    # ===== 3. Фильтруем =====
+    # Убираем показанные сегодня
+    available = [w for w in all_quiz_words if w.id not in shown_today_ids]
+    
+    # Если все показаны - сбрасываем фильтр
+    if not available:
+        print("🔄 Все слова показаны - начинаем заново")
+        available = all_quiz_words.copy()
+    
+    # Если есть последнее слово - исключаем его (чтобы не повторялось подряд)
+    if last_word_id and len(available) > 1:
+        available = [w for w in available if w.id != last_word_id]
+    
+    print(f"📊 Доступно сейчас: {len(available)}")
+    
+    # ===== 4. Выбираем случайное =====
+    word = random.choice(available)
+    print(f"✅ Выбрано: {word.text} (ID: {word.id})")
+    
+    masked = word.masked_word if word.masked_word else word.text
+    
+    return {
+        'question': f"Как пишется правильно:\n{re.sub(r'\*\d+\*', '😊', masked)}",
+        'options': [
+            {'text': word.text, 'is_correct': True},
+            {'text': word.incorrect_variant, 'is_correct': False}
+        ],
+        'explanation': word.explanation or (word.orthogram.rule if word.orthogram else "Правило не указано"),
+        'orthogram_id': word.orthogram_id or 0,
+        'example_id': word.id,
+        'user_word_id': None,
+        'source': 'general'
+    }
+
 
 @csrf_exempt
 def get_daily_quiz(request):
@@ -1919,17 +2312,34 @@ def get_daily_quiz(request):
         if not user_id:
             return JsonResponse({'error': 'No user_id'}, status=400)
         
+        print(f"\n🎯 ЗАПРОС КВИЗА для user_id={user_id}")
+        
         # Вызываем функцию генерации квиза
         quiz = _get_personalized_preposition_quiz(user_id)
         
-        if not quiz:
-            return JsonResponse({'error': 'No questions'}, status=404)
+        # Функция гарантированно возвращает вопрос (или создает тестовый)
+        print(f"✅ Отправляю вопрос из источника: {quiz.get('source', 'unknown')}")
         
         return JsonResponse(quiz)
         
     except Exception as e:
-        logger.error(f"Error in get_daily_quiz: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+        print(f"❌ Ошибка в get_daily_quiz: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # В случае любой ошибки возвращаем тестовый вопрос
+        return JsonResponse({
+            'question': "Как пишется правильно:\nв**а",
+            'options': [
+                {'text': "вода", 'is_correct': True},
+                {'text': "вада", 'is_correct': False}
+            ],
+            'explanation': "Проверяемая гласная в корне слова",
+            'orthogram_id': 1,
+            'example_id': 0,
+            'user_word_id': None,
+            'source': 'error_fallback'
+        })
 
 # ========================================================================
 # ✅ API: ЛОГИРОВАНИЕ ОТВЕТА БОТА
@@ -2421,6 +2831,140 @@ def user_weak_words(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+def get_word_by_id(request):
+    """Возвращает слово по ID"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        word_id = data.get('word_id')
+        
+        if not word_id:
+            return JsonResponse({'error': 'No word ID'}, status=400)
+        
+        from .models import OrthogramExample
+        import re
+        
+        word = OrthogramExample.objects.filter(id=word_id, is_active=True).first()
+        
+        if not word:
+            return JsonResponse({'error': 'Word not found'}, status=404)
+        
+        masked = word.masked_word if word.masked_word else word.text
+        masked = re.sub(r'\*\d+\*', '😊', masked)
+        
+        return JsonResponse({
+            'id': word.id,
+            'correct': word.text,
+            'incorrect': word.incorrect_variant,
+            'masked': masked,
+            'explanation': word.explanation or "Объяснение не найдено",
+            'orthogram': word.orthogram.name if word.orthogram else "Без орфограммы"
+        })
+        
+    except Exception as e:
+        print(f"❌ Ошибка: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def get_words_by_ids(request):
+    """Возвращает список слов по массиву ID"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        word_ids = data.get('word_ids', [])
+        
+        if not word_ids:
+            return JsonResponse({'error': 'No word IDs'}, status=400)
+        
+        from .models import OrthogramExample
+        
+        words = OrthogramExample.objects.filter(id__in=word_ids, is_active=True)
+        
+        result = []
+        for word in words:
+            result.append({
+                'id': word.id,
+                'text': word.text,
+                'orthogram': word.orthogram.name if word.orthogram else "Без орфограммы"
+            })
+        
+        return JsonResponse({'words': result})
+        
+    except Exception as e:
+        print(f"❌ Ошибка: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def get_orthoepy_pair(request):
+    """
+    Возвращает пару для теста по орфоэпии:
+    - правильное ударение (is_correct=True)
+    - неправильное ударение (is_correct=False)
+    для одного и того же слова (леммы)
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        from .models import OrthoepyWord
+        import random
+        
+        # Получаем все уникальные леммы, у которых есть и правильный, и неправильный варианты
+        from django.db.models import Count
+        
+        # Находим леммы, у которых есть минимум 2 варианта (правильный и неправильный)
+        lemmas_with_both = OrthoepyWord.objects.filter(
+            is_active=True
+        ).values('lemma').annotate(
+            variant_count=Count('id')
+        ).filter(variant_count__gte=2)
+        
+        if not lemmas_with_both:
+            return JsonResponse({'error': 'No words with both variants'}, status=404)
+        
+        # Выбираем случайную лемму
+        selected_lemma = random.choice(lemmas_with_both)['lemma']
+        
+        # Получаем все варианты для этой леммы
+        variants = list(OrthoepyWord.objects.filter(
+            lemma=selected_lemma,
+            is_active=True
+        ))
+        
+        # Находим правильный и неправильный варианты
+        correct = None
+        incorrect = None
+        
+        for v in variants:
+            if v.is_correct:
+                correct = v
+            else:
+                incorrect = v
+        
+        if not correct or not incorrect:
+            return JsonResponse({'error': 'Missing correct or incorrect variant'}, status=404)
+        
+        return JsonResponse({
+            'id': correct.id,
+            'lemma': correct.lemma,
+            'variant1': correct.word,
+            'variant2': incorrect.word,
+            'correct': correct.word
+        })
+        
+    except Exception as e:
+        print(f"Ошибка в get_orthoepy_pair: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+
 # =========== ЗАДАНИЯ 1-3 ================================================
 @login_required
 def generate_text_analysis(request):
@@ -2539,9 +3083,9 @@ def check_text_analysis(request):
         
     except Exception as e:
         return JsonResponse({'error': f'Ошибка проверки: {str(e)}'}, status=500)
-    
-    
-    
+
+
+
 # =========== ЗАДАНИЯ 23-24 ===============================================
 
 @login_required
@@ -2677,7 +3221,7 @@ def check_text_analysis_23_24(request):
         
     except Exception as e:
         return JsonResponse({'error': f'Ошибка проверки: {str(e)}'}, status=500)
-    
+
 
 
 # =========== ЗАДАНИЯ 25-26 ===============================================
@@ -6009,6 +6553,7 @@ def generate_task_twotwo_for_diagnostic():
         return None
 
 
+
 # ========================================================================
 # ОГЭ — ДИАГНОСТИКА (11 заданий)
 # ========================================================================
@@ -6235,7 +6780,11 @@ def generate_oge_diagnostic(request):
             session_data['task3_correct'] = task3_data['correct_answers']
 
         # === Задание 5: Пунктуация — смайлики ===
-        available_punktum_ids = list(OgePunktum.objects.all().values_list('id', flat=True))
+        available_punktum_ids = list(
+            OgePunktumExample.objects.filter(is_active=True)
+            .values_list('punktum_id', flat=True)
+            .distinct()
+        )
         selected_type = random.choice(available_punktum_ids) if available_punktum_ids else None
         task4_data = generate_oge_task4_with_image(
             punktum_id=selected_type,
@@ -6765,7 +7314,7 @@ def check_oge_diagnostic(request):
             task6_correct_count = 0
             task6_results = {}
             for i in range(1, total_masks + 1):
-                key = f"7-{i}"
+                key = f"6-{i}"
                 user_answer = user_answers_dict.get(key, '😊')
                 user_clean = str(user_answer).strip().lower()
                 correct_letter = expected_letters[i - 1].lower() if i <= len(expected_letters) else ''
