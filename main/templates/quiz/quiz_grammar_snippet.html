@@ -1,0 +1,16 @@
+<!-- main\templates\quiz\quiz_grammar_snippet.html -->
+{% load static %}
+<div class="quiz-snippet" data-quiz-type="grammar">
+    <button class="quiz-close" style="float:right; background:none; border:none; font-size:1.2em; cursor:pointer;">&times;</button>
+    
+    <div id="quiz-container">
+        <p id="question">Загрузка...</p>
+        <div id="options"></div>
+        <p id="result"></p>
+        <button id="next-btn" style="display:none;">Следующий</button>
+    </div>
+    
+    <script type="application/json" id="quiz-config">
+    {"endpoint": "/api/get-quiz/", "quizType": "grammar"}
+    </script>
+</div>

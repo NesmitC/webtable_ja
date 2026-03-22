@@ -1,3 +1,5 @@
+{% comment %} main\templates\profile.html {% endcomment %}
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -5,6 +7,7 @@
     <meta charset="UTF-8">
     <title>Личный кабинет</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
 </head>
 <body>
     <header>
@@ -27,6 +30,29 @@
         <p><strong>Статус:</strong> {% if request.user.profile.email_confirmed %}Подтверждён{% else %}Не подтверждён{% endif %}</p>
 
 
+        <!-- МОИ КВИЗЫ -->
+        <section class="block-quizzes">
+            <h3>МОИ КВИЗЫ</h3>
+            
+            <div class="quiz-buttons">
+                <button class="quiz-trigger" data-quiz-type="planning">Слова из планинга</button>
+                <button class="quiz-trigger" data-quiz-type="orthography">Орфография</button>
+                <button class="quiz-trigger" data-quiz-type="orthoepy">Ударения</button>
+                <button class="quiz-trigger" data-quiz-type="grammar">Грамматика</button>
+            </div>
+            
+            <!-- Контейнер для загружаемого квиза -->
+            <section class="block-answer-quiz-content" style="margin-top: 30px; display: none;"></section>
+        </section>
+
+        <!-- МОИ РЕЗУЛЬТАТЫ -->
+        <section class="block-results">
+            <h3>МОИ РЕЗУЛЬТАТЫ</h3>
+            <div id="user-stats-container">
+                <div id="user-stats">Загрузка статистики...</div>
+            </div>
+        </section>
+
         <h2>Telegram</h2>
         
         <!-- Если пользователь ещё не подписан — покажи ссылку -->
@@ -47,10 +73,59 @@
             </div>
         {% endif %}
 
-            <div class="tg-link-look">
-                <p>Хочешь быть в курсе событий в образовании? Подпишись на наш канал "Нейростат":</p>
-                <a href="https://t.me/neurostat_ru" target="_blank" style="font-weight: bold;">@neurostat_ru</a>
-            </div>
+        <div class="tg-link-look">
+            <p>Хочешь быть в курсе событий в образовании? Подпишись на наш канал "Нейростат":</p>
+            <a href="https://t.me/neurostat_ru" target="_blank" style="font-weight: bold;">@neurostat_ru</a>
+        </div>
+
+
+        <!-- ВК привязка -->
+        <h3>Привязка ВКонтакте</h3>
+
+        <div id="vk-link-status">Загрузка...</div>
+
+        <button id="generate-code-btn" style="display:none;">Получить код</button>
+
+        <div id="code-display" style="display:none;">
+            <p>Код: <strong id="link-code"></strong></p>
+            <p>Действует до: <span id="code-expires"></span></p>
+            <p>Отправь этот код боту в ВКонтакте</p>
+        </div>
+
+        <script>
+        async function checkVkStatus() {
+            const r = await fetch('/api/vk/status/');
+            const d = await r.json();
+            const status = document.getElementById('vk-link-status');
+            const btn = document.getElementById('generate-code-btn');
+            const code = document.getElementById('code-display');
+            
+            if (d.is_linked) {
+                status.textContent = '✅ Привязан';
+                btn.style.display = 'none';
+                code.style.display = 'none';
+            } else {
+                status.textContent = '❌ Не привязан';
+                btn.style.display = 'inline';
+                code.style.display = 'none';
+            }
+        }
+
+        document.getElementById('generate-code-btn').addEventListener('click', async () => {
+            const r = await fetch('/api/vk/generate-code/');
+            const d = await r.json();
+            if (d.status === 'success') {
+                document.getElementById('link-code').textContent = d.code;
+                document.getElementById('code-expires').textContent = d.expires;
+                document.getElementById('code-display').style.display = 'block';
+                document.getElementById('generate-code-btn').style.display = 'none';
+            } else {
+                alert('Ошибка: ' + d.message);
+            }
+        });
+
+        checkVkStatus();
+        </script>
 
         <h2>Прогресс обучения</h2>
         <p id="progress-summary">Загрузка...</p>
@@ -100,6 +175,83 @@
                 console.error('Ошибка загрузки отчёта:', err);
                 document.getElementById('weekly-report').textContent = "Не удалось загрузить отчёт.";
             });
+        </script>
+
+        <!-- Подключаем скрипты для квизов -->
+        {% load static %}
+        <script src="{% static 'js/quiz.js' %}?v=2"></script>
+        <!-- Мини-скрипт для загрузки квизов -->
+        <script>
+        (function() {
+            const container = document.querySelector('.block-answer-quiz-content');
+            const buttons = document.querySelectorAll('.quiz-trigger');
+            let active = null;
+            
+            buttons.forEach(btn => {
+                btn.onclick = async function(e) {
+                    e.preventDefault();
+                    const type = this.dataset.quizType;
+                    if (!type) return;
+                    
+                    // Toggle
+                    if (active === type && container.style.display !== 'none') {
+                        container.style.display = 'none';
+                        active = null;
+                        return;
+                    }
+                    
+                    active = type;
+                    container.style.display = 'block';
+                    container.innerHTML = 'Загрузка...';
+                    
+                    try {
+                        const res = await fetch('/api/quiz/' + type + '/snippet/');
+                        const data = await res.json();
+                        container.innerHTML = data.html || 'Ошибка';
+                        if (typeof QuizModule?.initQuiz === 'function') {
+                            QuizModule.initQuiz(container);
+                        }
+                        // Закрытие по кнопке ×
+                        const close = container.querySelector('.quiz-close');
+                        if (close) close.onclick = () => { container.style.display = 'none'; active = null; };
+                    } catch {
+                        container.innerHTML = 'Не удалось загрузить';
+                    }
+                };
+            });
+        })();
+        </script>
+
+        // Добавьте это в конец profile.html перед закрывающим тегом </body>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.block-answer-quiz-content');
+            const buttons = document.querySelectorAll('.quiz-trigger');
+            
+            buttons.forEach(btn => {
+                btn.onclick = async function() {
+                    const quizType = this.dataset.quizType;
+                    
+                    // Показываем контейнер
+                    container.style.display = 'block';
+                    container.innerHTML = 'Загрузка...';
+                    
+                    // Загружаем сниппет
+                    try {
+                        const res = await fetch('/api/quiz/' + quizType + '/snippet/');
+                        const data = await res.json();
+                        container.innerHTML = data.html || 'Ошибка';
+                        
+                        // Запускаем квиз
+                        if (window.QuizModule?.loadQuiz) {
+                            setTimeout(() => QuizModule.loadQuiz(container), 100);
+                        }
+                    } catch {
+                        container.innerHTML = 'Не удалось загрузить';
+                    }
+                };
+            });
+        });
         </script>
 
 

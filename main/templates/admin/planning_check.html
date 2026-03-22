@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div>
+    <h1>Проверка слов из планингов</h1>
+    
+    <div>
+        <p>Всего уникальных слов в планингах: {{ total_planning }}</p>
+        <p>Отсутствует в эталонной БД: {{ total_missing }}</p>
+    </div>
+    
+    {% if missing_words %}
+    <table>
+        <thead>
+            <tr>
+                <th>Слово</th>
+                <th>Пользователей добавили</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for word in missing_words %}
+            <tr>
+                <td><strong>{{ word.text }}</strong></td>
+                <td>{{ word.user_count }}</td>
+                <td>
+                    <a href="/admin/main/orthogramexample/add/?text={{ word.text|urlencode }}" 
+                       target="_blank">
+                       Добавить в эталоны
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div>
+        ✅ Все слова из планингов уже есть в эталонной БД!
+    </div>
+    {% endif %}
+    
+    <div>
+        <a href="/admin/">← Вернуться в админку</a>
+    </div>
+</div>
+{% endblock %}
