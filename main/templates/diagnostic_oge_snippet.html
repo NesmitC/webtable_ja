@@ -88,9 +88,6 @@
 
     <!-- Задание 6: Чекбоксы по тексту -->
     {% if text_task_5 %}
-    <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
-        {{ text_task_5.text_content|bold_words|safe }}
-    </div>
     {% for q in text_questions_5 %}
     <div class="question" data-question-number="{{ q.question_number }}">
         <h4>{{ q.question_number }}. {{ q.question_text }}</h4>

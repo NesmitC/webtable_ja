@@ -413,6 +413,7 @@ class OgePunktumExampleAdmin(admin.ModelAdmin):
         'punktum_letters_display',
         'text',
         'masked_word',
+        'choices_per_mask',
         'explanation',
         'difficulty',
         'is_active',

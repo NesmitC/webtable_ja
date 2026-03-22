@@ -1053,8 +1053,8 @@ class OgePunktum(models.Model):
         return f"{self.id}: {self.name}"
 
     class Meta:
-        verbose_name = "ОГЭ: Пунктограмма (задание 5)"
-        verbose_name_plural = "ОГЭ: Пунктограммы (задание 5)"
+        verbose_name = "5 Задание Виды пунктуации"
+        verbose_name_plural = "5 Задание Виды пунктуации"
 
 
 class OgePunktumExample(models.Model):
@@ -1070,6 +1070,11 @@ class OgePunktumExample(models.Model):
         max_length=100,
         blank=True,
         verbose_name="Правильные символы пунктуации (через запятую)"
+    )
+    choices_per_mask = models.TextField(
+        blank=True,
+        verbose_name="Варианты по позициям (correct|opt1/opt2/opt3,...)",
+        help_text="Формат: correct1|opt1/opt2/opt3,correct2|opt1/opt2 — по одной позиции на маску"
     )
     difficulty = models.PositiveSmallIntegerField(default=1)
     is_active = models.BooleanField(default=True)

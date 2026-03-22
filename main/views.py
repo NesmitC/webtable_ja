@@ -277,6 +277,15 @@ def get_orthogram_letters(request, orth_id):
         return JsonResponse({'letters': ['а', 'о', 'е', 'и', 'я']}, status=500)
 
 
+def get_oge_punktum_letters(request, punktum_id):
+    try:
+        from main.models import OgePunktum
+        punktum = OgePunktum.objects.get(id=punktum_id)
+        return JsonResponse({'letters': punktum.get_letters_list()})
+    except OgePunktum.DoesNotExist:
+        return JsonResponse({'letters': []}, status=404)
+
+
 # === Генерация упражнений ОРФОГРАММ 1 маска ===
 logger = logging.getLogger(__name__)
 
@@ -6625,7 +6634,7 @@ def generate_oge_task3_matching():
     }
 
 
-def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=False, is_for_quiz=None, override_letters=None):
+def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=False, is_for_quiz=None, override_letters=None, correct_answer_override=None):
     """
     Универсальная функция для пунктуационных заданий ОГЭ (задание 4).
     Поддерживает тире, двоеточие, запятую, КАВЫЧКИ.
@@ -6646,89 +6655,90 @@ def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=Fal
     all_lines = []
     all_correct_symbols = []
     letter_groups = {}
+    subgroup_letters = {}
     mask_idx = 1
+
+    try:
+        from main.models import OgePunktum
+        punktum_obj = OgePunktum.objects.get(id=punktum_id)
+        default_letters = override_letters if override_letters else punktum_obj.get_letters_list()
+    except Exception:
+        default_letters = override_letters if override_letters else ['5', '8', 'дз']
+
+    mixed_choices = ['—', ':', ',', '«»']
+    is_mixed_type = (punktum_id == '21')
 
     for ex in examples:
         masked = ex.masked_word
-        exp = (ex.explanation or '').strip()
-        correct = []
+        per_mask_data = []
 
-        if exp:
-            if ' ' in exp:
-                parts = [p.strip() for p in exp.split(' ') if p.strip()]
-            else:
-                parts = [p.strip() for p in exp.split(',')]
-                
-            correct = []
-            for p in parts:
-                if p in (':', '«»', '—', ','):
-                    correct.append(p)
+        if is_mixed_type:
+            choices_raw = (ex.choices_per_mask or '').strip()
+            if choices_raw:
+                for correct_val in choices_raw.split('|'):
+                    per_mask_data.append((correct_val.strip(), mixed_choices))
+
+        correct_list = []
+        if not per_mask_data:
+            exp = (ex.explanation or '').strip()
+            if exp:
+                if ' ' in exp:
+                    correct_list = [p.strip() for p in exp.split(' ') if p.strip()]
                 else:
-                    correct.append(p)
+                    correct_list = [p.strip() for p in exp.split(',') if p.strip()]
+            elif ex.choices_per_mask:
+                correct_list = [v.strip() for v in ex.choices_per_mask.split('|') if v.strip()]
 
         mask_count = masked.count(f'*{punktum_id}*')
-        for _ in range(mask_count):
+        for pos in range(mask_count):
             mask_id = f"{task_number}-{mask_idx}"
             masked = masked.replace(f'*{punktum_id}*', f'*{mask_id}*', 1)
-            letter_groups[mask_id] = f'punktum_{task_number}'
+            subgroup_key = f'punktum_5_{mask_idx}'
+            letter_groups[mask_id] = subgroup_key
+            if per_mask_data and pos < len(per_mask_data):
+                correct_val, choices = per_mask_data[pos]
+                subgroup_letters[subgroup_key] = choices
+                all_correct_symbols.append(correct_val)
+            else:
+                subgroup_letters[subgroup_key] = default_letters
+                if correct_answer_override is not None:
+                    correct_val = correct_answer_override
+                else:
+                    correct_val = correct_list[pos] if pos < len(correct_list) else '!'
+                all_correct_symbols.append(correct_val)
             mask_idx += 1
 
-        if len(correct) != mask_count:
-            correct = ['!'] * mask_count
-
         all_lines.append(masked)
-        all_correct_symbols.extend(correct)
 
-    if override_letters:
-        letters = override_letters
-    else:
-        try:
-            from main.models import OgePunktum
-            punktum = OgePunktum.objects.get(id=punktum_id)
-            letters = punktum.get_letters_list()
-        except Exception:
-            letters = ['5', '8', 'дз']
-
-    # Для ОГЭ задания 4: картинки по типу знака
+    _GENERIC_TITLE = '5. Кликни по смайликам, выбери подходящий знак препинания: тире (—), двоеточие (:), запятую (,) или кавычки («»).'
     image_mapping = {
-        '2100': 'images/punktum_task_OGE_0.webp',  # Тире (общее)
-        '2101': 'images/punktum_task_OGE_1.webp',  # Двоеточие (общее)
-        '2102': 'images/punktum_task_OGE_2.webp',  # Запятые (общее)
-        '2103': 'images/punktum_task_21_3.webp',  # Кавычки
-        '8': 'images/punktum_task_OGE_8.webp',    # Тире (пунктограмма 8)
-        '18': 'images/punktum_task_OGE_18.webp',   # Тире (пунктограмма 18)
-        '19': 'images/punktum_task_OGE_19.webp',   # Двоеточие (пунктограмма 19)
+        # смешанный тип (диагностика ОГЭ)
+        '21':  'images/punktum_task_21_0.webp',
+        # тире
+        '2100':'images/punktum_task_OGE_0.webp',
+        '8':   'images/punktum_task_OGE_8.webp',
+        '18':  'images/punktum_task_OGE_18.webp',
+        # двоеточие
+        '2101':'images/punktum_task_OGE_1.webp',
+        '19':  'images/punktum_task_OGE_19.webp',
+        # запятые
+        '2102':'images/punktum_task_OGE_2.webp',
+        '2':   'images/punktum_task_OGE_02.webp',
+        '3':   'images/punktum_task_OGE_3.webp',
+        '4':   'images/punktum_task_OGE_4.webp',
+        '6':   'images/punktum_task_OGE_67.webp',
+        '7':   'images/punktum_task_OGE_67.webp',
+        '11':  'images/punktum_task_OGE_1114.webp',
+        '12':  'images/punktum_task_OGE_1114.webp',
+        '13':  'images/punktum_task_OGE_1114.webp',
+        '14':  'images/punktum_task_OGE_1114.webp',
+        '15':  'images/punktum_task_OGE_15.webp',
+        # кавычки
+        '2103':'images/punktum_task_21_3.webp',
     }
 
-    title_mapping = {
-        '2100': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ТИРЕ.',
-        '2101': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ДВОЕТОЧИЯ.',
-        '2102': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ЗАПЯТЫХ.',
-        '2103': '5. Кликни на смайлик, выбери подходящий знак для постановки КАВЫЧЕК.',
-        '8': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ТИРЕ.',
-        '18': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ТИРЕ.',
-        '19': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ДВОЕТОЧИЯ.',
-    }
+    title_mapping = {k: _GENERIC_TITLE for k in image_mapping}
 
-    # Набор файлов-картинок, которые реально существуют в static/images
-    _existing_comma_images = {
-        '2': 'images/punktum_task_OGE_02.webp',
-        '3': 'images/punktum_task_OGE_3.webp',
-        '4': 'images/punktum_task_OGE_4.webp',
-        '6': 'images/punktum_task_OGE_67.webp',
-        '7': 'images/punktum_task_OGE_67.webp',
-        '11': 'images/punktum_task_OGE_1114.webp',
-        '12': 'images/punktum_task_OGE_1114.webp',
-        '13': 'images/punktum_task_OGE_1114.webp',
-        '14': 'images/punktum_task_OGE_1114.webp',
-        '15': 'images/punktum_task_OGE_15.webp',
-    }
-    comma_ids = ['2', '3', '4', '6', '7', '11', '12', '13', '14', '15']
-    for c_id in comma_ids:
-        image_mapping[c_id] = _existing_comma_images.get(c_id, 'images/punktum_task_OGE_2.webp')
-        title_mapping[c_id] = '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ЗАПЯТЫХ.'
-
-    # Формируем подпись пунктограммы (только для конкретных, не общих)
     general_ids = {'2100', '2101', '2102', '2103', 'mixed_dash_colon'}
     punktum_label = f'{punktum_id} пунктограмма' if punktum_id not in general_ids else ''
 
@@ -6736,8 +6746,8 @@ def generate_oge_task4_with_image(punktum_id, num_sentences=1, add_numbering=Fal
         'lines': all_lines,
         'correct_symbols': all_correct_symbols,
         'letter_groups': letter_groups,
-        'subgroup_letters': {f'punktum_{task_number}': letters},
-        'image_name': image_mapping.get(punktum_id),
+        'subgroup_letters': subgroup_letters,
+        'image_name': image_mapping.get(punktum_id, 'images/punktum_task_21_0.webp'),
         'add_numbering': add_numbering,
         'task_number': task_number,
         'punktum_id': punktum_id,
@@ -6779,15 +6789,9 @@ def generate_oge_diagnostic(request):
             context['task3_sentences'] = task3_data.get('sentences', [])
             session_data['task3_correct'] = task3_data['correct_answers']
 
-        # === Задание 5: Пунктуация — смайлики ===
-        available_punktum_ids = list(
-            OgePunktumExample.objects.filter(is_active=True)
-            .values_list('punktum_id', flat=True)
-            .distinct()
-        )
-        selected_type = random.choice(available_punktum_ids) if available_punktum_ids else None
+        # === Задание 5: Пунктуация — смайлики (только смешанный тип) ===
         task4_data = generate_oge_task4_with_image(
-            punktum_id=selected_type,
+            punktum_id='21',
             num_sentences=1,
             add_numbering=False
         )
@@ -7043,8 +7047,12 @@ def generate_oge_single_task(request):
                 override_letters_map = {
                     '2100': ['5', '8', '8.1', '9.2', '10', '18', 'дз'],
                     '2101': ['5', '9.1', '19', 'дз'],
-                    '2102': ['2', '3', '4.0', '4.1', '4.2', '5', '6', '7', '10', '11', '12', '13', '14', '15', '17', 'дз'],
-                    '19': ['19.1', '19.2', '19.3'],
+                    '2102': ['2', '3', '4', '6', '7', '11', '12', '13', '14', '15', 'дз'],
+                    '2': ['x', ','], '3': ['x', ','], '4': ['x', ','],
+                    '6': ['x', ','], '7': ['x', ','],
+                    '11': ['x', ','], '12': ['x', ','],
+                    '13': ['x', ','], '14': ['x', ','], '15': ['x', ','],
+                    '6_7': ['x', ','], '11_14': ['x', ','],
                 }
                 
                 override_letters = override_letters_map.get(punktum_id_raw)
@@ -7053,14 +7061,23 @@ def generate_oge_single_task(request):
                 is_general = punktum_id_raw in ('2100', '2101', '2102', '2103', '6_7', '11_14')
                 
                 while punktum_id in choices_map:
-                    punktum_id = random.choice(choices_map[punktum_id])
+                    candidates = [
+                        pid for pid in choices_map[punktum_id]
+                        if OgePunktumExample.objects.filter(punktum__id=pid, is_active=True).exists()
+                    ]
+                    if not candidates:
+                        break
+                    punktum_id = random.choice(candidates)
+
+                correct_answer_override = punktum_id if punktum_id_raw in ('2100', '2101', '2102') else None
 
                 task4_data = generate_oge_task4_with_image(
                     punktum_id=punktum_id,
                     num_sentences=1,
                     add_numbering=False,
                     is_for_quiz=False if is_general else None,
-                    override_letters=override_letters
+                    override_letters=override_letters,
+                    correct_answer_override=correct_answer_override
                 )
                 if task4_data:
                     # Для общего управления — принудительно ставим статичную картинку и заголовок
