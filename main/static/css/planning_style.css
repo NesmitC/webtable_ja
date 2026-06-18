@@ -240,18 +240,24 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     list-style: none;
-    padding: 0;
+    padding: 2px;
     margin: 0;
-    z-index: 1000;
-    min-width: 60px;
+    z-index: 100;
     white-space: nowrap;
+    width: 35px;
+    min-width: 20px;          /* ← Минимальная ширина */
 }
 
 .smiley-options li {
-    padding: 8px 12px;
+    padding: 2px 3px;
+    margin: 1px 0;
+    border-radius: 2px;
     cursor: pointer;
     border-bottom: 1px solid #eee;
     white-space: nowrap;
+    display: block;
+    text-align: center;
+    min-width: 15px;          /* ← Минимальная ширина для буквы */
 }
 
 /* Серый фон — выбрано, но не проверено */
@@ -282,6 +288,7 @@
 
 .smiley-options li:hover {
     background-color: #f0f0f0;
+    cursor: pointer;
 }
 
 /* ------- задания к 6 классу -------- */
@@ -552,6 +559,80 @@
     font-size: 0.9em;
 }
 
+/* Подсветка для выпадающих списков задания 22 в фикс диагностике */
+.task-match-correct {
+    background-color: #d4edda !important;
+    border: 1px solid #4CAF50 !important;
+    color: #155724 !important;
+}
+
+.task-match-incorrect {
+    background-color: #f8d7da !important;
+    border: 1px solid #f44336 !important;
+    color: #721c24 !important;
+}
+
+select.task-match-correct option,
+select.task-match-incorrect option {
+    background-color: white;
+    color: black;
+}
+
+/* === ФОРМАТИРОВАНИЕ ТЕКСТА ЗАДАНИЙ 1-3 === */
+.task-main-text p,
+.task-main-text br {
+    margin-bottom: 5px !important; /* ✅ Отступ 5px после каждого \n */
+    display: block;
+}
+
+.task-main-text p {
+    text-indent: 15px; /* ✅ Красная строка для каждого абзаца */
+}
+
+/* === ЗАГОЛОВОК-ИНСТРУКЦИЯ ПЕРЕД ТЕКСТОМ (ЗАДАНИЯ 1-3) === */
+.task13-instruction {
+    text-align: center;      /* По центру */
+    font-style: italic;      /* Курсив */
+    margin: 0 0 15px 0;      /* Отступ снизу, чтобы отделить от текста */
+    font-size: 1.05em;       /* Чуть крупнее основного текста */
+}
+
+/* === ЗАГОЛОВКИ И ТЕКСТ ЗАДАНИЙ 1-3 в фикс диагностике === */
+.diagnostic-paragraph {
+    /* Выравнивание по ширине (как в книгах) */
+    text-align: justify;    
+    /* Красная строка (отступ первой строки) */
+    text-indent: 25px;
+    margin: 0;
+}
+
+.question {
+    line-height: 1;
+    margin-bottom: 50px;
+}
+
+/* === СТИЛИЗАЦИЯ ИСТОЧНИКА (Последний абзац) === */
+.diagnostic-paragraph:last-child {
+    /* 1. Выравнивание по правому краю */
+    text-align: right !important;
+    
+    /* 2. Убираем красную строку, иначе текст "уедет" вправо с отступом */
+    text-indent: 0 !important;
+    
+    /* 3. Отступ сверху 5px (как просили) */
+    margin-top: 5px;
+    
+    /* 4. Убираем стандартный нижний отступ, чтобы не было лишней дыры */
+    margin-bottom: 0;
+}
+
+/* Стили для абзацев текста 23-27 */
+.text23-26 {
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: justify;
+    text-indent: 25px;
+}
 
 /* убираем отступы от чекбоксов Сдвинуть влево	Shift + Tab */
 .question input[type="checkbox"],
@@ -651,4 +732,46 @@ input[type="checkbox"]:checked.task-match-incorrect {
 
 .task-dropdown-item:hover>.task-submenu {
     display: flex !important;
+}
+
+/* === ОРФОЭПИЯ: ТРЕНИРОВКА === */
+.orthoepy-word {
+    font-size: 1.3em; 
+    line-height: 1;
+}
+
+.orthoepy-vowel {
+    display: inline-block;
+    cursor: pointer;            /* Курсор-рука при наведении */
+    transition: transform 0.15s ease, color 0.15s ease;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.orthoepy-vowel:hover {
+    transform: scale(1.4);      /* Увеличение буквы на 40% при наведении */
+    color: #2563eb;             /* Синий акцент (опционально) */
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.orthoepy-alpha-heading {
+    margin: 24px 0 10px;
+    padding-bottom: 4px;
+    font-size: 1.1em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#orthoepy-words-container {
+    column-width: 300px;        /* Автоматическое кол-во колонок под ширину экрана */
+    column-gap: 32px;           /* Отступ между колонками */
+    max-width: 1400px;
+    margin: 0 auto;          /* Центрирование */
+    padding: 0 20px;         /* Безопасные отступы на мобильных */
+}
+
+.orthoepy-alpha-heading,
+.orthoepy-word {
+    break-inside: avoid;        /* Запрещает разрыв заголовка или слова между колонками */
 }

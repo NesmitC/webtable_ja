@@ -18,10 +18,11 @@ from django.db.models import Count, Avg
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.conf import settings
 import re
 import json, secrets, datetime
+from pathlib import Path
 import logging
 from .forms import CustomUserCreationForm, ProfileForm
 from .models import UserExample, UserProfile, OrthogramExample, Orthogram, StudentAnswer, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise, TaskGrammaticEightExample, TaskGrammaticTwoTwo, TaskGrammaticTwoTwoExample, TaskPaponim, WordOk, UserWord, QuizHistory
@@ -32,10 +33,11 @@ from .models import (
     OgeOrthogram, OgeOrthogramExample,
     OgeCorrectionExercise, OgeWordOk,
 )
-from .assistant import NeuroAssistant
 import random
-from random import sample, choice, sample, randint, shuffle
+from random import sample, choice, randint, shuffle
 from django.db.models import Q
+from .assistant import get_orchestrator
+
 
 
 logger = logging.getLogger('django')
@@ -95,6 +97,11 @@ def validate_orthogram_ids(ids):
             continue
     return result
 
+def _normalize_text(text):
+    """Нормализация текста для сравнения"""
+    if not text:
+        return ''
+    return text.strip().lower().replace('ё', 'е')
 
 # === Основные представления ===
 
@@ -136,6 +143,30 @@ def starting_diagnostic_oge(request):
 
 def targetn(request):
     return render(request, 'games_html/targetn.html')
+
+
+# === Валидация текстовые поля планингов - пользователи вносят примеры слов ===
+from django.utils.html import strip_tags
+from django.http import JsonResponse
+
+def save_user_inputs(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Метод не разрешён'}, status=405)
+
+    raw = request.POST.get('user-input-orf-13', '')
+    
+    # 1. Санитизация: удаляем HTML/JS, оставляем только текст и переносы строк
+    clean_text = strip_tags(raw).strip()
+    
+    # 2. Валидация длины
+    if len(clean_text) > 500:
+        return JsonResponse({'error': 'Лимит: 500 символов'}, status=400)
+    
+    # 3. Безопасное сохранение (в сессию, БД или кэш)
+    request.session['orf_13_input'] = clean_text
+    # или: MyModel.objects.create(user=request.user, text=clean_text)
+    
+    return JsonResponse({'status': 'ok', 'length': len(clean_text)})
 
 
 # === Аутентификация и профиль ===
@@ -265,16 +296,41 @@ def delete_example(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+
+# ✅ API для фронтенда (соответствует urls.py)
 def get_orthogram_letters(request, orth_id):
+    """
+    Возвращает список букв для орфограммы по ID.
+    Оптимизировано: грузит только нужное поле из БД.
+    """
     try:
-        orth = Orthogram.objects.get(id=orth_id)
-        letters = [letter.strip() for letter in orth.letters.split(',') if letter.strip()]
+        # 🔥 Оптимизация: берем только поле 'letters'
+        orth = Orthogram.objects.only('letters').get(id=orth_id)
+
+        if not orth.letters:
+            return JsonResponse({'letters': []})
+
+        # Разделяем, убираем пробелы и пустые строки
+        letters = [char.strip() for char in orth.letters.split(',') if char.strip()]
         return JsonResponse({'letters': letters})
+
     except Orthogram.DoesNotExist:
+        # Если ID нет в базе — возвращаем дефолтный набор
         return JsonResponse({'letters': ['а', 'о', 'е', 'и', 'я']}, status=404)
+
     except Exception as e:
         logger.error(f"Ошибка при загрузке букв для орфограммы {orth_id}: {e}")
         return JsonResponse({'letters': ['а', 'о', 'е', 'и', 'я']}, status=500)
+
+
+def _extract_diff_letters(correct: str, incorrect: str) -> tuple[str, str]:
+    """Возвращает первые отличающиеся буквы из двух вариантов."""
+    if not correct or not incorrect:
+        return '?', '?'
+    for c_char, i_char in zip(correct, incorrect):
+        if c_char != i_char:
+            return c_char, i_char
+    return correct[-1] if correct else '?', incorrect[-1] if incorrect else '?'
 
 
 # === Генерация упражнений ОРФОГРАММ 1 маска ===
@@ -967,6 +1023,129 @@ def extract_from_text_and_masks(text, masked_word, orthogram_id):
     return parts
 
 
+# === Генерация упражнений ПУНКТОГРАММ (задания 16–21) ===
+@login_required
+def generate_punktum_exercise(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Только POST'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        orthogram_ids = data.get('orthogram_ids', [])
+
+        # Всегда сбрасываем сессию для новых упражнений
+        if 'current_exercise' in request.session:
+            del request.session['current_exercise']
+
+        # Поддерживаемые пунктограммы
+        PUNKTUM_TASKS = {
+            '1600', '1700', '1800', '1900', '2000', '2100', '2101', '2102'
+        }
+        if not set(orthogram_ids).issubset(PUNKTUM_TASKS):
+            return JsonResponse({'error': 'Поддерживаются только задания 16–21'}, status=400)
+
+        punktum_id = orthogram_ids[0]
+
+        # Статические значения для совместимости с фронтендом
+        if punktum_id == '2100':
+            allowed_letters = ['5', '8', '8.1', '9.2', '10', '13', '16', '18']
+        elif punktum_id == '2101':
+            allowed_letters = ['5', '9.1', '19']
+        elif punktum_id == '2102':
+            allowed_letters = ['2', '4.1', '4.2', '4.3', '5', '6', '7', '11', '12', '13', '14', '15', '16', '17']
+        else:
+            # Для 16-20 получаем из БД
+            try:
+                punktum = Punktum.objects.get(id=punktum_id)
+                allowed_letters = [letter.strip() for letter in punktum.letters.split(',') if letter.strip()]
+            except Punktum.DoesNotExist:
+                return JsonResponse({'error': f'Пунктограмма {punktum_id} не найдена'}, status=404)
+
+        # Ищем активные примеры
+        examples = PunktumExample.objects.filter(
+            punktum__id=punktum_id,
+            is_active=True
+        ).order_by('?')[:10]
+
+        if not examples:
+            return JsonResponse({'error': f'Нет примеров для пунктограммы {punktum_id}'}, status=404)
+
+        correct_letters = []
+        valid_examples = []
+        mask_pattern = f"*{punktum_id}*"
+        
+        for ex in examples:
+            explanation_text = (ex.explanation or '').strip()
+            if not explanation_text:
+                continue
+
+            parts = [p.strip() for p in explanation_text.split(',') if p.strip()]
+            mask_count = ex.masked_word.count(mask_pattern)
+            
+            # Пропускаем примеры без масок
+            if mask_count == 0:
+                continue
+                
+            # Проверяем соответствие количества масок и частей
+            if mask_count != len(parts):
+                continue
+                
+            # Проверяем допустимость частей
+            if not all(part in allowed_letters for part in parts):
+                continue
+                
+            # Все проверки пройдены
+            correct_letters.extend(parts)
+            valid_examples.append(ex)
+            
+            # Останавливаемся на 5 примерах
+            if len(valid_examples) >= 5:
+                break
+
+        if not valid_examples:
+            return JsonResponse({'error': 'Нет корректных примеров'}, status=400)
+
+        # Формирование инструкции для заданий 21
+        instruction = ""
+        if punktum_id == '2100':
+            instruction = "На месте смайликов ТИРЕ. Выберите подходящий номер пунктограммы"
+        elif punktum_id == '2101':
+            instruction = "На месте смайликов ДВОЕТОЧИЕ. Выберите подходящий номер пунктограммы"
+        elif punktum_id == '2102':
+            instruction = "На месте смайликов ЗАПЯТЫЕ. Выберите подходящий номер пунктограммы"
+
+        # Сохраняем в сессию
+        request.session['current_exercise'] = {
+            'exercise_id': f'punktum_{punktum_id}',
+            'example_ids': [ex.id for ex in valid_examples],
+            'correct_letters': correct_letters,
+            'orthogram_ids': [punktum_id],
+        }
+
+        # Подготовка данных для шаблона
+        words_lines = [ex.masked_word.strip() for ex in valid_examples]
+        task_num = punktum_id[:2]
+
+        html = render_to_string('exercise_snippet.html', {
+            'words_lines': words_lines,
+            'words_text': None,
+            'is_orth21_lines': True,
+            'exercise_id': request.session['current_exercise']['exercise_id'],
+            'exercise_title': f'Задание № {task_num}',
+            'exercise_instruction': instruction,
+            'show_next_button': False,
+        })
+
+        return JsonResponse({'html': html})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Неверный формат JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Ошибка в generate_punktum_exercise: {e}", exc_info=True)
+        return JsonResponse({'error': 'Ошибка генерации упражнения'}, status=500)
+
+
+# === Генерация упражнений на МНОЖЕСТВО ПУНКТОГРАММ (задания 16–21) ===
 @login_required
 def generate_punktum_exercise_multi(request):
     """
@@ -974,7 +1153,6 @@ def generate_punktum_exercise_multi(request):
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'Только POST'}, status=405)
-    
     try:
         data = json.loads(request.body)
         orthogram_ids = data.get('orthogram_ids', [])
@@ -1009,16 +1187,15 @@ def generate_punktum_exercise_multi(request):
             
             # Для задания 21 используем формат 21-XXXX
             if punktum_id.startswith('21'):
-                mask_pattern = f"*21-{punktum_id}*"
-                # Проверяем, есть ли в тексте исходная маска
-                if f"*{punktum_id}*" not in ex.masked_word:
+                mask_pattern = f"*{punktum_id}*"
+                if mask_pattern not in ex.masked_word:
                     continue
             else:
                 mask_pattern = f"*{punktum_id}*"
                 if mask_pattern not in ex.masked_word:
                     continue
             
-            mask_count = ex.masked_word.count(f"*{punktum_id}*")
+            mask_count = ex.masked_word.count(mask_pattern)
             if mask_count != len(parts) or mask_count == 0:
                 continue
             
@@ -1067,15 +1244,28 @@ def generate_punktum_exercise_multi(request):
             'orthogram_ids': [punktum_id],
         }
         
-        # Формируем слова для отображения
+        # === ФОРМИРОВАНИЕ WORDS_LINES С ИНДЕКСАМИ ===
         words_lines = []
+        mask_counter = 1
+        task_num = punktum_id[:2]  # '1600' -> '16'
+        
+        # === ГРУППЫ БУКВ ДЛЯ ПУНКТОГРАММ 16-20 ===
+        letter_groups = {}
+        subgroup_letters = {f'punktum_{task_num}': ['!', '?']}
+        
         for ex in valid_examples:
             masked = ex.masked_word.strip()
-            if punktum_id.startswith('21'):
-                # Заменяем *2100* на *21-2100* для фронтенда
-                masked = masked.replace(f"*{punktum_id}*", f"*21-{punktum_id}*")
+            
+            # Заменяем маски *1600* на *16-1*, *16-2* и т.д.
+            while f"*{punktum_id}*" in masked:
+                mask_id = f"{task_num}-{mask_counter}"
+                masked = masked.replace(f"*{punktum_id}*", f"*{mask_id}*", 1)
+                letter_groups[mask_id] = f'punktum_{task_num}'
+                mask_counter += 1
+            
             words_lines.append(masked)
         
+        # === STRUCTURED_EXAMPLES ДЛЯ ЗАДАНИЯ 18 (С АБЗАЦАМИ) ===
         structured_examples = [
             [p.strip() for p in ex.masked_word.split('\n') if p.strip()]
             for ex in valid_examples
@@ -1083,6 +1273,7 @@ def generate_punktum_exercise_multi(request):
         
         is_punktum_with_paragraphs = (punktum_id == '1800')
         
+        # === РЕНДЕРИНГ ШАБЛОНА ===
         html = render_to_string('exercise_snippet.html', {
             'structured_examples': structured_examples,
             'words_lines': words_lines,
@@ -1094,10 +1285,18 @@ def generate_punktum_exercise_multi(request):
             'is_punktum_with_paragraphs': is_punktum_with_paragraphs,
             'image_name': image_name,
             'task21_subgroup_letters': json.dumps(task21_subgroup_letters) if task21_subgroup_letters else None,
+            # === ПЕРЕДАЁМ LETTER_GROUPS ДЛЯ 16-20 ===
+            f'task{task_num}_letter_groups': json.dumps(letter_groups) if letter_groups else '{}',
+            f'task{task_num}_subgroup_letters': json.dumps(subgroup_letters) if subgroup_letters else '{}',
         })
         
-        return JsonResponse({'html': html})
-    
+        return JsonResponse({
+            'html': html,
+            f'task{task_num}_letter_groups': letter_groups,
+            f'task{task_num}_subgroup_letters': subgroup_letters,
+            'task21_subgroup_letters': task21_subgroup_letters if punktum_id.startswith('21') else None,
+        })
+        
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Неверный JSON'}, status=400)
     except Exception as e:
@@ -1612,36 +1811,6 @@ def check_exercise(request):
 
 
 
-@csrf_exempt
-def get_advice(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Только POST'}, status=405)
-    try:
-        data = json.loads(request.body)
-        user_words = data.get('user_words', [])
-        assistant = NeuroAssistant(request.user.id)
-        analysis = assistant.analyze_current_exercise(user_words)
-        advice_text = assistant.generate_advice_for_exercise(analysis)
-        return JsonResponse({'advice': advice_text})
-    except Exception as e:
-        logger.warning(f"Ошибка в get_advice: {e}")
-        return JsonResponse({'advice': "Спасибо за выполнение! Продолжай в том же духе."})
-
-
-@login_required
-def get_assistant_data(request):
-    assistant = NeuroAssistant(request.user.id)
-    action = request.GET.get('action', 'daily_question')
-    handlers = {
-        'daily_question': assistant.get_daily_question,
-        'progress': assistant.get_progress_summary,
-        'weak': assistant.get_weak_orthograms,
-        'planning': assistant.get_planning_words,
-    }
-    data = handlers.get(action, lambda: {"error": "Неизвестное действие"})()
-    return JsonResponse(data)
-
-
 # === Telegram и отчёты ===
 
 @login_required
@@ -1792,6 +1961,7 @@ def quiz_snippet_api(request, quiz_type):
         'orthography': 'quiz/quiz_orthography_snippet.html',
         'orthoepy': 'quiz/quiz_orthoepy_snippet.html',
         'grammar': 'quiz/quiz_grammar_snippet.html',
+        'hot': 'quiz/quiz_hot_snippet.html',
     }
     tpl = templates.get(quiz_type)
     if not tpl:
@@ -1866,235 +2036,358 @@ def get_quiz(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
+@csrf_exempt  # <-- Добавь csrf_exempt, если бот будет вызывать напрямую без токена
 def get_quiz_orthoepy_pair(request):
-    """Квиз по ударениям для сайта - полный рандом по всем словам"""
+    """Квиз по ударениям. Возвращает options с флагом is_correct"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=400)
-    
+
     import random
     from .models import OrthoepyWord
+    from django.db.models import Count
+
+    # Ищем леммы, у которых есть минимум 2 варианта (правильный и неправильный)
+    lemmas_with_both = OrthoepyWord.objects.filter(
+        is_active=True
+    ).values('lemma').annotate(
+        variant_count=Count('id')
+    ).filter(variant_count__gte=2)
+
+    if not lemmas_with_both:
+        return JsonResponse({'error': 'Нет слов для ударений'}, status=404)
+
+    # Выбираем случайную лемму
+    selected_lemma = random.choice(lemmas_with_both)['lemma']
     
-    # Получаем все слова с правильным ударением, у которых есть неправильный вариант
-    correct_words = OrthoepyWord.objects.filter(
-        is_active=True,
-        is_correct=True
-    )
+    # Получаем все варианты для этой леммы
+    variants = list(OrthoepyWord.objects.filter(
+        lemma=selected_lemma,
+        is_active=True
+    ))
+
+    correct_variant = None
+    incorrect_variant = None
     
-    all_pairs = []
-    for correct in correct_words:
-        incorrect = OrthoepyWord.objects.filter(
-            lemma=correct.lemma,
-            is_correct=False,
-            is_active=True
-        ).first()
-        
-        if incorrect:
-            all_pairs.append({
-                'correct': correct,
-                'incorrect': incorrect
-            })
-    
-    if not all_pairs:
-        return JsonResponse({'error': 'Нет полных пар'})
-    
-    # Выбираем случайную пару
-    pair = random.choice(all_pairs)
-    correct = pair['correct']
-    incorrect = pair['incorrect']
-    
+    for v in variants:
+        if v.is_correct:
+            correct_variant = v
+        else:
+            incorrect_variant = v
+
+    if not correct_variant or not incorrect_variant:
+        return JsonResponse({'error': 'Нет пары для слова'}, status=404)
+
+    # Формируем ответ в едином формате (options)
     options = [
-        {'text': correct.word, 'is_correct': True},
-        {'text': incorrect.word, 'is_correct': False}
+        {'text': correct_variant.word, 'is_correct': True},
+        {'text': incorrect_variant.word, 'is_correct': False}
     ]
     random.shuffle(options)
-    
+
     return JsonResponse({
-        'question': 'Как правильно поставить ударение?',
+        'question': f"Как правильно поставить ударение в слове «{correct_variant.lemma}»?",
         'options': options,
-        'example_id': correct.id,
-        'correct_answer': correct.word
+        'example_id': correct_variant.id,  # ID правильного слова для логирования
+        'correct_answer': correct_variant.word
     })
 
 @login_required
 def log_quiz_answer_site(request):
-    """Логирует ответ пользователя на сайте"""
+    """Логирует ответ пользователя на сайте. Создаёт запись в истории ОДИН РАЗ."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=400)
     
-    import json
     try:
+        import json
+        from .models import QuizHistory, UserWord
+        from django.utils import timezone
+
         data = json.loads(request.body)
-        print(f"📝 САЙТ: ответ на квиз {data}")
-        
-        # TODO: сохранять в БД
-        
+        word_id = data.get('example_id') or data.get('word_id')
+        user_word_id = data.get('user_word_id')
+        is_correct = bool(data.get('is_correct', False))
+
+        if not word_id:
+            return JsonResponse({'error': 'Missing word_id'}, status=400)
+
+        # ✅ Создаём запись в истории ТОЛЬКО при ответе
+        QuizHistory.objects.create(
+            user=request.user,
+            word_id=word_id,
+            user_word_id=user_word_id,
+            was_correct=is_correct,
+            answer_time=timezone.now()
+        )
+
+        # ✅ Обновляем статистику слова в планинге (если есть связь)
+        if user_word_id:
+            try:
+                uw = UserWord.objects.get(id=user_word_id, user=request.user)
+                if is_correct:
+                    uw.success_count += 1
+                else:
+                    uw.error_count += 1
+                    uw.last_error = timezone.now()
+                uw.last_shown = timezone.now()
+                uw.save()
+            except UserWord.DoesNotExist:
+                pass  # Слово не из планинга (общая орфография)
+
         return JsonResponse({'status': 'ok'})
+        
     except Exception as e:
-        print(f"Ошибка в log_quiz_answer_site: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+        import logging, traceback
+        logging.error(f"Log quiz answer error: {e}\n{traceback.format_exc()}")
+        return JsonResponse({'error': 'Internal error'}, status=500)
 
 @login_required
 def get_planning_quiz(request):
-    """Квиз из планинга пользователя — циклический показ слов"""
+    """Квиз из планинга: строгий последовательный цикл 1→2→3→...→1"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=400)
-    
-    import json, random, re
-    from django.utils import timezone
-    from .models import UserWord, QuizHistory
-    
+
     try:
-        # Получаем все слова пользователя из планинга
-        user_words = UserWord.objects.filter(
-            user=request.user,
-            is_active=True
-        ).select_related('reference_word__orthogram')
-        
-        if not user_words.exists():
-            return JsonResponse({
-                'error': '📭 Начните заполнять планинг, и эти слова появятся здесь!'
-            })
-        
-        # Отбираем только те, у которых есть эталон с explanation и incorrect_variant
-        valid_words = []
-        for uw in user_words:
-            ref = uw.reference_word
-            if (ref and ref.explanation and ref.incorrect_variant 
-                and ref.is_active and not ref.is_user_added):
-                valid_words.append(uw)
-        
-        if not valid_words:
-            return JsonResponse({
-                'error': '📝 В вашем планинге пока нет слов для квиза. Добавьте слова, которые хотите запомнить!'
-            })
-        
-        # Получаем историю показов за сегодня
-        today = timezone.now().date()
-        history = QuizHistory.objects.filter(
-            user=request.user,
-            answer_time__date=today
-        ).order_by('answer_time')
-        
-        # Получаем ID слов, которые уже были показаны сегодня (в порядке показа)
-        shown_ids = list(history.values_list('user_word_id', flat=True))
-        
-        # Определяем следующее слово для показа (циклически)
-        if not shown_ids:
-            # Если история пуста, показываем случайное слово
-            user_word = random.choice(valid_words)
-        else:
-            # Находим последнее показанное слово
-            last_shown_id = shown_ids[-1]
-            
-            # Ищем индекс последнего показанного слова в списке valid_words
-            last_index = -1
-            for i, uw in enumerate(valid_words):
-                if uw.id == last_shown_id:
-                    last_index = i
-                    break
-            
-            # Выбираем следующее слово по кругу
-            next_index = (last_index + 1) % len(valid_words)
-            user_word = valid_words[next_index]
-        
-        ref = user_word.reference_word
-        
-        # Записываем в историю
-        QuizHistory.objects.create(
-            user=request.user,
-            word_id=ref.id,
-            user_word_id=user_word.id,
-            answer_time=timezone.now(),
-            was_correct=False
-        )
-        
-        correct = ref.text
-        masked = re.sub(r'\*\d+\*', '😊', ref.masked_word or '') if ref.masked_word else correct
-        incorrect = ref.incorrect_variant.strip()
-        explanation = ref.explanation
-        
-        options = [
-            {'text': correct, 'is_correct': True},
-            {'text': incorrect, 'is_correct': False}
+        # 1️⃣ Отбираем ТОЛЬКО полностью готовые слова. Остальные игнорируются.
+        valid_qs = UserWord.objects.filter(
+            user=request.user, is_active=True, reference_word__isnull=False
+        ).select_related('reference_word')
+
+        valid_words = [
+            uw for uw in valid_qs
+            if (uw.reference_word.is_active
+                and uw.reference_word.explanation and uw.reference_word.explanation.strip()
+                and uw.reference_word.incorrect_variant and uw.reference_word.incorrect_variant.strip())
         ]
-        random.shuffle(options)
+
+        if not valid_words:
+            return JsonResponse({'error': '📝 В планинге нет слов, готовых к квизу.'})
+
+        # Стабильный порядок обхода (по ID)
+        valid_words.sort(key=lambda x: x.id)
+        ids = [uw.id for uw in valid_words]
+        print(f"📦 Валидный пул (IDs): {ids}", flush=True)
+
+        # 2️⃣ Ищем последнее отвеченное слово
+        last = QuizHistory.objects.filter(user=request.user).order_by('-answer_time').first()
+        current_idx = 0
         
+        if last:
+            print(f"🕒 Last entry: user_word_id={last.user_word_id}, word_id={last.word_id}", flush=True)
+            target = last.user_word_id
+            
+            # 🔹 ФОЛЛБЕК: если фронт не прислал user_word_id, ищем совпадение по example_id (word_id)
+            if not target and last.word_id:
+                for i, uw in enumerate(valid_words):
+                    if uw.reference_word_id == last.word_id:
+                        target = uw.id
+                        print(f"🔍 Фоллбек: найден target_id={target} по word_id", flush=True)
+                        break
+
+            if target in ids:
+                current_idx = ids.index(target)
+
+        # 3️⃣ Вычисляем следующий индекс (цикл)
+        next_idx = (current_idx + 1) % len(valid_words)
+        print(f"🔄 Индекс: {current_idx} -> {next_idx}", flush=True)
+
+        selected = valid_words[next_idx]
+        ref = selected.reference_word
+        print(f"🎯 ВЫБРАНО: '{selected.text}' (UW_ID:{selected.id}, REF_ID:{ref.id})\n", flush=True)
+
+        # ❗ НЕ создаём QuizHistory здесь! Только в log_quiz_answer_site
+
+        # 4️⃣ Формируем ответ
+        masked = re.sub(r'\*\d+\*', '😊', ref.masked_word or ref.text)
+        options = [
+            {'text': ref.text, 'is_correct': True},
+            {'text': ref.incorrect_variant.strip(), 'is_correct': False}
+        ]
+        random.shuffle(options)  # Только кнопки, не нарушая цикл слов
+
         return JsonResponse({
             'question': f'Как пишется правильно?\n{masked}',
             'options': options,
-            'correct_answer': correct,
-            'explanation': explanation,
+            'correct_answer': ref.text,
+            'explanation': ref.explanation,
             'example_id': ref.id,
-            'user_word_id': user_word.id
+            'user_word_id': selected.id
         })
-        
-    except Exception as e:
-        print(f"Ошибка в get_planning_quiz: {e}")
-        import traceback
-        traceback.print_exc()
-        return JsonResponse({'error': str(e)}, status=500)
 
-@staff_member_required
-def admin_planning_check(request):
-    """Проверка слов из планингов прямо в админке"""
-    
-    # Получаем все уникальные слова из планингов
-    planning_words = UserWord.objects.filter(
-        is_active=True
-    ).values('text').annotate(
-        user_count=Count('user', distinct=True)
-    ).order_by('-user_count')
-    
-    missing_words = []
-    
-    for item in planning_words:
-        word_text = item['text']
-        # Проверяем, есть ли слово в эталонной БД
-        exists = OrthogramExample.objects.filter(
-            text=word_text,
-            is_user_added=False
-        ).exists()
-        
-        if not exists:
-            missing_words.append({
-                'text': word_text,
-                'user_count': item['user_count']
-            })
-    
-    return render(request, 'admin/planning_check.html', {
-        'missing_words': missing_words,
-        'total_planning': planning_words.count(),
-        'total_missing': len(missing_words)
-    })
+    except Exception as e:
+        import logging
+        logging.error(f"Planning quiz error: {e}", exc_info=True)
+        return JsonResponse({'error': 'Ошибка загрузки'}, status=500)
+
 
 
 # === СТАТИСТИКА для ЛК ===
 @login_required
+def get_user_quiz_stats_site(request):
+    """Статистика + умные рекомендации с группировкой"""
+    try:
+        user = request.user
+        from .models import UserWord, QuizHistory, OrthogramExample, OrthoepyWord
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # 1. Слова в планинге
+        total_planning = UserWord.objects.filter(user=user, is_active=True).count()
+        
+        # 2. Всего попыток
+        total_quizzes = QuizHistory.objects.filter(user=user).count()
+        
+        # 3. Правильные ответы
+        correct = QuizHistory.objects.filter(user=user, was_correct=True).count()
+        
+        # 4. Успешность
+        success_rate = round(correct / total_quizzes * 100) if total_quizzes > 0 else 0
+        
+        # 5. Ошибки за неделю
+        week_ago = timezone.now() - timedelta(days=7)
+        wrong_answers = QuizHistory.objects.filter(
+            user=user,
+            was_correct=False,
+            answer_time__gte=week_ago
+        )
+        
+        # 🔹 Убрали need_repeat — не используем
+        
+        # 6. Считаем ошибки по типам
+        ortho_errors = {}  # {orth_id: {'name': ..., 'words': set()}}
+        preposition_total = 0
+        preposition_wrong = 0
+        orthoepy_total = 0
+        orthoepy_wrong = 0
+        
+        for answer in wrong_answers:
+            if answer.word_id:
+                # 🔍 Проверяем: это ударение (OrthoepyWord)?
+                try:
+                    orthoepy_word = OrthoepyWord.objects.get(id=answer.word_id)
+                    orthoepy_wrong += 1
+                    continue
+                except OrthoepyWord.DoesNotExist:
+                    pass
+                
+                # 🔍 Проверяем: это орфограмма (OrthogramExample)?
+                try:
+                    word = OrthogramExample.objects.get(id=answer.word_id)
+                    orth_id = word.orthogram_id
+                    
+                    # 🔹 Предлоги: короткие слова (1-3 буквы)
+                    if len(word.text) <= 3:
+                        preposition_wrong += 1
+                    else:
+                        # 🔹 Орфограммы: группируем по ID
+                        if orth_id:
+                            if orth_id not in ortho_errors:
+                                orth_name = word.orthogram.name if word.orthogram else f'Орфограмма {orth_id}'
+                                ortho_errors[orth_id] = {
+                                    'name': orth_name,
+                                    'words': set()
+                                }
+                            ortho_errors[orth_id]['words'].add(word.text)
+                except OrthogramExample.DoesNotExist:
+                    pass
+        
+        # 🔹 Считаем общее количество попыток по типам (для процента)
+        all_history = QuizHistory.objects.filter(user=user, answer_time__gte=week_ago)
+        for answer in all_history:
+            if answer.word_id:
+                # Ударения
+                try:
+                    OrthoepyWord.objects.get(id=answer.word_id)
+                    orthoepy_total += 1
+                    continue
+                except:
+                    pass
+                
+                # Орфограммы/предлоги
+                try:
+                    word = OrthogramExample.objects.get(id=answer.word_id)
+                    if len(word.text) <= 3:
+                        preposition_total += 1
+                except:
+                    pass
+        
+        # 🔹 7. Формируем рекомендации
+        recommendations = []
+        
+        # Орфограммы (слова + номера) — 🔹 ПРОБЕЛ ПОСЛЕ №
+        for orth_id, data in sorted(ortho_errors.items(), key=lambda x: len(x[1]['words']), reverse=True):
+            words_list = ', '.join(list(data['words'])[:5])  # Максимум 5 слов
+            recommendations.append(f"{words_list} — орф. № {orth_id}")  # ← № пробел
+        
+        # Предлоги (если ошибок > 20%)
+        preposition_rate = (preposition_wrong / preposition_total * 100) if preposition_total > 0 else 0
+        if preposition_rate > 20:
+            recommendations.append("Повтори правописание предлогов")
+        
+        # Ударения (если ошибок > 20%)
+        orthoepy_rate = (orthoepy_wrong / orthoepy_total * 100) if orthoepy_total > 0 else 0
+        if orthoepy_rate > 20:
+            recommendations.append("Повтори ударения")
+        
+        return JsonResponse({
+            'total_planning': total_planning,
+            'total_quizzes': total_quizzes,
+            'correct': correct,
+            'success_rate': success_rate,
+            'recommendations': recommendations  # 🔹 Убрали need_repeat
+        })
+        
+    except Exception as e:
+        print(f"Stats error: {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'total_planning': 0,
+            'total_quizzes': 0,
+            'correct': 0,
+            'success_rate': 0,
+            'recommendations': []
+        })
+
+
+@login_required
 def log_quiz_answer_site(request):
-    """Сохраняет результат ответа в QuizHistory"""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed'}, status=400)
-    
-    import json
-    from .models import QuizHistory
-    from django.utils import timezone
-    
-    data = json.loads(request.body)
-    example_id = data.get('example_id')
-    is_correct = data.get('is_correct', False)
-    
-    if not example_id:
-        return JsonResponse({'error': 'Нет example_id'}, status=400)
-    
-    # Сохраняем в историю
-    QuizHistory.objects.create(
-        user=request.user,
-        example_id=example_id,
-        was_correct=is_correct,
-        answer_time=timezone.now()
-    )
-    
-    return JsonResponse({'status': 'ok'})
+    """Логирование ответа — исправленная версия"""
+    try:
+        user = request.user
+        print(f"📝 LOG: user={user.username} (ID: {user.id})")
+        
+        import json
+        data = json.loads(request.body)
+        
+        # 🔧 ИСПРАВЛЕНО: word_id вместо example_id
+        word_id = data.get('example_id')  # фронт отправляет example_id
+        is_correct = data.get('is_correct', False)
+        
+        print(f"🔍 word_id={word_id}, is_correct={is_correct}")
+        
+        if not word_id:
+            return JsonResponse({'error': 'No word_id'}, status=400)
+        
+        from .models import QuizHistory
+        from django.utils import timezone
+        
+        # 🔧 ИСПРАВЛЕНО: word_id вместо example_id
+        entry = QuizHistory.objects.create(
+            user=user,
+            word_id=word_id,          # ← word_id, а не example_id!
+            was_correct=is_correct,
+            answer_time=timezone.now()
+        )
+        
+        print(f"✅ Saved: QuizHistory id={entry.id}")
+        return JsonResponse({'status': 'ok', 'entry_id': entry.id})
+        
+    except Exception as e:
+        import traceback
+        print(f"❌ ERROR: {type(e).__name__}: {e}")
+        traceback.print_exc()
+        return JsonResponse({'status': 'logged_with_error'}, status=200)
+
 
 # === отчёты для ЛК ===
 
@@ -2132,6 +2425,86 @@ def get_weekly_report(request):
     })
 
 
+# === СТАТИСТИКА для админа, учителя ===
+@staff_member_required
+def admin_planning_check(request):
+    """Проверка слов из планингов прямо в админке"""
+    
+    # Получаем все уникальные слова из планингов
+    planning_words = UserWord.objects.filter(
+        is_active=True
+    ).values('text').annotate(
+        user_count=Count('user', distinct=True)
+    ).order_by('-user_count')
+    
+    missing_words = []
+    
+    for item in planning_words:
+        word_text = item['text']
+        # Проверяем, есть ли слово в эталонной БД
+        exists = OrthogramExample.objects.filter(
+            text=word_text,
+            is_user_added=False
+        ).exists()
+        
+        if not exists:
+            missing_words.append({
+                'text': word_text,
+                'user_count': item['user_count']
+            })
+    
+    return render(request, 'admin/planning_check.html', {
+        'missing_words': missing_words,
+        'total_planning': planning_words.count(),
+        'total_missing': len(missing_words)
+    })
+
+
+@staff_member_required
+def teacher_analytics_view(request):
+    """
+    Страница аналитики для преподавателя
+    Доступ: только для админов и преподавателей
+    """
+    from .assistants.teacher_analytics import TeacherAnalytics
+    
+    analytics = TeacherAnalytics()
+    
+    # Общая статистика
+    overview = analytics.get_overview(days=7)
+    
+    # Все ученики (сводка)
+    students_summary = analytics.get_all_students_summary()
+    
+    # Слова без объяснений
+    missing_explanations = analytics.get_missing_explanations_list(limit=100)
+    
+    context = {
+        'overview': overview,
+        'students_summary': students_summary,
+        'missing_explanations': missing_explanations,
+    }
+    
+    return render(request, 'admin/analytics.html', context)
+
+
+@staff_member_required
+def student_detail_view(request, user_id):
+    """Детальная информация по ученику"""
+    from .assistants.teacher_analytics import TeacherAnalytics
+    
+    analytics = TeacherAnalytics()
+    
+    try:
+        details = analytics.get_student_details(user_id)
+    except Exception as e:
+        return HttpResponse(f"❌ Ошибка: {e}", status=404)
+    
+    return render(request, 'admin/student_detail.html', {
+        'student': details
+    })
+
+
 # === ПЕРСОНАЛИЗИРОВАННЫЕ КВИЗЫ ИЗ ПЛАНИНГА ===
 # ========================================================================
 # ✅ ВСПОМОГАТЕЛЬНАЯ: парсинг слов
@@ -2147,54 +2520,74 @@ def parse_words_from_text(text):
 # ========================================================================
 # ✅ API: СОХРАНЕНИЕ ПРИМЕРОВ (ПЛАНИНГ)
 # ========================================================================
+log = logging.getLogger(__name__)
 
 @login_required
 def save_example(request):
-    """Сохраняет ВСЕ слова пользователя в UserWord"""
+    """Сохраняет слова из ЛЮБОГО поля планинга в UserWord"""
     if request.method != 'POST':
-        return JsonResponse({'status': 'error'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=400)
     
     field_name = request.POST.get('field_name')
     content = request.POST.get('content', '').strip()
     
     if not field_name:
-        return JsonResponse({'status': 'error'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Missing field_name'}, status=400)
     
     try:
-        # Сохраняем в UserExample (резерв)
+        # 1️⃣ Всегда сохраняем исходный текст в UserExample (резерв)
         UserExample.objects.update_or_create(
             user=request.user,
             field_name=field_name,
             defaults={'content': content}
         )
         
-        # Сохраняем в UserWord
-        if field_name.startswith('user-input-orf-') and content:
-            orth_id = field_name.replace('user-input-orf-', '')
-            words = [w.strip() for w in content.split('\n') if w.strip()]
-            
-            # Удаляем старые
-            UserWord.objects.filter(
+        # 2️⃣ Парсим слова (поддержка переносов строк и запятых)
+        raw_words = content.replace(',', '\n').split('\n')
+        words = [w.strip() for w in raw_words if w.strip()]
+        
+        if not words:
+            return JsonResponse({'status': 'success', 'count': 0, 'message': 'Слов не найдено'})
+        
+        # 3️⃣ Удаляем старые записи ТОЛЬКО для этого поля
+        deleted, _ = UserWord.objects.filter(
+            user=request.user, 
+            field_name=field_name
+        ).delete()
+        
+        # 4️⃣ Сохраняем каждое слово в UserWord
+        saved_count = 0
+        with_ref = 0
+        for word_text in words:
+            ref = OrthogramExample.objects.filter(text__iexact=word_text, is_active=True).first()
+            if ref:
+                with_ref += 1
+                
+            UserWord.objects.create(
                 user=request.user,
-                field_name=field_name
-            ).delete()
+                field_name=field_name,
+                text=word_text,
+                reference_word=ref,  # None — ок, слово всё равно учтётся в статистике
+                is_active=True
+            )
+            saved_count += 1
             
-            # Создаем новые (ПРОСТО СОХРАНЯЕМ, без проверки эталона)
-            for word_text in words:
-                UserWord.objects.create(
-                    user=request.user,
-                    field_name=field_name,
-                    text=word_text,
-                    orthogram_id=orth_id,  # добавляем orth_id для быстрого поиска
-                    is_active=True
-                )
+        log.info(
+            f"✅ save_example: user={request.user.id}, field={field_name}, "
+            f"saved {saved_count} words, {with_ref} with reference"
+        )
         
-        return JsonResponse({'status': 'success'})
-        
+        return JsonResponse({
+            'status': 'success',
+            'count': saved_count,
+            'with_reference': with_ref,
+            'message': f'Сохранено {saved_count} слов'
+        })
+            
     except Exception as e:
-        print(f"❌ Ошибка: {e}")
+        log.error(f"❌ save_example error: {e}", exc_info=True)
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
+    
 
 # ========================================================================
 # ✅ API: ЗАГРУЗКА ПРИМЕРОВ
@@ -2215,89 +2608,79 @@ def load_examples(request):
 # ========================================================================
 # ✅ API: КВИЗ ДЛЯ БОТА — ГЛАВНАЯ ФУНКЦИЯ
 # ========================================================================
-def _get_personalized_preposition_quiz(user_id):
-    
-    print(f"\n🔍 Поиск слова для user_id={user_id}")
-    
+def _get_personalized_preposition_quiz(user_id: int) -> dict:
+    from .models import UserWord, OrthogramExample, QuizHistory
+    from django.utils import timezone
+    import random, re
+
     today = timezone.now().date()
-    
-    # ===== 1. Получаем историю показов =====
-    # Все ID, показанные сегодня
-    shown_today_ids = list(QuizHistory.objects.filter(
-        user_id=user_id,
-        answer_time__date=today
-    ).values_list('word_id', flat=True))
-    
-    # Последнее показанное слово
-    last_shown = QuizHistory.objects.filter(
-        user_id=user_id
-    ).order_by('-answer_time').first()
-    
-    last_word_id = last_shown.word_id if last_shown else None
-    
-    print(f"📊 Показано сегодня: {len(shown_today_ids)}")
-    print(f"📊 Последнее слово ID: {last_word_id}")
-    
-    # ===== 2. Берем слова с вариантами =====
-    all_quiz_words = list(OrthogramExample.objects.filter(
-        is_active=True
-    ).exclude(
-        incorrect_variant__isnull=True
-    ).exclude(
-        incorrect_variant=''
-    ).select_related('orthogram'))
-    
-    print(f"📊 Всего слов с вариантами: {len(all_quiz_words)}")
-    
-    if not all_quiz_words:
-        # Заглушка
+
+    # 🔹 1. История за сегодня (исключаем повторы)
+    shown_today = set(
+        QuizHistory.objects.filter(user_id=user_id, answer_time__date=today)
+        .values_list('word_id', flat=True)
+    )
+
+    # 🔹 2. ЯВНО получаем планинг пользователя (убираем Pylance error)
+    planning_qs = UserWord.objects.filter(
+        user_id=user_id, is_active=True
+    ).select_related('reference_word')
+
+    planning_candidates = []
+    for pw in planning_qs:
+        ref = pw.reference_word
+        if (ref and ref.is_active and ref.explanation and ref.incorrect_variant 
+                and ref.id not in shown_today):
+            planning_candidates.append({
+                'word': ref,
+                'user_word_id': pw.id,
+                'source': 'planning'
+            })
+
+    selected = None
+
+    # 🔹 3. Приоритет: планинг → общая база → фоллбек
+    if planning_candidates:
+        selected = random.choice(planning_candidates)
+    else:
+        general_qs = OrthogramExample.objects.filter(
+            is_active=True, is_user_added=False,
+            explanation__isnull=False, incorrect_variant__isnull=False
+        ).exclude(explanation='', incorrect_variant='') \
+         .exclude(id__in=shown_today) \
+         .select_related('orthogram')
+
+        if general_qs.exists():
+            word_obj = general_qs.order_by('?').first()
+            selected = {'word': word_obj, 'user_word_id': None, 'source': 'general'}
+
+    if selected is None:
         return {
-            'question': "Как пишется правильно:\nв**а",
-            'options': [
-                {'text': "вода", 'is_correct': True},
-                {'text': "вада", 'is_correct': False}
-            ],
-            'explanation': "Проверяемая гласная в корне слова",
-            'orthogram_id': 1,
-            'example_id': 0,
-            'user_word_id': None,
-            'source': 'fallback'
+            'question': 'Как пишется правильно:\нв**а',
+            'options': [{'text': 'вода', 'is_correct': True}, {'text': 'вада', 'is_correct': False}],
+            'explanation': 'Проверяемая гласная в корне',
+            'example_id': 0, 'user_word_id': None, 'source': 'fallback',
+            'letter_correct': 'о', 'letter_incorrect': 'а'
         }
-    
-    # ===== 3. Фильтруем =====
-    # Убираем показанные сегодня
-    available = [w for w in all_quiz_words if w.id not in shown_today_ids]
-    
-    # Если все показаны - сбрасываем фильтр
-    if not available:
-        print("🔄 Все слова показаны - начинаем заново")
-        available = all_quiz_words.copy()
-    
-    # Если есть последнее слово - исключаем его (чтобы не повторялось подряд)
-    if last_word_id and len(available) > 1:
-        available = [w for w in available if w.id != last_word_id]
-    
-    print(f"📊 Доступно сейчас: {len(available)}")
-    
-    # ===== 4. Выбираем случайное =====
-    word = random.choice(available)
-    print(f"✅ Выбрано: {word.text} (ID: {word.id})")
-    
-    masked = word.masked_word if word.masked_word else word.text
-    
+
+    # 🔹 4. Извлекаем буквы и формируем ответ
+    word = selected['word']
+    l_corr, l_incorr = _extract_diff_letters(word.text, word.incorrect_variant)
+    masked = re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)
+
     return {
-        'question': f"Как пишется правильно:\n{re.sub(r'\*\d+\*', '😊', masked)}",
+        'question': f"Как пишется правильно:\n{masked}",
         'options': [
             {'text': word.text, 'is_correct': True},
             {'text': word.incorrect_variant, 'is_correct': False}
         ],
-        'explanation': word.explanation or (word.orthogram.rule if word.orthogram else "Правило не указано"),
-        'orthogram_id': word.orthogram_id or 0,
+        'letter_correct': l_corr,
+        'letter_incorrect': l_incorr,
+        'explanation': word.explanation or (word.orthogram.rule if word.orthogram else 'Правило не указано'),
         'example_id': word.id,
-        'user_word_id': None,
-        'source': 'general'
+        'user_word_id': selected['user_word_id'],
+        'source': selected['source']
     }
-
 
 @csrf_exempt
 def get_daily_quiz(request):
@@ -2346,7 +2729,7 @@ def get_daily_quiz(request):
 # ========================================================================
 @csrf_exempt
 def log_quiz_answer(request):
-    """Логирует ответ пользователя из бота"""
+    """Логирует ответ пользователя из бота и возвращает explanation"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
@@ -2355,52 +2738,54 @@ def log_quiz_answer(request):
         user_id = data.get('user_id')
         word_id = data.get('word_id')
         user_word_id = data.get('user_word_id')
-        was_correct = data.get('was_correct', False)
+        # Поддержка обоих форматов
+        was_correct = data.get('was_correct', data.get('user_answer_correct', False))
         
-        print(f"\n📝 ЛОГИРОВАНИЕ ОТВЕТА:")
-        print(f"   user_id: {user_id}")
-        print(f"   word_id: {word_id}")
-        print(f"   user_word_id: {user_word_id}")
-        print(f"   was_correct: {was_correct}")
+        if user_word_id:
+            try:
+                user_word = UserWord.objects.get(id=user_word_id, user_id=user_id)
+                if was_correct:
+                    user_word.success_count += 1
+                else:
+                    user_word.error_count += 1
+                    user_word.last_error = timezone.now()
+                user_word.save()
+            except UserWord.DoesNotExist:
+                pass  # Игнорируем
         
-        if not user_id or not word_id:
-            return JsonResponse({'error': 'Missing required fields'}, status=400)
+        # Получаем слово для explanation
+        word = OrthogramExample.objects.filter(id=word_id, is_active=True).first()
+        explanation = word.explanation if word else "Правило не найдено"
+        correct_text = word.text if word else "?"
         
-        from .models import QuizHistory, UserWord
-        from django.utils import timezone
-        
-        # 1. Сохраняем в историю
-        history = QuizHistory.objects.create(
+        # Сохраняем в историю
+        QuizHistory.objects.create(
             user_id=user_id,
             word_id=word_id,
             user_word_id=user_word_id,
             was_correct=was_correct,
             answer_time=timezone.now()
         )
-        print(f"✅ История сохранена ID={history.id}")
         
-        # 2. Если слово из планинга - обновляем статистику
+        # Обновляем статистику слова из планинга
         if user_word_id:
             try:
                 user_word = UserWord.objects.get(id=user_word_id)
-                
                 if was_correct:
                     user_word.success_count += 1
-                    print(f"   +1 успех для {user_word.text}")
                 else:
                     user_word.error_count += 1
                     user_word.last_error = timezone.now()
-                    print(f"   +1 ошибка для {user_word.text}")
-                
-                # Пересчитываем вес
-                old_weight = user_word.weight
-                user_word.update_weight()
-                print(f"   Вес: {old_weight:.1f} → {user_word.weight:.1f}")
-                
+                user_word.save()
             except UserWord.DoesNotExist:
-                print(f"⚠️ UserWord {user_word_id} не найден")
+                pass
         
-        return JsonResponse({'status': 'ok'})
+        return JsonResponse({
+            'status': 'ok',
+            'was_correct': was_correct,
+            'explanation': explanation,
+            'correct_text': correct_text
+        })
         
     except Exception as e:
         print(f"❌ Ошибка логирования: {e}")
@@ -2503,98 +2888,149 @@ def format_quiz_report(stats):
 
 @csrf_exempt
 def weekly_report(request):
-    """API для получения статистики пользователя (только 3 последних)"""
+    """
+    API для получения статистики пользователя.
+    
+    Возвращает:
+    - total_words: ВСЕ активные слова в планинге (независимо от наличия эталона)
+    - total_attempts: попытки за последние 7 дней
+    - correct_answers: верные ответы
+    - success_rate: процент успеха
+    - weak_orthograms: топ-3 сложных тем (по времени последней ошибки)
+    """
+
+    # 🔹 Валидация метода и входных данных
     if request.method != 'POST':
+        logger.warning(f"⚠️ weekly_report: неверный метод {request.method}")
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
     try:
         data = json.loads(request.body)
         user_id = data.get('user_id')
         
-        print(f"\n📊 ЗАПРОС СТАТИСТИКИ для user_id={user_id}")
-        
         if not user_id:
+            logger.warning("⚠️ weekly_report: отсутствует user_id в запросе")
             return JsonResponse({'error': 'No user_id'}, status=400)
         
-        # Получаем статистику
-        from django.utils import timezone
-        from datetime import timedelta
-        from .models import UserWord, QuizHistory, Orthogram
+        logger.info(f"📊 ЗАПРОС СТАТИСТИКИ: user_id={user_id}")
         
         today = timezone.now().date()
         week_ago = today - timedelta(days=7)
         
-        # 1. Слова в планинге
+        # =====================================================================
+        # 🔹 1. Считаем ВСЕ активные слова в планинге (без фильтра по эталону!)
+        # =====================================================================
         total_words = UserWord.objects.filter(
             user_id=user_id,
             is_active=True
         ).count()
+        logger.debug(f"✓ total_words (все активные): {total_words}")
         
-        # 2. Статистика квизов за неделю
+        # =====================================================================
+        # 🔹 2. Статистика попыток за последнюю неделю
+        # =====================================================================
         weekly_history = QuizHistory.objects.filter(
             user_id=user_id,
             answer_time__date__gte=week_ago
-        )
+        ).select_related('word__orthogram', 'user_word')  # оптимизация
         
         total_attempts = weekly_history.count()
         correct_attempts = weekly_history.filter(was_correct=True).count()
-        success_rate = round((correct_attempts / total_attempts * 100) if total_attempts > 0 else 0, 1)
         
-        # 3. Сложные темы - ТОЛЬКО 3 ПОСЛЕДНИХ
-        ortho_errors = {}
+        # ✅ Защита от деления на ноль + округление до 1 знака
+        success_rate = round((correct_attempts / total_attempts * 100), 1) if total_attempts > 0 else 0.0
         
-        for answer in weekly_history.select_related('word__orthogram'):
-            if answer.word and answer.word.orthogram:
-                orthogram = answer.word.orthogram
-                ortho_id = orthogram.id
+        logger.debug(f"✓ attempts: total={total_attempts}, correct={correct_attempts}, rate={success_rate}%")
+        
+        # =====================================================================
+        # 🔹 3. Сложные темы (орфограммы) — агрегация с учётом last_error
+        # =====================================================================
+        ortho_stats = {}
+        
+        for answer in weekly_history:
+            word = answer.word
+            if not word or not word.orthogram:
+                continue
                 
-                if ortho_id not in ortho_errors:
-                    ortho_errors[ortho_id] = {
-                        'name': orthogram.name,
-                        'total': 0,
-                        'errors': 0,
-                        'orthogram_id': ortho_id,
-                        'last_error': answer.answer_time  # запоминаем время последней ошибки
-                    }
-                
-                ortho_errors[ortho_id]['total'] += 1
-                if not answer.was_correct:
-                    ortho_errors[ortho_id]['errors'] += 1
-                    ortho_errors[ortho_id]['last_error'] = answer.answer_time  # обновляем время
-        
-        # Преобразуем в список и сортируем по времени последней ошибки (сначала новые)
-        weak_list = []
-        for ortho_id, data in ortho_errors.items():
-            if data['errors'] > 0:  # только те, где есть ошибки
-                weak_list.append({
-                    'name': data['name'],
-                    'errors': data['errors'],
-                    'total': data['total'],
-                    'error_rate': round((data['errors'] / data['total'] * 100), 1) if data['total'] > 0 else 0,
+            orthogram = word.orthogram
+            ortho_id = orthogram.id
+            
+            # Инициализируем статистику по орфограмме при первом появлении
+            if ortho_id not in ortho_stats:
+                ortho_stats[ortho_id] = {
+                    'name': orthogram.name,
                     'orthogram_id': ortho_id,
-                    'last_error': data['last_error'].isoformat() if data['last_error'] else None
+                    'total': 0,
+                    'errors': 0,
+                    'last_error': None
+                }
+            
+            ortho_stats[ortho_id]['total'] += 1
+            
+            # Если ответ неверный — считаем ошибку и обновляем время
+            if not answer.was_correct:
+                ortho_stats[ortho_id]['errors'] += 1
+                # Обновляем last_error, если это первая ошибка или она новее
+                current_error_time = answer.answer_time
+                stored_error_time = ortho_stats[ortho_id]['last_error']
+                if stored_error_time is None or current_error_time > stored_error_time:
+                    ortho_stats[ortho_id]['last_error'] = current_error_time
+        
+        # 🔹 Формируем список слабых тем (только те, где есть ошибки)
+        weak_list = []
+        for ortho_id, stats in ortho_stats.items():
+            if stats['errors'] > 0:
+                error_rate = round((stats['errors'] / stats['total'] * 100), 1) if stats['total'] > 0 else 0.0
+                weak_list.append({
+                    'name': stats['name'],
+                    'orthogram_id': stats['orthogram_id'],
+                    'errors': stats['errors'],
+                    'total': stats['total'],
+                    'error_rate': error_rate,
+                    'last_error': stats['last_error'].isoformat() if stats['last_error'] else None
                 })
         
-        # Сортируем по времени последней ошибки (сначала новые) и берем 3
+        # 🔹 Сортируем по времени последней ошибки (сначала новые) и берём топ-3
         weak_list.sort(key=lambda x: x['last_error'] or '', reverse=True)
         weak_orthograms = weak_list[:3]
         
-        print(f"✅ Статистика собрана: total_words={total_words}, attempts={total_attempts}, weak={len(weak_orthograms)}")
+        logger.debug(f"✓ weak_orthograms: найдено {len(weak_list)}, возвращаем топ-{len(weak_orthograms)}")
         
-        return JsonResponse({
+        # =====================================================================
+        # 🔹 4. Формируем и логируем итоговый ответ
+        # =====================================================================
+        response_data = {
             'total_words': total_words,
             'total_attempts': total_attempts,
             'correct_answers': correct_attempts,
             'success_rate': success_rate,
-            'weak_orthograms': weak_orthograms  # только 3 последних
-        })
+            'weak_orthograms': weak_orthograms,
+            # 🔹 Отладочные поля (можно убрать в продакшене или отдавать по флагу ?debug=1)
+            # '_debug': {
+            #     'week_range': f"{week_ago} → {today}",
+            #     'ortho_stats_count': len(ortho_stats)
+            # }
+        }
+        
+        logger.info(
+            f"✅ СТАТИСТИКА ГОТОВА: "
+            f"user_id={user_id}, "
+            f"words={total_words}, "
+            f"attempts={total_attempts}, "
+            f"rate={success_rate}%, "
+            f"weak={len(weak_orthograms)}"
+        )
+        
+        return JsonResponse(response_data)
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"❌ weekly_report: некорректный JSON в запросе — {e}")
+        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
         
     except Exception as e:
-        print(f"❌ Ошибка в weekly_report: {e}")
-        import traceback
-        traceback.print_exc()
-        return JsonResponse({'error': str(e)}, status=500)
-
+        logger.error(f"❌ weekly_report: критическая ошибка — {e}", exc_info=True)
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+    
 
 def get_user_quiz_stats(user_id):
     """Собирает статистику пользователя без дубликатов"""
@@ -2913,9 +3349,6 @@ def get_orthoepy_pair(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
     try:
-        from .models import OrthoepyWord
-        import random
-        
         # Получаем все уникальные леммы, у которых есть и правильный, и неправильный варианты
         from django.db.models import Count
         
@@ -2962,6 +3395,371 @@ def get_orthoepy_pair(request):
     except Exception as e:
         print(f"Ошибка в get_orthoepy_pair: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
+
+# ========================================================================
+# ✅ API ДЛЯ БОТА: КВИЗ СТРОГО ИЗ ПЛАНИНГА (без суточного лимита)
+# ========================================================================
+# @csrf_exempt
+# def get_planning_quiz_api(request):
+#     if request.method != "POST":
+#         return JsonResponse({"error": "Method not allowed"}, status=405)
+#     try:
+#         data = json.loads(request.body)
+#         user_id = data.get("user_id")
+#         if not user_id:
+#             return JsonResponse({"error": "Missing user_id"}, status=400)
+
+#         # ✅ Сразу фильтруем на уровне БД, не тянем лишнее
+#         planning_qs = UserWord.objects.filter(user_id=user_id, is_active=True).select_related("reference_word")
+        
+#         valid_refs = [
+#             {"pw": pw, "ref": pw.reference_word}
+#             for pw in planning_qs
+#             if (pw.reference_word and pw.reference_word.is_active 
+#                 and pw.reference_word.explanation and pw.reference_word.incorrect_variant)
+#         ]
+
+#         if not valid_refs:
+#             has_any = planning_qs.exists()
+#             msg = "📝 Слова есть, но не добавлены в эталонную БД" if has_any else "⚠️ Нет активных слов в планинге"
+#             return JsonResponse({"status": "empty", "message": msg})
+
+#         selected = random.choice(valid_refs)
+#         ref = selected["ref"]
+#         masked = re.sub(r"\*\d+\*", "😊", ref.masked_word or ref.text)
+#         l_corr, l_incorr = _extract_diff_letters(ref.text, ref.incorrect_variant)
+
+#         return JsonResponse({
+#             "status": "ok",
+#             "question": f"Как пишется правильно:\n{masked}",
+#             "options": [
+#                 {"text": ref.text, "is_correct": True},
+#                 {"text": ref.incorrect_variant, "is_correct": False}
+#             ],
+#             "letter_correct": l_corr,
+#             "letter_incorrect": l_incorr,
+#             "explanation": ref.explanation,
+#             "example_id": ref.id,
+#             "user_word_id": selected["pw"].id
+#         })
+#     except Exception as e:
+#         logger.error(f"Planning quiz API error: {e}")
+#         return JsonResponse({"status": "error", "message": "Внутренняя ошибка сервера"}, status=500)
+
+@csrf_exempt
+def get_planning_quiz_api(request):
+    """Квиз только из слов планинга, у которых есть валидный эталон"""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        user_id = data.get("user_id")
+        if not user_id:
+            return JsonResponse({"status": "error", "message": "Missing user_id"}, status=400)
+        
+        from .models import UserWord, QuizHistory
+        from django.utils import timezone
+        import random, re, logging
+        log = logging.getLogger(__name__)
+        
+        # 🔹 Берём только активные слова с привязанным эталоном
+        planning_qs = UserWord.objects.filter(
+            user_id=user_id, 
+            is_active=True,
+            reference_word__isnull=False
+        ).select_related("reference_word")
+        
+        valid_refs = [
+            {"pw": pw, "ref": pw.reference_word}
+            for pw in planning_qs
+            if (pw.reference_word.is_active 
+                and pw.reference_word.explanation 
+                and pw.reference_word.incorrect_variant)
+        ]
+        
+        if not valid_refs:
+            return JsonResponse({
+                "status": "empty",
+                "message": "📭 В планинге нет слов, готовых к квизу. Добавьте слова с сайта."
+            })
+        
+        # Исключаем показанные сегодня (опционально)
+        today = timezone.now().date()
+        shown_today = set(QuizHistory.objects.filter(
+            user_id=user_id, answer_time__date=today
+        ).values_list('user_word_id', flat=True))
+        
+        available = [item for item in valid_refs if item['pw'].id not in shown_today]
+        if not available:
+            available = valid_refs  # новый цикл
+        
+        selected = random.choice(available)
+        ref = selected["ref"]
+        pw = selected["pw"]
+        
+        masked = re.sub(r"\*\d+\*", "😊", ref.masked_word or ref.text)
+        l_corr, l_incorr = _extract_diff_letters(ref.text, ref.incorrect_variant)
+        
+        log.info(f"🎯 Planning quiz: user={user_id}, word='{ref.text}', l_corr={l_corr}, l_incorr={l_incorr}")
+        
+        return JsonResponse({
+            "status": "ok",
+            "question": f"Как пишется правильно:\n{masked}",
+            "options": [
+                {"text": ref.text, "is_correct": True},
+                {"text": ref.incorrect_variant, "is_correct": False}
+            ],
+            "letter_correct": l_corr,
+            "letter_incorrect": l_incorr,
+            "explanation": ref.explanation,
+            "example_id": ref.id,
+            "user_word_id": pw.id,
+            "total_available": len(available)
+        })
+        
+    except Exception as e:
+        log.error(f"❌ Planning quiz API error: {e}", exc_info=True)
+        return JsonResponse({"status": "error", "message": "Внутренняя ошибка"}, status=500)
+
+# ========================================================================
+# ✅ API ДЛЯ БОТА: КВИЗ ИЗ ЭТАЛОННОЙ БД (ВСЕ ОРФ.)
+# ========================================================================
+@csrf_exempt
+def get_general_orthography_api(request):
+    """Квиз из эталонной базы для бота"""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    try:
+        data = json.loads(request.body)
+        user_id = data.get("user_id")
+        if not user_id:
+            return JsonResponse({"error": "Missing user_id"}, status=400)
+
+        from .models import OrthogramExample, QuizHistory
+        from django.utils import timezone
+        import random, re
+
+        today = timezone.now().date()
+        shown_today = set(
+            QuizHistory.objects.filter(user_id=user_id, answer_time__date=today)
+            .values_list("word_id", flat=True)
+        )
+
+        base_qs = OrthogramExample.objects.filter(
+            is_active=True, is_user_added=False,
+            explanation__isnull=False, incorrect_variant__isnull=False
+        ).exclude(explanation="", incorrect_variant="") \
+         .exclude(id__in=shown_today) \
+         .select_related("orthogram")
+
+        word = base_qs.order_by("?").first()
+        if not word:
+            word = OrthogramExample.objects.filter(
+                is_active=True, is_user_added=False,
+                explanation__isnull=False, incorrect_variant__isnull=False
+            ).exclude(explanation="", incorrect_variant="") \
+             .select_related("orthogram").order_by("?").first()
+
+        if not word:
+            return JsonResponse({"status": "empty", "message": "Нет доступных слов"}, status=404)
+
+        masked = re.sub(r"\*\d+\*", "😊", word.masked_word or word.text)
+        l_corr, l_incorr = _extract_diff_letters(word.text, word.incorrect_variant)
+
+        return JsonResponse({
+            "status": "ok",
+            "question": f"Как пишется правильно:\n{masked}",
+            "options": [
+                {"text": word.text, "is_correct": True},
+                {"text": word.incorrect_variant, "is_correct": False}
+            ],
+            "letter_correct": l_corr,
+            "letter_incorrect": l_incorr,
+            "explanation": word.explanation or (word.orthogram.rule if word.orthogram else "Правило не указано"),
+            "example_id": word.id
+        })
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+import os
+import vk_api
+
+
+@login_required
+def vk_send_quiz(request):
+    """Отправляет персонализированный квиз в ВК с буквами над кнопками"""
+    profile = getattr(request.user, 'profile', None)
+    if not profile or not profile.vk_id:
+        return JsonResponse({'error': 'Аккаунт ВК не привязан'}, status=400)
+
+    try:
+        vk_session = vk_api.VkApi(token=os.getenv('VK_GROUP_TOKEN'))
+        if not vk_session.token:
+            return JsonResponse({'error': 'VK токен не настроен в окружении'}, status=500)
+
+        vk = vk_session.get_api()
+
+        # 1️⃣ Получаем данные квиза
+        quiz_data = _get_personalized_preposition_quiz(request.user.id)
+
+        # 2️⃣ Извлекаем буквы с безопасным фоллбеком
+        l1 = quiz_data.get('letter_correct', '?')
+        l2 = quiz_data.get('letter_incorrect', '?')
+
+        # 3️⃣ Формируем текст: вопрос + слово + буквы НАД кнопками
+        message = (
+            f"🎯 Квиз дня:\n"
+            f"{quiz_data['question']}\n"
+            f"-{l1}-   -{l2}-"
+        )
+
+        # 4️⃣ Компактный payload (лимит VK: 255 байт)
+        # Короткие ключи экономят место. При обработке клика данные тянем из БД по `w`
+        p1 = json.dumps({"a": "quiz_answer", "w": quiz_data["example_id"], "c": 1}, ensure_ascii=False)
+        p2 = json.dumps({"a": "quiz_answer", "w": quiz_data["example_id"], "c": 0}, ensure_ascii=False)
+
+        # 5️⃣ Горизонтальная клавиатура (одна строка, две кнопки)
+        keyboard = {
+            "inline": True,
+            "buttons": [[
+                {"action": {"type": "text", "label": "1", "payload": p1}, "color": "primary"},
+                {"action": {"type": "text", "label": "2", "payload": p2}, "color": "primary"}
+            ]]
+        }
+
+        # 6️⃣ Отправка
+        vk.messages.send(
+            user_id=profile.vk_id,
+            message=message,
+            keyboard=json.dumps(keyboard, ensure_ascii=False),
+            random_id=random.getrandbits(32)
+        )
+
+        return JsonResponse({'status': 'success', 'message': 'Квиз успешно отправлен!'})
+
+    except vk_api.exceptions.ApiError as e:
+        logger.warning(f"VK API error in quiz: {e}")
+        return JsonResponse({'error': 'ВКонтакте не принял сообщение (проверьте настройки бота/блокировки)'}, status=400)
+    except Exception as e:
+        logger.error(f"VK send quiz critical error: {e}", exc_info=True)
+        return JsonResponse({'error': 'Не удалось отправить квиз. Попробуйте позже.'}, status=500)
+
+
+# ========================================================================
+# ✅ API ДЛЯ САЙТА: Горячие слова (ЕГЭ/ОГЭ)
+# ========================================================================
+
+from main.assistants.knowledge_bases.russian.hot_words import HOT_WORDS_LIST
+
+_READY_HOT_WORDS = None
+
+def _init_ready_hot_words():
+    """Инициализирует список готовых слов в порядке файла"""
+    global _READY_HOT_WORDS
+    if _READY_HOT_WORDS is not None:
+        return _READY_HOT_WORDS
+    
+    _READY_HOT_WORDS = []
+    for word_text in HOT_WORDS_LIST:
+        word = OrthogramExample.objects.filter(
+            text__iexact=word_text,
+            is_active=True,
+            explanation__isnull=False,
+            incorrect_variant__isnull=False
+        ).exclude(explanation='', incorrect_variant='').first()
+        if word:
+            _READY_HOT_WORDS.append(word)
+    
+    return _READY_HOT_WORDS
+
+
+@csrf_exempt
+@login_required
+def get_hot_word_quiz(request):
+    """Квиз из горячих слов: строгий порядок по списку"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    ready = _init_ready_hot_words()
+    if not ready:
+        return JsonResponse({'error': 'Нет готовых слов'}, status=404)
+    
+    try:
+        data = json.loads(request.body) if request.body else {}
+        index = int(data.get('index', 0))
+    except:
+        index = 0
+    
+    word = ready[index % len(ready)]
+    
+    masked = re.sub(r'\*\d+\*', '😊', word.masked_word or word.text)
+    l_corr, l_incorr = _extract_diff_letters(word.text, word.incorrect_variant)
+    
+    options = [
+        {'text': word.text, 'is_correct': True},
+        {'text': word.incorrect_variant.strip(), 'is_correct': False}
+    ]
+    random.shuffle(options)
+    
+    return JsonResponse({
+        'question': f'Как пишется правильно?\n{masked}',
+        'options': options,
+        'letter_correct': l_corr,
+        'letter_incorrect': l_incorr,
+        'explanation': word.explanation,
+        'example_id': word.id,
+        'next_index': (index + 1) % len(ready),
+        'total_available': len(ready)
+    })
+
+
+# ========================================================================
+# ✅ ЧАТ-БОТ на сайте
+# ========================================================================
+@login_required
+def chat_api(request):
+    """API чат-бота"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=400)
+    
+    try:
+        import json
+        from django.core.cache import cache
+        
+        data = json.loads(request.body)
+        message = data.get('message', '').strip()
+        
+        # 🔹 Получаем историю диалога из кэша
+        cache_key = f'chat_history_{request.user.id}'
+        conversation_history = cache.get(cache_key, [])
+        
+        # 🔹 Вызываем оркестратора — ✅ передаём request.user (объект!)
+        orchestrator = get_orchestrator()
+        result = orchestrator.get_response(request.user, message, conversation_history)
+        
+        # 🔹 Сохраняем историю в кэш (TTL: 30 мин)
+        conversation_history.append({
+            'message': message,
+            'intent': result['intent'],
+            'guessed_word': result.get('guessed_word')
+        })
+        conversation_history = conversation_history[-5:]  # Храним последние 5
+        cache.set(cache_key, conversation_history, 1800)
+        
+        return JsonResponse({
+            'reply': result['reply'],
+            'specialist': result['specialist'],
+            'intent': result['intent']
+        })
+        
+    except Exception as e:
+        print(f"Chat API error: {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'reply': '⚠️ Временно не могу ответить.'})
+
 
 
 
@@ -3361,84 +4159,104 @@ def check_text_analysis_23_26(request):
 # ===НА СТРАНИЦЕ ТРЕНАЖЕРОВ ЗАДАНИЕ 4: ОРФОЭПИЯ ===================================================
 @login_required
 def generate_orthoepy_test(request):
-    """
-    Генерирует тест по орфоэпии для тренажёра.
-    
-    Режимы:
-    - 'main' (по умолчанию): 2-4 правильных + 1-3 неправильных варианта
-    - 'diagnostic': 2-4 правильных + 1-3 неправильных варианта (тот же формат)
-    
-    Поддержка фильтрации по классу через параметр `grade` в запросе.
-    Для классов 6-9 активируется школьный режим (без баллов, другой заголовок).
-    """
+    """Генерирует тест по орфоэпии для тренажёра."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Только POST'}, status=405)
-
+    
     try:
         data = json.loads(request.body) if request.body else {}
     except json.JSONDecodeError:
-        data = {}
+        return JsonResponse({'error': 'Некорректный JSON'}, status=400)
 
     test_type = data.get('test_type', 'main')
-    grade = data.get('grade')  # ← Получаем класс из запроса
-
-    # Определяем класс для фильтрации: приоритет у параметра grade
-    if grade:
-        # Если передан явно — используем его
-        filter_grade = int(grade)
-        logger.info(f"Генерация орфоэпии для {filter_grade} класса (из запроса)")
-    elif hasattr(request.user, 'profile'):
-        # Иначе — из профиля пользователя
-        filter_grade = getattr(request.user.profile, 'grade', None)
-        if filter_grade:
-            logger.info(f"Генерация орфоэпии для {filter_grade} класса (из профиля)")
-    else:
-        filter_grade = None
-        logger.info("Генерация орфоэпии без фильтрации по классу")
-
-    # Определяем школьный режим (6-9 классы) — без баллов и с другим заголовком
-    is_school_mode = filter_grade and 6 <= filter_grade <= 9
-    if is_school_mode:
-        logger.info(f"Активирован школьный режим для {filter_grade} класса")
-
-    # === ГЕНЕРИРУЕМ ТЕСТ: 2-4 правильных + 1-3 неправильных ===
-    test_data = OrthoepyWord.generate_test(
-        num_options=5,
-        correct_min=2,
-        correct_max=4,
-        user_grade=filter_grade,  # ← ИСПОЛЬЗУЕМ ФИЛЬТР
-        test_type=test_type
-    )
+    grade_param = data.get('grade')
     
-    if not test_data or not test_data.get('variants'):
-        error_msg = f'Недостаточно данных для {filter_grade} класса.' if filter_grade else 'Недостаточно данных.'
-        return JsonResponse({'error': error_msg}, status=400)
+    filter_grade = None
+    is_school_mode = False
 
-    variants = test_data['variants']
-    correct_answers = test_data['correct_answers']
+    # 1. Логика определения класса
+    if grade_param:
+        try:
+            filter_grade = int(grade_param)
+            logger.info(f"🎯 Запрос орфоэпии: Явный класс {filter_grade}")
+        except (ValueError, TypeError):
+            logger.warning(f"⚠️ Неверный формат класса: {grade_param}")
+    
+    # Если класс не передан явно, пробуем взять из профиля (но для кнопки 4000 это не сработает, там grade=None)
+    if filter_grade is None and hasattr(request.user, 'profile'):
+        # Важно: для кнопки ЕГЭ (4000) мы хотим ВСЕ слова, игнорируя профиль, 
+        # если только профиль не указывает на 10-11 класс и мы хотим фильтровать только их.
+        # Но обычно для ЕГЭ берут всё. Оставим как есть, но проверим режим.
+        profile_grade = getattr(request.user.profile, 'grade', None)
+        if profile_grade and not grade_param: 
+             # Если кнопка была 4_10 или 4_11, grade_param будет. 
+             # Если 4000 - grade_param None.
+             pass 
 
-    # === Проверяем уникальность (на всякий случай) ===
-    if len(variants) != len(set(variants)):
-        return JsonResponse({'error': 'Обнаружены повторяющиеся варианты.'}, status=400)
+    # 2. Определение режима
+    # Школьный режим ТОЛЬКО если передан конкретный класс 6-9
+    if filter_grade and 6 <= filter_grade <= 9:
+        is_school_mode = True
+        logger.info(f"✅ Активирован ШКОЛЬНЫЙ режим для {filter_grade} класса")
+    else:
+        # Для ЕГЭ (кнопка 4000 или классы 10-11) — берем всю базу
+        filter_grade = None 
+        is_school_mode = False
+        logger.info("🎓 Активирован режим ЕГЭ (вся база слов, filter_grade=None)")
 
-    # === Рендерим шаблон ===
-    html = render_to_string('orthoepy_test_snippet.html', {
-        'variants': variants,
-        'exercise_id': f'orthoepy-{test_type}',
-        'user_grade': filter_grade,          # ← ПРАВИЛЬНАЯ ПЕРЕМЕННАЯ
-        'is_school_mode': is_school_mode,    # ← ФЛАГ ШКОЛЬНОГО РЕЖИМА
-    })
+    # 3. Генерация теста
+    try:
+        # Вызываем метод модели
+        test_data = OrthoepyWord.generate_test(
+            num_options=5,
+            correct_min=2,
+            correct_max=4,
+            user_grade=filter_grade,  # Для ЕГЭ здесь будет None
+            test_type=test_type
+        )
+        
+        # Проверка результата
+        if not test_data:
+            logger.error("❌ OrthoepyWord.generate_test вернул None")
+            return JsonResponse({'error': 'Ошибка генерации: нет данных (метод вернул None)'}, status=500)
+            
+        if not test_data.get('variants') or len(test_data['variants']) < 5:
+            count = len(test_data.get('variants', []))
+            logger.error(f"❌ Недостаточно вариантов: найдено {count}, нужно минимум 5")
+            msg = f'Недостаточно слов в базе для генерации теста (найдено {count}). Пополните базу.'
+            return JsonResponse({'error': msg}, status=400)
 
-    # === Сохраняем в сессию ===
-    request.session['orthoepy_correct'] = correct_answers  # СПИСОК правильных
-    request.session['orthoepy_all_variants'] = variants    # ВСЕ варианты
-    request.session['orthoepy_test_type'] = test_type
+        variants = test_data['variants']
+        correct_answers = test_data['correct_answers']
+        
+        logger.info(f"✅ Тест сгенерирован успешно: {len(variants)} вариантов, {len(correct_answers)} правильных")
+
+    except Exception as e:
+        # ЛОВИМ ВСЕ ОШИБКИ И ПИШЕМ ПОДРОБНОСТИ В ЛОГ
+        logger.error(f"❌ Критическая ошибка в generate_test: {e}", exc_info=True)
+        return JsonResponse({'error': f'Внутренняя ошибка сервера: {str(e)}'}, status=500)
+
+    # 4. Рендеринг шаблона
+    try:
+        html = render_to_string('orthoepy_test_snippet.html', {
+            'variants': variants,
+            'exercise_id': f'orthoepy-{test_type}',
+            'user_grade': filter_grade,
+            'is_school_mode': is_school_mode,
+        })
+    except Exception as e:
+        logger.error(f"❌ Ошибка рендеринга шаблона: {e}", exc_info=True)
+        return JsonResponse({'error': 'Ошибка шаблона'}, status=500)
+
+    # 5. Сохранение в сессию
+    request.session['orthoepy_correct'] = correct_answers
+    request.session['orthoepy_all_variants'] = variants
 
     return JsonResponse({
         'html': html,
         'test_type': test_type,
         'count': len(variants),
-        'is_school_mode': is_school_mode,  # ← Для информации фронтенду
+        'is_school_mode': is_school_mode,
     })
 
 
@@ -3456,45 +4274,68 @@ def check_orthoepy_test(request):
     # Получаем ответы пользователя
     selected = set(data.get('selected', []))
     
-    # Получаем правильные ответы из сессии
+    # Получаем правильные ответы и все варианты из сессии
     correct_answers = request.session.get('orthoepy_correct', [])
+    all_variants = request.session.get('orthoepy_all_variants', [])
+
     if not isinstance(correct_answers, list):
         correct_answers = [correct_answers]
-    correct = set(correct_answers)
     
-    # Получаем ВСЕ варианты из сессии
-    all_variants = request.session.get('orthoepy_all_variants', [])
+    # Нормализуем правильные ответы для сравнения
+    correct_set = set(_normalize_text(x) for x in correct_answers)
     
-    # === Формируем результат для КАЖДОГО варианта ===
+    # === ФОРМИРУЕМ РЕЗУЛЬТАТ С КЛЮЧАМИ '4-1', '4-2' ... ===
     variant_results = {}
+    
+    # Проходим по списку вариантов ПО ПОРЯДКУ (как они были показаны пользователю)
     for i, variant in enumerate(all_variants, 1):
-        normalized = _normalize_text(variant)
-        normalized_correct = set(_normalize_text(x) for x in correct)
+        normalized_variant = _normalize_text(variant)
         
-        is_correct_variant = normalized in normalized_correct
+        # Проверяем, является ли этот вариант правильным
+        is_correct_variant = normalized_variant in correct_set
+        
+        # Проверяем, выбрал ли его пользователь
         was_selected = variant in selected
         
-        variant_results[f'4-{i}'] = {
+        # ГЛАВНОЕ ИСПРАВЛЕНИЕ: ключ должен быть '4-1', '4-2', а не самим словом
+        result_key = f'4-{i}'
+        
+        variant_results[result_key] = {
             'variant_text': variant,
             'is_correct': is_correct_variant,
             'was_selected': was_selected,
         }
-    
-    # === Правило ЕГЭ: 1 балл только если ВСЕ правильные выбраны и НИЧЕГО лишнего ===
-    is_perfect = selected == correct
+
+    # === Подсчет баллов (Правило ЕГЭ: 1 балл только если ВСЁ идеально) ===
+    selected_normalized = set(_normalize_text(x) for x in selected)
+    is_perfect = selected_normalized == correct_set
     user_score = 1 if is_perfect else 0
-    
-    # === Возвращаем результат в формате, аналогичном диагностике ===
-    return JsonResponse({
+
+    # === Возвращаем результат в структуре, которую ждет JS ===
+    response_data = {
         'results': {
             '4': {
-                'is_correct': is_perfect,
-                'score': user_score,
                 'variant_results': variant_results,
+                'score': user_score,
+                'is_correct': is_perfect,
             }
         },
         'user_score': user_score,
-    })
+    }
+    
+    return JsonResponse(response_data)
+
+# страничка проверки всех слов орфоэпии ЕГЭ
+def orthoepy_trening(request):
+    json_path = Path(__file__).resolve().parent / 'assistants' / 'knowledge_bases' / 'russian' / 'orthoepy.json'
+    words_data = []
+    if json_path.exists():
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                words_data = json.load(f)
+        except Exception:
+            pass
+    return render(request, 'orthoepy_trening.html', {'words_data': words_data})
 
 # ======= ЗАДАНИЕ 5 ===================================================
 @login_required
@@ -3553,7 +4394,6 @@ def generate_task_paponim_test_view(request):
         return JsonResponse({'error': 'Ошибка генерации'}, status=500)
 
 
-# views.py
 @login_required
 def check_task_paponim_test_view(request):
     if request.method != 'POST':
@@ -5202,56 +6042,204 @@ def generate_task8_for_diagnostic():
     }
 
 # ======= Задание 9  =================================================
+# def generate_task9_lines():
+#     # === НОВАЯ СТРУКТУРА: 5 чётких групп ===
+#     letter_groups = [
+#         {
+#             'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+#             'orth_ids': ['1_11', '2_11'],
+#             'name': 'о/а/е/и/я/у/ю'
+#         },
+#         {
+#             'letters': ('о', 'а'),
+#             'orth_ids': ['12', '13', '26', '27', '271'],
+#             'name': 'о/а'
+#         },
+#         {
+#             'letters': ('е', 'и', 'я'),
+#             'orth_ids': ['24'],
+#             'name': 'е/и/я'
+#         },
+#         {
+#             'letters': ('ё', 'о'),
+#             'orth_ids': ['14'],
+#             'name': 'ё/о'
+#         },
+#         {
+#             'letters': ('и', 'ы'),
+#             'orth_ids': ['15'],
+#             'name': 'и/ы'
+#         }
+#     ]
+
+#     # === Шаг 1: Выбираем, сколько строк будет uniform (2–4) ===
+#     from random import randint, sample, shuffle, choice
+    
+#     uniform_count = randint(2, 4)
+
+#     # === Шаг 2: Случайно выбираем индексы uniform-строк ===
+#     line_indices = list(range(len(letter_groups)))
+#     uniform_indices = set(sample(line_indices, uniform_count))
+
+#     lines = []
+#     flat_index = 1
+
+#     # === Шаг 3: Генерируем ровно 5 строк — по одной на каждую группу ===
+#     for i, group in enumerate(letter_groups):
+#         orth_ids = []
+#         for oid in group['orth_ids']:
+#             if '_' in oid:
+#                 base_id = oid.split('_')[0]
+#             else:
+#                 base_id = oid
+#             try:
+#                 orth_ids.append(int(base_id))
+#             except ValueError:
+#                 continue
+
+#         if not orth_ids:
+#             continue
+
+#         # Получаем примеры для этой группы
+#         examples_qs = OrthogramExample.objects.filter(
+#             orthogram_id__in=orth_ids,
+#             is_active=True
+#         ).order_by('?')[:30]  # Берем больше для выборки
+
+#         # Собираем валидные примеры
+#         valid_examples = []
+#         for ex in examples_qs:
+#             correct_letter = extract_correct_letter(ex.text, ex.masked_word)
+#             if correct_letter and len(correct_letter) == 1:
+#                 valid_examples.append((ex, correct_letter.lower()))
+
+#         if len(valid_examples) < 3:
+#             continue
+
+#         # Решаем: делать ли строку с одинаковыми буквами?
+#         make_uniform = i in uniform_indices  # ← Проверяем, current строка uniform
+        
+#         if make_uniform:
+#             # Строка с одинаковыми буквами во всех словах
+#             # Группируем примеры по буквам
+#             examples_by_letter = {}
+#             for ex, letter in valid_examples:
+#                 if letter not in examples_by_letter:
+#                     examples_by_letter[letter] = []
+#                 examples_by_letter[letter].append(ex)
+            
+#             # Ищем букву с минимум 3 примерами
+#             selected_letter = None
+#             selected_examples = []
+            
+#             for letter, ex_list in examples_by_letter.items():
+#                 if len(ex_list) >= 3:
+#                     selected_letter = letter
+#                     selected_examples = sample(ex_list, 3)
+#                     break
+            
+#             if selected_letter:
+#                 # Берем 3 примера с одной буквой
+#                 examples = selected_examples
+#                 letters = [selected_letter] * 3
+#                 is_uniform = True
+#             else:
+#                 # Fallback: любые 3 примера
+#                 selected = sample(valid_examples, 3)
+#                 examples, letters = zip(*selected)
+#                 is_uniform = False
+#         else:
+#             # Обычная строка: разные буквы в словах
+#             # Собираем примеры, где хотя бы 2 разные буквы
+#             attempts = 0
+#             selected = []
+#             while attempts < 10:
+#                 selected = sample(valid_examples, 3)
+#                 letters_in_line = [letter for _, letter in selected]
+#                 if len(set(letters_in_line)) >= 2:  # Минимум 2 разные буквы
+#                     break
+#                 attempts += 1
+            
+#             if attempts >= 10:
+#                 selected = sample(valid_examples, 3)
+            
+#             examples, letters = zip(*selected)
+#             is_uniform = False
+
+#         # Формируем строку
+#         parts = []
+#         for ex in examples:
+#             masked = re.sub(r'\*\d+(?:_\d+)?\*', f'*9-{flat_index}*', ex.masked_word, count=1)
+#             parts.append(masked)
+#             flat_index += 1
+
+#         display_line = ', '.join(parts)
+#         lines.append({
+#             'examples': list(examples),
+#             'expected_letters': list(letters),
+#             'display_line': display_line,
+#             'available_letters': list(group['letters']),
+#             'group_name': group['name'],
+#             'is_uniform': is_uniform  # Для отладки
+#         })
+
+#     return lines[:5]
+
+
+# ======= Задание 9 =================================================
 def generate_task9_lines():
+    """
+    Генерирует 5 строк для задания 9 с группировкой букв.
+    Возвращает: dict с 'lines', 'letter_groups', 'subgroup_letters'
+    """
+    from random import randint, sample, shuffle, choice
+    import re
+    
     # === НОВАЯ СТРУКТУРА: 5 чётких групп ===
-    letter_groups = [
+    letter_groups_config = [
         {
             'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
             'orth_ids': ['1_11', '2_11'],
-            'name': 'о/а/е/и/я/у/ю'
+            'name': 'group1'
         },
         {
             'letters': ('о', 'а'),
             'orth_ids': ['12', '13', '26', '27', '271'],
-            'name': 'о/а'
+            'name': 'group2'
         },
         {
             'letters': ('е', 'и', 'я'),
             'orth_ids': ['24'],
-            'name': 'е/и/я'
+            'name': 'group3'
         },
         {
             'letters': ('ё', 'о'),
             'orth_ids': ['14'],
-            'name': 'ё/о'
+            'name': 'group4'
         },
         {
             'letters': ('и', 'ы'),
             'orth_ids': ['15'],
-            'name': 'и/ы'
+            'name': 'group5'
         }
     ]
 
     # === Шаг 1: Выбираем, сколько строк будет uniform (2–4) ===
-    from random import randint, sample, shuffle, choice
-    
     uniform_count = randint(2, 4)
-
-    # === Шаг 2: Случайно выбираем индексы uniform-строк ===
-    line_indices = list(range(len(letter_groups)))
+    line_indices = list(range(len(letter_groups_config)))
     uniform_indices = set(sample(line_indices, uniform_count))
 
     lines = []
     flat_index = 1
+    letter_groups_map = {}      # Для скрипта в шаблоне: {"9-1": "group1", ...}
+    subgroup_letters_map = {}   # Для скрипта в шаблоне: {"group1": ["о","а"], ...}
 
-    # === Шаг 3: Генерируем ровно 5 строк — по одной на каждую группу ===
-    for i, group in enumerate(letter_groups):
+    # === Шаг 2: Генерируем ровно 5 строк — по одной на каждую группу ===
+    for i, group in enumerate(letter_groups_config):
+        # Преобразуем orth_ids в целые числа для запроса к БД
         orth_ids = []
         for oid in group['orth_ids']:
-            if '_' in oid:
-                base_id = oid.split('_')[0]
-            else:
-                base_id = oid
+            base_id = oid.split('_')[0] if '_' in oid else oid
             try:
                 orth_ids.append(int(base_id))
             except ValueError:
@@ -5264,7 +6252,7 @@ def generate_task9_lines():
         examples_qs = OrthogramExample.objects.filter(
             orthogram_id__in=orth_ids,
             is_active=True
-        ).order_by('?')[:30]  # Берем больше для выборки
+        ).order_by('?')[:30]
 
         # Собираем валидные примеры
         valid_examples = []
@@ -5277,18 +6265,16 @@ def generate_task9_lines():
             continue
 
         # Решаем: делать ли строку с одинаковыми буквами?
-        make_uniform = i in uniform_indices  # ← Проверяем, current строка uniform
+        make_uniform = i in uniform_indices
         
         if make_uniform:
             # Строка с одинаковыми буквами во всех словах
-            # Группируем примеры по буквам
             examples_by_letter = {}
             for ex, letter in valid_examples:
                 if letter not in examples_by_letter:
                     examples_by_letter[letter] = []
                 examples_by_letter[letter].append(ex)
             
-            # Ищем букву с минимум 3 примерами
             selected_letter = None
             selected_examples = []
             
@@ -5299,7 +6285,6 @@ def generate_task9_lines():
                     break
             
             if selected_letter:
-                # Берем 3 примера с одной буквой
                 examples = selected_examples
                 letters = [selected_letter] * 3
                 is_uniform = True
@@ -5310,13 +6295,12 @@ def generate_task9_lines():
                 is_uniform = False
         else:
             # Обычная строка: разные буквы в словах
-            # Собираем примеры, где хотя бы 2 разные буквы
             attempts = 0
             selected = []
             while attempts < 10:
                 selected = sample(valid_examples, 3)
                 letters_in_line = [letter for _, letter in selected]
-                if len(set(letters_in_line)) >= 2:  # Минимум 2 разные буквы
+                if len(set(letters_in_line)) >= 2:
                     break
                 attempts += 1
             
@@ -5326,11 +6310,15 @@ def generate_task9_lines():
             examples, letters = zip(*selected)
             is_uniform = False
 
-        # Формируем строку
+        # Формируем строку с масками *9-1*, *9-2* и т.д.
         parts = []
         for ex in examples:
-            masked = re.sub(r'\*\d+(?:_\d+)?\*', f'*9-{flat_index}*', ex.masked_word, count=1)
+            # ← ИСПРАВЛЕНО: заменяем ЛЮБУЮ маску *...* на *9-N*
+            masked = re.sub(r'\*[^*]+\*', f'*9-{flat_index}*', ex.masked_word, count=1)
             parts.append(masked)
+            
+            # Заполняем letter_groups_map для frontend
+            letter_groups_map[f'9-{flat_index}'] = group['name']
             flat_index += 1
 
         display_line = ', '.join(parts)
@@ -5340,10 +6328,19 @@ def generate_task9_lines():
             'display_line': display_line,
             'available_letters': list(group['letters']),
             'group_name': group['name'],
-            'is_uniform': is_uniform  # Для отладки
+            'is_uniform': is_uniform
         })
 
-    return lines[:5]
+    # Заполняем subgroup_letters_map
+    for group in letter_groups_config:
+        subgroup_letters_map[group['name']] = list(group['letters'])
+
+    # ← ИСПРАВЛЕНО: возвращаем dict с метаданными
+    return {
+        'lines': lines[:5],
+        'letter_groups': letter_groups_map,
+        'subgroup_letters': subgroup_letters_map
+    }
 
 # ======= Задание 10 =================================================
 def generate_task10_lines():
@@ -6985,36 +7982,226 @@ def generate_oge_task5_mixed_dash_colon(is_for_quiz=None):
     }
 
 
-def generate_oge_single_task(request):
-    """Генерация отдельных заданий ОГЭ (4, 6, 7, 8, 9, 10-12) для 9 класса"""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Только POST'}, status=405)
+# def generate_oge_single_task(request):
+#     """Генерация отдельных заданий ОГЭ (4, 6, 7, 8, 9, 10-12) для 9 класса"""
+#     if request.method != 'POST':
+#         return JsonResponse({'error': 'Только POST'}, status=405)
 
+#     try:
+#         data = json.loads(request.body)
+#         task_number = str(data.get('task_number', ''))
+
+#         session_data = request.session.get('oge_diagnostic', {})
+#         context = {}
+#         template_name = f'diagnostic_oge_task{task_number}_snippet.html'
+
+#         if task_number == '2-3':
+#             text_task_1_2, text_questions_1_2 = get_oge_text_analysis_questions('1_2')
+#             if text_task_1_2:
+#                 context['text_task_1_2'] = text_task_1_2
+#                 context['text_questions_1_2'] = text_questions_1_2
+#                 session_data['answers_1_2'] = {
+#                     str(q.question_number): q.correct_answer for q in text_questions_1_2
+#                 }
+#             template_name = 'diagnostic_oge_task_2_3_snippet.html'
+
+#         elif task_number == '4':
+#             task3_data = generate_oge_task3_matching()
+#             if task3_data:
+#                 context['task3_error_type_names'] = task3_data.get('error_type_names', {})
+#                 context['task3_sentences'] = task3_data.get('sentences', [])
+#                 session_data['task3_correct'] = task3_data['correct_answers']
+        
+#         elif task_number.startswith('5_'):
+#             import random
+#             punktum_id_raw = task_number.replace('5_', '')
+            
+#             # === СПЕЦИАЛЬНЫЙ РЕЖИМ: Тире/двоеточие (смешанный) ===
+#             if punktum_id_raw == 'mixed_dash_colon':
+#                 task4_data = generate_oge_task5_mixed_dash_colon(is_for_quiz=False)
+#                 if task4_data:
+#                     context['task4_data'] = task4_data
+#                     session_data['task4_correct'] = task4_data['correct_symbols']
+#                     context['task4_letter_groups'] = json.dumps(task4_data['letter_groups'])
+#                     context['task4_subgroup_letters'] = json.dumps(task4_data['subgroup_letters'])
+                
+#                 template_name = 'diagnostic_oge_task5_snippet.html'
+#             else:
+#                 # === ОБЫЧНЫЙ РЕЖИМ: одна пунктограмма ===
+#                 choices_map = {
+#                     '2100': ['8', '18'],
+#                     '2101': ['19'],
+#                     '2102': ['2', '3', '4', '6', '7', '11', '12', '13', '14', '15'],
+#                     '6_7': ['6', '7'],
+#                     '11_14': ['11', '12', '13', '14'],
+#                 }
+                
+#                 # === ПЕРЕОПРЕДЕЛЕНИЕ ВАРИАНТОВ ОТВЕТА ДЛЯ ОБЩИХ УПРАВЛЕНИЙ ===
+#                 override_letters_map = {
+#                     '2100': ['5', '8', '8.1', '9.2', '10', '18', 'дз'],
+#                     '2101': ['5', '9.1', '19', 'дз'],
+#                     '2102': ['2', '3', '4.0', '4.1', '4.2', '5', '6', '7', '10', '11', '12', '13', '14', '15', '17', 'дз'],
+#                     '19': ['19.1', '19.2', '19.3'],
+#                 }
+                
+#                 override_letters = override_letters_map.get(punktum_id_raw)
+                
+#                 punktum_id = punktum_id_raw
+#                 is_general = punktum_id_raw in ('2100', '2101', '2102', '2103', '6_7', '11_14')
+                
+#                 while punktum_id in choices_map:
+#                     punktum_id = random.choice(choices_map[punktum_id])
+
+#                 task4_data = generate_oge_task4_with_image(
+#                     punktum_id=punktum_id,
+#                     num_sentences=1,
+#                     add_numbering=False,
+#                     is_for_quiz=False if is_general else None,
+#                     override_letters=override_letters
+#                 )
+#                 if task4_data:
+#                     # Для общего управления — принудительно ставим статичную картинку и заголовок
+#                     if is_general:
+#                         _general_images = {
+#                             '2100': 'images/punktum_task_OGE_0.webp',
+#                             '2101': 'images/punktum_task_OGE_1.webp',
+#                             '2102': 'images/punktum_task_OGE_2.webp',
+#                         }
+#                         _general_titles = {
+#                             '2100': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ТИРЕ.',
+#                             '2101': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ДВОЕТОЧИЯ.',
+#                             '2102': '5. Кликни по смайликам, выбери подходящий номер пунктограммы для постановки ЗАПЯТЫХ.',
+#                         }
+#                         if punktum_id_raw in _general_images:
+#                             task4_data['image_name'] = _general_images[punktum_id_raw]
+#                         if punktum_id_raw in _general_titles:
+#                             task4_data['title'] = _general_titles[punktum_id_raw]
+#                     context['task4_data'] = task4_data
+#                     session_data['task4_correct'] = task4_data['correct_symbols']
+#                     context['task4_letter_groups'] = json.dumps(task4_data['letter_groups'])
+#                     context['task4_subgroup_letters'] = json.dumps(task4_data['subgroup_letters'])
+                
+#                 template_name = 'diagnostic_oge_task5_snippet.html'
+        
+#         elif task_number == '6':
+#             text_task_5, text_questions_5 = get_oge_text_analysis_questions('5')
+#             if text_task_5:
+#                 context['text_task_5'] = text_task_5
+#                 context['text_questions_5'] = text_questions_5
+#                 session_data['answers_5'] = {
+#                     str(q.question_number): q.correct_answer for q in text_questions_5
+#                 }
+        
+#         elif task_number == '7':
+#             oge_orth_examples = list(
+#                 OgeOrthogramExample.objects.filter(is_active=True).order_by('?')[:3]
+#             )
+#             if oge_orth_examples:
+#                 task6_lines = []
+#                 task6_expected = []
+#                 task6_letter_groups = {}
+#                 task6_subgroup_letters = {}
+#                 mask_idx = 1
+#                 for ex in oge_orth_examples:
+#                     masked = ex.masked_word
+#                     orth_id = str(ex.orthogram_id)
+#                     correct_letters_raw = (ex.correct_letters or '').split(',')
+#                     import re
+#                     mask_pattern = f'*{orth_id}*'
+#                     num_masks = masked.count(mask_pattern)
+#                     for pos in range(num_masks):
+#                         mask_id = f"6-{mask_idx}"
+#                         masked = masked.replace(mask_pattern, f'*{mask_id}*', 1)
+#                         if pos < len(correct_letters_raw):
+#                             raw = correct_letters_raw[pos].strip()
+#                             if '|' in raw:
+#                                 correct_letter, choices_str = raw.split('|', 1)
+#                                 choices = [c.strip() for c in choices_str.split('/')]
+#                             else:
+#                                 correct_letter = raw
+#                                 choices = ex.orthogram.get_letters_list()
+#                         else:
+#                             correct_letter = ''
+#                             choices = ex.orthogram.get_letters_list()
+#                         task6_letter_groups[mask_id] = f'orth_{mask_idx}'
+#                         task6_subgroup_letters[f'orth_{mask_idx}'] = choices
+#                         task6_expected.append(correct_letter)
+#                         mask_idx += 1
+#                     task6_lines.append({'display_line': masked})
+
+#                 context['task6_lines'] = task6_lines
+#                 session_data['task6_correct'] = task6_expected
+#                 context['task6_letter_groups'] = json.dumps(task6_letter_groups)
+#                 context['task6_subgroup_letters'] = json.dumps(task6_subgroup_letters)
+        
+#         elif task_number == '8':
+#             task7_item = OgeCorrectionExercise.objects.filter(is_active=True).order_by('?').first()
+#             if task7_item:
+#                 context['task7_word'] = task7_item.incorrect_text
+#                 context['task7_sentence'] = task7_item.explanation
+#                 session_data['answer_7'] = task7_item.correct_text.lower().strip()
+                
+#         elif task_number == '9':
+#             wordok = OgeWordOk.objects.filter(is_active=True).order_by('?').first()
+#             if wordok and wordok.correct_variants.strip():
+#                 context['wordok_8'] = wordok
+#                 session_data['answer_8'] = wordok.correct_variants
+                
+#         elif task_number == '10-12':
+#             text_task_9_10, text_questions_9_10 = get_oge_text_analysis_questions('9_10')
+#             if text_task_9_10:
+#                 context['text_task_9_10'] = text_task_9_10
+#                 context['text_questions_9_10'] = text_questions_9_10
+#                 session_data['answers_9_10'] = {
+#                     str(q.question_number): q.correct_answer for q in text_questions_9_10
+#                 }
+
+#             text_task_11, text_questions_11 = get_oge_text_analysis_questions('11')
+#             if text_task_11:
+#                 context['text_task_11'] = text_task_11
+#                 context['text_questions_11'] = text_questions_11
+#                 session_data['answers_11'] = {
+#                     str(q.question_number): q.correct_answer for q in text_questions_11
+#                 }
+                
+#         else:
+#             return JsonResponse({'error': 'Неизвестное задание'}, status=400)
+
+#         request.session['oge_diagnostic'] = session_data
+#         html = render_to_string(template_name, context)
+#         return JsonResponse({'html': html})
+
+#     except Exception as e:
+#         logger.error(f"Ошибка генерации задания {task_number} ОГЭ: {e}", exc_info=True)
+#         return JsonResponse({'error': f'Ошибка: {str(e)}'}, status=500)
+
+
+def generate_oge_single_task(request):
+    """Генерация отдельных заданий ОГЭ (4, 5, 6, 7, 8, 9, 10-12) для 9 класса"""
+    if request.method != 'POST':
+        logger.warning(f'❌ Метод не POST')  # ← ДОБАВИТЬ
+        return JsonResponse({'error': 'Только POST'}, status=405)
+    
     try:
         data = json.loads(request.body)
         task_number = str(data.get('task_number', ''))
-
+        logger.info(f'📥 Запрос задания {task_number} ОГЭ')  # ← ДОБАВИТЬ
+        
         session_data = request.session.get('oge_diagnostic', {})
         context = {}
         template_name = f'diagnostic_oge_task{task_number}_snippet.html'
-
-        if task_number == '2-3':
-            text_task_1_2, text_questions_1_2 = get_oge_text_analysis_questions('1_2')
-            if text_task_1_2:
-                context['text_task_1_2'] = text_task_1_2
-                context['text_questions_1_2'] = text_questions_1_2
-                session_data['answers_1_2'] = {
-                    str(q.question_number): q.correct_answer for q in text_questions_1_2
-                }
-            template_name = 'diagnostic_oge_task_2_3_snippet.html'
-
-        elif task_number == '4':
+        
+        # === ЗАДАНИЕ 4: Синтаксический анализ (сопоставление) ===
+        if task_number == '4':
+            logger.info('📊 Генерация задания 4')  # ← ДОБАВИТЬ
+            
             task3_data = generate_oge_task3_matching()
             if task3_data:
                 context['task3_error_type_names'] = task3_data.get('error_type_names', {})
                 context['task3_sentences'] = task3_data.get('sentences', [])
                 session_data['task3_correct'] = task3_data['correct_answers']
         
+        # === ЗАДАНИЕ 5: Пунктуация (смайлики) ===
         elif task_number.startswith('5_'):
             import random
             punktum_id_raw = task_number.replace('5_', '')
@@ -7027,10 +8214,12 @@ def generate_oge_single_task(request):
                     session_data['task4_correct'] = task4_data['correct_symbols']
                     context['task4_letter_groups'] = json.dumps(task4_data['letter_groups'])
                     context['task4_subgroup_letters'] = json.dumps(task4_data['subgroup_letters'])
-                
-                template_name = 'diagnostic_oge_task5_snippet.html'
+                    template_name = 'diagnostic_oge_task5_snippet.html'
+                else:
+                    return JsonResponse({'error': 'Нет данных для задания 5'}, status=404)
+            
+            # === ОБЫЧНЫЙ РЕЖИМ: одна пунктограмма ===
             else:
-                # === ОБЫЧНЫЙ РЕЖИМ: одна пунктограмма ===
                 choices_map = {
                     '2100': ['8', '18'],
                     '2101': ['19'],
@@ -7039,7 +8228,7 @@ def generate_oge_single_task(request):
                     '11_14': ['11', '12', '13', '14'],
                 }
                 
-                # === ПЕРЕОПРЕДЕЛЕНИЕ ВАРИАНТОВ ОТВЕТА ДЛЯ ОБЩИХ УПРАВЛЕНИЙ ===
+                # Переопределение вариантов ответа для общих управлений
                 override_letters_map = {
                     '2100': ['5', '8', '8.1', '9.2', '10', '18', 'дз'],
                     '2101': ['5', '9.1', '19', 'дз'],
@@ -7048,22 +8237,23 @@ def generate_oge_single_task(request):
                 }
                 
                 override_letters = override_letters_map.get(punktum_id_raw)
-                
                 punktum_id = punktum_id_raw
                 is_general = punktum_id_raw in ('2100', '2101', '2102', '2103', '6_7', '11_14')
                 
+                # Выбираем конкретную пунктограмму из карты
                 while punktum_id in choices_map:
                     punktum_id = random.choice(choices_map[punktum_id])
-
+                
                 task4_data = generate_oge_task4_with_image(
                     punktum_id=punktum_id,
                     num_sentences=1,
                     add_numbering=False,
-                    is_for_quiz=False if is_general else None,
+                    is_for_quiz=None,
                     override_letters=override_letters
                 )
+                
                 if task4_data:
-                    # Для общего управления — принудительно ставим статичную картинку и заголовок
+                    # Для общего управления — статичная картинка и заголовок
                     if is_general:
                         _general_images = {
                             '2100': 'images/punktum_task_OGE_0.webp',
@@ -7079,14 +8269,19 @@ def generate_oge_single_task(request):
                             task4_data['image_name'] = _general_images[punktum_id_raw]
                         if punktum_id_raw in _general_titles:
                             task4_data['title'] = _general_titles[punktum_id_raw]
+                    
                     context['task4_data'] = task4_data
                     session_data['task4_correct'] = task4_data['correct_symbols']
                     context['task4_letter_groups'] = json.dumps(task4_data['letter_groups'])
                     context['task4_subgroup_letters'] = json.dumps(task4_data['subgroup_letters'])
-                
-                template_name = 'diagnostic_oge_task5_snippet.html'
+                    template_name = 'diagnostic_oge_task5_snippet.html'
+                else:
+                    return JsonResponse({'error': 'Нет данных для задания 5'}, status=404)
         
+        # === ЗАДАНИЕ 6: Лексические нормы (чекбоксы) ===
         elif task_number == '6':
+            logger.info('📊 Генерация задания 6')  # ← ДОБАВИТЬ
+            
             text_task_5, text_questions_5 = get_oge_text_analysis_questions('5')
             if text_task_5:
                 context['text_task_5'] = text_task_5
@@ -7094,7 +8289,11 @@ def generate_oge_single_task(request):
                 session_data['answers_5'] = {
                     str(q.question_number): q.correct_answer for q in text_questions_5
                 }
+            else:
+                logger.error('❌ Нет данных для задания 6')  # ← ДОБАВИТЬ
+                return JsonResponse({'error': 'Нет данных для задания 6'}, status=404)
         
+        # === ЗАДАНИЕ 7: Орфография (смайлики букв) ===
         elif task_number == '7':
             oge_orth_examples = list(
                 OgeOrthogramExample.objects.filter(is_active=True).order_by('?')[:3]
@@ -7105,16 +8304,20 @@ def generate_oge_single_task(request):
                 task6_letter_groups = {}
                 task6_subgroup_letters = {}
                 mask_idx = 1
+                
                 for ex in oge_orth_examples:
                     masked = ex.masked_word
                     orth_id = str(ex.orthogram_id)
                     correct_letters_raw = (ex.correct_letters or '').split(',')
+                    
                     import re
                     mask_pattern = f'*{orth_id}*'
                     num_masks = masked.count(mask_pattern)
+                    
                     for pos in range(num_masks):
                         mask_id = f"6-{mask_idx}"
                         masked = masked.replace(mask_pattern, f'*{mask_id}*', 1)
+                        
                         if pos < len(correct_letters_raw):
                             raw = correct_letters_raw[pos].strip()
                             if '|' in raw:
@@ -7126,30 +8329,41 @@ def generate_oge_single_task(request):
                         else:
                             correct_letter = ''
                             choices = ex.orthogram.get_letters_list()
+                        
                         task6_letter_groups[mask_id] = f'orth_{mask_idx}'
                         task6_subgroup_letters[f'orth_{mask_idx}'] = choices
                         task6_expected.append(correct_letter)
                         mask_idx += 1
+                    
                     task6_lines.append({'display_line': masked})
-
+                
                 context['task6_lines'] = task6_lines
                 session_data['task6_correct'] = task6_expected
                 context['task6_letter_groups'] = json.dumps(task6_letter_groups)
                 context['task6_subgroup_letters'] = json.dumps(task6_subgroup_letters)
+            else:
+                return JsonResponse({'error': 'Нет данных для задания 7'}, status=404)
         
+        # === ЗАДАНИЕ 8: Раскройте скобки (инпут) ===
         elif task_number == '8':
             task7_item = OgeCorrectionExercise.objects.filter(is_active=True).order_by('?').first()
             if task7_item:
                 context['task7_word'] = task7_item.incorrect_text
                 context['task7_sentence'] = task7_item.explanation
                 session_data['answer_7'] = task7_item.correct_text.lower().strip()
-                
+            else:
+                return JsonResponse({'error': 'Нет данных для задания 8'}, status=404)
+        
+        # === ЗАДАНИЕ 9: Лексические нормы (инпут) ===
         elif task_number == '9':
             wordok = OgeWordOk.objects.filter(is_active=True).order_by('?').first()
             if wordok and wordok.correct_variants.strip():
                 context['wordok_8'] = wordok
                 session_data['answer_8'] = wordok.correct_variants
-                
+            else:
+                return JsonResponse({'error': 'Нет данных для задания 9'}, status=404)
+        
+        # === ЗАДАНИЯ 10-12: Текстовый анализ ===
         elif task_number == '10-12':
             text_task_9_10, text_questions_9_10 = get_oge_text_analysis_questions('9_10')
             if text_task_9_10:
@@ -7158,7 +8372,7 @@ def generate_oge_single_task(request):
                 session_data['answers_9_10'] = {
                     str(q.question_number): q.correct_answer for q in text_questions_9_10
                 }
-
+            
             text_task_11, text_questions_11 = get_oge_text_analysis_questions('11')
             if text_task_11:
                 context['text_task_11'] = text_task_11
@@ -7166,14 +8380,21 @@ def generate_oge_single_task(request):
                 session_data['answers_11'] = {
                     str(q.question_number): q.correct_answer for q in text_questions_11
                 }
-                
+            
+            if not text_task_9_10 and not text_task_11:
+                return JsonResponse({'error': 'Нет данных для заданий 10-12'}, status=404)
+        
+        # === НЕИЗВЕСТНОЕ ЗАДАНИЕ ===
         else:
             return JsonResponse({'error': 'Неизвестное задание'}, status=400)
-
+        
+        # Сохраняем сессию
         request.session['oge_diagnostic'] = session_data
+        
+        # Рендерим шаблон
         html = render_to_string(template_name, context)
         return JsonResponse({'html': html})
-
+    
     except Exception as e:
         logger.error(f"Ошибка генерации задания {task_number} ОГЭ: {e}", exc_info=True)
         return JsonResponse({'error': f'Ошибка: {str(e)}'}, status=500)
@@ -7397,3 +8618,952 @@ def check_oge_diagnostic(request):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': f'Ошибка: {str(e)}'}, status=500)
+
+
+# === ФИКСИРОВАННЫЕ ТЕСТЫ ЕГЭ досрок ! ===
+
+FIXTURES_DIR = Path(__file__).parent / 'fixtures'
+
+def load_test_fixture(test_code):
+    """Загружает JSON-фикстуру теста"""
+    fixture_path = FIXTURES_DIR / f'{test_code}.json'
+    if not fixture_path.exists():
+        return None
+    try:
+        with open(fixture_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return None
+
+@login_required
+def test_fix_ege(request, test_code):
+    if request.method == 'POST':
+        return check_test_fix_ege(request, test_code)
+    
+    test_data = load_test_fixture(test_code)
+    if not test_data:
+        return render(request, 'test_fix_ege/test_fix_ege_stub.html', {
+            'test_name': test_code.replace('_', ' ').title(),
+            'message': 'Тест находится в разработке.'
+        })
+    
+    # === ИНИЦИАЛИЗАЦИЯ ===
+    context = {
+        'test_name': test_data.get('test_name', test_code),
+        'test_code': test_code,
+        'max_score': test_data.get('max_score', 50),
+    }
+    
+    # Берем correct_answers из фикстуры
+    correct_answers = test_data.get('correct_answers', {}).copy()
+    tasks = test_data.get('tasks', {})
+    
+    # Задание 9
+    # if '9' in tasks:
+    #     task9 = tasks['9']
+    #     if 'expected' in task9:
+    #         expected_list = task9['expected']
+    #         for i, expected_letter in enumerate(expected_list, start=1):
+    #             correct_answers[f'9-{i}'] = expected_letter
+    #     context['task9_lines'] = task9.get('lines', [])
+    #     context['task9_letter_groups'] = task9.get('letter_groups', {})
+    #     context['task9_subgroup_letters'] = task9.get('subgroup_letters', {})
+    
+    if '9' in tasks:
+        task9 = tasks['9']
+        # ... (логика expected) ...
+        context['task9_lines'] = task9.get('lines', [])
+        # FIX: Всегда сериализуем в JSON для консистентности с JS
+        context['task9_letter_groups'] = json.dumps(task9.get('letter_groups', {}))
+        context['task9_subgroup_letters'] = json.dumps(task9.get('subgroup_letters', {}))
+
+    # Задание 10
+    if '10' in tasks:
+        task10 = tasks['10']
+        if 'expected' in task10:
+            expected_list = task10['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'10-{i}'] = expected_val
+        context['task10_lines'] = task10.get('lines', [])
+        context['task10_letter_groups'] = json.dumps(task10.get('letter_groups', {}))
+        context['task10_subgroup_letters'] = json.dumps(task10.get('subgroup_letters', {}))
+        
+    # Задание 11
+    if '11' in tasks:
+        task11 = tasks['11']
+        if 'expected' in task11:
+            expected_list = task11['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'11-{i}'] = expected_val
+        context['task11_lines'] = task11.get('lines', [])
+        context['task11_letter_groups'] = json.dumps(task11.get('letter_groups', {}))
+        context['task11_subgroup_letters'] = json.dumps(task11.get('subgroup_letters', {}))
+
+    # Задание 12
+    if '12' in tasks:
+        task12 = tasks['12']
+        if 'expected' in task12:
+            expected_list = task12['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'12-{i}'] = expected_val
+        context['task12_lines'] = task12.get('lines', [])
+        context['task12_letter_groups'] = json.dumps(task12.get('letter_groups', {}))
+        context['task12_subgroup_letters'] = json.dumps(task12.get('subgroup_letters', {}))
+        
+    # Задание 13
+    if '13' in tasks:
+        task13 = tasks['13']
+        if 'expected' in task13:
+            expected_list = task13['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'13-{i}'] = expected_val
+        context['task13_lines'] = task13.get('lines', [])
+        context['task13_letter_groups'] = json.dumps(task13.get('letter_groups', {}))
+        context['task13_subgroup_letters'] = json.dumps(task13.get('subgroup_letters', {}))
+    
+    # Задание 14
+    if '14' in tasks:
+        task14 = tasks['14']
+        if 'expected' in task14:
+            expected_list = task14['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'14-{i}'] = expected_val
+        context['task14_lines'] = task14.get('lines', [])
+        context['task14_letter_groups'] = json.dumps(task14.get('letter_groups', {}))
+        context['task14_subgroup_letters'] = json.dumps(task14.get('subgroup_letters', {}))
+    
+    # Задание 15
+    if '15' in tasks:
+        task15 = tasks['15']
+        if 'expected' in task15:
+            expected_list = task15['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'15-{i}'] = expected_val
+        context['task15_lines'] = task15.get('lines', [])
+        context['task15_letter_groups'] = json.dumps(task15.get('letter_groups', {}))
+        context['task15_subgroup_letters'] = json.dumps(task15.get('subgroup_letters', {}))
+    
+    # Задание 16
+    if '16' in tasks:
+        task16 = tasks['16']
+        if 'expected' in task16:
+            expected_list = task16['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'16-{i}'] = expected_val
+        context['task16_lines'] = task16.get('lines', [])
+        context['task16_letter_groups'] = json.dumps(task16.get('letter_groups', {}))
+        context['task16_subgroup_letters'] = json.dumps(task16.get('subgroup_letters', {}))
+        
+    # Задание 17
+    if '17' in tasks:
+        task17 = tasks['17']
+        if 'expected' in task17:
+            expected_list = task17['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'17-{i}'] = expected_val
+        context['task17_lines'] = task17.get('lines', [])
+        context['task17_letter_groups'] = json.dumps(task17.get('letter_groups', {}))
+        context['task17_subgroup_letters'] = json.dumps(task17.get('subgroup_letters', {}))
+        
+    # Задание 18
+    if '18' in tasks:
+        task18 = tasks['18']
+        if 'expected' in task18:
+            expected_list = task18['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'18-{i}'] = expected_val
+        context['task18_lines'] = task18.get('lines', [])
+        context['task18_letter_groups'] = json.dumps(task18.get('letter_groups', {}))
+        context['task18_subgroup_letters'] = json.dumps(task18.get('subgroup_letters', {}))
+        
+    # Задание 19
+    if '19' in tasks:
+        task19 = tasks['19']
+        if 'expected' in task19:
+            expected_list = task19['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'19-{i}'] = expected_val
+        context['task19_lines'] = task19.get('lines', [])
+        context['task19_letter_groups'] = json.dumps(task19.get('letter_groups', {}))
+        context['task19_subgroup_letters'] = json.dumps(task19.get('subgroup_letters', {}))
+
+    # Задание 20
+    if '20' in tasks:
+        task20 = tasks['20']
+        if 'expected' in task20:
+            expected_list = task20['expected']
+            for i, expected_val in enumerate(expected_list, start=1):
+                correct_answers[f'20-{i}'] = expected_val
+        context['task20_lines'] = task20.get('lines', [])
+        context['task20_letter_groups'] = json.dumps(task20.get('letter_groups', {}))
+        context['task20_subgroup_letters'] = json.dumps(task20.get('subgroup_letters', {}))
+        
+    # Задание 21
+    task21 = tasks.get('21', {})
+    if task21:
+        context['task21_lines'] = task21.get('lines', [])
+        context['task21_image_name'] = task21.get('image_name', '')
+        context['task21_letter_groups'] = json.dumps(task21.get('letter_groups', {}))
+        context['task21_subgroup_letters'] = json.dumps(task21.get('subgroup_letters', {}))
+
+    # Задание 22
+    if '22' in tasks:
+        task22 = tasks['22']
+        context['task22_instruction'] = task22.get('instruction', '')
+        context['task22_examples'] = task22.get('examples', [])
+        context['task22_terms'] = task22.get('terms', [])
+        request.session[f'{test_code}_task22_matches'] = task22.get('correct_matches', {})
+        
+    # Задания 23-27 (текст)
+    if '23_27' in tasks:
+        task23_27 = tasks['23_27']
+        context['task23_27_text'] = task23_27.get('text', '')
+        context['task23_27_questions'] = task23_27.get('questions', {})
+        
+        # Добавляем правильные ответы в correct_answers
+        questions = task23_27.get('questions', {})
+        for q_num, q_data in questions.items():
+            if 'correct_answer' in q_data:
+                correct_answers[str(q_num)] = q_data['correct_answer']
+
+    
+    # Задания 1-3, 4, 5, 6, 7, 8 (оставь как было, но без переопределения context)
+    if '1_3' in tasks:
+        raw_text = tasks['1_3'].get('text', '')
+        # ✅ Разбиваем текст на абзацы, игнорируем пустые строки
+        context['task13_paragraphs'] = [
+            p.strip() for p in raw_text.split('\n') if p.strip()
+        ]
+        context['task13_questions'] = tasks['1_3'].get('questions', {})        
+        context['task13_questions'] = tasks['1_3'].get('questions', {})
+    
+    # Задание 4
+    if '4' in tasks:
+        task4_data = tasks['4']
+        context['task4_text'] = task4_data.get('text', '')
+        context['task4_choices'] = task4_data.get('choices', [])
+        if 'correct_answer' in task4_data:
+            correct_answers['4'] = task4_data['correct_answer']
+
+    if '5' in tasks:
+        context['task5_text'] = tasks['5'].get('text', '')
+        context['task5_sentences'] = tasks['5'].get('sentences', [])
+
+    if '6' in tasks:
+        context['task6_type'] = tasks['6'].get('type', 'exclude')
+        context['task6_instruction'] = tasks['6'].get('instruction', '')
+        context['task6_text'] = tasks['6'].get('text', '')
+
+    if '7' in tasks:
+        context['task7_instruction'] = tasks['7'].get('instruction', '')
+        context['task7_phrases'] = tasks['7'].get('phrases', [])
+
+    if '8' in tasks:
+        context['task8_errors'] = tasks['8'].get('errors', [])
+        context['task8_sentences'] = tasks['8'].get('sentences', [])
+        request.session[f'{test_code}_task8_matches'] = tasks['8'].get('correct_matches', {})
+
+    if '27' in tasks:
+        context['task27_topic'] = tasks['27'].get('topic', '')
+        context['task27_max_score'] = tasks['27'].get('max_score', 22)
+    
+    # СОХРАНЯЕМ ПРАВИЛЬНЫЕ ОТВЕТЫ В СЕССИЮ
+    request.session[f'{test_code}_correct'] = correct_answers
+    
+    return render(request, 'test_fix_ege/test_fix_ege.html', context)
+
+
+def check_test_fix_ege(request, test_code):
+    """Проверка фикс-теста"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Только POST'}, status=405)
+    
+    try:
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        data = json.loads(request.body)
+        user_answers = data.get('answers', {})
+        
+        logger.info(f"User answers: {user_answers}")
+        
+        # Получаем правильные ответы из сессии
+        correct = request.session.get(f'{test_code}_correct', {})
+        task8_matches = request.session.get(f'{test_code}_task8_matches', {})
+        
+        logger.info(f"Correct answers from session: {correct}")
+        logger.info(f"Task8 matches: {task8_matches}")
+        
+        if not correct:
+            return JsonResponse({'error': 'Нет данных для проверки. Обновите страницу.'}, status=400)
+        
+        results = {}
+        total_score = 0
+        max_score = len(correct)
+        
+        # Обработка всех ответов
+        for q_num, correct_answer in correct.items():
+            user_ans = user_answers.get(q_num, '')
+            
+            # Сравнение
+            if isinstance(correct_answer, list):
+                if isinstance(user_ans, list):
+                    user_set = {str(x).strip().lower() for x in user_ans}
+                else:
+                    user_set = {str(user_ans).strip().lower()} if user_ans else set()
+                correct_set = {str(x).strip().lower() for x in correct_answer}
+                is_correct = user_set == correct_set
+            else:
+                is_correct = str(user_ans).strip().lower() == str(correct_answer).strip().lower()
+            
+            results[q_num] = {'is_correct': is_correct}
+            total_score += 1 if is_correct else 0
+        
+        # Специальная обработка для задания 8
+        if task8_matches:
+            correct_count = 0
+            # === ДОБАВЛЯЕМ ИНДИВИДУАЛЬНЫЕ РЕЗУЛЬТАТЫ ДЛЯ ПОДСВЕТКИ ===
+            for letter in ['А', 'Б', 'В', 'Г', 'Д']:
+                key = f'8_{letter}'
+                user_ans = user_answers.get(key, '').strip()
+                correct_ans = task8_matches.get(letter, '')
+                # is_correct = True только если ответ дан И он верный
+                is_correct = (user_ans != '' and user_ans == correct_ans)
+                
+                # Сохраняем индивидуальный результат для подсветки каждого селекта
+                results[key] = {'is_correct': is_correct}
+                
+                if is_correct:
+                    correct_count += 1
+            
+            # Оценка за задание 8: 5=2 балла, 3-4=1 балл, 0-2=0 баллов
+            if correct_count == 5:
+                task8_score = 2
+            elif correct_count >= 3:
+                task8_score = 1
+            else:
+                task8_score = 0
+            
+            results['8'] = {
+                'is_correct': correct_count == 5,  # Для общего индикатора "+"
+                'score': task8_score,
+                'correct_count': correct_count,
+                'max_possible': 5
+            }
+            # Корректируем total_score: убираем 5 "виртуальных" баллов и добавляем реальный
+            total_score = total_score - 5 + task8_score
+        
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 9 ===
+        task9_keys = [k for k in results.keys() if k.startswith('9-')]
+        if task9_keys:
+            task9_correct = all(results[k]['is_correct'] for k in task9_keys)
+            results['9'] = {'is_correct': task9_correct}
+            # Корректируем total_score: убираем поштучные 9-X, добавляем 1 балл за всё задание
+            total_score = total_score - len(task9_keys) + (1 if task9_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 10 ===
+        task10_keys = [k for k in results.keys() if k.startswith('10-')]
+        if task10_keys:
+            task10_correct = all(results[k]['is_correct'] for k in task10_keys)
+            results['10'] = {'is_correct': task10_correct}
+            total_score = total_score - len(task10_keys) + (1 if task10_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 11 ===
+        task11_keys = [k for k in results.keys() if k.startswith('11-')]
+        if task11_keys:
+            task11_correct = all(results[k]['is_correct'] for k in task11_keys)
+            results['11'] = {'is_correct': task11_correct}
+            total_score = total_score - len(task11_keys) + (1 if task11_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 12 ===
+        task12_keys = [k for k in results.keys() if k.startswith('12-')]
+        if task12_keys:
+            task12_correct = all(results[k]['is_correct'] for k in task12_keys)
+            results['12'] = {'is_correct': task12_correct}
+            total_score = total_score - len(task12_keys) + (1 if task12_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 13 ===
+        task13_keys = [k for k in results.keys() if k.startswith('13-')]
+        if task13_keys:
+            task13_correct = all(results[k]['is_correct'] for k in task13_keys)
+            results['13'] = {'is_correct': task13_correct}
+            total_score = total_score - len(task13_keys) + (1 if task13_correct else 0)
+        
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 14 ===
+        task14_keys = [k for k in results.keys() if k.startswith('14-')]
+        if task14_keys:
+            task14_correct = all(results[k]['is_correct'] for k in task14_keys)
+            results['14'] = {'is_correct': task14_correct}
+            total_score = total_score - len(task14_keys) + (1 if task14_correct else 0)
+        
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 15 ===
+        task15_keys = [k for k in results.keys() if k.startswith('15-')]
+        if task15_keys:
+            task15_correct = all(results[k]['is_correct'] for k in task15_keys)
+            results['15'] = {'is_correct': task15_correct}
+            total_score = total_score - len(task15_keys) + (1 if task15_correct else 0)
+        
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 16 ===
+        task16_keys = [k for k in results.keys() if k.startswith('16-')]
+        if task16_keys:
+            task16_correct = all(results[k]['is_correct'] for k in task16_keys)
+            results['16'] = {'is_correct': task16_correct}
+            total_score = total_score - len(task16_keys) + (1 if task16_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 17 ===
+        task17_keys = [k for k in results.keys() if k.startswith('17-')]
+        if task17_keys:
+            task17_correct = all(results[k]['is_correct'] for k in task17_keys)
+            results['17'] = {'is_correct': task17_correct}
+            total_score = total_score - len(task17_keys) + (1 if task17_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 18 ===
+        task18_keys = [k for k in results.keys() if k.startswith('18-')]
+        if task18_keys:
+            task18_correct = all(results[k]['is_correct'] for k in task18_keys)
+            results['18'] = {'is_correct': task18_correct}
+            total_score = total_score - len(task18_keys) + (1 if task18_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 19 ===
+        task19_keys = [k for k in results.keys() if k.startswith('19-')]
+        if task19_keys:
+            task19_correct = all(results[k]['is_correct'] for k in task19_keys)
+            results['19'] = {'is_correct': task19_correct}
+            total_score = total_score - len(task19_keys) + (1 if task19_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 20 ===
+        task20_keys = [k for k in results.keys() if k.startswith('20-')]
+        if task20_keys:
+            task20_correct = all(results[k]['is_correct'] for k in task20_keys)
+            results['20'] = {'is_correct': task20_correct}
+            total_score = total_score - len(task20_keys) + (1 if task20_correct else 0)
+            
+        # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЯ 21 ===
+        task21_keys = [k for k in results.keys() if k.startswith('21-')]
+        if task21_keys:
+            task21_correct = all(results[k]['is_correct'] for k in task21_keys)
+            results['21'] = {'is_correct': task21_correct}
+            total_score = total_score - len(task21_keys) + (1 if task21_correct else 0)
+            
+        # Специальная обработка для задания 22
+        task22_matches = request.session.get(f'{test_code}_task22_matches', {})
+        if task22_matches:
+            correct_count = 0
+            # === ДОБАВЛЯЕМ ИНДИВИДУАЛЬНЫЕ РЕЗУЛЬТАТЫ ДЛЯ ПОДСВЕТКИ ===
+            for letter in ['А', 'Б', 'В', 'Г', 'Д']:
+                key = f'22_{letter}'
+                user_ans = user_answers.get(key, '').strip()
+                correct_ans = task22_matches.get(letter, '')
+                is_correct = (user_ans != '' and user_ans == correct_ans)
+                
+                # Сохраняем индивидуальный результат для подсветки
+                results[key] = {'is_correct': is_correct}
+                
+                if is_correct:
+                    correct_count += 1
+            
+            # Оценка за задание 22
+            if correct_count == 5:
+                task22_score = 2
+            elif correct_count >= 3:
+                task22_score = 1
+            else:
+                task22_score = 0
+            
+            results['22'] = {
+                'is_correct': correct_count == 5,
+                'score': task22_score,
+                'correct_count': correct_count,
+                'max_possible': 5
+            }
+            # Корректируем total_score
+            total_score = total_score - 5 + task22_score
+            
+        
+        # Получаем максимальный балл из fixture
+        test_data = load_test_fixture(test_code)
+        max_score_from_fixture = test_data.get('max_score', 50) if test_data else 50
+        
+        # Корректируем max_score с учетом агрегированных заданий
+        # Вычитаем поштучные маски и добавляем 1 за каждое задание
+        max_score_adjusted = max_score_from_fixture
+        if task9_keys:
+            max_score_adjusted = max_score_adjusted - len(task9_keys) + 1
+        if task10_keys:
+            max_score_adjusted = max_score_adjusted - len(task10_keys) + 1
+        if task11_keys:
+            max_score_adjusted = max_score_adjusted - len(task11_keys) + 1
+        if task12_keys:
+            max_score_adjusted = max_score_adjusted - len(task12_keys) + 1
+        if task13_keys:
+            max_score_adjusted = max_score_adjusted - len(task13_keys) + 1
+        if task14_keys:
+            max_score_adjusted = max_score_adjusted - len(task14_keys) + 1
+        if task15_keys:
+            max_score_adjusted = max_score_adjusted - len(task15_keys) + 1
+        if task16_keys:
+            max_score_adjusted = max_score_adjusted - len(task16_keys) + 1
+        if task17_keys:
+            max_score_adjusted = max_score_adjusted - len(task17_keys) + 1
+        if task18_keys:
+            max_score_adjusted = max_score_adjusted - len(task18_keys) + 1
+        if task19_keys:
+            max_score_adjusted = max_score_adjusted - len(task19_keys) + 1
+        if task20_keys:
+            max_score_adjusted = max_score_adjusted - len(task20_keys) + 1
+        if task21_keys:
+            max_score_adjusted = max_score_adjusted - len(task21_keys) + 1
+        if task8_matches:
+            max_score_adjusted = max_score_adjusted - 5 + 2
+        
+        logger.info(f"Results: {results}")
+        logger.info(f"Total score: {total_score}, Max score: {max_score_adjusted}")
+        
+        return JsonResponse({
+            'results': results,
+            'total_score': total_score,
+            'max_score': max_score_adjusted,
+            'test_name': test_data.get('test_name', test_code) if test_data else test_code
+        })
+        
+    except json.JSONDecodeError as e:
+        return JsonResponse({'error': f'Неверный формат JSON: {str(e)}'}, status=400)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# === ФИКСИРОВАННЫЕ ТЕСТЫ ЕГЭ ! ДЕМО ! ===
+@login_required
+@ensure_csrf_cookie
+def test_fixdemo_ege(request, test_code):
+    # 1. Загрузка через общую функцию
+    test_data = load_test_fixture(test_code)
+    if not test_data:
+        return render(request, '404.html', {'error': 'Файл теста не найден или повреждён'}, status=404)
+
+    tasks = test_data.get('tasks', {})
+    test_name = test_data.get('test_name', 'Демоверсия ЕГЭ')
+    max_score = test_data.get('max_score', 50)
+
+    # 2. Контекст для шаблона
+    raw_text = tasks.get('1_3', {}).get('text', '')
+
+    context = {
+        'test_name': test_name,
+        'max_score': max_score,
+        'task13_paragraphs': [p.strip() for p in raw_text.split('\n') if p.strip()],
+        'task13_questions': tasks.get('1_3', {}).get('questions', {}),
+        'task4': tasks.get('4', {}),
+        'task5': tasks.get('5', {}),
+        'task6': tasks.get('6', {}),
+        'task7': tasks.get('7', {}),
+        'task8': tasks.get('8', {}),
+        'task23_27_text': tasks.get('23_27', {}).get('text', ''),
+        'task23_27_questions': tasks.get('23_27', {}).get('questions', {}),
+    }
+
+    # Задание 13 (с вариантами ИЛИ)
+    task13_data = tasks.get('13', {})
+    task13_variants = task13_data.get('variants', [])
+    if not task13_variants and task13_data.get('lines'):
+        task13_variants = [{'lines': task13_data.get('lines', [])}]
+
+    context['task13_variants'] = task13_variants
+    context['task13_letter_groups'] = json.dumps(task13_data.get('letter_groups', {}))
+    context['task13_subgroup_letters'] = json.dumps(task13_data.get('subgroup_letters', {}))
+    
+    # Задание 14 (с вариантами ИЛИ)
+    task14_data = tasks.get('14', {})
+    task14_variants = task14_data.get('variants', [])
+    if not task14_variants and task14_data.get('lines'):
+        task14_variants = [{'lines': task14_data.get('lines', [])}]
+
+    context['task14_variants'] = task14_variants
+    context['task14_letter_groups'] = json.dumps(task14_data.get('letter_groups', {}))
+    context['task14_subgroup_letters'] = json.dumps(task14_data.get('subgroup_letters', {}))
+    
+    # Задание 15
+    task15 = tasks.get('15', {})
+    if task15:
+        context['task15_lines'] = task15.get('lines', [])
+        context['task15_letter_groups'] = json.dumps(task15.get('letter_groups', {}))
+        context['task15_subgroup_letters'] = json.dumps(task15.get('subgroup_letters', {}))
+        
+    # Задание 16
+    task16 = tasks.get('16', {})
+    if task16:
+        context['task16_lines'] = task16.get('lines', [])
+        context['task16_letter_groups'] = json.dumps(task16.get('letter_groups', {}))
+        context['task16_subgroup_letters'] = json.dumps(task16.get('subgroup_letters', {}))
+        
+    # Задание 17
+    task17 = tasks.get('17', {})
+    if task17:
+        context['task17_lines'] = task17.get('lines', [])
+        context['task17_letter_groups'] = json.dumps(task17.get('letter_groups', {}))
+        context['task17_subgroup_letters'] = json.dumps(task17.get('subgroup_letters', {}))
+
+    # Задание 18
+    task18 = tasks.get('18', {})
+    if task18:
+        context['task18_lines'] = task18.get('lines', [])
+        context['task18_letter_groups'] = json.dumps(task18.get('letter_groups', {}))
+        context['task18_subgroup_letters'] = json.dumps(task18.get('subgroup_letters', {}))
+
+    # Задание 19
+    task19 = tasks.get('19', {})
+    if task19:
+        context['task19_lines'] = task19.get('lines', [])
+        context['task19_letter_groups'] = json.dumps(task19.get('letter_groups', {}))
+        context['task19_subgroup_letters'] = json.dumps(task19.get('subgroup_letters', {}))
+
+    # Задание 20
+    task20 = tasks.get('20', {})
+    if task20:
+        context['task20_lines'] = task20.get('lines', [])
+        context['task20_letter_groups'] = json.dumps(task20.get('letter_groups', {}))
+        context['task20_subgroup_letters'] = json.dumps(task20.get('subgroup_letters', {}))
+
+    # Задание 21 (тире)
+    task21 = tasks.get('21', {})
+    if task21:
+        context['task21_lines'] = task21.get('lines', [])
+        context['task21_image_name'] = task21.get('image_name', '')
+        context['task21_letter_groups'] = json.dumps(task21.get('letter_groups', {}))
+        context['task21_subgroup_letters'] = json.dumps(task21.get('subgroup_letters', {}))
+
+    # Задание 21 (двоеточие)
+    task21_1 = tasks.get('21_1', {})
+    if task21_1:
+        context['task21_1_lines'] = task21_1.get('lines', [])
+        context['task21_1_image_name'] = task21_1.get('image_name', '')
+        context['task21_1_letter_groups'] = json.dumps(task21_1.get('letter_groups', {}))
+        context['task21_1_subgroup_letters'] = json.dumps(task21_1.get('subgroup_letters', {}))
+        
+    # Задание 21_2 (запятые)
+    task21_2 = tasks.get('21_2', {})
+    if task21_2:
+        context['task21_2_lines'] = task21_2.get('lines', [])
+        context['task21_2_image_name'] = task21_2.get('image_name', '')
+        context['task21_2_letter_groups'] = json.dumps(task21_2.get('letter_groups', {}))
+        context['task21_2_subgroup_letters'] = json.dumps(task21_2.get('subgroup_letters', {}))
+        
+    # Все задания со смайликами (9-21)
+    for num in range(9, 22):
+        task = tasks.get(str(num))
+        if not task:
+            continue
+        context[f'task{num}_lines'] = task.get('lines', [])
+        context[f'task{num}_letter_groups'] = json.dumps(task.get('letter_groups', {}))
+        context[f'task{num}_subgroup_letters'] = json.dumps(task.get('subgroup_letters', {}))
+        if num == 21:
+            context['task21_image_name'] = task.get('image_name', '')
+            
+    # Задание 22
+    task22 = tasks.get('22', {})
+    if task22:
+        context['task22_instruction'] = task22.get('instruction', '')
+        context['task22_examples'] = task22.get('examples', [])
+        context['task22_terms'] = task22.get('terms', [])
+        request.session[f'{test_code}_task22_matches'] = task22.get('correct_matches', {})
+        
+    # Задания 23-27 (текст с разбивкой на абзацы)
+    task23_27_data = tasks.get('23_27', {})
+    raw_text_23_27 = task23_27_data.get('text', '')
+
+    # Разбиваем строго по \n из JSON, убираем пустые строки
+    context['task23_27_paragraphs'] = [p.strip() for p in raw_text_23_27.split('\n') if p.strip()]
+    context['task23_27_questions'] = task23_27_data.get('questions', {})
+    
+
+
+    # 3. Обработка проверки (POST)
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_answers = data.get('answers', {})
+            results = {}
+            total_score = 0
+
+            # === 1-3: ПРОВЕРКА ===
+            t13 = tasks.get('1_3', {})
+            correct_1_3 = t13.get('correct_answers', {})
+            # Если correct_answers — список, конвертируем в словарь { "1": [...], "2": ... }
+            if isinstance(correct_1_3, list):
+                correct_1_3 = {str(i+1): correct_1_3[i] if i < len(correct_1_3) else "" for i in range(3)}
+            
+            for q in ['1', '2', '3']:
+                ua = user_answers.get(q, '').strip().lower()
+                ca = correct_1_3.get(q) if isinstance(correct_1_3, dict) else None
+                if ca is None: continue
+                if isinstance(ca, list):
+                    is_c = ua in [x.lower() for x in ca]
+                else:
+                    is_c = ua == str(ca).strip().lower()
+                results[q] = {'is_correct': is_c}
+                if is_c: total_score += 1
+
+            # === 4, 5 ===
+            for t in ['4', '5']:
+                task = tasks.get(t, {})
+                ua = user_answers.get(t, '').strip().lower()
+                ca = task.get('correct_answer', '')
+                if isinstance(ca, list): ca = ca[0] if ca else ''
+                is_c = ua == str(ca).strip().lower() if ca else False
+                results[t] = {'is_correct': is_c}
+                if is_c: total_score += 1
+
+            # === 6: ДЕМО ===
+            t6 = tasks.get('6', {})
+            if 'part1' in t6:
+                a1 = user_answers.get('6', '').strip().lower()
+                a2 = user_answers.get('6_alt', '').strip().lower()
+                c1 = t6.get('part1', {}).get('correct_answers', [])
+                c2 = t6.get('part2', {}).get('correct_answers', [])
+                if isinstance(c1, str): c1 = [c1]
+                if isinstance(c2, str): c2 = [c2]
+                is_c = (a1 in [x.lower() for x in c1]) or (a2 in [x.lower() for x in c2])
+            else:
+                ca = t6.get('correct_answers', [])
+                if isinstance(ca, str): ca = [ca]
+                ua = user_answers.get('6', '').strip().lower()
+                is_c = ua in [x.lower() for x in ca]
+            results['6'] = {'is_correct': is_c}
+            if is_c: total_score += 1
+            
+            # === ЗАДАНИЕ 7: ФОРМЫ СЛОВ ===
+            task7 = tasks.get('7', {})
+            user_ans_7 = user_answers.get('7', '').strip().lower()
+            correct_7 = str(task7.get('correct_word', '')).strip().lower()
+            is_7_correct = (user_ans_7 == correct_7) if correct_7 else False
+            results['7'] = {'is_correct': is_7_correct}
+            if is_7_correct:
+                total_score += 1
+
+            # === ЗАДАНИЕ 8: СООТВЕТСТВИЕ (0-2 балла) ===
+            task8 = tasks.get('8', {})
+            # 🔍 Ищем правильные ответы по любому возможному ключу
+            matches = task8.get('matches') or task8.get('correct_matches') or task8.get('answers') or {}
+            
+            # Если в JSON ответы даны списком ["1","3","5","2","4"], конвертируем в словарь {"А":"1", ...}
+            if isinstance(matches, list) and len(matches) >= 5:
+                matches = {letter: str(matches[i]) for i, letter in enumerate(['А','Б','В','Г','Д'])}
+            
+            correct_count = 0
+            for letter in ['А','Б','В','Г','Д']:
+                key = f'8_{letter}'
+                user_ans = user_answers.get(key, '').strip()
+                # Приводим правильный ответ к строке и убираем пробелы
+                correct_ans = str(matches.get(letter, '')).strip()
+                
+                # Сравнение: ответ должен быть не пустым И точно совпадать
+                is_correct = (user_ans != '' and user_ans == correct_ans)
+                results[key] = {'is_correct': is_correct}
+                
+                if is_correct:
+                    correct_count += 1
+                    
+            # 📊 Начисление баллов: 5=2, 3-4=1, 0-2=0
+            score = 2 if correct_count == 5 else (1 if correct_count >= 3 else 0)
+            results['8'] = {'is_correct': correct_count == 5, 'score': score, 'correct_count': correct_count}
+            
+            
+            # === ЗАДАНИЕ 13: СПЕЦИАЛЬНАЯ ОБРАБОТКА (flat или variants) ===
+            task13 = tasks.get('13', {})
+            if task13:
+                expected_13 = {}
+                # 1. Прямой ключ expected (как в задании 9)
+                if 'expected' in task13:
+                    raw = task13['expected']
+                    if isinstance(raw, list):
+                        expected_13 = {str(i+1): v for i, v in enumerate(raw)}
+                    elif isinstance(raw, dict):
+                        expected_13 = raw
+                    elif isinstance(raw, str):
+                        expected_13 = {'1': raw}
+                # 2. Вложенные expected в variants (структура демо-фикстуры)
+                elif 'variants' in task13:
+                    idx = 1
+                    for var in task13['variants']:
+                        var_exp = var.get('expected', [])
+                        if isinstance(var_exp, list):
+                            for val in var_exp:
+                                expected_13[str(idx)] = val
+                                idx += 1
+                        elif isinstance(var_exp, str):
+                            expected_13[str(idx)] = var_exp
+                            idx += 1
+
+                for sub_id, ca in expected_13.items():
+                    k = f'13-{sub_id}'
+                    ua = user_answers.get(k, '').strip()
+                    results[k] = {'is_correct': ua == str(ca).strip()}
+                    if results[k]['is_correct']:
+                        total_score += 1
+                        
+
+            # === 9-21: СМАЙЛИКИ (пропускаем 13, т.к. обработано выше) ===
+            for base in range(9, 22):
+                if base == 13: 
+                    continue
+                
+                task = tasks.get(str(base), {})
+                if not task: 
+                    continue
+                    
+                expected = task.get('expected', {})
+                
+                # Нормализация expected
+                if isinstance(expected, list) and len(expected) > 0 and isinstance(expected[0], list):
+                    flat_expected, counter = {}, 1
+                    for variant_expected in expected:
+                        for val in variant_expected:
+                            flat_expected[str(counter)] = val
+                            counter += 1
+                    expected = flat_expected
+                elif isinstance(expected, list):
+                    expected = {str(i+1): expected[i] for i in range(len(expected))}
+                elif isinstance(expected, str):
+                    expected = {"1": expected}
+                
+                if not isinstance(expected, dict): 
+                    continue
+
+                for sub_id, ca in expected.items():
+                    k = f'{base}-{sub_id}'
+                    ua = user_answers.get(k, '').strip()
+                        
+                    results[k] = {'is_correct': ua == str(ca).strip()}
+                    if results[k]['is_correct']:
+                        total_score += 1
+                        
+            # === АГРЕГАЦИЯ ДЛЯ ЗАДАНИЙ 9-21 ===
+            for base in range(9, 22):
+                task_keys = [k for k in results.keys() if k.startswith(f'{base}-') or k.startswith(f'{base}_')]
+                if task_keys:
+                    try:
+                        all_correct = all(results[k].get('is_correct', False) for k in task_keys)
+                        results[str(base)] = {'is_correct': all_correct}
+                    except Exception as e:
+                        print(f"Ошибка агрегации для {base}: {e}")
+                        
+            # Задание 21_1 (двоеточие)
+            task21_1 = tasks.get('21_1', {})
+            expected_21_1 = task21_1.get('expected', {})
+            if isinstance(expected_21_1, list):
+                expected_21_1 = {str(i+1): expected_21_1[i] for i in range(len(expected_21_1))}
+            for sub_id, ca in expected_21_1.items():
+                k = f'21_1-{sub_id}'
+                ua = user_answers.get(k, '').strip()
+                ic = ua == str(ca).strip()
+                results[k] = {'is_correct': ic}
+                if ic:
+                    total_score += 1
+
+            # Агрегация для 21_1
+            if expected_21_1:
+                all_correct = all(results.get(f'21_1-{sub_id}', {}).get('is_correct', False) 
+                                for sub_id in expected_21_1.keys())
+                results['21_1'] = {'is_correct': all_correct}
+                
+            # Задание 21_2 (запятые)
+            task21_2 = tasks.get('21_2', {})
+            expected_21_2 = task21_2.get('expected', {})
+            if isinstance(expected_21_2, list):
+                expected_21_2 = {str(i+1): expected_21_2[i] for i in range(len(expected_21_2))}
+            for sub_id, ca in expected_21_2.items():
+                k = f'21_2-{sub_id}'
+                ua = user_answers.get(k, '').strip()
+                ic = ua == str(ca).strip()
+                results[k] = {'is_correct': ic}
+                if ic:
+                    total_score += 1
+
+            # Агрегация для 21_2
+            if expected_21_2:
+                all_correct = all(results.get(f'21_2-{sub_id}', {}).get('is_correct', False) 
+                                for sub_id in expected_21_2.keys())
+                results['21_2'] = {'is_correct': all_correct}
+                
+            # === ЗАДАНИЕ 22: СООТВЕТСТВИЕ ===
+            task22 = tasks.get('22', {})
+            matches = task22.get('correct_matches', {})
+
+            if matches:
+                correct_count = 0
+                for letter in ['А', 'Б', 'В', 'Г', 'Д']:
+                    key = f'22_{letter}'
+                    user_ans = user_answers.get(key, '').strip()
+                    correct_ans = str(matches.get(letter, '')).strip()
+                    
+                    is_correct = (user_ans != '' and user_ans == correct_ans)
+                    results[key] = {'is_correct': is_correct}
+                    
+                    if is_correct:
+                        correct_count += 1
+                
+                # Оценка за задание 22 (как и 8: 5=2 балла, 3-4=1 балл, 0-2=0)
+                if correct_count == 5:
+                    task22_score = 2
+                elif correct_count >= 3:
+                    task22_score = 1
+                else:
+                    task22_score = 0
+                
+                results['22'] = {
+                    'is_correct': correct_count == 5,
+                    'score': task22_score,
+                    'correct_count': correct_count,
+                    'max_possible': 5
+                }
+                total_score = total_score - 5 + task22_score
+
+            # === 23-26: ТЕКСТОВЫЕ ПОЛЯ ===
+            # for t in ['23','24','25','26']:
+            #     task = tasks.get(t, {})
+            #     ua = user_answers.get(t, '').strip().lower()
+            #     ca = task.get('correct_answer', '')
+            #     if isinstance(ca, list): ca = ca[0] if ca else ''
+            #     is_c = ua == str(ca).strip().lower() if ca else False
+            #     results[t] = {'is_correct': is_c}
+            #     if is_c: total_score += 1
+
+            # return JsonResponse({
+            #     'total_score': total_score,
+            #     'max_score': test_data.get('max_score', 50),
+            #     'results': results
+            # })
+            
+            # === 23-26: ТЕКСТОВЫЕ ПОЛЯ (из 23_27) ===
+            task23_27 = tasks.get('23_27', {})
+            questions = task23_27.get('questions', {})
+            for t in ['23', '24', '25', '26']:
+                q_data = questions.get(t, {})
+                ua = user_answers.get(t, '').strip().lower()
+                ca = q_data.get('correct_answer', '')
+                if isinstance(ca, list): 
+                    ca = ca[0] if ca else ''
+                is_c = ua == str(ca).strip().lower() if ca else False
+                results[t] = {'is_correct': is_c}
+                if is_c: 
+                    total_score += 1
+
+            # ✅ ОТПРАВКА РЕЗУЛЬТАТА
+            return JsonResponse({
+                'total_score': total_score,
+                'max_score': test_data.get('max_score', 50),
+                'results': results
+            })
+
+        except Exception as e:
+            import traceback
+            return JsonResponse({
+                'error': str(e), 
+                'traceback': traceback.format_exc()
+            }, status=500)
+
+    # 4. Отрисовка страницы (GET)
+    return render(request, 'test_fix_ege/test_fixdemo_ege.html', context)
+

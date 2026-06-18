@@ -481,49 +481,76 @@ class OrthoepyWord(models.Model):
     def generate_test(num_options=5, correct_min=2, correct_max=4, 
                      user_grade=None, test_type='main'):
         """
-        Генерирует тест по орфоэпии
+        Генерирует тест по орфоэпии с накопительной системой.
         
-        Гарантии:
-        - 2-4 правильных варианта
-        - 1-3 неправильных варианта
-        - НЕТ повторений лемм в одном тесте
+        Логика grades:
+        - grades = '6' -> доступно для 6, 7, 8, 9, 10, 11
+        - grades = '7' -> доступно для 7, 8, 9, 10, 11 (скрыто для 6)
+        - grades = '10' -> доступно только для 10, 11
         """
         from django.db.models import Q
         import random
+        import logging
+        
+        logger = logging.getLogger('django')
 
-        # Фильтруем только активные слова
+        # Базовый запрос: только активные слова
         queryset = OrthoepyWord.objects.filter(is_active=True)
         
-        # Фильтрация по классам
+        # === ФИЛЬТРАЦИЯ ПО КЛАССАМ (НАКОПИТЕЛЬНАЯ) ===
         if user_grade:
-            queryset = queryset.filter(
-                Q(grades__contains=str(user_grade)) | 
-                Q(grades='') | 
-                Q(grades__isnull=True)
-            )
+            suitable_words_ids = []
+            # Получаем все активные слова (id и grades)
+            all_words = list(queryset.values('id', 'grades'))
+            
+            for item in all_words:
+                g_str = item['grades']
+                
+                # Если поле пустое, пропускаем (или можно считать доступным всем, если нужно)
+                if not g_str: 
+                    continue 
+                
+                try:
+                    # Берем ПЕРВОЕ число из строки. 
+                    # Если там "6", получим 6. Если "10", получим 10.
+                    start_grade = int(g_str.split(',')[0].strip())
+                    
+                    # ГЛАВНОЕ ПРАВИЛО: 
+                    # Если стартовый класс слова <= текущему классу ученика, слово подходит.
+                    if start_grade <= user_grade:
+                        suitable_words_ids.append(item['id'])
+                        
+                except (ValueError, IndexError):
+                    continue
+            
+            # Фильтруем основной queryset по найденным ID
+            if suitable_words_ids:
+                queryset = queryset.filter(id__in=suitable_words_ids)
+                logger.info(f"Орфоэпия: для {user_grade} класса найдено {queryset.count()} слов (накопительно)")
+            else:
+                logger.warning(f"Орфоэпия: для {user_grade} класса не найдено подходящих слов!")
+                return None # Возвращаем None, если слов нет
         
-        # Разделяем на правильные и неправильные
+        # Если user_grade нет (режим ЕГЭ без привязки), берем всё активное
+        # Но для кнопки "ЕГЭ" лучше передавать grade=11, чтобы работала та же логика
+        
+        # Разделение на правильные и неправильные
         correct_words = list(queryset.filter(is_correct=True))
         incorrect_words = list(queryset.filter(is_correct=False))
         
-        # Проверяем, достаточно ли слов
+        # Проверка достаточности данных
         if len(correct_words) < correct_min or len(incorrect_words) < 1:
+            logger.warning(f"Недостаточно слов для генерации теста (правильных: {len(correct_words)}, неправильных: {len(incorrect_words)})")
             return None
         
-        # Случайное количество правильных ответов (2-4)
-        num_correct = random.randint(correct_min, correct_max)
-        num_incorrect = num_options - num_correct
+        # Корректировка количества вариантов, если слов мало
+        num_correct = random.randint(correct_min, min(correct_max, len(correct_words)))
+        max_incorrect = num_options - num_correct
+        num_incorrect = min(max_incorrect, len(incorrect_words))
         
-        # Если неправильных слов меньше, чем нужно — корректируем
-        if len(incorrect_words) < num_incorrect:
-            num_incorrect = len(incorrect_words)
-            num_correct = num_options - num_incorrect
-        
-        # === ВЫБИРАЕМ УНИКАЛЬНЫЕ ЛЕММЫ ===
+        # Выбор уникальных лемм (чтобы не было пар типа "баловать/балУют" в одном тесте)
         selected_correct = []
         used_lemmas = set()
-        
-        # Выбираем правильные варианты с уникальными леммами
         random.shuffle(correct_words)
         for word in correct_words:
             if len(selected_correct) >= num_correct:
@@ -532,7 +559,6 @@ class OrthoepyWord(models.Model):
                 selected_correct.append(word)
                 used_lemmas.add(word.lemma)
         
-        # Выбираем неправильные варианты с уникальными леммами
         selected_incorrect = []
         random.shuffle(incorrect_words)
         for word in incorrect_words:
@@ -542,15 +568,14 @@ class OrthoepyWord(models.Model):
                 selected_incorrect.append(word)
                 used_lemmas.add(word.lemma)
         
-        # Проверяем, что набрали достаточно вариантов
-        if len(selected_correct) < num_correct or len(selected_incorrect) < num_incorrect:
+        # Финальная проверка
+        if len(selected_correct) < correct_min or len(selected_incorrect) < 1:
             return None
         
-        # Объединяем и перемешиваем
+        # Сборка результата
         all_variants = selected_correct + selected_incorrect
         random.shuffle(all_variants)
         
-        # Формируем результат
         variants = [word.word for word in all_variants]
         correct_answers = [word.word for word in selected_correct]
         

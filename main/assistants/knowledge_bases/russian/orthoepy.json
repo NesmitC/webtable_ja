@@ -1,0 +1,1508 @@
+[
+  {
+    "id": 0,
+    "word": "аэропорты",
+    "vowel_indices": [1, 3, 5, 8],
+    "correct_index": 5
+  },
+  {
+    "id": 1,
+    "word": "балованный",
+    "vowel_indices": [1, 3, 5, 8],
+    "correct_index": 3
+  },
+  {
+    "id": 2,
+    "word": "баловать",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 3,
+    "word": "балуясь",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 4,
+    "word": "банты",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 5,
+    "word": "бороду",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 6,
+    "word": "брала",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 7,
+    "word": "бралась",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 8,
+    "word": "бухгалтеров",
+    "vowel_indices": [4, 9],
+    "correct_index": 4
+  },
+  {
+    "id": 9,
+    "word": "верба",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 10,
+    "word": "верна",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 11,
+    "word": "вероисповедание",
+    "vowel_indices": [9, 11],
+    "correct_index": 9
+  },
+  {
+    "id": 12,
+    "word": "взяла",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 13,
+    "word": "взялась",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 14,
+    "word": "включит",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 15,
+    "word": "включишь",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 16,
+    "word": "включенный",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 17,
+    "word": "включен",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 18,
+    "word": "включим",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 19,
+    "word": "влилась",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 20,
+    "word": "вовремя",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 21,
+    "word": "водопровод",
+    "vowel_indices": [6, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 22,
+    "word": "ворвалась",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 23,
+    "word": "восприняла",
+    "vowel_indices": [5, 7, 9],
+    "correct_index": 9
+  },
+  {
+    "id": 24,
+    "word": "воссоздала",
+    "vowel_indices": [4, 7, 9],
+    "correct_index": 9
+  },
+  {
+    "id": 25,
+    "word": "вручит",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 26,
+    "word": "газопровод",
+    "vowel_indices": [6, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 27,
+    "word": "гнала",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 28,
+    "word": "гналась",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 29,
+    "word": "гражданство",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 30,
+    "word": "давнишний",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 31,
+    "word": "дефис",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 32,
+    "word": "диспансер",
+    "vowel_indices": [4, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 33,
+    "word": "добела",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 34,
+    "word": "добрала",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 35,
+    "word": "добралась",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 36,
+    "word": "довезенный",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 37,
+    "word": "доверху",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 38,
+    "word": "договоренность",
+    "vowel_indices": [5, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 39,
+    "word": "дождалась",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 40,
+    "word": "дозвонится",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 41,
+    "word": "дозвонятся",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 42,
+    "word": "дозировать",
+    "vowel_indices": [3, 5, 7],
+    "correct_index": 3
+  },
+  {
+    "id": 43,
+    "word": "докрасна",
+    "vowel_indices": [1, 4, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 44,
+    "word": "документ",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 45,
+    "word": "донельзя",
+    "vowel_indices": [1, 3, 7],
+    "correct_index": 3
+  },
+  {
+    "id": 46,
+    "word": "донизу",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 47,
+    "word": "досуг",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 48,
+    "word": "дешевизна",
+    "vowel_indices": [5, 8],
+    "correct_index": 5
+  },
+  {
+    "id": 49,
+    "word": "досуха",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 50,
+    "word": "еретик",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 51,
+    "word": "жалюзи",
+    "vowel_indices": [1, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 52,
+    "word": "ждала",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 53,
+    "word": "жилось",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 54,
+    "word": "завидно",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 55,
+    "word": "загнутый",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 56,
+    "word": "загодя",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 57,
+    "word": "закупорить",
+    "vowel_indices": [3, 5],
+    "correct_index": 3
+  },
+  {
+    "id": 58,
+    "word": "закупорив",
+    "vowel_indices": [3, 5],
+    "correct_index": 3
+  },
+  {
+    "id": 59,
+    "word": "заняла",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 60,
+    "word": "занял",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 61,
+    "word": "заняло",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 62,
+    "word": "занятый",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 63,
+    "word": "занята",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 64,
+    "word": "заселен",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 65,
+    "word": "заперта",
+    "vowel_indices": [1, 3, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 66,
+    "word": "затемно",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 67,
+    "word": "звала",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 68,
+    "word": "звонит",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 69,
+    "word": "звоним",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 70,
+    "word": "звонишь",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 71,
+    "word": "значимость",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 72,
+    "word": "значимый",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 73,
+    "word": "зимовщик",
+    "vowel_indices": [3, 6],
+    "correct_index": 3
+  },
+  {
+    "id": 74,
+    "word": "засветло",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 75,
+    "word": "избалованный",
+    "vowel_indices": [3, 5, 7],
+    "correct_index": 5
+  },
+  {
+    "id": 76,
+    "word": "иксы",
+    "vowel_indices": [0, 3],
+    "correct_index": 0
+  },
+  {
+    "id": 77,
+    "word": "имперский",
+    "vowel_indices": [0, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 78,
+    "word": "инстинкт",
+    "vowel_indices": [0, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 79,
+    "word": "исключит",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 80,
+    "word": "исстари",
+    "vowel_indices": [0, 4, 6],
+    "correct_index": 0
+  },
+  {
+    "id": 81,
+    "word": "исчерпать",
+    "vowel_indices": [3, 6],
+    "correct_index": 3
+  },
+  {
+    "id": 82,
+    "word": "каталог",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 83,
+    "word": "каучук",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 84,
+    "word": "кашлянуть",
+    "vowel_indices": [1, 4, 6],
+    "correct_index": 1
+  },
+  {
+    "id": 85,
+    "word": "квартал",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 86,
+    "word": "километр",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 87,
+    "word": "клала",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 88,
+    "word": "конусов",
+    "vowel_indices": [1, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 89,
+    "word": "кормящий",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 90,
+    "word": "корысть",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 91,
+    "word": "крала",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 92,
+    "word": "кралась",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 93,
+    "word": "красивее",
+    "vowel_indices": [4, 6],
+    "correct_index": 4
+  },
+  {
+    "id": 94,
+    "word": "красивейший",
+    "vowel_indices": [4, 6],
+    "correct_index": 4
+  },
+  {
+    "id": 95,
+    "word": "кремень",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 96,
+    "word": "кренится",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 97,
+    "word": "кровоточить",
+    "vowel_indices": [6, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 98,
+    "word": "кровоточащий",
+    "vowel_indices": [6, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 99,
+    "word": "кухонный",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 100,
+    "word": "лгала",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 101,
+    "word": "лекторов",
+    "vowel_indices": [1, 6],
+    "correct_index": 1
+  },
+  {
+    "id": 102,
+    "word": "лила",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 103,
+    "word": "лилась",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 104,
+    "word": "ловка",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 105,
+    "word": "местностей",
+    "vowel_indices": [1, 8],
+    "correct_index": 1
+  },
+  {
+    "id": 106,
+    "word": "мозаичный",
+    "vowel_indices": [3, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 107,
+    "word": "молящий",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 108,
+    "word": "мусоропровод",
+    "vowel_indices": [8, 10],
+    "correct_index": 10
+  },
+  {
+    "id": 109,
+    "word": "наверх",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 110,
+    "word": "наврала",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 111,
+    "word": "наделит",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 112,
+    "word": "надолго",
+    "vowel_indices": [1, 3, 6],
+    "correct_index": 3
+  },
+  {
+    "id": 113,
+    "word": "надорвалась",
+    "vowel_indices": [6, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 114,
+    "word": "наживший",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 115,
+    "word": "нажита",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 116,
+    "word": "нажился",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 117,
+    "word": "назвалась",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 118,
+    "word": "накренит",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 119,
+    "word": "налила",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 120,
+    "word": "наливший",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 121,
+    "word": "намерение",
+    "vowel_indices": [3, 5],
+    "correct_index": 3
+  },
+  {
+    "id": 122,
+    "word": "нанявшийся",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 123,
+    "word": "нарвала",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 124,
+    "word": "нарост",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 125,
+    "word": "насорит",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 126,
+    "word": "начал",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 127,
+    "word": "начала",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 128,
+    "word": "начали",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 129,
+    "word": "начать",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 130,
+    "word": "начатый",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 131,
+    "word": "начатые",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 132,
+    "word": "начавший",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 133,
+    "word": "начав",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 134,
+    "word": "начавшись",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 135,
+    "word": "недруг",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 136,
+    "word": "недуг",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 137,
+    "word": "некролог",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 138,
+    "word": "ненадолго",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 139,
+    "word": "нефтепровод",
+    "vowel_indices": [7, 9],
+    "correct_index": 9
+  },
+  {
+    "id": 140,
+    "word": "низведен",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 141,
+    "word": "новостей",
+    "vowel_indices": [1, 3, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 142,
+    "word": "ногтя",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 143,
+    "word": "ногтей",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 144,
+    "word": "логтя",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 145,
+    "word": "когтя",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 146,
+    "word": "обеспечение",
+    "vowel_indices": [5, 7],
+    "correct_index": 5
+  },
+  {
+    "id": 147,
+    "word": "обзвонит",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 148,
+    "word": "облегчить",
+    "vowel_indices": [3, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 149,
+    "word": "облегчит",
+    "vowel_indices": [3, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 150,
+    "word": "облилась",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 151,
+    "word": "обнялась",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 152,
+    "word": "обогнала",
+    "vowel_indices": [5, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 153,
+    "word": "ободрала",
+    "vowel_indices": [5, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 154,
+    "word": "ободрить",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 155,
+    "word": "ободренный",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 156,
+    "word": "ободрен",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 157,
+    "word": "ободрена",
+    "vowel_indices": [2, 5, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 158,
+    "word": "ободришься",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 159,
+    "word": "обостренный",
+    "vowel_indices": [2, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 160,
+    "word": "обострить",
+    "vowel_indices": [2, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 161,
+    "word": "одолжит",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 162,
+    "word": "озлобить",
+    "vowel_indices": [3, 5],
+    "correct_index": 3
+  },
+  {
+    "id": 163,
+    "word": "окружит",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 164,
+    "word": "опломбировать",
+    "vowel_indices": [6, 10],
+    "correct_index": 10
+  },
+  {
+    "id": 165,
+    "word": "опошлят",
+    "vowel_indices": [2, 5],
+    "correct_index": 2
+  },
+  {
+    "id": 166,
+    "word": "оптовый",
+    "vowel_indices": [0, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 167,
+    "word": "осведомиться",
+    "vowel_indices": [3, 7],
+    "correct_index": 3
+  },
+  {
+    "id": 168,
+    "word": "осведомишься",
+    "vowel_indices": [3, 7],
+    "correct_index": 3
+  },
+  {
+    "id": 169,
+    "word": "отбыла",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 170,
+    "word": "отдала",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 171,
+    "word": "отдав",
+    "vowel_indices": [0, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 172,
+    "word": "отключенный",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 173,
+    "word": "откупорил",
+    "vowel_indices": [3, 5],
+    "correct_index": 3
+  },
+  {
+    "id": 174,
+    "word": "отозвала",
+    "vowel_indices": [5, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 175,
+    "word": "отозвалась",
+    "vowel_indices": [5, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 176,
+    "word": "отрочество",
+    "vowel_indices": [0, 3],
+    "correct_index": 0
+  },
+  {
+    "id": 177,
+    "word": "партер",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 178,
+    "word": "перезвонит",
+    "vowel_indices": [6, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 179,
+    "word": "плодоносить",
+    "vowel_indices": [6, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 180,
+    "word": "повторенный",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 181,
+    "word": "поделенный",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 182,
+    "word": "подняв",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 183,
+    "word": "позвала",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 184,
+    "word": "позвонит",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 185,
+    "word": "позвонишь",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 186,
+    "word": "полила",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 187,
+    "word": "положить",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 188,
+    "word": "положил",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 189,
+    "word": "понял",
+    "vowel_indices": [1, 3],
+    "correct_index": 1
+  },
+  {
+    "id": 190,
+    "word": "поняла",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 191,
+    "word": "поняв",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 192,
+    "word": "понявший",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 193,
+    "word": "поручни",
+    "vowel_indices": [1, 3, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 194,
+    "word": "послала",
+    "vowel_indices": [4, 6],
+    "correct_index": 4
+  },
+  {
+    "id": 195,
+    "word": "предвосхитить",
+    "vowel_indices": [8, 10],
+    "correct_index": 8
+  },
+  {
+    "id": 196,
+    "word": "премировать",
+    "vowel_indices": [4, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 197,
+    "word": "прибыл",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 198,
+    "word": "прибыла",
+    "vowel_indices": [2, 4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 199,
+    "word": "прибыло",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 200,
+    "word": "прибыв",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 201,
+    "word": "прибывший",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 202,
+    "word": "приданое",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 203,
+    "word": "призыв",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 204,
+    "word": "принял",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 205,
+    "word": "приняли",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 206,
+    "word": "приняла",
+    "vowel_indices": [2, 4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 207,
+    "word": "принудить",
+    "vowel_indices": [4, 6],
+    "correct_index": 4
+  },
+  {
+    "id": 208,
+    "word": "принятый",
+    "vowel_indices": [2, 6],
+    "correct_index": 2
+  },
+  {
+    "id": 209,
+    "word": "прирученный",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 210,
+    "word": "проживший",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 211,
+    "word": "прозорлива",
+    "vowel_indices": [2, 7],
+    "correct_index": 7
+  },
+  {
+    "id": 212,
+    "word": "процент",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 213,
+    "word": "путепровод",
+    "vowel_indices": [6, 8],
+    "correct_index": 8
+  },
+  {
+    "id": 214,
+    "word": "рвала",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 215,
+    "word": "свекла",
+    "vowel_indices": [2, 5],
+    "correct_index": 2
+  },
+  {
+    "id": 216,
+    "word": "сверлит",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 217,
+    "word": "сверлишь",
+    "vowel_indices": [2, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 218,
+    "word": "сироты",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 219,
+    "word": "сливовый",
+    "vowel_indices": [2, 4],
+    "correct_index": 2
+  },
+  {
+    "id": 220,
+    "word": "сняла",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 220,
+    "word": "снята",
+    "vowel_indices": [1, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 221,
+    "word": "согнутый",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 222,
+    "word": "создала",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 223,
+    "word": "создана",
+    "vowel_indices": [4, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 224,
+    "word": "сорит",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 225,
+    "word": "сосредоточение",
+    "vowel_indices": [6, 8, 10],
+    "correct_index": 8
+  },
+  {
+    "id": 226,
+    "word": "средства",
+    "vowel_indices": [2, 7],
+    "correct_index": 2
+  },
+  {
+    "id": 227,
+    "word": "средствами",
+    "vowel_indices": [2, 7],
+    "correct_index": 2
+  },
+  {
+    "id": 228,
+    "word": "столяр",
+    "vowel_indices": [2, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 229,
+    "word": "созыв",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 230,
+    "word": "отзыв (посла)",
+    "vowel_indices": [0, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 231,
+    "word": "отзыв (о книге)",
+    "vowel_indices": [0, 3],
+    "correct_index": 0
+  },
+  {
+    "id": 232,
+    "word": "торты",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 233,
+    "word": "тортов",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 234,
+    "word": "тотчас",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 235,
+    "word": "туфля",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 236,
+    "word": "туфлями",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 237,
+    "word": "убрала",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 238,
+    "word": "убыстрить",
+    "vowel_indices": [2, 6],
+    "correct_index": 6
+  },
+  {
+    "id": 239,
+    "word": "углубить",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 240,
+    "word": "укрепит",
+    "vowel_indices": [3, 5],
+    "correct_index": 5
+  },
+  {
+    "id": 241,
+    "word": "цемент",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 242,
+    "word": "центнер",
+    "vowel_indices": [1, 5],
+    "correct_index": 1
+  },
+  {
+    "id": 243,
+    "word": "черпать",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 244,
+    "word": "шарфы",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 245,
+    "word": "щавель",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 246,
+    "word": "щемит",
+    "vowel_indices": [1, 3],
+    "correct_index": 3
+  },
+  {
+    "id": 247,
+    "word": "щелкать",
+    "vowel_indices": [1, 4],
+    "correct_index": 1
+  },
+  {
+    "id": 248,
+    "word": "эксперт",
+    "vowel_indices": [0, 4],
+    "correct_index": 4
+  },
+  {
+    "id": 249,
+    "word": "яслей",
+    "vowel_indices": [0, 3],
+    "correct_index": 0
+  }
+]

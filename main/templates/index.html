@@ -44,8 +44,12 @@
             <a href="{% url 'starting_diagnostic' %}" class="check-task green">Входящая диагностика ЕГЭ</a>
             <a href="{% url 'starting_diagnostic_oge' %}" class="check-task green">Входящая диагностика ОГЭ</a>
             <a href="{% url 'starting_diagnostic' %}" class="check-task green">Текущая диагностика</a>
-            {% comment %} <button class="check-task green" data-diagnostic="result-diagnostic">Итоговая
-                диагностика</button> {% endcomment %}
+            <!-- === ФИКСИРОВАННЫЕ ТЕСТЫ ЕГЭ === -->            
+            <a href="{% url 'test_fixdemo_ege' 'test_fixdemo_ege_2026' %}" class="check-task green">Демоверсия ЕГЭ 2026</a>
+            <a href="{% url 'test_fix_ege' 'test_fix_ege_2' %}" class="check-task green">Досрочная волна ЕГЭ 2026</a>
+            <a href="{% url 'orthoepy_trening' %}" class="check-task green">УДАРЕНИЯ</a>
+
+            {% comment %} <button class="check-task green" data-diagnostic="result-diagnostic">Итоговая диагностика</button> {% endcomment %}
 
             <h1>Добро пожаловать в электронные планинги!</h1>
             <p>Для школьников 5–7 классов</p>
@@ -91,7 +95,9 @@
 
         </main>
 
-        {% include "chat_widget.html" %}
+        {% if user.is_authenticated %}
+            {% include 'chat_widget.html' %}
+        {% endif %}
 
 
     </div>

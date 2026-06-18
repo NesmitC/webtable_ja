@@ -1,4 +1,4 @@
-# site
+# requirements.txt
 django == 5.2.0
 django-cors-headers == 4.6.0
 python-decouple==3.8
@@ -7,5 +7,14 @@ psycopg2-binary==2.9.9
 
 python-telegram-bot>=20.0
 httpx>=0.24  # async HTTP-клиент
-python-decouple>=3.8  # для config()
 redis>=4.5  # если используешь кэш для токенов
+
+# === Морфология (Python 3.12+) ===
+pymorphy3~=2.0.0
+pymorphy3-dicts-ru~=2.4.417127
+
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# VK Bot
+vk-api>=11.9.0

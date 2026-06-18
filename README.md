@@ -65,6 +65,9 @@ cd /home/neurostat
 # 2. Активируйте виртуальное окружение (если есть)
 source .venv/bin/activate
 
+# Установи все пакеты
+pip install -r requirements.txt
+
 # 3. Примените миграции (если менялись модели)
 python manage.py makemigrations
 python manage.py migrate
@@ -241,5 +244,34 @@ autostart=true
 autorestart=true
 user=www-data
 
+! Страничка аналитики для админа / преподавателя по ученикам, словам в планинге
+
+✅ Локально:
+http://127.0.0.1:8000/staff/analytics/
+
+✅ Продакшн:
+https://neurostat.ru/staff/analytics/
+
+
+
+🚀 Запуск ВК-бота (локально)
+cd C:\Users\alex\Jango\webtable_ja_project
+.venv\Scripts\activate
+python vk_bot.py
+
+
+🚀 Запуск ВК-бота (в проде)
+cd /home/neurostat
+source .venv/bin/activate
+python vk_bot.py
+
+Или если хотите, чтобы он работал в фоне после закрытия PuTTY:
+nohup python vk_bot.py &
+
+После этого проверьте, что он запустился:
+ps aux | grep -E "python.*vk_bot"
+
+Автоматическая работа бота в проде:
+sudo systemctl start neurostat-vkbot.service
 
 '''

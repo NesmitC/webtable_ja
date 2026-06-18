@@ -3,13 +3,12 @@ from django.urls import path
 from django.contrib import admin
 from . import views
 from django.contrib.auth import views as auth_views
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 urlpatterns = [
     # Главная страница
     path('', views.index, name='index'),
-    # Админка
-    path('admin/', admin.site.urls),  # ← ЭТА СТРОКА ОБЯЗАТЕЛЬНА!
     path(
         'accounts/login/',
         auth_views.LoginView.as_view(template_name='registration/login.html'),
@@ -32,13 +31,13 @@ urlpatterns = [
     path('oge/', views.oge, name='oge'),
     path('diagnostic/starting/', views.starting_diagnostic, name='starting_diagnostic'),
     path('diagnostic/starting_oge/', views.starting_diagnostic_oge, name='starting_diagnostic_oge'),
+    path('test-fix-ege/<str:test_code>/', views.test_fix_ege, name='test_fix_ege'),
+    path('test-fixdemo-ege/<str:test_code>/', views.test_fixdemo_ege, name='test_fixdemo_ege'),
     path('targetn/', views.targetn, name='targetn'),
     path('save-example/', views.save_example, name='save_example'),
     path('load-examples/', views.load_examples, name='load_examples'),
     path('api/check-exercise/', views.check_exercise, name='check_exercise'),
-    path('api/assistant/', views.get_assistant_data, name='assistant'),
     path('api/orthogram/<str:orth_id>/letters/', views.get_orthogram_letters, name='orthogram_letters'),
-    path('api/get-advice/', views.get_advice, name='get_advice'),
     path('api/daily-quiz/', views.get_daily_quiz, name='daily_quiz'),
     path('telegram-link/', views.link_telegram, name='link_telegram'),
     path('api/generate-exercise/', views.generate_exercise, name='generate_exercise'),
@@ -70,6 +69,7 @@ urlpatterns = [
     path('api/check-alphabetical-exercise/', views.check_alphabetical_exercise, name='check_alphabetical_exercise'),
     path('api/generate-task9-exercise/', views.generate_task9_exercise, name='generate_task9_exercise'),
     path('api/generate-chered-exercise/', views.generate_chered_exercise, name='generate_chered_exercise'),
+    path('orthoepy_trening/', views.orthoepy_trening, name='orthoepy_trening'),
     path('api/daily-quiz/', views.get_daily_quiz, name='daily_quiz'),
     path('api/save-example/', views.save_example, name='save_example'),
     path('api/load-examples/', views.load_examples, name='load_examples'),
@@ -89,19 +89,40 @@ urlpatterns = [
     path('api/vk/get-user/', views.vk_get_user),
     path('api/health/', views.vk_health),
 
-    # API квизов
+    # === API для САЙТА (требуют авторизации) ===
     path('api/get-quiz/', views.get_quiz, name='get_quiz'),
     path('api/get-quiz-orthoepy-pair/', views.get_quiz_orthoepy_pair, name='get_quiz_orthoepy_pair'),
-    path('api/log-quiz-answer/', views.log_quiz_answer, name='log_quiz_answer'),
     path('api/log-quiz-answer-site/', views.log_quiz_answer_site, name='log_quiz_answer_site'),
     path('api/get-planning-quiz/', views.get_planning_quiz, name='get_planning_quiz'),
-    path('admin/planning-check/', views.admin_planning_check, name='admin_planning_check'),
+    path('api/quiz/hot-word/', views.get_hot_word_quiz, name='hot_word_quiz'),
     path('api/quiz/<str:quiz_type>/snippet/', views.quiz_snippet_api, name='quiz_snippet_api'),
-    path('api/user-stats/', views.get_user_quiz_stats, name='user_stats'),
+    path('api/user-stats/', views.get_user_quiz_stats_site, name='user_stats_site'),
+
+    # === API для БОТА (без авторизации, с @csrf_exempt) ===
+    path('api/log-quiz-answer/', views.log_quiz_answer, name='log_quiz_answer'),
+    path('api/bot/planning-quiz/', views.get_planning_quiz_api, name='get_planning_quiz_api'),  # ← ИЗМЕНЕНО
+    path('api/bot/general-orthography/', views.get_general_orthography_api, name='get_general_orthography_api'),  # ← НОВОЕ
+    path('api/bot/hot-word/', views.get_hot_word_quiz, name='get_hot_word_quiz'),
+    
+    # === Админка ===
+    path('admin/planning-check/', views.admin_planning_check, name='admin_planning_check'),
 
     # ОГЭ
     path('diagnostic/oge/', views.oge_diagnostic_page, name='oge_diagnostic'),
     path('api/generate-oge-diagnostic/', views.generate_oge_diagnostic, name='generate_oge_diagnostic'),
     path('api/generate-oge-single-task/', views.generate_oge_single_task, name='generate_oge_single_task'),
     path('api/check-oge-diagnostic/', views.check_oge_diagnostic, name='check_oge_diagnostic'),
+    
+    # чат-бот
+    path('api/chat/', views.chat_api, name='chat_api'),  # ✅ Должна быть
+    path('api/assistant/', views.chat_api, name='assistant'),  # ✅ Или эта
+    
+    # Аналитика для преподавателя / админа
+    path('staff/analytics/', staff_member_required(views.teacher_analytics_view), name='teacher_analytics'),
+    path('staff/student/<int:user_id>/', staff_member_required(views.student_detail_view), name='student_detail'),
+    
+    # тестовый !!!!
+    path('api/vk/send-quiz/', views.vk_send_quiz, name='vk_send_quiz'),
+    
+    path('admin/', admin.site.urls),  # Django admin (должен быть в конце)
 ]

@@ -1,247 +1,209 @@
 # main/assistant.py
-from datetime import timedelta  # type: ignore
-from django.utils import timezone  # type: ignore
-from .models import UserExample, OrthogramExample, UserProfile
+"""
+Оркестратор Нейро-команды
+Маршрутизирует запросы между специалистами
+"""
+
+import re
+from main.llm_utils import call_deepseek, get_fallback_response
+
+from .assistants.teacher_russian import TeacherRussian
+from .assistants.analyst import Analyst
+from .assistants.methodist import Methodist
+from .assistants.marketing import Marketing
 
 
-
-
-class NeuroAssistant:
-    def __init__(self, user_id):
-        self.user_id = user_id
-        self.profile = UserProfile.objects.get(user_id=user_id)
-        self.grade = self.profile.grade
-
-    def analyze_current_exercise(self, user_words, exercise_context=None):
+class NeuroOrchestrator:
+    """Единая точка входа для всех запросов к чат-боту"""
+    
+    def __init__(self):
+        self.teacher = TeacherRussian()
+        self.analyst = Analyst()
+        self.methodist = Methodist()
+        self.marketing = Marketing()
+    
+    def get_response(self, user, message, conversation_history=None):
         """
-        Анализирует ТОЛЬКО ЧТО ВЫПОЛНЕННОЕ упражнение.
-        user_words: список слов, собранных учеником (например, ['вода', 'цветы'])
-        exercise_context: опционально — данные об упражнении (например, orthogram_id)
+        Главный метод: принимает запрос → возвращает ответ
         """
-        results = []
-        weak_orthograms = set()
-        mistakes = []
-
-        for word in user_words:
-            # Ищем слово в базе (регистронезависимо)
-            example = OrthogramExample.objects.filter(
-                text__iexact=word,
-                is_active=True
-            ).first()
-
-            is_correct = example is not None
-
-            if not is_correct:
-                mistakes.append(word)
-
-            if example:
-                orth_id = example.orthogram_id
-                results.append({
-                    'word': word,
-                    'is_correct': True,
-                    'orthogram_id': orth_id,
-                    'explanation': example.explanation or example.orthogram.rule,
-                    'example': example
-                })
-                # Если ошибка — запоминаем орфограмму как слабую
-                if not is_correct:
-                    weak_orthograms.add(orth_id)
-            else:
-                results.append({
-                    'word': word,
-                    'is_correct': False,
-                    'orthogram_id': None,
-                    'explanation': "Это слово не найдено в нашей базе. Возможно, ошибка в написании.",
-                    'example': None
-                })
-
-        return {
-            'results': results,
-            'mistakes': mistakes,
-            'weak_orthograms': list(weak_orthograms)
-        }
-
-    def get_planning_words(self):
-        """Возвращает ВСЕ слова из UserExample — независимо от field_name"""
-        planning_entries = UserExample.objects.filter(
-            user_id=self.user_id
-        )
-        words = []
-        for entry in planning_entries:
-            words.extend(entry.content.splitlines())
-        return [w.strip().lower() for w in words if w.strip()]
-
-    def get_analogous_examples(self, orthogram_id, exclude_word=None, limit=3):
-        """Возвращает аналогичные слова для объяснения"""
-        queryset = OrthogramExample.objects.filter(
-            orthogram_id=orthogram_id,
-            is_active=True
-        )
-        if exclude_word:
-            queryset = queryset.exclude(text__iexact=exclude_word)
-        return queryset[:limit]
-
-    def generate_explanation_for_mistakes(self, analysis_result):
-        """
-        Генерирует текстовое объяснение на основе анализа ошибок
-        """
-        mistakes = analysis_result['mistakes']
-        results = analysis_result['results']
-
-        if not mistakes:
-            return "Отлично! Все слова написаны правильно. Так держать!"
-
-        explanations = []
-        for item in results:
-            if not item['is_correct']:
-                explanations.append(f"• «{item['word']}» — {item['explanation']}")
-            else:
-                # Для правильных слов — можно не объяснять, или дать краткое подтверждение
-                pass
-
-        # Добавляем аналоги для первой ошибки
-        first_mistake_item = next((item for item in results if not item['is_correct']), None)
-        if first_mistake_item and first_mistake_item['example']:
-            orth_id = first_mistake_item['orthogram_id']
-            analogs = self.get_analogous_examples(orth_id, exclude_word=first_mistake_item['word'])
-            if analogs:
-                analog_words = ", ".join([ex.text for ex in analogs])
-                explanations.append(f"\nЗапомни похожие слова: {analogs_words}.")
-
-        return "\n".join(explanations) if explanations else "Обрати внимание на написание этих слов."
-
-
+        if isinstance(user, str):
+            print(f"⚠️ WARNING: user passed as string '{user}' instead of User object")
+            username = user
+        else:
+            username = user.username if user else 'anonymous'
         
-    def get_planning_count(self):
-        return len(self.get_planning_words())
-
-    def get_progress_summary(self):
-        """
-        Возвращает реальную статистику по прогрессу ученика.
-        """
-        planning_count = self.get_planning_count()
-        return {
-            'total_answers': 0,
-            'correct_answers': 0,
-            'success_rate': 0,
-            'weak_orthograms': 0,
-            'planning_words': planning_count,
-            'summary': f"У тебя {planning_count} слов в планинге. Выполняй упражнения, чтобы я мог отслеживать твой прогресс!"
-        }
-
-
-
-    def get_orthogram_for_word(self, word):
-        """Возвращает орфограмму для слова (первую найденную)"""
-        example = OrthogramExample.objects.filter(
-            text__iexact=word,
-            is_active=True
-        ).first()
-        return example.orthogram if example else None
-
-    def generate_advice_for_exercise(self, analysis_result):
-        """
-        Генерирует персонализированный комментарий по результатам упражнения
-        """
-        mistakes = analysis_result['mistakes']
-
-        if not mistakes:
-            return "Отлично! Все правильно. Так держать! Двигайся дальше — выполни другие упражнения."
-
-        # Если есть ошибки — попробуем определить орфограмму
-        first_mistake_word = next((item for item in analysis_result['results'] if not item['is_correct']), None)
-
-        orthogram = None
-        if first_mistake_word and first_mistake_word['example']:
-            orthogram = first_mistake_word['example'].orthogram
-
-        # По умолчанию — общий текст
-        advice = "Выполнено с ошибками. "
-        advice += "Постарайся сам разобраться — найди в планинге твой случай, прочитай объяснение, запиши слово в ячейку. Тут нужно подумать!\n\n"
-        advice += "Если сложно — Нейростат поможет."
-
-        # Специфичные комментарии по орфограмме
-        if orthogram:
-            if orthogram.id == '2':
-                advice = "Выполнено с ошибками. "
-                advice += "Слова на орфоргамму 2 запоминаются, поэтому записывай их в ячейку - это будет твой словарик! "
-
-            elif orthogram.id == '661':
-                advice = "Ты допустил ошибки в предлогах (орфограмма 66.1). Попробуй вспомнить, что пишется на конце производных предлогов. Посмотри (создай) словарик в планинге. "
-                advice += "Запиши слово в планинг."
-
-            # Добавляй новые орфограммы по мере необходимости
-
-        return advice
-    
-    
-
-
-    def get_quiz_question(self):
-        """Генерирует вопрос дня для квиза (с двумя кнопками)"""
-        # Берём случайный пример для орфограммы 661, который помечен как is_for_quiz=True
-        examples = OrthogramExample.objects.filter(
-            orthogram__id='661',
-            is_for_quiz=True,
-            is_active=True
-        ).order_by('?')[:1]
-
-        if not examples:
-            return None
-
-        example = examples[0]
-        correct_word = example.text
-        incorrect_word = example.incorrect_variant
-
-        # Генерируем текст вопроса с смайликом
-        question_text = example.masked_word.replace(f"*{example.orthogram.id}*", "😊")
-
-        return {
-            'question': f"Как правильно пишется:\n\n{question_text}",
-            'options': [
-                {'text': correct_word, 'is_correct': True},
-                {'text': incorrect_word, 'is_correct': False}
-            ],
-            'explanation': example.explanation or example.orthogram.rule,
-            'orthogram_id': example.orthogram.id
+        # Проверяем, не ответ ли это на уточнение
+        if conversation_history and len(conversation_history) > 0:
+            last = conversation_history[-1]
+            if isinstance(last, dict):
+                last_intent = last.get('intent')
+                last_guess = last.get('guessed_word')
+                
+                if last_intent == 'clarification' and last_guess:
+                    if message.lower().strip() in ['да', 'yes', 'ага', 'точно', 'правильно', 'ок']:
+                        message = f"почему {last_guess}"
+                        print(f"✅ Подтверждено: {last_guess}")
+        
+        # Классифицируем интент
+        intent = self._classify_intent(message)
+        
+        # Выбираем специалиста
+        specialist = self._select_specialist(intent)
+        
+        # Собираем контекст
+        context = self._build_context(user, intent)
+        
+        # Передаём запрос специалисту
+        response = specialist.handle(user, message, context, conversation_history)
+        
+        # Логируем
+        log_data = {
+            'user': username,
+            'message': message[:50],
+            'response': response[:50],
+            'intent': intent,
+            'specialist': specialist.__class__.__name__
         }
         
-    
-    def get_planning_count(self):
-        """Возвращает количество слов в планинге"""
-        words = self.get_planning_words()
-        return len(words)
-    
-    
-    def get_weekly_report(self):
-        week_ago = timezone.now() - timedelta(days=7)
-        answers = StudentAnswer.objects.filter(
-            user_id=self.user_id,
-            answered_at__gte=week_ago
-        )
-
-        if not answers.exists():
-            return {
-                'status': 'inactive',
-                'message': 'За последнюю неделю ты не выполнял упражнений. Пора начать!'
-            }
-
-        total = answers.count()
-        correct = answers.filter(is_correct=True).count()
-        success_rate = round(correct / total * 100, 1)
-
-        # Топ-3 слабых орфограмм
-        from django.db.models import Count
-        weak_orthograms = answers.filter(is_correct=False)\
-            .values('orthogram__id', 'orthogram__name')\
-            .annotate(errors=Count('id'))\
-            .order_by('-errors')[:3]
-
+        if intent == 'clarification':
+            words = re.findall(r'[а-яё]{3,}', message.lower())
+            words = [w for w in words if w not in ['что', 'как', 'так', 'вот', 'это', 'про', 'слово']]
+            if words:
+                log_data['guessed_word'] = words[0]
+        
+        self._log_query(**log_data)
+        
         return {
-            'status': 'active',
-            'total': total,
-            'correct': correct,
-            'success_rate': success_rate,
-            'weak_orthograms': list(weak_orthograms),
-            'message': f"Ты выполнил {total} заданий, {correct} из них — правильно ({success_rate}%)."
+            'reply': response,
+            'specialist': specialist.__class__.__name__,
+            'intent': intent,
+            'guessed_word': log_data.get('guessed_word')
         }
+    
+    def _classify_intent(self, message):
+        """
+        Определяет намерение пользователя по ключевым словам
+        """
+        message_lower = message.lower().strip()
+        
+        # ✅ Ответ на уточнение
+        if message_lower in ['почему', 'а почему', 'как так', 'что', '??', '???']:
+            # Если в истории был провал (intent='clarification' или fallback)
+            # → возвращаем специальный интент для уточнения
+            return 'follow_up'
+        
+        # 🔥 Части речи (ВАЖНО: ставим выше маркетинга!)
+        if any(k in message_lower for k in [
+            'какая часть речи', 'часть речи', 'причастие', 'деепричастие',
+            'глагол', 'существительное', 'прилагательное', 'наречие',
+            'местоимение', 'числительное', 'союз', 'предлог'
+        ]):
+            return 'parts_of_speech'
+        
+        # 📚 Орфография
+        if any(k in message_lower for k in [
+            'как пишется', 'почему', 'орфогр', 'корень', 'пристав', 'суффикс',
+            'безударн', 'проверочн', 'пишется', 'объясни', 'правописани', 'написани'
+        ]):
+            return 'orthography'
+        
+        # ✍️ Пунктуация
+        if any(k in message_lower for k in [
+            'запят', 'тире', 'двоеточ', 'пунктуаци', 'обособл', 'причаст', 'деепричаст'
+        ]):
+            return 'punctuation'
+        
+        # 📊 Статистика и прогресс
+        if any(k in message_lower for k in [
+            'статистик', 'прогресс', 'ошибк', 'повтор', 'слаб', 'результат'
+        ]):
+            return 'stats'
+        
+        # 📋 ЕГЭ/ОГЭ
+        if any(k in message_lower for k in [
+            'егэ', 'огэ', 'критерий', 'апелляц', 'балл', 'экзамен', 'структур'
+        ]):
+            return 'ege'
+        
+        # 💰 Маркетинг (только если нет других совпадений)
+        if any(k in message_lower for k in [
+            'тариф', 'цена', 'стоим', 'оплат', 'купить', 'пробн', 'регистрац',
+            'привет', 'помощ', 'начать', 'где', 'как', 'нейростат'
+        ]):
+            return 'marketing'
+        
+        # ❌ Не поняли — нужно уточнение
+        return 'clarification'
+    
+    def _select_specialist(self, intent):
+        """Выбирает специалиста по интенту"""
+        mapping = {
+            'parts_of_speech': self.teacher,    # 👈 Добавили
+            'follow_up': self.teacher,  # TeacherRussian умеет задавать уточняющие вопросы
+            'orthography': self.teacher,
+            'punctuation': self.teacher,
+            'confirmation': self.teacher,
+            'stats': self.analyst,
+            'ege': self.methodist,
+            'marketing': self.marketing,
+            'clarification': self.teacher,
+            'unknown': self.teacher
+        }
+        return mapping.get(intent, self.teacher)
+    
+    def _build_context(self, user, intent):
+        """Собирает релевантный контекст из БД"""
+        context = {
+            'user': user,
+            'intent': intent,
+            'stats': None,
+            'planning_words': [],
+            'weak_topics': [],
+            'orthogram_rule': None
+        }
+        
+        if isinstance(user, str):
+            return context
+        
+        if intent == 'stats':
+            try:
+                from main.models import QuizHistory, UserWord
+                total = QuizHistory.objects.filter(user=user).count()
+                correct = QuizHistory.objects.filter(user=user, was_correct=True).count()
+                context['stats'] = {
+                    'total': total,
+                    'correct': correct,
+                    'rate': round(correct / total * 100) if total > 0 else 0
+                }
+            except Exception as e:
+                print(f"⚠️ Stats context error: {e}")
+        
+        if intent in ['orthography', 'punctuation', 'parts_of_speech', 'confirmation', 'clarification']:
+            try:
+                from main.models import UserWord
+                context['planning_words'] = list(
+                    UserWord.objects.filter(user=user, is_active=True)
+                    .values_list('text', flat=True)[:10]
+                )
+            except Exception as e:
+                print(f"⚠️ Planning context error: {e}")
+        
+        return context
+    
+    def _log_query(self, user, message, response, intent, specialist, guessed_word=None):
+        """Логирует запрос для аналитики"""
+        if guessed_word:
+            print(f"📝 [{specialist}] {user}: {message[:50]} → {response[:50]} [guess: {guessed_word}]")
+        else:
+            print(f"📝 [{specialist}] {user}: {message[:50]} → {response[:50]}")
+
+
+# Глобальный экземпляр
+_orchestrator = None
+
+def get_orchestrator():
+    """Возвращает единый экземпляр оркестратора"""
+    global _orchestrator
+    if _orchestrator is None:
+        _orchestrator = NeuroOrchestrator()
+    return _orchestrator

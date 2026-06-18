@@ -107,6 +107,52 @@
     </script>
     {% endif %}
 
+    <!-- === СКРИПТЫ ДЛЯ ПУНКТОГРАММ 16-20 === -->
+    {% if task16_letter_groups and task16_letter_groups != '{}' %}
+    <script id="task16-letter-groups" type="application/json">
+        {{ task16_letter_groups|safe }}
+    </script>
+    <script id="task16-subgroup-letters" type="application/json">
+        {{ task16_subgroup_letters|safe }}
+    </script>
+    {% endif %}
+
+    {% if task17_letter_groups and task17_letter_groups != '{}' %}
+    <script id="task17-letter-groups" type="application/json">
+        {{ task17_letter_groups|safe }}
+    </script>
+    <script id="task17-subgroup-letters" type="application/json">
+        {{ task17_subgroup_letters|safe }}
+    </script>
+    {% endif %}
+
+    {% if task18_letter_groups and task18_letter_groups != '{}' %}
+    <script id="task18-letter-groups" type="application/json">
+        {{ task18_letter_groups|safe }}
+    </script>
+    <script id="task18-subgroup-letters" type="application/json">
+        {{ task18_subgroup_letters|safe }}
+    </script>
+    {% endif %}
+
+    {% if task19_letter_groups and task19_letter_groups != '{}' %}
+    <script id="task19-letter-groups" type="application/json">
+        {{ task19_letter_groups|safe }}
+    </script>
+    <script id="task19-subgroup-letters" type="application/json">
+        {{ task19_subgroup_letters|safe }}
+    </script>
+    {% endif %}
+
+    {% if task20_letter_groups and task20_letter_groups != '{}' %}
+    <script id="task20-letter-groups" type="application/json">
+        {{ task20_letter_groups|safe }}
+    </script>
+    <script id="task20-subgroup-letters" type="application/json">
+        {{ task20_subgroup_letters|safe }}
+    </script>
+    {% endif %}
+
     <!-- === СКРИПТЫ ДЛЯ ПУНКТОГРАММЫ 21 === -->
     {% if task21_subgroup_letters %}
     <script id="task21-subgroup-letters" type="application/json">

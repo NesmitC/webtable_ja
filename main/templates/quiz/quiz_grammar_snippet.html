@@ -1,5 +1,5 @@
 <!-- main\templates\quiz\quiz_grammar_snippet.html -->
-{% load static %}
+{% comment %} {% load static %}
 <div class="quiz-snippet" data-quiz-type="grammar">
     <button class="quiz-close" style="float:right; background:none; border:none; font-size:1.2em; cursor:pointer;">&times;</button>
     
@@ -13,4 +13,12 @@
     <script type="application/json" id="quiz-config">
     {"endpoint": "/api/get-quiz/", "quizType": "grammar"}
     </script>
+</div> {% endcomment %}
+
+<!-- main/templates/quiz/quiz_grammar_snippet.html -->
+<div class="quiz-snippet" data-quiz-type="grammar">
+    <div id="question">Загрузка...</div>
+    <div id="options"></div>
+    <p id="result"></p>
+    <button id="next-btn" style="display:none;">Следующий вопрос</button>
 </div>

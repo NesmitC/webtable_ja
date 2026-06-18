@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main',
+    # 'main',
+    'main.apps.MainConfig',  # ← ВАЖНО: не просто 'main', а с указанием класса - для отправки писем с оповещением для бд
 ]
 
 MIDDLEWARE = [
@@ -134,6 +135,8 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
+# домен (для ссылок в письмах)
+SITE_URL = 'http://127.0.0.1:8000'  # В продакшене: 'https://https://neurostat.ru'
 
 # Prod security settings (enabled when DEBUG=False)
 if not DEBUG:

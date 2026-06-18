@@ -1,0 +1,92 @@
+<!-- main\templates\admin\student_detail.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>{{ student.username }} — Детали</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        h1 { color: #333; border-bottom: 2px solid #0d6efd; padding-bottom: 10px; }
+        h2 { color: #555; margin-top: 30px; }
+        
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+        .info-card { background: #f8f9fa; padding: 15px; border-radius: 6px; }
+        .info-label { color: #666; font-size: 0.9em; }
+        .info-value { font-size: 1.2em; font-weight: bold; color: #333; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #0d6efd; color: white; }
+        
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.85em; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        
+        a { color: #0d6efd; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👤 {{ student.username }}</h1>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Последний вход</div>
+                <div class="info-value">{{ student.last_login|date:"d.m.Y H:i" }}</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Слов в планинге</div>
+                <div class="info-value">{{ student.planning_words_count }}</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Объяснения в БД</div>
+                <div class="info-value">
+                    {{ student.words_with_explanation }} / {{ student.planning_words_count }}
+                    ({{ student.explanation_rate }}%)
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Квизов сыграно</div>
+                <div class="info-value">{{ student.total_quizzes }} ({{ student.success_rate }}% верно)</div>
+            </div>
+        </div>
+        
+        <h2>📝 Слова из планинга (последние 20)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Слово</th>
+                    <th>Орфограмма</th>
+                    <th>Добавлено</th>
+                    <th>Есть объяснение</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for word in student.planning_words %}
+                <tr>
+                    <td><strong>{{ word.text }}</strong></td>
+                    <td>{{ word.orthogram__name|default:"—" }}</td>
+                    <td>{{ word.created_at|date:"d.m.Y" }}</td>
+                    <td>
+                        {% if word.orthogram__name %}
+                            <span class="badge badge-success">✅</span>
+                        {% else %}
+                            <span class="badge badge-danger">❌</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">Нет слов в планинге</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <p style="margin-top: 30px;">
+            <a href="{% url 'teacher_analytics' %}">← Назад к аналитике</a>
+        </p>
+    </div>
+</body>
+</html>

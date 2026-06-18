@@ -1,4 +1,5 @@
 // === ЛОКАЛЬНЫЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ДИАГНОСТИКИ ===
+// main\static\js\diagnostic.js
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

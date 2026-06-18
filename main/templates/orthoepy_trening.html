@@ -1,0 +1,29 @@
+{% comment %} main\templates\orthoepy_trening.html {% endcomment %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тренировка: орфоэпия</title>
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+<body>
+    <h2>Расставьте ударения: кликните по ударной гласной</h2>
+    <div id="orthoepy-words-container"></div>
+    <button id="check-orthoepy-trening" style="margin: 20px 0; padding: 10px 20px;">Проверить</button>
+    <div id="orthoepy-trening-result"></div>
+    <a href="{% url 'ege' %}" style="display: block; margin-top: 10px;">← Вернуться к заданиям</a>
+
+    <!-- === ПОДКЛЮЧЕНИЕ СТИЛЕЙ === -->
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+
+    <script>window.ORTHOEPY_WORDS = {{ words_data|safe }};</script>
+    <script src="{% static 'js/planning_orthoepos.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.initOrthoepyTrening) window.initOrthoepyTrening();
+        });
+    </script>
+</body>
+</html>

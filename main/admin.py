@@ -6,6 +6,8 @@ from django.urls import reverse
 from django.utils.html import format_html
 from .models import CorrectAnswer, Orthogram, OrthogramExample, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise, TaskGrammaticEight, TaskGrammaticEightExample, TaskGrammaticTwoTwo, TaskGrammaticTwoTwoExample, TaskPaponim, WordOk
 from django.contrib.admin.actions import delete_selected
+from django.db.models.functions import Cast
+from django.db.models import IntegerField
 
 
 class MainAdminSite(admin.AdminSite):
@@ -32,59 +34,6 @@ class CorrectAnswerAdmin(admin.ModelAdmin):
     ordering = ['orthogram_number', 'correct_word']
 
 
-# @admin.register(Orthogram)
-# class OrthogramAdmin(admin.ModelAdmin):
-#     list_display = ['id', 'name', 'letters', 'grades']
-#     list_editable = ['grades']
-#     search_fields = ['id', 'name']
-#     fieldsets = (
-#         (None, {
-#             'fields': ('id', 'name', 'rule', 'letters'),
-#             'description': '<strong>Важно:</strong> Введите буквы через запятую, например: <code>а,о,е,и,я</code> или <code>Ъ,Ь</code>.'
-#         }),
-#     )
-
-#     def get_queryset(self, request):
-#         qs = super().get_queryset(request)
-#         return qs.extra(select={'id_as_int': "CAST(id AS INTEGER)"}).order_by('id_as_int')
-    
-#     class Media:
-#         css = {
-#             'all': ('main/static/css/admin.css',)
-#         }
-
-
-# @admin.register(OrthogramExample)
-# class OrthogramExampleAdmin(admin.ModelAdmin):
-#     list_display = ['text', 'orthogram', 'masked_word', 'grades', 'difficulty', 'is_for_quiz', 'is_active']
-#     actions = [delete_selected]
-#     fieldsets = (
-#         (None, {
-#             'fields': ('orthogram', 'text', 'masked_word', 'incorrect_variant', 'explanation', 'grades')
-#         }),
-#         ('Настройки', {
-#             'fields': ('difficulty', 'is_for_quiz', 'is_active'),
-#             'description': '<strong>Важно:</strong> Поле "Grades" указывает, для каких классов предназначен этот пример.'
-#         }),
-#     )
-#     list_filter = ['orthogram', 'difficulty', 'is_for_quiz', 'is_active']
-#     search_fields = ['text', 'masked_word', 'incorrect_variant', 'grades']
-#     list_editable = ['grades', 'is_for_quiz', 'is_active']
-
-#     def get_queryset(self, request):
-#         qs = super().get_queryset(request)
-#         return (
-#             qs
-#             .extra(select={'orthogram_id_as_int': "CAST(orthogram_id AS INTEGER)"})
-#             .order_by('orthogram_id_as_int', 'text')
-#         )
-        
-#     class Media:
-#         css = {
-#             'all': ('css/admin.css',)
-#         }
-
-
 @admin.register(Orthogram)
 class OrthogramAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'letters', 'grades']
@@ -106,11 +55,14 @@ class OrthogramAdmin(admin.ModelAdmin):
             'all': ('main/static/css/admin.css',)
         }
 
-
 @admin.register(OrthogramExample)
 class OrthogramExampleAdmin(admin.ModelAdmin):
-    list_display = ['text', 'orthogram', 'masked_word', 'grades', 'difficulty', 'is_for_quiz', 'is_active']
-    actions = [delete_selected]
+    list_display = ['text', 'orthogram', 'masked_word', 'grades', 'difficulty', 'is_for_quiz', 'is_active', 'planning_check_link']
+    actions = ['delete_selected']
+    list_filter = ['orthogram', 'difficulty', 'is_for_quiz', 'is_active']
+    search_fields = ['text', 'masked_word', 'incorrect_variant', 'grades']
+    list_editable = ['grades', 'is_for_quiz', 'is_active']
+
     fieldsets = (
         (None, {
             'fields': ('orthogram', 'text', 'masked_word', 'incorrect_variant', 'explanation', 'grades')
@@ -120,30 +72,34 @@ class OrthogramExampleAdmin(admin.ModelAdmin):
             'description': '<strong>Важно:</strong> Поле "Grades" указывает, для каких классов предназначен этот пример.'
         }),
     )
-    list_filter = ['orthogram', 'difficulty', 'is_for_quiz', 'is_active']
-    search_fields = ['text', 'masked_word', 'incorrect_variant', 'grades']
-    list_editable = ['grades', 'is_for_quiz', 'is_active']
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "orthogram":
+            from django.db.models import IntegerField
+            from django.db.models.functions import Cast
+            kwargs["queryset"] = Orthogram.objects.annotate(
+                id_int=Cast('id', IntegerField())
+            ).order_by('id_int')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def planning_check_link(self, obj=None):
+        from django.utils.html import format_html
+        return format_html(
+            '<a href="/admin/planning-check/" target="_blank" style="color:#007bff;text-decoration:none;">🔍 Проверить слова</a>'
+        )
+    planning_check_link.short_description = 'Действия'
+    planning_check_link.allow_tags = True
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return (
-            qs
-            .extra(select={'orthogram_id_as_int': "CAST(orthogram_id AS INTEGER)"})
-            .order_by('orthogram_id_as_int', 'text')
-        )
-    
-    def planning_check_link(self):
-        return format_html(
-            '<a href="{}">🔍 Проверить слова из планингов</a>',
-            reverse('admin:planning-check')
-        )
-    planning_check_link.short_description = 'Проверка планингов'
-        
-    class Media:
-        css = {
-            'all': ('css/admin.css',)
-        }
+        from django.db.models import IntegerField
+        from django.db.models.functions import Cast
+        return qs.annotate(
+            ortho_id_int=Cast('orthogram_id', IntegerField())
+        ).order_by('ortho_id_int', 'text')
 
+    class Media:
+        css = {'all': ('css/admin.css',)}
 
 
 # ===== ЗАДАНИЯ 17-22 ==================================================
