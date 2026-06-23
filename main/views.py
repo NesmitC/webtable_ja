@@ -17,7 +17,7 @@ from django.db import transaction, models
 from django.db.models import Count, Avg
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.conf import settings
 import re
@@ -172,6 +172,15 @@ def save_user_inputs(request):
 # === Аутентификация и профиль ===
 
 def register(request):
+    # Получаем IP пользователя
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
+    cache_key = f"register_attempts_{ip}"
+    
+    # Считаем попытки
+    attempts = cache.get(cache_key, 0)
+    if attempts >= 5: # Максимум 5 регистраций в час с одного IP
+        return HttpResponseForbidden("Слишком много попыток. Попробуйте через час.")
+    
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -189,8 +198,8 @@ def register(request):
                     'token': default_token_generator.make_token(user),
                 })
                 send_mail(mail_subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
-                messages.success(request, 'Письмо с подтверждением отправлено на вашу почту!')
-                return redirect('login')
+                cache.set(cache_key, attempts + 1, timeout=3600)
+                return render(request, 'registration/email_sent.html')
             except Exception as e:
                 logger.error(f"Ошибка при регистрации: {e}")
                 messages.error(request, "Произошла ошибка при регистрации. Попробуйте позже.")
@@ -3725,9 +3734,6 @@ def chat_api(request):
         return JsonResponse({'error': 'Method not allowed'}, status=400)
     
     try:
-        import json
-        from django.core.cache import cache
-        
         data = json.loads(request.body)
         message = data.get('message', '').strip()
         

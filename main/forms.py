@@ -1,5 +1,7 @@
 # main/forms.py
+import time
 from django import forms
+from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
@@ -7,6 +9,22 @@ from .models import UserProfile
 
 # ================ Форма регистрации ================
 class CustomUserCreationForm(UserCreationForm):
+    # 1. HONEYPOT (Горшок с медом)
+    # Боты парсят HTML и заполняют ВСЕ поля. Человек этого поля не увидит.
+    website = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+        label=''
+    )
+    
+    # 2. TIME TRAP (Ловушка времени)
+    # Сюда мы "зашьем" время загрузки страницы. 
+    # Если форма улетит быстрее чем через 3 секунды — это бот.
+    form_timestamp = forms.IntegerField(
+        widget=forms.HiddenInput(),
+        required=False
+    )
+
     class Meta:
         model = User
         fields = ['username', 'email', 'password1']
@@ -18,6 +36,14 @@ class CustomUserCreationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # ВАЖНО: Внедряем timestamp только если форма еще НЕ отправлена (GET-запрос).
+        # Если форма уже отправлена (POST), мы не должны перезаписывать время, 
+        # иначе проверка скорости заполнения сломается.
+        if not self.is_bound:
+            self.fields['form_timestamp'].initial = int(time.time())
+
+        # --- Твоя оригинальная логика (не трогаем) ---
         # Убираем подсказку для username
         self.fields['username'].help_text = None
         # Убираем подсказку для password1
@@ -25,6 +51,23 @@ class CustomUserCreationForm(UserCreationForm):
         # Удаляем поле password2
         if 'password2' in self.fields:
             del self.fields['password2']
+
+    def clean(self):
+        # Вызываем стандартные проверки Django (они должны сработать первыми)
+        cleaned_data = super().clean()
+        
+        # ПРОВЕРКА 1: Если бот заполнил скрытое поле website
+        if cleaned_data.get('website'):
+            raise ValidationError("Обнаружена подозрительная активность. Если вы человек, обновите страницу.")
+            
+        # ПРОВЕРКА 2: Если форма отправлена слишком быстро (меньше 3 секунд)
+        submitted_at = cleaned_data.get('form_timestamp')
+        if submitted_at:
+            time_spent = int(time.time()) - submitted_at
+            if time_spent < 3:
+                raise ValidationError("Слишком быстрая отправка формы. Обновите страницу и попробуйте еще раз.")
+                
+        return cleaned_data
 
 
 # ================ Форма входа ================
