@@ -1,24 +1,29 @@
 <!-- correction_test_snippet.html -->
-<div class="correction-exercise" data-exercise-id="711">
-    <h3>Задание 7: Исправь ошибку</h3>
-    <p>В одном из выделенных ниже слов допущена грамматическая ошибка. Исправьте ошибку и запишите слово правильно.</p>
+<div class="correction-exercise diagnostic-full-test" data-exercise-id="711">
+    <div class="question-diagnostic diagnostic-full-test__question" data-question-number="7">
+        <h4 class="diagnostic-full-test__title">
+            Задание 7. Грамматические нормы
+        </h4>
+        <p class="diagnostic-full-test__instruction">
+            В одном из выделенных ниже слов допущена грамматическая ошибка.
+            Исправьте ошибку и запишите слово правильно.
+        </p>
 
-    <div class="word-list" style="margin: 15px 0; font-size: 1.1em; line-height: 1.6;">
-        {% for word in words %}
-            <div>{{ word }}</div>
-        {% endfor %}
+        <div class="diagnostic-full-test__lines">
+            {% for word in words %}
+            <div class="diagnostic-full-test__line">
+                <span class="practice-line diagnostic-full-test__line-text">
+                    {{ word }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <input type="text" id="correction-input" class="correction-input diagnostic-full-test__input input-text"
+            placeholder="Напишите правильный вариант" autocomplete="off" data-question="7">
     </div>
 
-    <input 
-        type="text" 
-        id="correction-input" 
-        class="correction-input" 
-        placeholder="Напишите правильный вариант" 
-        autocomplete="off"
-        style="width: 35%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"
-    >
+    <button class="check-correction check-task-submit">Проверить</button>
+
+    <div class="correction-result diagnostic-full-test__result"></div>
 </div>
-    <button class="check-correction" style="margin-top: 0;">Проверить</button>
-    <div class="correction-result" style="margin-top: 15px; display: none; font-weight: bold;"></div>
-
-

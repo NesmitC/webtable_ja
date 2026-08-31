@@ -3,15 +3,55 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-    <title>Письмо отправлено</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Письмо отправлено — Нейростат</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
 </head>
+
 <body>
-    <div class="container">
-        <h2>Регистрация</h2>
-        <p>Письмо отправлено, проверьте почту.<br>
-        Пройдите по ссылке в письме — регистрация будет завершена!</p>
-    </div>
+    <section class="au-page">
+        <div class="au-card">
+
+            <!-- Логотип -->
+            <div class="au-card-logo-wrap">
+                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ" class="au-card__logo">
+            </div>
+
+            <!-- Заголовок -->
+            <h2 class="au-card__title">Регистрация</h2>
+
+            <!-- Иконка успеха -->
+            <div class="au-success__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+            </div>
+
+            <!-- Сообщение -->
+            <div class="au-success">
+                <h3 class="au-success__title">Письмо отправлено!</h3>
+                <p class="au-success__text">
+                    Проверьте вашу почту.<br>
+                    Пройдите по ссылке в письме — регистрация будет завершена!
+                </p>
+            </div>
+
+            <!-- Разделитель -->
+            <div class="au-divider"></div>
+
+            <!-- Футер карточки -->
+            <div class="au-footer">
+                <p class="au-footer__copy">© 2026 Нейростат</p>
+            </div>
+
+        </div>
+    </section>
 </body>
+
 </html>

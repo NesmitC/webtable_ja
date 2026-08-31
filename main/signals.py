@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from .models import UserWord
 
 log = logging.getLogger(__name__)
@@ -61,9 +62,37 @@ def notify_incomplete_planning_word(sender, instance, created, **kwargs):
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=['a_timof@mail.ru'],  # ← Твой адрес
+            recipient_list=[settings.OWNER_NOTIFY_EMAIL],
             fail_silently=True,  # Не ломать сохранение, если почта упала
         )
         log.info(f"✅ Email отправлен для слова '{instance.text}' (UserWord #{instance.id})")
     except Exception as e:
         log.error(f"❌ Ошибка отправки email для '{instance.text}': {e}")
+
+
+@receiver(post_save, sender=get_user_model())
+def notify_new_user_registration(sender, instance, created, **kwargs):
+    """Письмо владельцу о каждой новой регистрации на платформе."""
+    if not created:
+        return
+
+    try:
+        total = get_user_model().objects.count()
+        subject = f"🎈 Новый пользователь: {instance.username}"
+        message = (
+            f"Новая регистрация на платформе.\n\n"
+            f"👤 Ник: {instance.username}\n"
+            f"📧 Email: {instance.email or '—'}\n"
+            f"🕒 Дата: {instance.date_joined:%d.%m.%Y %H:%M} UTC\n"
+            f"👥 Всего пользователей теперь: {total}\n\n"
+            f"🔗 Карточка в админке: {settings.SITE_URL}/admin/auth/user/{instance.id}/change/"
+        )
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.OWNER_NOTIFY_EMAIL],
+            fail_silently=True,
+        )
+    except Exception as e:
+        log.error(f"❌ Ошибка письма о регистрации: {e}")

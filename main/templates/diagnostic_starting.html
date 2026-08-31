@@ -1,44 +1,80 @@
-<!-- main/templates/diagnostic_starting.html -->
+{% comment %} main/templates/diagnostic_starting.html {% endcomment %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Входящая диагностика — ЕГЭ по русскому языку</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="/static/css/planning_style.css">
-    <link rel="stylesheet" href="/static/css/media_planning.css">
-    <link rel="stylesheet" href="/static/css/reset.css">
+    <title>{{ title }} — бесплатная диагностика ЕГЭ | Нейростат</title>
+    <meta name="description"
+        content="{{ meta_description|default:'Бесплатная диагностика по русскому языку в формате ЕГЭ: 15 минут, автоматический разбор ошибок и персональный план подготовки. Узнайте свой реальный уровень.' }}">
+
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+        "@type": "Quiz",
+        "@id": "https://neurostat.ru/diagnostika/#quiz",
+        "name": "Диагностика по русскому языку в формате ЕГЭ",
+        "description": "Бесплатный тест уровня по русскому языку: 15 минут, автоматический разбор ошибок и персональный план подготовки.",
+        "educationalLevel": "10-11 класс",
+        "assesses": "Готовность к ЕГЭ по русскому языку",
+        "timeRequired": "PT15M",
+        "inLanguage": "ru",
+        "isAccessibleForFree": true,
+        "provider": {"@id": "https://neurostat.ru/#organization"},
+        "hasPart": [
+            {"@type": "Question", "name": "Задания 1–3: работа с микротекстом"},
+            {"@type": "Question", "name": "Задание 4: орфоэпия и ударения"}
+        ]
+        },
+        {
+        "@type": "Offer",
+        "name": "Бесплатная диагностика + 5 дней доступа",
+        "price": "0",
+        "priceCurrency": "RUB",
+        "availability": "https://schema.org/InStock",
+        "url": "https://neurostat.ru/diagnostika/"
+        }
+    ]
+    }
+    </script>
+
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
 </head>
-<body>
-    <header>
-        <a href="{% url 'index' %}">← Назад</a>
-    </header>
-    <main>
-        <section class="block-task">
-            <h2 class="title-planing">Входящая диагностическая работа</h2>
-            <p class="instruction">
-                Перед вами полный вариант диагностической работы ЕГЭ по русскому языку.<br>
-                Рекомендуем выполнять задания по порядку.
-            </p>
-            <div id="diagnostic-content" class="block-answer">
-                <button id="start-diagnostic-btn" class="check-task green">
-                    Начать диагностику
-                </button>
-            </div>
-            <div id="result-section" style="display: none; margin-top: 30px;">
-                <h3>Результаты проверки</h3>
-                <div id="result-details"></div>
+
+<body class="test_fixdemo_ege">
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-diagnostics">
+        <h1 class="visually-hidden">Диагностика - прохождение теста егэ по русскому</h1>
+        <section class="container-diagnostics">
+            <h2 class="diagnostic-starting__title">{{ title }}</h2>
+
+            <div class="diagnostic-starting__content">
+                <div class="diagnostic-starting__text">
+                    {{ motivation_text|linebreaks }}
+                </div>
+
+                <div class="diagnostic-starting__actions">
+                    <button id="start-diagnostic-btn" class="cta-block teacher-bio__cta"
+                        data-diagnostic-type="{{ diagnostic_type }}">
+                        Начать диагностику
+                    </button>
+                </div>
             </div>
         </section>
     </main>
 
-    <!-- CSRF-токен для безопасности (не обязателен, если используете getCookie) -->
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {% include 'includes/footer.html' %}
 
-    <!-- Подключаем JS в конце -->
-    <script src="{% static 'js/planning.js' %}"></script>
+    <!-- Подключение скриптов -->
     <script src="{% static 'js/diagnostic.js' %}"></script>
 </body>
+
 </html>

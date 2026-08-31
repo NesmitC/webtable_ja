@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диагностики учеников — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+
+<body>
+    {% include 'includes/header.html' %}
+
+    <div class="dl-wrap">
+        <h1 class="dl-title">Диагностики учеников</h1>
+        <p class="dl-subtitle">Откройте разбор, чтобы подготовиться к встрече или провести зеркальную проверку.</p>
+
+        {% if attempts %}
+        <table class="dl-table">
+            <thead>
+                <tr class="dl-head">
+                    <th>Дата</th>
+                    <th>Ученик</th>
+                    <th>Балл</th>
+                    <th>Статус</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in attempts %}
+                <tr class="dl-row">
+                    <td>{{ a.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>{{ a.user.username|default:"аноним" }}</td>
+                    <td><b>{{ a.score }}/{{ a.max_score }}</b></td>
+                    <td>
+                        {% if a.is_reviewed_by_teacher %}✅ Разобрано{% else %}⏳ Ожидает{% endif %}
+                    </td>
+                    <td><a class="dl-link" href="{% url 'diagnostic_review' a.id %}">Разобрать →</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="dl-empty">Пока нет завершённых диагностик.</p>
+        {% endif %}
+    </div>
+
+    {% include 'includes/footer.html' %}
+</body>
+
+</html>

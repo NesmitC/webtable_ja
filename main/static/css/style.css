@@ -1,52 +1,2310 @@
 /* main\static\css\style.css */
 
-body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    background: #f9f9f9;
+html {
+    height: 100%;
+    margin: 0;
 }
 
-header nav {
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.footer {
+    flex-shrink: 0;
+}
+
+/* Page — на всю ширину, без ограничений */
+.page {
+    width: 100%;
+    min-height: 920px;
+}
+
+/* Универсальный контейнер для ограничения ширины контента */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 64px;
+}
+
+/* ------- Header -------- */
+.header {
+    width: 100%;
+    background-color: var(--color-header-bg);
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
+}
+
+/* Контейнер хедера — flex-распределение */
+.header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+    box-sizing: border-box;
+}
+
+.nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 10px;
+}
+
+/* Логотип */
+.nav__logo-wrap {
+    display: flex;
+    align-items: center;
+    padding-right: 28px;
+}
+
+.nav__logo {
+    width: 184px;
+    height: auto;
+    object-fit: contain;
+    display: block;
+}
+
+/* Навигация */
+.nav__list {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    height: 22px;
+}
+
+.nav__item {
+    position: relative;
+}
+
+.nav__link {
+    font-size: 15px;
+    color: var(--color-text);
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+}
+
+.nav__link:hover {
+    color: var(--color-primary);
+}
+
+.nav__arrow {
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+}
+
+/* Выпадающее меню */
+.nav__dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 150px;
+    background: var(--color-header-bg);
+    box-shadow: 0 8px 40px rgba(24, 14, 5, 0.1);
+    z-index: 100;
+}
+
+/* Убираем мостик */
+.nav__dropdown::before {
+    display: none;
+}
+
+.nav__item--dropdown:hover .nav__dropdown {
+    display: block;
+}
+
+.nav__item--dropdown:hover .nav__arrow {
+    transform: rotate(180deg);
+}
+
+.nav__dropdown-link {
+    display: block;
+    padding: 9.25px 20px 9.85px 20px;
+    font-size: 14px;
+    line-height: 23.1px;
+    letter-spacing: 0;
+    font-weight: 300;
+    color: var(--color-text);
+    transition: all 0.2s;
+    min-height: 24px;
+}
+
+.nav__dropdown-link:hover {
+    background-color: var(--color-bg);
+    color: var(--color-primary);
+}
+
+/* Чтобы вложенные пункты могли позиционировать подменю */
+.nav__dropdown li {
+    position: relative;
+}
+
+/* Подменю скрыто по умолчанию */
+.nav__dropdown--sub {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    min-width: 180px;
+    z-index: 1200;
+}
+
+/* Если открыт основной dropdown ЕГЭ — подменю всё равно скрыто */
+.nav__item--dropdown:hover .nav__dropdown--sub {
+    display: none;
+}
+
+/* Показываем подменю только при наведении на "Диагностики" */
+.nav__item--dropdown:hover .nav__item--submenu:hover>.nav__dropdown--sub,
+.nav__item--dropdown .nav__item--submenu:focus-within>.nav__dropdown--sub {
+    display: block;
+}
+
+/* Контейнер кнопок */
+.header__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 42.45px;
+    flex-shrink: 0;
+}
+
+/* Базовые стили кнопок */
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42.45px;
+    padding: 9px 20.5px 9.45px 20.5px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 21.45px;
+    letter-spacing: 0.52px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+    white-space: nowrap;
+}
+
+/* Кнопка "Вход" */
+.btn--outline {
+    width: 77px;
+    background: transparent;
+    border: 1px solid var(--color-btn-border);
+    color: var(--color-btn-text-dark);
+}
+
+.btn--outline:hover {
+    border-color: var(--color-btn-primary);
+    color: var(--color-btn-primary);
+}
+
+/* Кнопка "Регистрация" */
+.btn--primary {
+    width: 132px;
+    background: var(--color-btn-primary);
+    border: 1px solid var(--color-btn-primary);
+    color: var(--color-btn-text-light);
+}
+
+.btn--primary:hover {
+    background: #7a4616;
+    border-color: #7a4616;
+}
+
+.nav__list {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    height: 22px;
+}
+
+.nav__item {
+    position: relative;
+}
+
+.nav__link {
+    font-size: 13px;
+    line-height: 21.45px;
+    letter-spacing: 0.26px;
+    font-weight: 400;
+    font-style: normal;
+    color: var(--color-nav-text);
+    background: none;
+    border: none;
+    font-family: var(--font-body);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.3s ease-out;
+    white-space: nowrap;
+    vertical-align: middle;
+    min-height: 22px;
+}
+
+.nav__link:hover {
+    color: var(--color-primary);
+}
+
+/* Разделитель */
+.nav__sep {
+    width: 7px;
+    height: 20px;
+    padding: 0 2px;
+    opacity: 0.45;
+    border-left: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+}
+
+/* ====== майн ============== */
+.hero__decor {
+    position: absolute;
+    top: 30%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+    width: 580px;
+    height: 100%;
+    opacity: 0.28;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Hero секция */
+.hero {
+    width: 100%;
+    min-height: 1030px;
+    padding: 50px 0;
+    background: linear-gradient(145.67deg, #F5EDE0 0%, #EDD8BC 55%, #E5CAAA 100%);
+    overflow: hidden;
+}
+
+.hero__grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 60px;
+    align-items: flex-start;
+}
+
+/* Левая часть */
+.hero__left-content {
+    position: relative;
+    width: 552px;
+    max-width: 552px;
+    container-type: inline-size;
+    container-name: hero-area;
+}
+
+.hero__balloon {
+    position: absolute;
+    top: -20px;
+    left: -90px;
+    width: 220px;
+    height: 180px;
+    background-image: url('/static/images/aero.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    mix-blend-mode: multiply;
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform;
+    backface-visibility: hidden;
+    /* Задаём переменные на элементе */
+    --float-x: 540px;
+    /* Максимальный сдвиг по X */
+    --float-y: 15px;
+    /* Амплитуда по Y */
+    animation: float 60s linear infinite;
+}
+
+/* Пропеллер внутри шара */
+.hero__propeller {
+    position: absolute;
+    bottom: 22px;
+    right: 80px;
+    width: 15px;
+    height: auto;
+    mix-blend-mode: multiply;
+    animation: spin 1.6s linear infinite;
+    transform-origin: center center;
+    /* Вращение вокруг своей оси */
+}
+
+/* Контент поверх шара */
+.hero__badge,
+.hero__title,
+.hero__chess,
+.hero__chess-note,
+.hero__card {
+    position: relative;
+    z-index: 1;
+}
+
+/* Badge */
+.hero__badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 1px solid var(--color-hero-badge-border);
+    border-radius: 3px;
+    font-size: 10px;
+    line-height: 16.5px;
+    letter-spacing: 1.4px;
+    font-weight: 500;
+    color: var(--color-hero-badge-text);
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+/* Заголовок */
+.hero__title {
+    margin-top: 18%;
+    font-family: var(--font-heading);
+    font-size: 78px;
+    line-height: 78px;
+    letter-spacing: -1.95px;
+    font-weight: 700;
+    color: var(--color-hero-title);
+    vertical-align: middle;
+}
+
+.hero__title em {
+    font-style: italic;
+    color: var(--color-chess-link);
+}
+
+/* шахматка */
+.hero__chess {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 25%;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.004);
+    border-top: 1px solid rgba(122, 82, 48, 0.18);
+    box-shadow: 0 4px 20px rgba(24, 14, 5, 0.07), inset 0 0 0 1.5px rgba(122, 82, 48, 0.12);
+    overflow: hidden;
+}
+
+.hero__chess-cell {
+    padding: 16px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4.8px;
+    background: var(--color-chess-bg-light);
+    border-right: 1px solid var(--color-chess-border);
+    border-bottom: 1px solid var(--color-chess-border);
+    position: relative;
+}
+
+/* Чередование цветов фона */
+.hero__chess-cell:nth-child(odd) {
+    background: var(--color-chess-bg-dark);
+    /* #E3D5BA */
+}
+
+.hero__chess-cell:nth-child(even) {
+    background: var(--color-chess-bg-light);
+    /* #FDFAF5 */
+}
+
+/* Скругления углов у крайних ячеек */
+.hero__chess-cell:nth-child(1) {
+    border-top-left-radius: 12px;
+}
+
+.hero__chess-cell:nth-child(3) {
+    border-top-right-radius: 12px;
+}
+
+.hero__chess-cell:nth-child(4) {
+    border-bottom-left-radius: 12px;
+}
+
+.hero__chess-cell:nth-child(6) {
+    border-bottom-right-radius: 12px;
+}
+
+/* Убираем правую границу у последнего элемента в строке */
+.hero__chess-cell:nth-child(3n) {
+    border-right: none;
+}
+
+/* Убираем нижнюю границу у последней строки */
+.hero__chess-cell:nth-child(n+4) {
+    border-bottom: none;
+}
+
+.hero__chess-icon {
+    width: 36px;
+    height: 38px;
+    margin-bottom: 4.8px;
+    /* Отступ между иконкой и текстом */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero__chess-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Угловой декоративный элемент в правом верхнем углу ячейки */
+.hero__chess-cell::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 10px;
+    height: 10px;
+    border-top: 0.5px solid #7A523033;
+    border-right: 0.5px solid #7A523033;
+    pointer-events: none;
+}
+
+/* Внутренний div с текстом тоже делаем колонкой */
+.hero__chess-cell>div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* Отступ между заголовком и ссылкой */
+}
+
+.hero__chess-title {
+    display: block;
+    font-size: 12px;
+    line-height: 15.6px;
+    letter-spacing: 0.12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--color-chess-title);
+}
+
+/* Подзаголовок ячейки */
+.hero__chess-desc {
+    display: block;
+    font-size: 10.5px;
+    line-height: 13.65px;
+    letter-spacing: 0;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+}
+
+.hero__chess-link {
+    display: block;
+    font-size: 10px;
+    line-height: 13px;
+    letter-spacing: 0.3px;
+    font-weight: 500;
+    color: var(--color-chess-link);
+    transition: opacity 0.2s;
+}
+
+.hero__chess-link:hover {
+    opacity: 0.7;
+}
+
+/* Примечание под checkerboard */
+.hero__chess-note {
+    margin-top: 20px;
+    padding-left: 2px;
+    font-size: 11.5px;
+    line-height: 18.98px;
+    letter-spacing: 0.29px;
+    font-weight: 300;
+    color: var(--color-chess-note);
+    opacity: 0.8;
+}
+
+/* Карточка (правая колонка) */
+.hero__card {
+    width: 100%;
+    max-width: 460px;
+    background: #FDFAF5;
+    border-radius: 12px;
+    border-top: 1px solid rgba(24, 14, 5, 0.1);
+    box-shadow: 0 20px 64px rgba(24, 14, 5, 0.14);
+    overflow: hidden;
+    /* Чтобы картинка не вылезала за скругления */
+}
+
+/* Фото */
+.hero__card-image {
+    width: 100%;
+    height: auto;
+}
+
+.hero__card-img {
+    width: 100%;
+    height: 458px;
+    object-fit: cover;
+    display: block;
+}
+
+/* Кнопка видео */
+.hero__card-video {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 16px;
+    background: rgba(237, 226, 206, 0.4);
+    /* #EDE2CE66 */
+    border: none;
+    border-top: 1px solid rgba(24, 14, 5, 0.1);
+    font-size: 12px;
+    line-height: 19.8px;
+    font-weight: 400;
+    color: #9C5A1D;
+    cursor: pointer;
+    font-family: var(--font-body);
+}
+
+.hero__card-video-icon {
+    font-size: 10px;
+}
+
+/* Инфо о преподавателе */
+.hero__card-info {
+    padding: 22px 26px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hero__card-name {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    line-height: 32.2px;
+    font-weight: 600;
+    color: #180E05;
+}
+
+.hero__card-cred {
+    font-size: 11px;
+    line-height: 16.5px;
+    font-weight: 400;
+    font-style: italic;
+    color: #9C5A1D;
+    opacity: 0.88;
+}
+
+.hero__card-bio {
+    padding-top: 5px;
+    font-size: 13px;
+    line-height: 21.45px;
+    font-weight: 300;
+    color: #7A6A54;
+}
+
+/* CTA и чекбокс */
+.hero__card-cta {
+    padding: 14px 22px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hero__card-btn {
+    width: 100%;
+    height: 54px;
+    padding: 13.75px 20.5px 14.34px;
+    font-size: 14px;
+    line-height: 23.1px;
+    letter-spacing: 0.56px;
+    font-weight: 500;
+    text-align: center;
+    justify-content: center;
+}
+
+/* Кастомный чекбокс */
+.hero__card-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.hero__card-check {
+    /* Скрываем стандартный чекбокс */
+    appearance: none;
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    min-width: 15px;
+    margin-top: 1px;
+    border: 1px solid #757575;
+    border-radius: 2.5px;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+}
+
+.hero__card-check:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    color: #180E05;
+}
+
+.hero__card-consent-text {
+    font-size: 11px;
+    line-height: 17px;
+    font-weight: 300;
+    color: #180E05;
+}
+
+/* Блок доверия и примечания */
+.hero__card-trust {
+    padding: 12px 22px 22px;
+    border-top: 1px solid rgba(24, 14, 5, 0.1);
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hero__card-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hero__card-stars {
+    font-size: 13px;
+    line-height: 21.45px;
+    letter-spacing: 2px;
+    font-weight: 300;
+    color: #B8892A;
+}
+
+.hero__card-rating-text {
+    font-size: 13px;
+    line-height: 21.45px;
+    font-weight: 300;
+    color: #7A6A54;
+}
+
+.hero__card-micronote {
+    font-size: 11px;
+    line-height: 16.5px;
+    font-weight: 300;
+    color: #7A6A54;
+    text-align: center;
+    opacity: 0.75;
+}
+
+.hero__card-note {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 300;
+    color: #7A6A54;
+    text-align: center;
+}
+
+/*------ Секция Problem → Solution -------*/
+.problem-solution {
+    padding: 130px 0;
+    background: var(--color-bg);
+}
+
+/* Grid с двумя колонками */
+.ps-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 72px;
+    max-width: 1072px;
+    margin: 0 auto;
+}
+
+/* Колонка */
+.ps-col {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* Заголовок колонки */
+.ps-col__title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    line-height: 33px;
+    font-weight: 600;
+    font-style: italic;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(24, 14, 5, 0.1);
+}
+
+.ps-col:first-child .ps-col__title {
+    color: var(--color-chess-desc);
+    /* #7A6A54 */
+}
+
+.ps-col:last-child .ps-col__title {
+    color: var(--color-btn-text-dark);
+    /* #180E05 */
+}
+
+/* Список */
+.ps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* Элемент списка */
+.ps-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+/* Иконка */
+.ps-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 23.1px;
+    flex-shrink: 0;
+}
+
+.ps-col:first-child .ps-icon {
+    color: var(--color-chess-desc);
+    /* ✗ серый */
+}
+
+.ps-col:last-child .ps-icon {
+    color: var(--color-btn-primary);
+}
+
+/* Текстовый блок */
+.ps-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3.45px;
+    flex: 1;
+}
+
+/* Сброс стандартных отступов h3 и задание стилей из макета */
+.ps-item__title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 24.75px;
+    font-weight: 700;
+    color: var(--color-btn-text-dark);
+}
+
+.ps-item__description {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 22.4px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+}
+
+/* Секция "Как это работает" */
+.how-it-works {
+    padding: 60px 40px;
+    background: var(--color-how-it-works-bg);
+}
+
+/* Шапка секции */
+.how-it-works__header {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 64px;
+}
+
+.how-it-works__title {
+    font-family: var(--font-heading);
+    font-size: 50px;
+    line-height: 55px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.5px;
+    text-align: center;
+    color: var(--color-btn-text-dark);
+}
+
+.how-it-works__subtitle {
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 26.4px;
+    font-weight: 300;
+    text-align: center;
+    color: var(--color-chess-desc);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Сетка шагов */
+.how-it-works__steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 64px;
+}
+
+/* Отдельный шаг */
+.step {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.step__num {
+    font-family: var(--font-heading);
+    font-size: 86px;
+    line-height: 86px;
+    font-weight: 300;
+    letter-spacing: -1.72px;
+    color: var(--color-btn-primary);
+    margin-bottom: 15px;
+}
+
+.step__title {
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 28px;
+    font-weight: 700;
+    color: var(--color-btn-text-dark);
+    color: var(--color-btn-text-dark);
+    margin: 0;
+}
+
+.step__text {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 23.1px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+}
+
+/* Секция METHOD */
+.method {
+    padding: 60px 0;
+    background: var(--color-bg);
+}
+
+.method-title {
+    font-family: var(--font-heading);
+    font-size: 50px;
+    line-height: 55px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.5px;
+    text-align: center;
+    color: var(--color-hero-title);
+    margin-bottom: 64px;
+}
+
+/* Grid с двумя карточками */
+.method-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1072px;
+    margin: 0 auto;
+}
+
+/* Карточка */
+.method-card {
+    padding: 42px;
+    border-radius: 12px;
+    border-top: 2px solid;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Левая карточка (ИИ) */
+.method-card--ai {
+    border-color: var(--color-btn-primary);
+}
+
+/* Правая карточка (Репетитор) */
+.method-card--tutor {
+    border-color: #C4803C;
+    background: linear-gradient(129.18deg, #EDE2CE 0%, #E3D5BA 100%);
+}
+
+/* Иконка карточки */
+.method-card__icon {
+    width: 28px;
+    height: 28px;
+}
+
+/* Заголовок карточки */
+.method-card__title {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    line-height: 36.3px;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--color-btn-text-dark);
+    margin: 0;
+}
+
+/* Список */
+.method-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.method-list li {
+    padding-left: 16px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 21.7px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    position: relative;
+}
+
+/* Добавляем дефис перед каждым пунктом */
+.method-list li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--color-chess-desc);
+}
+
+/* Для правой карточки текст темнее */
+.method-card--tutor .method-card__title,
+.method-card--tutor {
+    color: var(--color-btn-text-dark);
+}
+
+.method-card--tutor .method-list li::before {
+    color: var(--color-btn-text-dark);
+}
+
+/* Секция Teacher */
+.teacher {
+    padding: 130px 0;
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* Grid с двумя колонками */
+.teacher-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 72px;
+    align-items: start;
+    position: relative;
+}
+
+.teacher__decor,
+.why-us__decor,
+.footer__decor {
+    position: absolute;
+    top: 30%;
+    left: -50px;
+    transform: translateY(-50%);
+    width: 500px;
+    height: auto;
+    opacity: 0.28;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Декоративный элемент */
+.teacher__decor {
+    top: 10%;
+    left: auto;
+    right: 0;
+    width: 380px;
+}
+
+/* Фото преподавателя */
+.teacher-photo {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.teacher-photo__img {
+    width: 320px;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(24, 14, 5, 0.1);
+}
+
+.teacher-photo__video {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #EDE2CE;
+    border: 1px solid rgba(24, 14, 5, 0.18);
+    border-radius: 6px;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.teacher-video__icon {
+    width: 25px;
+    height: 25px;
+    color: var(--color-btn-text-dark);
+}
+
+.teacher-photo__video-text {
+    font-size: 13px;
+    line-height: 21.45px;
+    font-weight: 400;
+    color: var(--color-btn-primary);
+    font-family: var(--font-body);
+}
+
+/* Биография */
+.teacher-bio {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-right: 30px;
+}
+
+/* Badge */
+.teacher-bio__badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 1px solid rgba(24, 14, 5, 0.18);
+    border-radius: 3px;
+    font-size: 10px;
+    line-height: 16.5px;
+    letter-spacing: 1.4px;
+    font-weight: 500;
+    color: var(--color-chess-desc);
+    text-transform: uppercase;
+    width: fit-content;
+}
+
+.teacher-bio__name {
+    font-family: var(--font-heading);
+    font-size: 42px;
+    line-height: 69.3px;
+    font-weight: 600;
+    letter-spacing: -0.42px;
+    color: var(--color-btn-text-dark);
+}
+
+/* Опыт */
+.teacher-bio__exp {
+    font-size: 14px;
+    line-height: 23.1px;
+    font-weight: 400;
+    color: var(--color-chess-desc);
+}
+
+/* UTP с левой границей */
+.teacher-bio__utp {
+    padding-left: 18px;
+    border-left: 2px solid var(--color-btn-primary);
+    font-size: 15px;
+    line-height: 27.3px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--color-chess-desc);
+    opacity: 0.9;
+}
+
+/* Текст биографии */
+.teacher-bio__text {
+    font-size: 15px;
+    line-height: 26.25px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+}
+
+/* Чипсы/теги */
+.teacher-chips {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.teacher-chips li {
+    padding: 5px 12px;
+    background: #EDE2CE;
+    border-radius: 3px;
+    font-size: 12px;
+    line-height: 19.8px;
+    letter-spacing: 0.24px;
+    font-weight: 400;
+    color: var(--color-chess-desc);
+}
+
+/* CTA кнопка */
+.teacher-bio__cta {
+    display: inline-block;
+    padding: 13.75px 32.5px 14.34px;
+    background: var(--color-btn-primary);
+    border: 1px solid var(--color-btn-primary);
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 23.1px;
+    letter-spacing: 0.56px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--color-btn-text-light);
+    text-decoration: none;
+    transition: opacity 0.2s;
+    align-self: flex-start;
+}
+
+.teacher-bio__cta:hover {
+    opacity: 0.9;
+}
+
+/* ------ Секция Reviews ------ */
+.reviews {
+    padding: 60px 0;
+    background: var(--color-how-it-works-bg);
+}
+
+/* Заголовок секции */
+.reviews-title {
+    font-family: var(--font-heading);
+    font-size: 50px;
+    line-height: 55px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.5px;
+    text-align: center;
+    color: var(--color-btn-text-dark);
+    margin-bottom: 14px;
+}
+
+.reviews-sub {
+    font-size: 16px;
+    line-height: 26.4px;
+    font-weight: 300;
+    text-align: center;
+    color: var(--color-hero-badge-text);
+    margin-bottom: 64px;
+}
+
+/* Grid карточек */
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: stretch;
+}
+
+/* Карточка отзыва */
+.review-card {
+    padding: 32px;
+    background: var(--color-chess-bg-light);
+    /* #FDFAF5 */
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    min-width: 0;
+}
+
+/* Header карточки */
+.review-card__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Аватар */
+.review-card__avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 21px;
+    border: 1px solid var(--color-border);
+    background: var(--color-chess-bg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.review-card__avatar span {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    line-height: 29.7px;
+    font-weight: 600;
+    color: var(--color-btn-primary);
+    /* #9C5A1D */
+}
+
+/* Мета-информация */
+.review-card__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.review-card__name {
+    font-size: 14px;
+    line-height: 23.1px;
+    font-weight: 500;
+    color: var(--color-btn-text-dark);
+}
+
+.review-card__detail {
+    font-size: 12px;
+    line-height: 19.8px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+}
+
+/* Обновляем контейнер для вертикального расположения */
+.review-card__score {
+    min-width: 50px;
+    padding: 6px 10px;
+    background: var(--color-chess-bg-dark);
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+/* Число (+18, +22, 89) */
+.review-card__score-value {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    line-height: 20px;
+    font-weight: 700;
+    color: var(--color-btn-primary);
+}
+
+/* Подпись "баллов" */
+.review-card__score-label {
+    font-family: var(--font-body);
+    font-size: 10px;
+    line-height: 16.5px;
+    font-weight: 300;
+    text-align: center;
+    color: var(--color-chess-desc);
+    /* #7A6A54 */
+}
+
+/* Текст отзыва */
+.review-card__text {
+    font-size: 14px;
+    line-height: 23.8px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--color-btn-text-dark);
+    margin: 0;
+    flex: 1;
+    overflow-wrap: break-word;
+}
+
+/* Footer карточки */
+.review-card__footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 5px;
-    border-bottom: 1px solid #ddd;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border);
+    margin-top: auto;
 }
 
-header nav div.right-nav {
+.review-card__stars {
+    color: var(--color-stars);
+    font-size: 14px;
+}
+
+.review-card__uni {
+    font-size: 12px;
+    line-height: 19.8px;
+    font-weight: 500;
+    letter-spacing: 0.36px;
+    color: var(--color-btn-primary);
+}
+
+/* ---- Секция Why Us ----- */
+.why-us {
+    padding: 60px 0;
+    background: var(--color-bg);
+}
+
+.why-title {
+    font-family: var(--font-heading);
+    font-size: 50px;
+    line-height: 55px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.5px;
+    text-align: center;
+    color: var(--color-btn-text-dark);
+    margin-bottom: 64px;
+}
+
+/* Grid карточек */
+.why-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    position: relative;
+}
+
+/* Карточка преимущества */
+.why-card {
+    padding: 32px;
+    border: 1px solid rgba(24, 14, 5, 0.1);
+    /* #180E051A */
+    border-radius: 12px;
     display: flex;
-    gap: 10px; /* Расстояние между элементами */
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Иконка карточки */
+.why-card__icon {
+    width: 32px;
+    height: 32px;
+}
+
+/* Заголовок карточки */
+.why-card__title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    line-height: 21.6px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--color-chess-title);
+    /* #180E05 */
+    margin: 0;
+}
+
+/* Текст карточки */
+.why-card__text {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 23.1px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    /* #7A6A54 */
+    margin: 0;
+}
+
+/* Секция Trial Banner */
+.trial-banner-section {
+    padding: 64px 0;
+    background: var(--color-how-it-works-bg);
+    /* #EDE2CE */
+}
+
+/* Баннер */
+.trial-banner {
+    display: flex;
     align-items: center;
+    gap: 40px;
+    padding: 44px;
+    background: var(--color-chess-bg-light);
+    border-radius: 12px;
+    border: 1px solid var(--color-btn-border);
+    border-top: 4px solid var(--color-btn-primary);
+    /* Тёмная полоса сверху */
+    box-shadow:
+        0 8px 40px var(--color-btn-border),
+        inset 0 4px 8px rgba(24, 14, 5, 0.05);
+    /* Лёгкая внутренняя тень сверху */
 }
 
-header nav a {
-    margin-right: 15px;
+/* Иконка */
+.trial-banner__icon {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+}
+
+/* Контент */
+.trial-banner__content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+/* Заголовок */
+.trial-banner__title {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    line-height: 46.2px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--color-btn-text-dark);
+}
+
+/* Текст */
+.trial-banner__text {
+    font-size: 15px;
+    line-height: 24.75px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+}
+
+.trial-banner__text strong {
+    font-weight: 600;
+}
+
+/* Примечание */
+.trial-banner__note {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    margin: 0;
+}
+
+.trial-banner .teacher-bio__cta {
+    align-self: center;
+}
+
+/* ------- Секция Pricing ---------- */
+.pricing {
+    padding: 60px 0;
+    background: var(--color-bg);
+}
+
+.pricing-title {
+    font-family: var(--font-heading);
+    font-size: 50px;
+    line-height: 55px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.5px;
+    text-align: center;
+    color: var(--color-btn-text-dark);
+    margin-bottom: 14px;
+}
+
+.pricing-sub {
+    font-size: 16px;
+    line-height: 26.4px;
+    font-weight: 300;
+    text-align: center;
+    color: var(--color-chess-desc);
+    margin-bottom: 64px;
+}
+
+/* Grid карточек */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1072px;
+    margin: 0 auto;
+}
+
+/* Карточка тарифа */
+.pricing-card {
+    position: relative;
+    padding: 32px 28px;
+    border: 1px solid rgba(24, 14, 5, 0.1);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Выделенная карточка "Популярный" */
+.pricing-card--popular {
+    border: 2px solid var(--color-btn-primary);
+    box-shadow: 0 8px 40px rgba(156, 90, 29, 0.15);
+}
+
+/* Badge "Популярный" */
+.pricing-card__badge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 14px;
+    background: var(--color-btn-primary);
+    border-radius: 0 0 6px 6px;
+    font-size: 10px;
+    line-height: 16.5px;
+    letter-spacing: 0.8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--color-btn-text-light);
+}
+
+/* Header карточки */
+.pricing-card__header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Название тарифа */
+.pricing-card__name {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    line-height: 28px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--color-chess-desc);
+}
+
+/* Цена */
+.pricing-card__price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.pricing-card__amount {
+    font-family: var(--font-heading);
+    font-size: 38px;
+    line-height: 38px;
+    font-weight: 700;
+    letter-spacing: -0.38px;
+    color: var(--color-btn-text-dark);
+    /* #180E05 */
+}
+
+.pricing-card__period {
+    font-size: 14px;
+    line-height: 14px;
+    font-weight: 300;
+    letter-spacing: -0.38px;
+    color: var(--color-chess-desc);
+}
+
+/* Описание тарифа */
+.pricing-card__desc {
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(24, 14, 5, 0.1);
+    font-size: 13px;
+    line-height: 19.5px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    margin: 0;
+}
+
+/* Список фич */
+.pricing-features {
+    list-style: none;
+    padding: 0 0 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    color: var(--color-chess-desc);
+}
+
+.pricing-features li {
+    font-size: 14px;
+    line-height: 19.6px;
+    font-weight: 300;
+    color: var(--color-btn-text-dark);
+    padding-left: 20px;
+    position: relative;
+}
+
+.pricing-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-btn-primary);
+    font-weight: 600;
+}
+
+/* Кнопки */
+.pricing-card__cta {
+    display: block;
+    padding: 13.75px 32.5px 14.34px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 23.1px;
+    letter-spacing: 0.56px;
+    font-weight: 500;
+    text-align: center;
     text-decoration: none;
-    color: #333;
-    font-weight: bold;
+    transition: all 0.2s;
+    margin-top: auto;
 }
 
-.header {
-    margin-bottom: 10px;
+/* Outline кнопка */
+.pricing-card__cta--outline {
+    background: transparent;
+    border: 1px solid var(--color-btn-border);
+    color: var(--color-btn-text-dark);
 }
 
-button {
-    padding: 8px 16px;
-    margin: 5px;
-    border: 1px solid #ccc;
-    background: white;
+.pricing-card__cta--outline:hover {
+    background: var(--color-btn-primary);
+    color: var(--color-btn-text-light);
+}
+
+/* Примечание внизу */
+.pricing-note {
+    margin-top: 40px;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 300;
+    text-align: center;
+    color: var(--color-chess-desc);
+    opacity: 0.8;
+}
+
+/* Hover для всех карточек */
+.pricing-card:hover,
+.why-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(24, 14, 5, 0.1);
+    background: var(--color-chess-bg-light);
+}
+
+/* ------ Секция FAQ ------- */
+.faq {
+    padding: 60px 0;
+    background: var(--color-how-it-works-bg);
+}
+
+.faq-title {
+    font-family: var(--font-heading);
+    font-size: 50px;
+    line-height: 55px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.5px;
+    text-align: center;
+    color: var(--color-btn-text-dark);
+    margin-bottom: 64px;
+}
+
+/* Список вопросов */
+.faq-list {
+    max-width: 760px;
+    margin: 0 auto;
+    border-top: 1px solid rgba(24, 14, 5, 0.1);
+}
+
+/* Элемент FAQ */
+.faq-item {
+    border-bottom: 1px solid rgba(24, 14, 5, 0.1);
+}
+
+/* Кнопка-триггер */
+.faq-item__trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 20px 0;
+    background: none;
+    border: none;
     cursor: pointer;
-    border-radius: 4px;
+    text-align: left;
+    font-family: var(--font-body);
 }
 
-button:hover {
-    background: #f0f0f0;
+/* Вопрос */
+.faq-item__question {
+    font-size: 15px;
+    line-height: 15px;
+    font-weight: 400;
+    color: var(--color-btn-text-dark);
+    flex: 1;
+    padding-right: 20px;
 }
 
-input, textarea {
+/* Иконка +/- */
+.faq-icon {
+    font-size: 24px;
+    line-height: 1;
+    color: var(--color-btn-primary);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+/* Поворот иконки при открытии */
+.faq-item__trigger[aria-expanded="true"] .faq-icon {
+    transform: rotate(45deg);
+    /* + превращается в × */
+}
+
+/* Контент с ответом */
+.faq-item__content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+/* Ответ */
+.faq-item__answer {
+    padding-bottom: 20px;
+    font-size: 15px;
+    line-height: 24px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    margin: 0;
+}
+
+/* Активное состояние */
+.faq-item__trigger[aria-expanded="true"] {
+    padding-bottom: 10px;
+}
+
+.faq-item--active .faq-item__content {
+    max-height: 200px;
+    /* Достаточно для раскрытия */
+    padding-bottom: 20px;
+}
+
+/* ----- Секция Final CTA ------ */
+.final-cta {
+    padding: 60px 0;
+    background: var(--color-btn-text-dark);
+}
+
+/* Блок CTA */
+.cta-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Eyebrow (верхняя подпись) */
+.cta-block__eyebrow {
+    font-size: 11px;
+    line-height: 18.15px;
+    font-weight: 500;
+    letter-spacing: 1.54px;
+    text-transform: uppercase;
+    color: var(--color-final-cta);
+    margin: 0;
+}
+
+/* Заголовок */
+.cta-block__title {
+    font-family: var(--font-heading);
+    font-size: 58px;
+    line-height: 64.96px;
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: -0.58px;
+    color: var(--color-chess-bg-light);
+}
+
+/* Подзаголовок */
+.cta-block__sub {
+    font-size: 16px;
+    line-height: 26.4px;
+    font-weight: 300;
+    color: var(--color-final-cta);
+    max-width: 600px;
+}
+
+.cta-block .teacher-bio__cta {
+    align-self: center;
+}
+
+/* Микро-текст */
+.cta-block__micro {
+    font-size: 13px;
+    line-height: 21.45px;
+    font-weight: 300;
+    color: var(--color-final-cta);
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* ----- Футер ----- */
+.footer {
+    position: relative;
+    padding: 48px 0 40px;
+    border-top: 1px solid rgba(24, 14, 5, 0.1);
+    background: var(--color-bg);
+    overflow: hidden;
+}
+
+.footer__grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr 1fr;
+    gap: 40px;
+    position: relative;
+}
+
+/* Декоративный элемент */
+.footer__decor {
+    top: 60%;
+    left: auto;
+    right: 0;
+    width: 350px;
+}
+
+/* Колонка */
+.footer__col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Логотип */
+.footer__logo {
+    width: 168px;
+    height: auto;
+    border-radius: 8px;
+    mix-blend-mode: multiply;
+}
+
+/* Tagline */
+.footer__tagline {
+    font-size: 13px;
+    line-height: 20.15px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    max-width: 280px;
+    margin: 0;
+}
+
+/* Заголовок колонки */
+.footer__col-title {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    line-height: 24.75px;
+    font-weight: 600;
+    letter-spacing: 0.15px;
+    color: var(--color-chess-title);
+    margin: 0;
+}
+
+/* Навигация */
+.footer__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer__link {
+    font-size: 13px;
+    line-height: 18.2px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer__link:hover {
+    color: var(--color-btn-primary);
+}
+
+/* Социальные кнопки */
+.footer__socials {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer__social-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    height: 50px;
+    border: 1px solid var(--color-chess-desc);
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.footer__social-link:hover {
+    background: rgba(24, 14, 5, 0.06);
+    border-color: var(--color-btn-primary);
+    transform: translateY(-1px);
+}
+
+.footer__social-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.footer__social-link span {
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 21.45px;
+    letter-spacing: 0.13px;
+    font-weight: 400;
+    color: var(--color-chess-desc);
+}
+
+.footer__social-link:hover span {
+    color: var(--color-chess-title);
+}
+
+/* Нижняя панель футера */
+.footer__bottom {
+    padding-top: 24px;
+    border-top: 1px solid var(--color-chess-desc);
+    margin-top: 40px;
+}
+
+.footer__copy {
+    font-size: 12px;
+    line-height: 19.8px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    margin: 0;
+}
+
+/* ----------------------------- */
+/* ====== Блок чат-бота ====== */
+.chatbot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* Кнопка открытия */
+.chatbot__button {
+    width: 60px;
+    height: 60px;
+    border-radius: 40px;
+    background: var(--color-chess-bg-light);
+    border: none;
+    cursor: pointer;
+    box-shadow:
+        0px 2px 8px rgba(74, 42, 20, 0.15),
+        0px 4px 24px rgba(74, 42, 20, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.chatbot__button:hover {
+    transform: translateY(-2px);
+}
+
+.chatbot__icon {
+    width: 56px;
+    height: 56px;
+}
+
+/* ====== Окно чата ====== */
+.chatbot__window {
+    display: none;
+    position: absolute;
+    bottom: 90px;
+    right: 0;
+    width: 380px;
+    height: 347px;
+    background: var(--color-bg);
+    border-radius: 12px;
+    border: 1px solid var(--color-wchat-border, rgba(24, 14, 5, 0.1));
+    border-top: 1px solid var(--color-wchat-border, rgba(24, 14, 5, 0.18));
+    box-shadow: 0 8px 40px rgba(24, 14, 5, 0.15);
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chatbot--open .chatbot__window {
+    display: flex;
+}
+
+/* ====== Шапка ====== */
+.chatbot__header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 13px 9px 13px;
+    background: var(--color-wchat-bg-top, #F5EDE0);
+    border-bottom: 1px solid var(--color-wchat-border, rgba(24, 14, 5, 0.1));
+    min-height: 63px;
+}
+
+.chatbot__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.chatbot__header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.chatbot__title {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 13px;
+    font-weight: 500;
+    color: var(--color-btn-text-dark);
+}
+
+.chatbot__status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    line-height: 18.15px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+}
+
+.chatbot__status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4CAF50;
+    flex-shrink: 0;
+}
+
+.chatbot__close {
+    background: none;
+    border: none;
+    color: var(--color-chess-desc);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.chatbot__close:hover {
+    color: var(--color-btn-text-dark);
+}
+
+/* ====== Область сообщений ====== */
+.chatbot__messages {
+    flex: 1;
+    min-height: 240px;
+    max-height: 360px;
+    padding: 12px 14px 14px 14px;
+    overflow-y: auto;
+    background: var(--color-wchat-border-med);
+    border-top: 1px solid var(--color-btn-text-light);
+    box-shadow: 0px 2px 8px rgba(24, 14, 5, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Сообщения */
+.chatbot__message {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+}
+
+.chatbot__message--bot {
+    align-self: flex-start;
+}
+
+.chatbot__message--user {
+    align-self: flex-end;
+}
+
+.chatbot__message-text {
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 20.5px;
+    font-weight: 300;
+    color: var(--color-btn-text-dark);
+    padding: 10px 14px;
+    border-radius: 0 10px 10px 10px;
+    background: var(--color-bg);
+    word-wrap: break-word;
+}
+
+.chatbot__message--user .chatbot__message-text {
+    background: var(--color-wchat-bg-top, #F5EDE0);
+}
+
+/* Typing indicator */
+.chatbot__typing {
+    display: flex;
+    gap: 4px;
+    padding: 10px 14px;
+    background: var(--color-bg);
+    border-radius: 10px;
+    width: fit-content;
+    align-self: flex-start;
+}
+
+.chatbot__typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-chess-desc);
+    animation: typing-bounce 1.4s infinite ease-in-out;
+}
+
+.chatbot__typing-dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.chatbot__typing-dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typing-bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ====== Нижняя панель ====== */
+.chatbot__input-area {
+    display: flex;
+    align-items: center;
+    /* ← Выравнивание по центру */
+    justify-content: center;
+    /* ← Центрирование по горизонтали */
+    gap: 8px;
+    padding: 11px 14px;
+    background: var(--color-wchat-bg-btm, #F5EDE0);
+    /* ← Фон из макета */
+    border-top: 1px solid var(--color-wchat-border, rgba(24, 14, 5, 0.1));
+    min-height: 41px;
+}
+
+.chatbot__input {
+    flex: 1;
+    height: 37px;
+    padding: 11px 14px;
+    background: var(--color-btn-text-light);
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    font-weight: 300;
+    color: var(--color-btn-text-dark);
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.chatbot__input::placeholder {
+    color: var(--color-chess-desc);
+    opacity: 0.65;
+    font-size: 11px;
+}
+
+.chatbot__input:focus {
+    border-color: var(--color-chess-link);
+}
+
+/* Кнопка отправки — без рамки */
+.chatbot__send {
+    width: 37px;
+    height: 37px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-chess-link);
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.chatbot__send:hover {
+    background: var(--color-chess-link);
+    color: var(--color-btn-text-light);
+}
+
+.chatbot__send svg {
+    width: 18px;
+    height: 18px;
+}
+
+.chatbot__send:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ========================== */
+
+input,
+textarea {
     padding: 8px;
     width: 250px;
     border: 1px solid #ddd;
@@ -54,11 +2312,13 @@ input, textarea {
     margin-bottom: 5px;
 }
 
-#register-form, #login-form, #user-data {
+#register-form,
+#login-form,
+#user-data {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #loaded-data {
@@ -158,19 +2418,19 @@ input, textarea {
 
 /* ===== вид ссылки на телеграм в лк (профиль уч) ======= */
 .tg-link-look {
-    margin-top: 10px; 
-    padding: 12px; 
-    background: #f8f9fa; 
+    margin-top: 10px;
+    padding: 12px;
+    background: #f8f9fa;
     border-left: 4px solid #0d6efd;
 }
 
 /* ===== упражнение ======= */
 .advice-block {
-    display: none; 
-    margin-top: 16px; 
-    padding: 12px; 
-    background-color: #f8f9fa; 
-    border-left: 4px solid #0d6efd; 
+    display: none;
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #0d6efd;
     font-style: italic;
 }
 
@@ -184,5 +2444,357 @@ input, textarea {
 }
 
 .way_games:hover {
-    background-color: #bdf7c9; /* тот же цвет что и бордер */
+    background-color: #bdf7c9;
+    /* тот же цвет что и бордер */
+}
+
+/* ============================================
+   ХЕДЕР: БЛОК АВТОРИЗОВАННОГО ПОЛЬЗОВАТЕЛЯ
+   ============================================ */
+
+.header__actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-stat-link {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 35px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--color-border);
+    background: var(--color-how-it-works-bg);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.header-stat-link:hover {
+    border-color: var(--color-btn-primary);
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.15);
+    transform: translateY(-1px);
+}
+
+.header-stat-link__icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: var(--color-chess-desc);
+    transition: color 0.2s ease;
+}
+
+.header-stat-link__text {
+    font-family: 'SF Pro Text', var(--font-body);
+    font-weight: 500;
+    font-size: 13.1px;
+    line-height: 1;
+    color: var(--color-chess-desc);
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.header-stat-link:hover .header-stat-link__icon,
+.header-stat-link:hover .header-stat-link__text {
+    color: var(--color-btn-primary);
+}
+
+.profile-user-name {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 400;
+    font-size: 13.6px;
+    line-height: 21.76px;
+    color: var(--color-chess-desc);
+    white-space: nowrap;
+}
+
+.profile-user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-how-it-works-bg);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--color-btn-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.profile-user-avatar:hover {
+    border-color: var(--color-btn-primary);
+    background: #ffffff;
+    color: var(--color-btn-primary);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.15);
+    transform: translateY(-1px);
+}
+
+.header-logout-form {
+    margin: 0;
+    padding: 0;
+}
+
+.header-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    color: var(--color-chess-desc);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.header-logout-btn:hover {
+    background: rgba(220, 38, 38, 0.1);
+    border-color: rgba(220, 38, 38, 0.3);
+    color: #dc2626;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+    transform: translateY(-1px);
+}
+
+.header-logout-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.15);
+}
+
+/* анимация круга circle_rotate.svg */
+/* Вращение диагоналей по часовой стрелке */
+.rotating-cross {
+    transform-origin: 240px 240px;
+    animation: rotate-cw 40s linear infinite;
+    will-change: transform;
+}
+
+/* Вращение пунктирной дуги против часовой стрелки */
+.rotating-arc {
+    transform-origin: 240px 240px;
+    animation: rotate-ccw 30s linear infinite;
+    will-change: transform;
+}
+
+@keyframes rotate-cw {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotate-ccw {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+/* ---- Контакты: поповер в футере ---- */
+.footer__contacts-wrap {
+    position: relative;
+}
+
+.footer__contacts-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    text-align: left;
+}
+
+button.footer__social-link {
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    width: 100%;
+}
+
+.contacts-pop {
+    position: absolute;
+    bottom: 0;
+    right: calc(100% + 12px);
+    width: 280px;
+    padding: 14px 16px 12px;
+    background: #FDFAF5;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(24, 14, 5, 0.18);
+    z-index: 80;
+    text-align: left;
+}
+
+/* стрелочка вправо к кнопке */
+.contacts-pop::after {
+    content: "";
+    position: absolute;
+    top: auto;
+    bottom: 10px;
+    right: -14px;
+    border: 7px solid transparent;
+    border-left-color: #FDFAF5;
+}
+
+.contacts-pop__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 0;
+}
+
+.contacts-pop__row+.contacts-pop__row {
+    border-top: 1px dashed var(--color-border);
+}
+
+.contacts-pop__label {
+    display: block;
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--color-chess-desc);
+    margin-bottom: 1px;
+}
+
+.contacts-pop__value {
+    font-size: 14px;
+    line-height: 19px;
+    font-weight: 500;
+    color: var(--color-btn-text-dark);
+    text-decoration: none;
+}
+
+a.contacts-pop__value:hover {
+    color: var(--color-btn-primary);
+}
+
+.contacts-pop__copy {
+    flex-shrink: 0;
+    font-size: 11px;
+    line-height: 14px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    background: #FFFFFF;
+    color: var(--color-chess-desc);
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.contacts-pop__copy:hover {
+    color: var(--color-btn-primary);
+    border-color: var(--color-btn-primary);
+}
+
+.contacts-pop__note {
+    margin: 8px 0 0;
+    font-size: 11px;
+    line-height: 15px;
+    font-style: italic;
+    color: var(--color-chess-desc);
+}
+
+@media (max-width: 768px) {
+    .footer__contacts-wrap {
+        text-align: center;
+    }
+
+    .footer__contacts-btn {
+        text-align: center;
+    }
+
+    .contacts-pop {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 120px;
+        top: auto;
+        right: auto;
+        width: 280px;
+    }
+
+    .contacts-pop::after {
+        top: 100%;
+        bottom: auto;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 7px solid transparent;
+        border-top-color: #FDFAF5;
+    }
+}
+
+/* Кнопка чата прячется, пока виден футер (зона контактов) */
+.chatbot--hidden {
+    opacity: 0;
+    transform: translateY(16px);
+    pointer-events: none;
+}
+/* ---- Freemium: замки тарифа «0» ---- */
+.freemium-banner {
+    margin: 18px 0;
+    padding: 12px 18px;
+    background: #FFF7E8;
+    border: 1px solid #E5CAAA;
+    border-radius: 12px;
+    color: #4A3520;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.freemium-banner a {
+    color: #9C5A1D;
+    font-weight: 600;
+}
+
+.locked-feature {
+    position: relative;
+}
+
+.locked-feature > * {
+    opacity: .35;
+    filter: blur(2px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.locked-feature::after {
+    content: "🔒 Доступно в тарифе «Я сам»";
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4A3520;
+    color: #FDFAF5;
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(24, 14, 5, .25);
+    white-space: nowrap;
+}
+
+.quiz-trigger.locked {
+    opacity: .55;
+}
+
+.quiz-trigger.locked::after {
+    content: " 🔒";
 }

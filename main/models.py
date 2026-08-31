@@ -4,6 +4,23 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import uuid
+from django.utils import timezone
+
+
+
+# === ТАРИФЫ И ДОСТУП (бизнес-данные в одном месте) ===
+PLAN_LEVEL = {'free': 0, 'self': 1, 'group': 2, 'premium': 3}
+PLAN_NAMES = {'free': '0', 'self': 'Я сам', 'group': 'Вместе', 'premium': 'Премиум'}
+PLAN_PRICES = {'free': 0, 'self': 2490, 'group': 4990, 'premium': 11990}
+AI_LIMITS = {0: 15, 1: 150, 2: 200, 3: None}   # сообщений ИИ в месяц; None = безлимит
+FREE_PLANNING_WORDS = 15   # лимит активных слов планинга на тарифе «0»
+FEATURE_MIN_LEVEL = {
+    'planning': 0, 'trainers': 1, 'quizzes': 1, 'lessons': 1,
+    'group': 2,
+    'premium': 3,
+}
+TRIAL_DAYS = 5
 
 
 class UserProfile(models.Model):
@@ -13,6 +30,124 @@ class UserProfile(models.Model):
         related_name='profile',
     )
     email_confirmed = models.BooleanField(default=False)
+
+    # === Подписка ===
+    plan = models.CharField(
+        max_length=20,
+        choices=[(k, PLAN_NAMES[k]) for k in ('free', 'self', 'group', 'premium')],
+        default='free',
+    )
+    plan_until = models.DateTimeField(null=True, blank=True)
+    trial_until = models.DateTimeField(null=True, blank=True)
+    ai_used = models.IntegerField(default=0)
+    ai_month = models.CharField(max_length=7, blank=True, default='')
+
+    @property
+    def level(self):
+        if self.role == 'tutor' and self.tutor_active:
+            return 3
+
+        """Эффективный уровень: триал даёт полный доступ, иначе — активный тариф."""
+        if self.trial_until and timezone.now() < self.trial_until:
+            return 3
+        if self.plan != 'free' and self.plan_until and timezone.now() < self.plan_until:
+            return PLAN_LEVEL[self.plan]
+        return 0
+
+    def has_access(self, feature):
+        return self.level >= FEATURE_MIN_LEVEL.get(feature, 0)
+
+    def can_use_ai(self):
+        """Есть ли свободное сообщение ИИ в месячной квоте (БЕЗ списания)."""
+        limit = AI_LIMITS[self.level]
+        if limit is None:
+            return True
+        month = timezone.now().strftime('%Y-%m')
+        used = self.ai_used if self.ai_month == month else 0
+        return used < limit
+
+    def try_consume_ai(self):
+        """Списывает 1 сообщение ИИ с месячной квоты. False = лимит исчерпан."""
+        limit = AI_LIMITS[self.level]
+        if limit is None:
+            return True
+        month = timezone.now().strftime('%Y-%m')
+        if self.ai_month != month:
+            self.ai_month, self.ai_used = month, 0
+        if self.ai_used >= limit:
+            return False
+        self.ai_used += 1
+        self.save(update_fields=['ai_month', 'ai_used'])
+        return True
+
+    def subscription_info(self):
+        """Статус подписки для карточки в ЛК: платный тариф главный, триал — бонус."""
+        now = timezone.now()
+        info = {'ai_limit': AI_LIMITS[self.level], 'ai_used': self.ai_used}
+
+        if self.role == 'tutor' and self.tutor_active:
+            info.update(kind='tutor', plan_name='Репетитор — полный доступ',
+                        expiry_date=None, days_text=None,
+                        progress_percent=100, trial_note=None)
+            return info
+
+        trial_active = bool(self.trial_until and now < self.trial_until)
+        trial_note = None
+        if trial_active:
+            tdays = (self.trial_until - now).days + 1
+            trial_note = f'Триал: ещё {self._ru_days(tdays)} полного доступа'
+
+        if self.plan != 'free' and self.plan_until and now < self.plan_until:
+            days = (self.plan_until - now).days + 1
+            info.update(
+                kind='paid',
+                plan_name=f'«{PLAN_NAMES[self.plan]}»',
+                expiry_date=self.plan_until.strftime('%d.%m.%Y'),
+                days_text=self._ru_days(days),
+                progress_percent=min(100, int(days / 30 * 100)),
+                trial_note=trial_note,
+            )
+        elif trial_active:
+            days = (self.trial_until - now).days + 1
+            info.update(
+                kind='trial',
+                plan_name='Триал — полный доступ',
+                expiry_date=self.trial_until.strftime('%d.%m.%Y'),
+                days_text=self._ru_days(days),
+                progress_percent=min(100, int(days / TRIAL_DAYS * 100)),
+                trial_note=None,
+            )
+        else:
+            info.update(
+                kind='free',
+                plan_name='«0» — базовый доступ',
+                expiry_date=None,
+                days_text=None,
+                progress_percent=100,
+                trial_note=None,
+            )
+        return info
+
+
+    @staticmethod
+    def _ru_days(n):
+        """Правильные русские склонения: 1 день / 2 дня / 5 дней."""
+        m10, m100 = n % 10, n % 100
+        if 11 <= m100 <= 14:
+            return f'{n} дней'
+        if m10 == 1:
+            return f'{n} день'
+        if 2 <= m10 <= 4:
+            return f'{n} дня'
+        return f'{n} дней'
+
+    # === Репетитор платформы ===
+    role = models.CharField(
+        max_length=10,
+        choices=[('student', 'Ученик'), ('tutor', 'Репетитор')],
+        default='student',
+    )
+    tutor_active = models.BooleanField(default=False, verbose_name='Доступ репетитора активен')
 
     # Персональные данные
     first_name = models.CharField(
@@ -41,6 +176,7 @@ class UserProfile(models.Model):
         blank=True,
         verbose_name="Класс"
     )
+    
     telegram_username = models.CharField(
         max_length=100,
         blank=True,
@@ -71,8 +207,59 @@ class UserProfile(models.Model):
         verbose_name="Срок действия кода"
     )
 
+    max_id = models.BigIntegerField(
+        null=True, 
+        blank=True, 
+        unique=True, 
+        verbose_name='MAX ID'
+    )
+
+    max_chat_id = models.BigIntegerField(
+        null=True, 
+        blank=True, 
+        verbose_name='MAX chat ID'
+        )
+
     def __str__(self):
         return f"{self.user.username} Profile"
+
+
+class Payment(models.Model):
+    """Журнал платежей ЮKassa. unique по yk_payment_id = защита от двойной активации."""
+    yk_payment_id = models.CharField(max_length=64, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    plan = models.CharField(max_length=20)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=30, default='pending')  # pending/succeeded/canceled/refunded
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username} {self.plan} {self.status}'
+
+
+class TutorInvite(models.Model):
+    """Пригласительный код репетитора. Коды создаёт владелец в админке."""
+    code = models.CharField(max_length=12, unique=True)
+    is_active = models.BooleanField(default=True)
+    used_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.code} ({self.used_by or "свободен"})'
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = self._generate()
+        super().save(*args, **kwargs)
+
+    def _generate(self):
+        import random, string
+        while True:
+            code = 'TUTOR-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            if not TutorInvite.objects.filter(code=code).exists():
+                return code
+
 
 
 @receiver(post_save, sender=User)
@@ -80,6 +267,27 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
 
+class DailyWord(models.Model):
+    """Слово дня: одно слово на пользователя на период (12:00 МСК -> следующие 12:00)."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='daily_words')
+    period_date = models.DateField()                        # дата, в 12:00 МСК которой открыто слово
+    source = models.CharField(max_length=20, default='')    # planning/hot/orthography/orthoepy
+    example_id = models.IntegerField(null=True, blank=True)
+    user_word_id = models.IntegerField(null=True, blank=True)
+    question = models.TextField(default='')
+    options_json = models.TextField(default='')
+    correct_text = models.CharField(max_length=200, default='')
+    explanation = models.TextField(default='')
+    answered = models.BooleanField(default=False)
+    answered_correctly = models.BooleanField(null=True, blank=True)
+    answered_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'period_date')
+
+    def __str__(self):
+        return f'{self.user.username} {self.period_date} {"answered" if self.answered else "open"}'
 
 class UserExample(models.Model):
     user = models.ForeignKey(
@@ -379,21 +587,96 @@ class StudentAnswer(models.Model):
     def __str__(self):
         return f"{self.user.username} → {self.selected_answer} ({'✓' if self.is_correct else '✗'})"
 
+
+class DiagnosticAttempt(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Владелец (NULL для анонимов)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True,
+        related_name='diagnostic_attempts',
+    )
+    
+    # Привязка для анонимов
+    session_key = models.CharField(max_length=40, blank=True, db_index=True)
+    access_code = models.CharField(max_length=12, unique=True, blank=True)
+    
+    # Что проходили
+    test_code = models.CharField(max_length=50, default='DIAG_EGE_2027_V1')
+    diagnostic_type = models.CharField(max_length=20, blank=True, verbose_name="Тип диагностики")
+
+    # Результат
+    primary_score = models.IntegerField(null=True, blank=True, verbose_name="Первичный балл")
+    max_primary_score = models.IntegerField(default=50, verbose_name="Максимальный первичный балл")
+    score = models.IntegerField(null=True, blank=True)
+    max_score = models.IntegerField(default=50)
+    answers_data = models.JSONField(default=dict)
+    weak_topics = models.JSONField(default=list)
+    
+    is_completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # === Разбор преподавателем (зеркальная проверка на встрече) ===
+    teacher_notes = models.TextField(blank=True, verbose_name="Заметки преподавателя")
+    is_reviewed_by_teacher = models.BooleanField(default=False, verbose_name="Разобрано на встрече")
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата разбора")
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        owner = self.user.username if self.user else 'аноним'
+        return f"{owner}: {self.score}/{self.max_score}"
+
+    def save(self, *args, **kwargs):
+        if not self.access_code:
+            self.access_code = self._generate_code()
+        super().save(*args, **kwargs)
+
+    def _generate_code(self):
+        import random, string
+        while True:
+            code = 'DIAG-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            if not DiagnosticAttempt.objects.filter(access_code=code).exists():
+                return code
+
+
 # ========== ЗАДАНИЯ 1-3 ====================================================
 class TextAnalysisTask(models.Model):
-    """Текст с заданиями 1-3"""
+    """Текст с заданиями 1-3 или 23-26 (тип — в task_type)"""
+    TASK_TYPES = (
+        ('1_3', 'Задания 1–3 (микротекст)'),
+        ('23_26', 'Задания 23–26 (макротекст)'),
+    )
     title = models.CharField(max_length=200, verbose_name="Название")
     text_content = models.TextField(verbose_name="Текст")
     author = models.CharField(max_length=100, blank=True, verbose_name="Автор")
     source = models.CharField(max_length=200, blank=True, verbose_name="Источник")
     order = models.IntegerField(default=0, verbose_name="Порядок")
     is_active = models.BooleanField(default=True, verbose_name="Активно")
+    task_type = models.CharField(
+        max_length=10, choices=TASK_TYPES, default='1_3', db_index=True,
+        verbose_name="Тип текста",
+        help_text="Микротекст — задания 1–3, макротекст — задания 23–26",
+    )
     
     class Meta:
-        verbose_name = "Текст для анализа 2-4"
-        verbose_name_plural = "Тексты для анализа 2-4"
+        verbose_name = "Текст для анализа 1–3"
+        verbose_name_plural = "Тексты для анализа 1–3"
         ordering = ['order']
     
+    def __str__(self):
+        return self.title
+
+
+class TextAnalysisTask2326(TextAnalysisTask):
+    """Прокси-модель: отдельный блок админки для макротекстов (23–26)"""
+
+    class Meta:
+        proxy = True
+        verbose_name = "Текст для анализа 23–26"
+        verbose_name_plural = "Тексты для анализа 23–26"
+
     def __str__(self):
         return self.title
 
@@ -584,6 +867,49 @@ class OrthoepyWord(models.Model):
             'correct_answers': correct_answers,
         }
 
+# === СЛОВАРЬ орфоэпии: прохождения и коррекция ===
+class OrthoepyAttempt(models.Model):
+    """Одно прохождение тренажёра."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orthoepy_attempts')
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_words = models.IntegerField(default=0)
+    chosen_count = models.IntegerField(default=0)
+    correct_count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.user.username} {self.created_at:%d.%m.%Y %H:%M}'
+
+
+class OrthoepyAttemptWord(models.Model):
+    """Результат по одному слову в прохождении."""
+    attempt = models.ForeignKey(OrthoepyAttempt, on_delete=models.CASCADE, related_name='words')
+    word_id = models.IntegerField()
+    word = models.CharField(max_length=100)
+    chosen_index = models.IntegerField()
+    correct_index = models.IntegerField()
+    is_correct = models.BooleanField()
+
+
+class OrthoepyWordStat(models.Model):
+    """Накопительная статистика по слову: прогресс и коррекция."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orthoepy_stats')
+    word_id = models.IntegerField()
+    word = models.CharField(max_length=100)
+    correct_index = models.IntegerField(default=0)
+    attempts = models.IntegerField(default=0)
+    errors = models.IntegerField(default=0)
+    last_result = models.BooleanField(null=True)
+    last_chosen_index = models.IntegerField(null=True)
+    last_seen = models.DateTimeField(null=True)
+    in_correction = models.BooleanField(default=False)
+    correction_since = models.DateField(null=True)
+
+    class Meta:
+        unique_together = ('user', 'word_id')
+
+    def __str__(self):
+        return f'{self.user.username}: {self.word}'
+
 # ===== ЗАДАНИЕ 5 ==============================================================
 class TaskPaponim(models.Model):
     text = models.TextField(
@@ -644,6 +970,11 @@ class WordOk(models.Model):
     correct_variants = models.TextField(
         verbose_name="Правильные слова (через запятую, без пробелов)",
         help_text="Для 6100 — одно слово. Для 6200 — варианты: одержать,совершить,добиться"
+    )
+    explanation = models.TextField(
+        blank=True, default='',
+        verbose_name="Объяснение ошибки (для RAG)",
+        help_text="Короткое объяснение, почему слово лишнее/неверное. Используется ИИ-ассистентом"
     )
     is_active = models.BooleanField(default=True, verbose_name="Активен")
     is_for_quiz = models.BooleanField(default=False, verbose_name="Использовать в квизах")
@@ -873,7 +1204,7 @@ class TaskGrammaticEightExample(models.Model):
         }
 
 
-# ===== ЗАДАНИЕ 23 ==============================================================
+# ===== ЗАДАНИЕ 22 ==============================================================
 class TaskGrammaticTwoTwo(models.Model):
     DEVICE_TYPES = [
         ('2201', 'эпитет'),
@@ -914,8 +1245,8 @@ class TaskGrammaticTwoTwo(models.Model):
         return self.get_id_display()  # Это ДОЛЖНО работать для поля с choices!
 
     class Meta:
-        verbose_name = "Средство выразительности (задание 23)"
-        verbose_name_plural = "Средства выразительности (задание 23)"
+        verbose_name = "Средство выразительности (задание 22)"
+        verbose_name_plural = "Средства выразительности (задание 22)"
 
 
 class TaskGrammaticTwoTwoExample(models.Model):
@@ -937,8 +1268,8 @@ class TaskGrammaticTwoTwoExample(models.Model):
         return self.text[:50]
 
     class Meta:
-        verbose_name = "Пример для задания 23"
-        verbose_name_plural = "Примеры для задания 23"
+        verbose_name = "Пример для задания 22"
+        verbose_name_plural = "Примеры для задания 22"
 
 
 # ========================================================================
@@ -1312,3 +1643,180 @@ class OgeWordOk(models.Model):
     class Meta:
         verbose_name = "ОГЭ: Задание 9 — лексические нормы"
         verbose_name_plural = "ОГЭ: Задание 9 — лексические нормы"
+
+# === Отслеживание активности на дашборде ===
+
+class LessonView(models.Model):
+    """Просмотр урока."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='lesson_views')
+    lesson_code = models.CharField(max_length=100)   # идентификатор урока
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'lesson_code')
+
+    def __str__(self):
+        return f'{self.user.username} → {self.lesson_code}'
+
+
+class PaponimView(models.Model):
+    """Просмотр статьи паронима."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='paponim_views')
+    paponim_code = models.CharField(max_length=100)   # идентификатор пары паронимов
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'paponim_code')
+
+    def __str__(self):
+        return f'{self.user.username} → {self.paponim_code}'
+
+
+class EssayScore(models.Model):
+    """Балл за сочинение (задание 27 ЕГЭ). Обновляется по прохождению курса."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='essay_score')
+    score = models.FloatField(default=0.0)           # текущий балл
+    max_score = models.FloatField(default=22.0)      # максимум для ЕГЭ (задание 27)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.user.username}: {self.score}/{self.max_score}'
+
+
+# === История диалогов с ИИ-ассистентом (вместо кэша) ===
+
+class ChatMessage(models.Model):
+    """Один ход диалога с ИИ-ассистентом: вопрос ученика + ответ."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_messages')
+    message = models.TextField()
+    reply = models.TextField(default='')
+    intent = models.CharField(max_length=50, default='')
+    specialist = models.CharField(max_length=50, default='')
+    guessed_word = models.CharField(max_length=100, null=True, blank=True)
+    feedback = models.SmallIntegerField(null=True, blank=True)   # 1 = 👍, -1 = 👎, None = нет оценки
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} [{self.intent}]: {self.message[:40]}'
+
+
+class AiQueryLog(models.Model):
+    """Лог каждого запроса к ИИ: фундамент аналитики качества и будущего дообучения."""
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL,
+                             related_name='ai_query_logs')
+    message = models.TextField()                                     # вопрос ученика
+    intent = models.CharField(max_length=50, default='', blank=True)
+    specialist = models.CharField(max_length=50, default='', blank=True)
+    reply = models.TextField(blank=True, default='')                 # ответ ассистента
+    guessed_word = models.CharField(max_length=100, null=True, blank=True)
+    duration_ms = models.IntegerField(null=True, blank=True)         # время ответа
+    error = models.TextField(blank=True, default='')                 # ошибка, если была
+    chat_message = models.ForeignKey('ChatMessage', null=True, blank=True,
+                                     on_delete=models.SET_NULL, related_name='query_logs')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Запрос к ИИ'
+        verbose_name_plural = 'Логи запросов к ИИ'
+
+    def __str__(self):
+        return f'{self.user_id} [{self.specialist or "?"}]: {self.message[:40]}'
+
+# ===== РЕЕСТР ТЕМ RAG (Фаза 4) =================================================
+
+class RagTopic(models.Model):
+    """
+    Реестр тем RAG: какие источники знаний готовы отвечать ученикам.
+    Флаг is_ready — решение разработчика/методиста: бот отвечает по теме
+    ТОЛЬКО после включения. Счётчик примеров — подсказка для решения.
+    """
+    code = models.CharField(max_length=50, unique=True, verbose_name="Код темы")
+    name = models.CharField(max_length=150, verbose_name="Название")
+    description = models.TextField(blank=True, default='', verbose_name="Описание")
+    source = models.CharField(max_length=150, blank=True, default='',
+                              verbose_name="Источник данных")
+    is_ready = models.BooleanField(default=False, verbose_name="Готова отвечать")
+    order = models.IntegerField(default=0, verbose_name="Порядок")
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = 'Тема RAG'
+        verbose_name_plural = 'Реестр тем RAG'
+
+    def examples_count(self):
+        """Живой счётчик примеров в источнике — подсказка для решения о готовности."""
+        try:
+            if self.code == 'task3_analysis':
+                return -1  # секции md, считаются отдельно
+            if self.code == 'task4_stress':
+                return OrthoepyWord.objects.filter(is_active=True).count()
+            if self.code == 'task5_paronyms':
+                import json
+                from pathlib import Path
+                path = Path(__file__).parent / 'fixtures' / 'paponims.json'
+                if path.exists():
+                    return len(json.load(open(path, encoding='utf-8')))
+                return 0
+            if self.code == 'task6_lexical':
+                return WordOk.objects.filter(is_active=True).count()
+            if self.code == 'task7_morphological':
+                return CorrectionExercise.objects.filter(is_active=True).count()
+            if self.code == 'task9_1_vowels':
+                return OrthogramExample.objects.filter(
+                    orthogram_id=1, is_active=True
+                ).exclude(explanation='').exclude(explanation__isnull=True).count()
+        except Exception:
+            return -1
+        return 0
+
+    def __str__(self):
+        mark = '✅' if self.is_ready else '⏳'
+        return f'{mark} {self.name}'
+
+
+# === ИИ БОТА: кэш ответов и журнал диалогов ===
+
+class LLMCache(models.Model):
+    """Кэш ответов LLM: одинаковые вопросы отвечаются мгновенно и бесплатно."""
+    cache_key = models.CharField(max_length=64, unique=True, db_index=True)
+    category = models.CharField(max_length=30)
+    question = models.TextField(blank=True, default='')
+    answer = models.TextField()
+    provider = models.CharField(max_length=30, blank=True, default='')
+    model = models.CharField(max_length=60, blank=True, default='')
+    hits = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Кэш LLM'
+        verbose_name_plural = 'Кэш LLM'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'[{self.category}] {self.question[:40]}'
+
+
+class BotLog(models.Model):
+    """Журнал диалогов бота: аналитика «что спрашивают» и качество ответов."""
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                             related_name='bot_logs')
+    username = models.CharField(max_length=150, blank=True, default='')
+    platform = models.CharField(max_length=10, default='site')  # site / vk / max
+    question = models.TextField(blank=True, default='')
+    answer = models.TextField(blank=True, default='')
+    category = models.CharField(max_length=30, blank=True, default='')
+    specialist = models.CharField(max_length=60, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'Лог бота'
+        verbose_name_plural = 'Логи бота'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.created_at:%d.%m %H:%M} [{self.platform}] {self.question[:40]}'
+

@@ -1,0 +1,388 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} — решать диагностический вариант ЕГЭ 2027 по русскому онлайн | Нейростат</title>
+    <meta name="description"
+        content="{{ meta_description|default:'Бесплатная диагностика по русскому языку в формате ЕГЭ на примере тренировочного варианта 2027, автоматический разбор ошибок и рекомендации подготовки. Узнайте свой реальный уровень.' }}">
+
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+</head>
+
+<body class="test_fix_ege">
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-diagnostics">
+        <h1 class="visually-hidden">Онлайн-тренировка: решение диагностиеского варианта ЕГЭ 2027 по русскому языку</h1>
+        <section class="container-diagnostics">
+            <h2 class="diagnostic-full-test__subtitle">{{ test_name }}</h2>
+
+            <!-- Задания 1-3: Текст -->
+            {% if task13_paragraphs %}
+            <div class="text-content-diagnostic diagnostic-full-test__text"><h3 class="diagnostic-full-test__subtitle">Прочитайте текст и выполните задания 1–3.</h3>{% for para in task13_paragraphs %}<p class="practice-line">{{ para|safe }}</p>{% endfor %}</div>
+            {% endif %}
+
+            <!-- Задания 1-3: Вопросы -->
+            {% for q_num, q_data in task13_questions.items %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="{{ q_num }}">
+                <h4 class="diagnostic-full-test__title">{{ q_num }}. {{ q_data.text }}</h4>
+                {% if q_data.type == 'multiple_choice' and q_data.choices %}
+                <div class="diagnostic-full-test__options">
+                    {% for choice in q_data.choices %}
+                    <label class="diagnostic-full-test__option">
+                        <input type="checkbox" class="diagnostic-full-test__checkbox" name="answer_{{ q_num }}[]"
+                            value="{{ forloop.counter }}" data-question="{{ q_num }}">
+                        <span class="diagnostic-full-test__option-text">{{ forloop.counter }}) {{ choice }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% elif q_data.variants %}
+                <div class="diagnostic-full-test__lines">
+                    {% for variant in q_data.variants %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="practice-line diagnostic-full-test__line-text">{{ variant|safe }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="{{ q_num }}"
+                    placeholder="Введите ответ" autocomplete="off">
+            </div>
+            {% endfor %}
+
+            <!-- Задание 4 -->
+            {% if task4_choices %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="4">
+                <h4 class="diagnostic-full-test__title">4. {{ task4_text }}</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for choice in task4_choices %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="diagnostic-full-test__line-num">{{ forloop.counter }})</span>
+                        <span class="practice-line diagnostic-full-test__line-text">{{ choice }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="4"
+                    placeholder="Введите номера ответов" autocomplete="off">
+            </div>
+            {% endif %}
+
+            <!-- Задание 5 -->
+            {% if task5_text and task5_sentences %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="5">
+                <h4 class="diagnostic-full-test__title">5. {{ task5_text }}</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for sentence in task5_sentences %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="practice-line diagnostic-full-test__line-text">{{ sentence|safe }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="5"
+                    placeholder="Введите исправленное слово" autocomplete="off">
+            </div>
+            {% endif %}
+
+            <!-- Задание 6 -->
+            {% if task6_instruction and task6_text %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="6">
+                <h4 class="diagnostic-full-test__title">6. {{ task6_instruction }}</h4>
+                <p class="practice-line diagnostic-full-test__paragraph">{{ task6_text }}</p>
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="6"
+                    placeholder="Введите ответ" autocomplete="off">
+            </div>
+            {% endif %}
+
+            <!-- Задание 7 -->
+            {% if task7_instruction and task7_phrases %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="7">
+                <h4 class="diagnostic-full-test__title">7. {{ task7_instruction }}</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for phrase in task7_phrases %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="practice-line diagnostic-full-test__line-text">{{ phrase }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="7"
+                    placeholder="Введите исправленное слово" autocomplete="off">
+            </div>
+            {% endif %}
+
+            <!-- Задание 8 -->
+            {% if task8_html %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="8">
+                <div class="diagnostic-full-test__custom-html">
+                    {{ task8_html|safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задания 9-12 -->
+            <div class="diagnostic-full-test__questions-left">
+                {% if task9_lines %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="9">
+                    <h4 class="diagnostic-full-test__title">9. Выберите правильную букву, кликнув на смайлик:</h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for line in task9_lines %}
+                        <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if task10_lines %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="10">
+                    <h4 class="diagnostic-full-test__title">10. Вставьте пропущенные буквы</h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for line in task10_lines %}
+                        <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if task11_lines %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="11">
+                    <h4 class="diagnostic-full-test__title">11. Вставьте пропущенные буквы</h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for line in task11_lines %}
+                        <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if task12_lines %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="12">
+                    <h4 class="diagnostic-full-test__title">12. Вставьте пропущенные буквы</h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for line in task12_lines %}
+                        <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Задание 13 -->
+            {% if task13_lines %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="13">
+                <h4 class="diagnostic-full-test__title">13. Укажите варианты написания НЕ со словом: СЛИТНО (/) или
+                    РАЗДЕЛЬНО (|)</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in task13_lines %}
+                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задание 14 -->
+            {% if task14_lines %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="14">
+                <h4 class="diagnostic-full-test__title">14. Укажите варианты написания: СЛИТНО (/), РАЗДЕЛЬНО (|) или
+                    ЧЕРЕЗ ДЕФИС (-)</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in task14_lines %}
+                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задания 15-16 -->
+            <div class="diagnostic-full-test__questions-left">
+                {% if task15_lines %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="15">
+                    <h4 class="diagnostic-full-test__title">15. Выберите Н или НН в словах</h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for line in task15_lines %}
+                        <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if task16_lines %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="16">
+                    <h4 class="diagnostic-full-test__title">16. Расставьте запятые там, где это нужно (,). Там, где
+                        запятые не нужны (х)</h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for line in task16_lines %}
+                        <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Задание 17 -->
+            {% if task17_lines %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="17">
+                <h4 class="diagnostic-full-test__title">17. Расставьте запятые там, где это нужно (,). Там, где запятые
+                    не нужны (х)</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in task17_lines %}
+                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задание 18 -->
+            {% if task18_lines %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="18">
+                <h4 class="diagnostic-full-test__title">18. Расставьте запятые там, где это нужно (,). Там, где запятые
+                    не нужны (х)</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in task18_lines %}
+                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задание 19 -->
+            {% if task19_lines %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="19">
+                <h4 class="diagnostic-full-test__title">19. Расставьте запятые там, где это нужно (,). Там, где запятые
+                    не нужны (х)</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in task19_lines %}
+                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задание 20 -->
+            {% if task20_lines %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="20">
+                <h4 class="diagnostic-full-test__title">20. Расставьте запятые там, где это нужно (,). Там, где запятые
+                    не нужны (х)</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in task20_lines %}
+                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задание 21 -->
+            {% if task21_lines %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="21">
+                {% if task21_image_name %}
+                <div class="diagnostic-full-test__media" style="margin-bottom: 16px;">
+                    <img class="diagnostic-full-test__image" src="{% static task21_image_name %}" alt="Задание 21">
+                </div>
+                {% endif %}
+                <h4 class="diagnostic-full-test__title">21. Кликните по смайлику, выберите подходящий номер пунктограммы
+                </h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in task21_lines %}
+                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задание 22 -->
+            {% if task22_html %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="22">
+                <div class="diagnostic-full-test__custom-html">
+                    {{ task22_html|safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Задания 23-27 (текст) -->
+            {% if task23_27_text %}
+            <div class="text-content-diagnostic diagnostic-full-test__text"><h3 class="diagnostic-full-test__subtitle">Прочитайте текст и выполните задания 23–26.</h3><div class="practice-line">{{ task23_27_text|linebreaks }}</div>{% if task23_27_questions %}{% for q_num, q_data in task23_27_questions.items %}<div class="question-diagnostic diagnostic-full-test__question" data-question-number="{{ q_num }}"><h4 class="diagnostic-full-test__title">{{ q_num }}. {{ q_data.text }}</h4>{% if q_data.type == 'multiple_choice' and q_data.choices %}<div class="diagnostic-full-test__lines">{% for choice in q_data.choices %}<div class="diagnostic-full-test__line"><span class="practice-line diagnostic-full-test__line-text">{{ choice }}</span></div>{% endfor %}</div>{% endif %}<input type="text" class="diagnostic-full-test__input input-text" data-question="{{ q_num }}"
+                        placeholder="Введите ответ" autocomplete="off"></div>{% endfor %}{% endif %}</div>{% endif %}<!-- Задание 27 -->
+            <div class="diagnostic-full-test__questions-left">
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="27">
+                    <h4 class="diagnostic-full-test__title">27. Ваш средний балл за сочинение (0–22)</h4>
+                    <input type="number" min="0" max="22"
+                        class="diagnostic-full-test__input diagnostic-full-test__input--number input-text"
+                        data-question="27" placeholder="0-22">
+                </div>
+            </div>
+
+            <!-- Кнопка проверки -->
+            <button id="check-fix-test-btn" class="check-task-submit">
+                Проверить тест
+            </button>
+            <div id="test-results" class="diagnostic-full-test__results"></div>
+        </section>
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <!-- === ПОДКЛЮЧЕНИЕ СКРИПТОВ === -->
+    <script src="{% static 'js/planning.js' %}"></script>
+    <script src="{% static 'js/diagnostic.js' %}"></script>
+    <script src="{% static 'js/test_fix_ege.js' %}"></script>
+
+    <!-- Скрипты с данными подгрупп -->
+    {% if task9_letter_groups %}
+    <script id="task9-letter-groups" type="application/json">{{ task9_letter_groups|safe }}</script>
+    <script id="task9-subgroup-letters" type="application/json">{{ task9_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task10_letter_groups %}
+    <script id="task10-letter-groups" type="application/json">{{ task10_letter_groups|safe }}</script>
+    <script id="task10-subgroup-letters" type="application/json">{{ task10_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task11_letter_groups %}
+    <script id="task11-letter-groups" type="application/json">{{ task11_letter_groups|safe }}</script>
+    <script id="task11-subgroup-letters" type="application/json">{{ task11_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task12_letter_groups %}
+    <script id="task12-letter-groups" type="application/json">{{ task12_letter_groups|safe }}</script>
+    <script id="task12-subgroup-letters" type="application/json">{{ task12_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task13_letter_groups %}
+    <script id="task13-letter-groups" type="application/json">{{ task13_letter_groups|safe }}</script>
+    <script id="task13-subgroup-letters" type="application/json">{{ task13_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task14_letter_groups %}
+    <script id="task14-letter-groups" type="application/json">{{ task14_letter_groups|safe }}</script>
+    <script id="task14-subgroup-letters" type="application/json">{{ task14_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task15_letter_groups %}
+    <script id="task15-letter-groups" type="application/json">{{ task15_letter_groups|safe }}</script>
+    <script id="task15-subgroup-letters" type="application/json">{{ task15_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task16_letter_groups %}
+    <script id="task16-letter-groups" type="application/json">{{ task16_letter_groups|safe }}</script>
+    <script id="task16-subgroup-letters" type="application/json">{{ task16_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task17_letter_groups %}
+    <script id="task17-letter-groups" type="application/json">{{ task17_letter_groups|safe }}</script>
+    <script id="task17-subgroup-letters" type="application/json">{{ task17_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task18_letter_groups %}
+    <script id="task18-letter-groups" type="application/json">{{ task18_letter_groups|safe }}</script>
+    <script id="task18-subgroup-letters" type="application/json">{{ task18_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task19_letter_groups %}
+    <script id="task19-letter-groups" type="application/json">{{ task19_letter_groups|safe }}</script>
+    <script id="task19-subgroup-letters" type="application/json">{{ task19_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task20_letter_groups %}
+    <script id="task20-letter-groups" type="application/json">{{ task20_letter_groups|safe }}</script>
+    <script id="task20-subgroup-letters" type="application/json">{{ task20_subgroup_letters|safe }}</script>
+    {% endif %}
+    {% if task21_letter_groups %}
+    <script id="task21-letter-groups" type="application/json">{{ task21_letter_groups|safe }}</script>
+    <script id="task21-subgroup-letters" type="application/json">{{ task21_subgroup_letters|safe }}</script>
+    {% endif %}
+</body>
+
+</html>

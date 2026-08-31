@@ -1,0 +1,129 @@
+/* Анимации полёта/парения аэростата — без отражения */
+@keyframes float {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scaleX(1);
+    }
+
+    12.5% {
+        transform: translate(calc(var(--float-x) * 0.25), calc(var(--float-y) * -1)) rotate(2deg) scaleX(1);
+    }
+
+    25% {
+        transform: translate(calc(var(--float-x) * 0.5), 0) rotate(0deg) scaleX(1);
+    }
+
+    37.5% {
+        transform: translate(calc(var(--float-x) * 0.75), var(--float-y)) rotate(-2deg) scaleX(1);
+    }
+
+    50% {
+        transform: translate(var(--float-x), 0) rotate(0deg) scaleX(1);
+    }
+
+    62.5% {
+        transform: translate(calc(var(--float-x) * 0.75), calc(var(--float-y) * -1)) rotate(2deg) scaleX(1);
+    }
+
+    75% {
+        transform: translate(calc(var(--float-x) * 0.5), 0) rotate(0deg) scaleX(1);
+    }
+
+    87.5% {
+        transform: translate(calc(var(--float-x) * 0.25), var(--float-y)) rotate(-2deg) scaleX(1);
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(0deg) scaleX(1);
+    }
+}
+
+/* Анимация для планшета/мобильного — С отражением */
+@keyframes float-mobile {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scaleX(-1);
+    }
+
+    12.5% {
+        transform: translate(calc(var(--float-x) * 0.25), calc(var(--float-y) * -1)) rotate(2deg) scaleX(-1);
+    }
+
+    25% {
+        transform: translate(calc(var(--float-x) * 0.5), 0) rotate(0deg) scaleX(-1);
+    }
+
+    37.5% {
+        transform: translate(calc(var(--float-x) * 0.75), var(--float-y)) rotate(-2deg) scaleX(-1);
+    }
+
+    50% {
+        transform: translate(var(--float-x), 0) rotate(0deg) scaleX(-1);
+    }
+
+    62.5% {
+        transform: translate(calc(var(--float-x) * 0.75), calc(var(--float-y) * -1)) rotate(2deg) scaleX(-1);
+    }
+
+    75% {
+        transform: translate(calc(var(--float-x) * 0.5), 0) rotate(0deg) scaleX(-1);
+    }
+
+    87.5% {
+        transform: translate(calc(var(--float-x) * 0.25), var(--float-y)) rotate(-2deg) scaleX(-1);
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(0deg) scaleX(-1);
+    }
+}
+
+/* ------- 2. Планшет Portrait: ≤768px -------- */
+@media (max-width: 768px) {
+    .hero__balloon {
+        /* Переключаем на анимацию с отражением */
+        animation: float-mobile 60s linear infinite;
+    }
+}
+
+/* ------- 3. Мобильный: ≤390px -------- */
+@media (max-width: 390px) {
+    .hero__balloon {
+        animation: float-mobile 60s linear infinite;
+    }
+}
+
+/* Анимации вращения пропеллера */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Анимации вращения пропеллера на планшете и мобильном */
+@media (max-width: 768px) {
+    .hero__propeller {
+        animation: spin 1.6s linear infinite reverse;
+        /* ← reverse меняет направление */
+    }
+}
+
+
+.animate-spin {
+    animation: spin 1.6s linear infinite;
+}
+
+
+/* ============================== */
+/* Hover-эффекты */
+.hover-lift {
+    transition: transform 0.2s;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+
+/* ============================== */

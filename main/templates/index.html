@@ -4,104 +4,1099 @@
 <head>
     {% load static %} <!-- ЭТО ОБЯЗАТЕЛЬНО! -->
     <meta charset="UTF-8">
-    <title>Нейростат</title>
+    <title>Подготовка к ЕГЭ по русскому языку онлайн на 85+ | Нейростат</title>
+    <meta name="description"
+        content="Подготовка к ЕГЭ по русскому онлайн: диагностика за 15 минут, персональный план, ИИ-разбор ошибок и репетитор. Средний балл учеников — 84. Первые 5 дней бесплатно.">
+    <meta name="viewport">
+
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+        "@type": "Organization",
+        "@id": "https://neurostat.ru/#organization",
+        "name": "Нейростат",
+        "url": "https://neurostat.ru",
+        "logo": "https://neurostat.ru/static/images/logo.png",
+        "description": "Онлайн-подготовка к ЕГЭ по русскому языку: репетитор и ИИ-ассистент.",
+        "founder": {"@id": "https://neurostat.ru/#person"},
+        "sameAs": [
+            "https://t.me/ваш_канал",
+            "https://vk.com/ваша_группа"
+        ]
+        },
+        {
+        "@type": "WebSite",
+        "@id": "https://neurostat.ru/#website",
+        "url": "https://neurostat.ru",
+        "name": "Нейростат",
+        "publisher": {"@id": "https://neurostat.ru/#organization"},
+        "inLanguage": "ru"
+        },
+        {
+        "@type": "Person",
+        "@id": "https://neurostat.ru/#person",
+        "name": "Александр Тимофеев",
+        "jobTitle": "Репетитор по русскому языку, эксперт ЕГЭ",
+        "knowsAbout": ["ЕГЭ по русскому языку", "ОГЭ", "Итоговое сочинение", "Орфография", "Пунктуация"],
+        "worksFor": {"@id": "https://neurostat.ru/#organization"}
+        },
+        {
+        "@type": "Service",
+        "serviceType": "Подготовка к ЕГЭ по русскому языку",
+        "provider": {"@id": "https://neurostat.ru/#organization"},
+        "areaServed": "RU",
+        "audience": {
+            "@type": "EducationalAudience",
+            "educationalRole": "student",
+            "suggestedMinAge": 14,
+            "suggestedMaxAge": 18
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "847",
+            "bestRating": "5"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "RUB",
+            "description": "Диагностика и 5 дней полного доступа — бесплатно"
+        }
+        }
+    ]
+    }
+    </script>
+
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="/static/css/animations.css">
 </head>
 
 <body>
     <div class="page">
-        <header>
-            <nav>
-                <!-- Левая часть: классы -->
-                <div>
-                    <a href="{% url 'planning_5kl' %}">5 класс</a>
-                    <a href="{% url 'planning_6kl' %}">6 класс</a>
-                    <a href="{% url 'planning_7kl' %}">7 класс</a>
-                    <a href="{% url 'planning_8kl' %}">8 класс</a>
-                    <a href="{% url 'planning_9kl' %}">ОГЭ (русский)</a>
-                    <a href="{% url 'ege' %}">ЕГЭ (русский)</a>
+        <h1 class="visually-hidden">Подготовка к ЕГЭ по русскому языку онлайн: репетитор + ИИ-ассистент — на 85+</h1>
+
+        {% include 'includes/header.html' %}
+
+        <main class="main">
+            <section class="hero" id="home">
+                <h2 class="visually-hidden">Форматы занятий и программа подготовки</h2>
+                <div class="container">
+                    <div class="hero__grid">
+
+                        <!-- Левая колонка: контент -->
+                        <div class="hero__left-content">
+                            <!-- Декор на заднем плане -->
+                            <div class="hero__decor" aria-hidden="true">
+                                <svg viewBox="0 0 480 480" width="100%" height="100%"
+                                    preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g clip-path="url(#clip_hero_decor)">
+                                        <!-- Статичные круги -->
+                                        <path
+                                            d="M240 450C355.98 450 450 355.98 450 240C450 124.02 355.98 30 240 30C124.02 30 30 124.02 30 240C30 355.98 124.02 450 240 450Z"
+                                            stroke="#4A3520" stroke-width="0.7" />
+                                        <path
+                                            d="M240 370C311.797 370 370 311.797 370 240C370 168.203 311.797 110 240 110C168.203 110 110 168.203 110 240C110 311.797 168.203 370 240 370Z"
+                                            stroke="#4A3520" stroke-width="0.5" />
+                                        <path
+                                            d="M240 320C284.183 320 320 284.183 320 240C320 195.817 284.183 160 240 160C195.817 160 160 195.817 160 240C160 284.183 195.817 320 240 320Z"
+                                            stroke="#4A3520" stroke-width="0.4" />
+                                        <path
+                                            d="M240 290C267.614 290 290 267.614 290 240C290 212.386 267.614 190 240 190C212.386 190 190 212.386 190 240C190 267.614 212.386 290 240 290Z"
+                                            stroke="#4A3520" stroke-width="0.3" />
+
+                                        <!-- Статичные оси -->
+                                        <path d="M0 240H480" stroke="#4A3520" stroke-width="0.5" />
+                                        <path d="M240 0V480" stroke="#4A3520" stroke-width="0.5" />
+
+                                        <!-- Вращающаяся группа: диагонали + точки -->
+                                        <g class="rotating-cross">
+                                            <path d="M91 91L389 389" stroke="#4A3520" stroke-width="0.35" />
+                                            <path d="M389 91L91 389" stroke="#4A3520" stroke-width="0.35" />
+                                            <path
+                                                d="M389 93C390.105 93 391 92.1046 391 91C391 89.8954 390.105 89 389 89C387.895 89 387 89.8954 387 91C387 92.1046 387.895 93 389 93Z"
+                                                fill="#4A3520" />
+                                            <path
+                                                d="M91 93C92.1046 93 93 92.1046 93 91C93 89.8954 92.1046 89 91 89C89.8954 89 89 89.8954 89 91C89 92.1046 89.8954 93 91 93Z"
+                                                fill="#4A3520" />
+                                            <path
+                                                d="M91 391C92.1046 391 93 390.105 93 389C93 387.895 92.1046 387 91 387C89.8954 387 89 387.895 89 389C89 390.105 89.8954 391 91 391Z"
+                                                fill="#4A3520" />
+                                            <path
+                                                d="M389 391C390.105 391 391 390.105 391 389C391 387.895 390.105 387 389 387C387.895 387 387 387.895 387 389C387 390.105 387.895 391 389 391Z"
+                                                fill="#4A3520" />
+                                        </g>
+
+                                        <!-- Статичные тонкие лучи -->
+                                        <path d="M240 240L422 135" stroke="#4A3520" stroke-width="0.22" />
+                                        <path d="M240 240L58 345" stroke="#4A3520" stroke-width="0.22" />
+                                        <path d="M240 240L345 58" stroke="#4A3520" stroke-width="0.22" />
+                                        <path d="M240 240L135 422" stroke="#4A3520" stroke-width="0.22" />
+                                        <path d="M240 240L135 58" stroke="#4A3520" stroke-width="0.22" />
+                                        <path d="M240 240L345 422" stroke="#4A3520" stroke-width="0.22" />
+                                        <path d="M240 240L58 135" stroke="#4A3520" stroke-width="0.22" />
+                                        <path d="M240 240L422 345" stroke="#4A3520" stroke-width="0.22" />
+
+                                        <!-- Статичные маркеры -->
+                                        <path d="M450 237V243" stroke="#4A3520" stroke-width="0.5" />
+                                        <path d="M30 237V243" stroke="#4A3520" stroke-width="0.5" />
+                                        <path d="M237 450H243" stroke="#4A3520" stroke-width="0.5" />
+                                        <path d="M237 30H243" stroke="#4A3520" stroke-width="0.5" />
+                                        <path d="M370 237V243" stroke="#4A3520" stroke-width="0.4" />
+                                        <path d="M110 237V243" stroke="#4A3520" stroke-width="0.4" />
+                                        <path d="M237 370H243" stroke="#4A3520" stroke-width="0.4" />
+                                        <path d="M237 110H243" stroke="#4A3520" stroke-width="0.4" />
+
+                                        <!-- Статичная центральная точка -->
+                                        <path
+                                            d="M240 242.5C241.381 242.5 242.5 241.381 242.5 240C242.5 238.619 241.381 237.5 240 237.5C238.619 237.5 237.5 238.619 237.5 240C237.5 241.381 238.619 242.5 240 242.5Z"
+                                            stroke="#4A3520" stroke-width="0.6" />
+
+                                        <!-- Вращающаяся пунктирная дуга -->
+                                        <g class="rotating-arc">
+                                            <path
+                                                d="M370 240C370 274.478 356.304 307.544 331.924 331.924C307.544 356.304 274.478 370 240 370"
+                                                stroke="#4A3520" stroke-width="0.3" stroke-dasharray="4 8" />
+                                        </g>
+
+                                        <!-- Статичные угловые метки -->
+                                        <path d="M8 22V8H22" stroke="#4A3520" stroke-width="0.4" />
+                                        <path d="M472 22V8H458" stroke="#4A3520" stroke-width="0.4" />
+                                        <path d="M8 458V472H22" stroke="#4A3520" stroke-width="0.4" />
+                                        <path d="M472 458V472H458" stroke="#4A3520" stroke-width="0.4" />
+                                    </g>
+                                    <defs>
+                                        <clipPath id="clip_hero_decor">
+                                            <rect width="480" height="480" fill="white" />
+                                        </clipPath>
+                                    </defs>
+                                </svg>
+                            </div>
+
+                            <div class="hero__balloon" aria-hidden="true">
+                                <img src="/static/images/propeller.png" alt="" class="hero__propeller">
+                            </div>
+
+                            <span class="hero__badge">ЕГЭ · Русский язык · 2027</span>
+
+                            <h3 class="hero__title">ЕГЭ по русскому с репетитором и персональным
+                                <em>ИИ-ассистентом</em>
+                            </h3>
+
+                            <article class="hero__chess">
+                                <h4 class="visually-hidden">Программа обучения - этапы</h4>
+                                <div class="hero__chess-cell hero__chess-cell--dark">
+                                    <span class="hero__chess-icon">
+                                        <img src="/static/images/chess_trenager.svg" alt="Тренажёры ЕГЭ">
+                                    </span>
+                                    <div>
+                                        <strong class="hero__chess-title">Тренажёры ЕГЭ<br>5-9 кл., ОГЭ</strong>
+                                        <a href="#" class="hero__chess-link"
+                                            data-video-src="https://kinescope.io/embed/qCHbi7FWCS5ZC6aXSMvRMb">Смотреть
+                                            видео ▶</a>
+                                    </div>
+                                </div>
+
+                                <div class="hero__chess-cell">
+                                    <span class="hero__chess-icon">
+                                        <img src="/static/images/chess_plan.svg" alt="Индивидуальный план">
+                                    </span>
+                                    <div>
+                                        <strong class="hero__chess-title">Индивидуальный план</strong>
+                                        <span class="hero__chess-desc">с первого дня</span>
+                                    </div>
+                                </div>
+
+                                <div class="hero__chess-cell hero__chess-cell--dark">
+                                    <span class="hero__chess-icon">
+                                        <img src="/static/images/chess_persona.svg" alt="персональный ИИ-репетитор">
+                                    </span>
+                                    <div>
+                                        <strong class="hero__chess-title">Ваш персональный ИИ-репетитор</strong>
+                                        <a href="#" class="hero__chess-link"
+                                            data-video-src="https://kinescope.io/embed/8SQMYFYWWk61fwkik6AJkr">Смотреть
+                                            видео ▶</a>
+                                    </div>
+                                </div>
+
+                                <div class="hero__chess-cell">
+                                    <span class="hero__chess-icon">
+                                        <img src="/static/images/chess_planing.svg" alt="Планинги">
+                                    </span>
+                                    <div>
+                                        <strong class="hero__chess-title">Планинги</strong>
+                                        <a href="#" class="hero__chess-link"
+                                            data-video-src="https://kinescope.io/embed/2r1BJwAVJid7iz1BFrjy9v">Смотреть
+                                            видео ▶</a>
+                                    </div>
+                                </div>
+
+                                <div class="hero__chess-cell">
+                                    <span class="hero__chess-icon">
+                                        <img src="/static/images/chess_zadania.svg" alt="Персональные задания">
+                                    </span>
+                                    <div>
+                                        <strong class="hero__chess-title">Персональные задания</strong>
+                                        <span class="hero__chess-desc">только ваши зоны</span>
+                                    </div>
+                                </div>
+
+                                <div class="hero__chess-cell">
+                                    <span class="hero__chess-icon">
+                                        <img src="/static/images/chess_slovo.svg" alt="Слово дня">
+                                    </span>
+                                    <div>
+                                        <strong class="hero__chess-title">Слово дня, квизы</strong>
+                                        <a href="#" class="hero__chess-link"
+                                            data-video-src="https://kinescope.io/embed/fD8KgeM7bhagxXHYg4wvN5">Смотреть
+                                            видео ▶</a>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <p class="hero__chess-note">5 дней полного доступа — бесплатно · Карта не нужна</p>
+                        </div>
+
+                        <!-- Правая колонка: карточка -->
+                        <div class="hero__card" id="hero-form">
+                            <!-- Фото преподавателя -->
+                            <div class="hero__card-image">
+                                <img src="/static/images/image_teacher.webp" alt="Александр, репетитор-русовед"
+                                    class="hero__card-img">
+                            </div>
+
+                            <!-- Кнопка-ссылка на видео -->
+                            <button class="hero__card-video"
+                                data-video-src="https://kinescope.io/embed/afTSgbnr9TZoKVDv9JEz8Q">
+                                <img src="/static/images/play_video.svg" alt="" class="teacher-video__icon">
+                                <span>Презентация — смотреть видео</span>
+                            </button>
+
+                            <!-- Информация о преподавателе -->
+                            <div class="hero__card-info">
+                                <h3 class="hero__card-name">Александр</h3>
+                                <p class="hero__card-cred">Репетитор-русовед · 20 лет преподавания ·
+                                    Работа в с экспертом ЕГЭ · Создатель НЕЙРОСТАТ</p>
+                                <p class="hero__card-bio">EdTech и ИИ в связке с живым преподаванием.
+                                    Вместе с
+                                    ИИ-ассистентом мы ведём каждого ученика к цели ежедневно</p>
+                            </div>
+
+                            <!-- CTA и форма -->
+                            <div class="hero__card-cta">
+                                <a href="{% url 'diagnostic_fix_ege' %}" class="btn btn--primary hero__card-btn">Пройти
+                                    диагностику ЕГЭ →</a>
+
+                                <label class="hero__card-consent">
+                                    <input type="checkbox" class="hero__card-check">
+                                    <span class="hero__card-consent-text">Нажимая кнопку, я принимаю <a href="/privacy/"
+                                            target="_blank" rel="noopener"
+                                            style="color:inherit;text-decoration:underline;">Политику
+                                            конфиденциальности</a> и даю согласие на обработку персональных данных
+                                        (ФЗ-152).</span>
+                                </label>
+                            </div>
+
+                            <!-- Блок доверия и примечания -->
+                            <div class="hero__card-trust">
+                                <div class="hero__card-rating">
+                                    <span class="hero__card-stars">★★★★★</span>
+                                    <span class="hero__card-rating-text">4.9 · 198 учеников в 2025-2026 гг.</span>
+                                </div>
+                                <p class="hero__card-micronote">Разбор ошибок — сразу после теста на</p>
+                                <p class="hero__card-note">бесплатном пробном занятии</p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+            </section>
 
-                <!-- Правая часть: кнопки -->
-                <div class="right-nav">
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'profile' %}">ЛК</a>
-                    <form method="post" action="{% url 'logout' %}?next=/">
-                        {% csrf_token %}
-                        <button type="submit">Выйти</button>
-                    </form>
-                    {% else %}
-                    <a href="{% url 'register' %}" style="margin-right: 15px;">Зарегистрироваться</a>
-                    <a href="{% url 'login' %}">Войти</a>
-                    {% endif %}
+            <section class="problem-solution" id="problem-solution">
+                <h2 class="visually-hidden">Проблемы подготовки к ЕГЭ по русскому и их решения</h2>
+                <div class="container">
+                    <div class="ps-grid">
+
+                        <!-- Левая колонка: Проблемы -->
+                        <div class="ps-col">
+                            <h3 class="ps-col__title">Почему сложно готовиться самостоятельно</h3>
+
+                            <ul class="ps-list">
+                                <li class="ps-item">
+                                    <span class="ps-icon">✗</span>
+                                    <div class="ps-text">
+                                        <h4 class="ps-item__title">Нет системы</h4>
+                                        <p class="ps-item__description">Учите правила хаотично, без понимания структуры
+                                            экзамена и весов заданий.</p>
+                                    </div>
+                                </li>
+
+                                <li class="ps-item">
+                                    <span class="ps-icon">✗</span>
+                                    <div class="ps-text">
+                                        <h4 class="ps-item__title">Теория без практики</h4>
+                                        <p class="ps-item__description">Много читаете, мало решаете. Ошибки повторяются
+                                            — причина не ясна.</p>
+                                    </div>
+                                </li>
+
+                                <li class="ps-item">
+                                    <span class="ps-icon">✗</span>
+                                    <div class="ps-text">
+                                        <h4 class="ps-item__title">Нет обратной связи</h4>
+                                        <p class="ps-item__description">Решаете варианты одни. Не знаете, где теряете
+                                            баллы и почему.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Правая колонка: Решения -->
+                        <div class="ps-col">
+                            <h3 class="ps-col__title">Как Нейростат решает это</h3>
+
+                            <ul class="ps-list">
+                                <li class="ps-item">
+                                    <span class="ps-icon">✓</span>
+                                    <div class="ps-text">
+                                        <h4 class="ps-item__title">Системная диагностика</h4>
+                                        <p class="ps-item__description">15 минут — и вы знаете, какие задания дают
+                                            максимум баллов именно вам.</p>
+                                    </div>
+                                </li>
+
+                                <li class="ps-item">
+                                    <span class="ps-icon">✓</span>
+                                    <div class="ps-text">
+                                        <h4 class="ps-item__title">Разбор ошибок с ИИ</h4>
+                                        <p class="ps-item__description">ИИ-ассистент объясняет каждую ошибку и
+                                            генерирует похожие задания для
+                                            закрепления.</p>
+                                    </div>
+                                </li>
+
+                                <li class="ps-item">
+                                    <span class="ps-icon">✓</span>
+                                    <div class="ps-text">
+                                        <h4 class="ps-item__title">Репетитор + план</h4>
+                                        <p class="ps-item__description">Преподаватель ведёт вас по персональному треку и
+                                            корректирует стратегию
+                                            каждую неделю.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
                 </div>
-            </nav>
-        </header>
+            </section>
 
-        <main>
-            <a href="{% url 'starting_diagnostic' %}" class="check-task green">Входящая диагностика ЕГЭ</a>
-            <a href="{% url 'starting_diagnostic_oge' %}" class="check-task green">Входящая диагностика ОГЭ</a>
-            <a href="{% url 'starting_diagnostic' %}" class="check-task green">Текущая диагностика</a>
-            <!-- === ФИКСИРОВАННЫЕ ТЕСТЫ ЕГЭ === -->            
-            <a href="{% url 'test_fixdemo_ege' 'test_fixdemo_ege_2026' %}" class="check-task green">Демоверсия ЕГЭ 2026</a>
-            <a href="{% url 'test_fix_ege' 'test_fix_ege_2' %}" class="check-task green">Досрочная волна ЕГЭ 2026</a>
-            <a href="{% url 'orthoepy_trening' %}" class="check-task green">УДАРЕНИЯ</a>
+            <section class="how-it-works" id="how-it-works">
+                <h2 class="visually-hidden">Как подготовиться к ЕГЭ по русскому с Нейростатом</h2>
+                <div class="container">
 
-            {% comment %} <button class="check-task green" data-diagnostic="result-diagnostic">Итоговая диагностика</button> {% endcomment %}
+                    <header class="how-it-works__header">
+                        <h3 class="how-it-works__title">Как проходит подготовка: 3 шага</h3>
+                        <p class="how-it-works__subtitle">От «не знаю с чего начать» до уверенного результата
+                        </p>
+                    </header>
 
-            <h1>Добро пожаловать в электронные планинги!</h1>
-            <p>Для школьников 5–7 классов</p>
-            <p>Полноценно пользоваться планингом можно, зарегистрировавшись на сайте. После регистрации на почту придет
-                письмо с подтверждением:</p>
-            <p>- пройдите по ссылке, </p>
-            <p>- на главной странице нажмите кнопку личного кабинета ЛК,</p>
-            <p>- заполните анкету.</p> <br>
-            <p>Теперь можно делать записи в планингах. Они всегда будут под рукой.</p> <br>
-            <p>Мы заботимся о Вашей безопасности!</p> <br>
+                    <div class="how-it-works__steps">
 
-            <article>
-                <h2>КАК ПОЛЬЗОВАТЬСЯ ПЛАНИНГАМИ</h2>
-                <p>Это помощники на дороге к грамотности. Это индивидуальный план по освоению всех орфограмм и
-                    пунктограмм, которые должен знать каждый школьник. Когда орфограммы не видишь все и «в лицо»,
-                    кажется, что их бессчетное количество... Но это совсем не так.</p>
-                <p>Планинг поможет УЗНАВАТЬ орфограммы и пунктограммы. Он ПОДСКАЖЕТ, как с ними обходиться, чтобы не
-                    делать ошибок.</p>
-                <p>Как же узнавать орфограммы?</p>
-                <p>У каждой из них есть номер в учебнике. Эти номера не надо запоминать. Они играют роль маячков,
-                    которые предупреждают об опасности. И подсказывают, как её избежать. Со временем ты привыкнешь к
-                    этим маячкам и будешь легко ими пользоваться (помогут еще «Таблиц орфограмм»). Надо только
-                    обязательно сделать предварительные шаги:</p>
-                <p>1. Угадай СОСТАВ слова и определи, где находится сомнительная буква (в приставке, корне, суффиксе или
-                    окончании). Теперь можно посмотреть в Таблицу орфограмм: там орфограммы собраны как раз по морфемам
-                    (частям слова). Так ты узнаешь номер орфограммы.</p>
-                <p>2. Найди этот номер и название орфограммы в планинге (первая строчка в сетке). Впиши слово в столбик
-                    под этим номером, оставив пустым место для трудной буквы.</p>
-                <p>3. Посмотри на подсказку, которая есть во второй строчке сетки. Многое прояснится!</p>
-                <p>4. Обозначишь графически орфограмму – это подскажет третья строчка сетки: в обозначении кроется
-                    секрет буквы и его разгадка.</p>
-                <p>-------------------</p>
-                <p>Пользуйся планингом ДО ДИКТАНТА: это будет твой черновик, «разминка» перед диктантом и подсказка
-                    самому себе – попроси учителя или маму прочитать предварительно диктант очень медленно для
-                    разнесения слов с орфограммами, которые удалось уловить, в нужные ячейки сетки.</p>
-                <p>ПОСЛЕ ДИКТАНТА: чтобы при самопроверке найти подсказки в планинге и исправить ошибки.</p>
-                <p>ДОМА: когда уже получишь диктант с оценкой и подчеркнутыми ошибками (чтобы найти столбик для каждой
-                    подчеркнутой орфограммы и собрать в нем, например, десять подобных слов (с этой орфограммой) – их
-                    можно взять из учебника, лучше с пропущенной буквой).</p> <br>
-                <p>Не забудь везде обозначать орфограмму! Ведь обозначение все тайное делает явным!</p>
-            </article>
+                        <div class="step">
+                            <div class="step__num">01</div>
+                            <h4 class="step__title">Диагностика</h4>
+                            <p class="step__text">Проходите тест с автопроверкой. Вместе анализируем результат и
+                                определяем ваши «зоны роста» в каждом блоке ЕГЭ.</p>
+                        </div>
 
+                        <div class="step">
+                            <div class="step__num">02</div>
+                            <h4 class="step__title">Персональный план</h4>
+                            <p class="step__text">Репетитор составляет трек на 10 недель: какие задания, в каком
+                                порядке, с каким приоритетом. Ничего лишнего.</p>
+                        </div>
+
+                        <div class="step">
+                            <div class="step__num">03</div>
+                            <h4 class="step__title">Занятия + ИИ 24/7</h4>
+                            <p class="step__text">Еженедельные занятия с репетитором по стратегии и сложным случаям. ИИ
+                                разбирает ошибки и отвечает на вопросы 24/7 — между занятиями.</p>
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="method" id="method">
+                <h2 class="visually-hidden">ИИ-ассистент в обучении русскому</h2>
+                <div class="container">
+                    <h3 class="method-title">Репетитор и ИИ-ассистент: готовим и тестовую часть, и сочинение</h3>
+
+                    <div class="method-grid">
+
+                        <!-- Левая карточка: ИИ-ассистент -->
+                        <div class="method-card method-card--ai">
+                            <img src="/static/images/inst_assist.svg" alt="" class="method-card__icon">
+                            <h4 class="method-card__title">ИИ-ассистент</h4>
+                            <ul class="method-list">
+                                <li>Разбирает каждую ошибку с объяснением правила</li>
+                                <li>Генерирует похожие задания для отработки</li>
+                                <li>Доступен 24/7 — отвечает за секунды</li>
+                                <li>Отслеживает прогресс и сигнализирует о слабых зонах</li>
+                            </ul>
+                        </div>
+
+                        <!-- Правая карточка: Репетитор -->
+                        <div class="method-card method-card--tutor">
+                            <img src="/static/images/inst_repet.svg" alt="" class="method-card__icon">
+                            <h4 class="method-card__title">Репетитор</h4>
+                            <ul class="method-list">
+                                <li>Объясняет, помогает исправить ошибки</li>
+                                <li>Готовит материалы разной уровни сложности</li>
+                                <li>Проверяет сочинения (К1–К12) с детальным разбором</li>
+                                <li>Корректирует стратегию каждую неделю</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <section class="teacher" id="teacher">
+                <h2 class="visually-hidden">Александр Тимофеев - репетитор по русскому</h2>
+                <div class="container">
+                    <div class="teacher-grid">
+                        <div class="teacher__decor" aria-hidden="true">
+                            <svg viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_5_4191)">
+                                    <!-- Статичные круги -->
+                                    <path
+                                        d="M240 450C355.98 450 450 355.98 450 240C450 124.02 355.98 30 240 30C124.02 30 30 124.02 30 240C30 355.98 124.02 450 240 450Z"
+                                        stroke="#4A3520" stroke-width="0.7" />
+                                    <path
+                                        d="M240 370C311.797 370 370 311.797 370 240C370 168.203 311.797 110 240 110C168.203 110 110 168.203 110 240C110 311.797 168.203 370 240 370Z"
+                                        stroke="#4A3520" stroke-width="0.5" />
+                                    <path
+                                        d="M240 320C284.183 320 320 284.183 320 240C320 195.817 284.183 160 240 160C195.817 160 160 195.817 160 240C160 284.183 195.817 320 240 320Z"
+                                        stroke="#4A3520" stroke-width="0.4" />
+                                    <path
+                                        d="M240 290C267.614 290 290 267.614 290 240C290 212.386 267.614 190 240 190C212.386 190 190 212.386 190 240C190 267.614 212.386 290 240 290Z"
+                                        stroke="#4A3520" stroke-width="0.3" />
+
+                                    <!-- Статичные оси -->
+                                    <path d="M0 240H480" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M240 0V480" stroke="#4A3520" stroke-width="0.5" />
+
+                                    <!-- Вращающаяся группа: диагонали + точки -->
+                                    <g class="rotating-cross">
+                                        <path d="M91 91L389 389" stroke="#4A3520" stroke-width="0.35" />
+                                        <path d="M389 91L91 389" stroke="#4A3520" stroke-width="0.35" />
+                                        <path
+                                            d="M389 93C390.105 93 391 92.1046 391 91C391 89.8954 390.105 89 389 89C387.895 89 387 89.8954 387 91C387 92.1046 387.895 93 389 93Z"
+                                            fill="#4A3520" />
+                                        <path
+                                            d="M91 93C92.1046 93 93 92.1046 93 91C93 89.8954 92.1046 89 91 89C89.8954 89 89 89.8954 89 91C89 92.1046 89.8954 93 91 93Z"
+                                            fill="#4A3520" />
+                                        <path
+                                            d="M91 391C92.1046 391 93 390.105 93 389C93 387.895 92.1046 387 91 387C89.8954 387 89 387.895 89 389C89 390.105 89.8954 391 91 391Z"
+                                            fill="#4A3520" />
+                                        <path
+                                            d="M389 391C390.105 391 391 390.105 391 389C391 387.895 390.105 387 389 387C387.895 387 387 387.895 387 389C387 390.105 387.895 391 389 391Z"
+                                            fill="#4A3520" />
+                                    </g>
+
+                                    <!-- Статичные тонкие лучи -->
+                                    <path d="M240 240L422 135" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L58 345" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L345 58" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L135 422" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L135 58" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L345 422" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L58 135" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L422 345" stroke="#4A3520" stroke-width="0.22" />
+
+                                    <!-- Статичные маркеры -->
+                                    <path d="M450 237V243" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M30 237V243" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M237 450H243" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M237 30H243" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M370 237V243" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M110 237V243" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M237 370H243" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M237 110H243" stroke="#4A3520" stroke-width="0.4" />
+
+                                    <!-- Статичная центральная точка -->
+                                    <path
+                                        d="M240 242.5C241.381 242.5 242.5 241.381 242.5 240C242.5 238.619 241.381 237.5 240 237.5C238.619 237.5 237.5 238.619 237.5 240C237.5 241.381 238.619 242.5 240 242.5Z"
+                                        stroke="#4A3520" stroke-width="0.6" />
+
+                                    <!-- Вращающаяся пунктирная дуга -->
+                                    <g class="rotating-arc">
+                                        <path
+                                            d="M370 240C370 274.478 356.304 307.544 331.924 331.924C307.544 356.304 274.478 370 240 370"
+                                            stroke="#4A3520" stroke-width="1" stroke-dasharray="4 8" />
+                                    </g>
+
+                                    <!-- Статичные угловые метки -->
+                                    <path d="M8 22V8H22" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M472 22V8H458" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M8 458V472H22" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M472 458V472H458" stroke="#4A3520" stroke-width="0.4" />
+                                </g>
+                                <defs>
+                                    <clipPath id="clip0_5_4191">
+                                        <rect width="480" height="480" fill="white" />
+                                    </clipPath>
+                                </defs>
+                            </svg>
+                        </div>
+                        <!-- Левая колонка: фото -->
+                        <div class="teacher-photo">
+                            <img src="/static/images/image_teacher.webp" alt="Александр, репетитор-русовед"
+                                class="teacher-photo__img">
+                            <button class="teacher-photo__video"
+                                data-video-src="https://kinescope.io/embed/afTSgbnr9TZoKVDv9JEz8Q">
+                                <img src="/static/images/play_video.svg" alt="" class="teacher-video__icon">
+                                <span class="teacher-photo__video-text">Презентация — смотреть видео</span>
+                            </button>
+                        </div>
+
+                        <!-- Правая колонка: биография -->
+                        <div class="teacher-bio">
+                            <span class="teacher-bio__badge">Ваш преподаватель</span>
+
+                            <h3 class="teacher-bio__name">Александр</h3>
+
+                            <p class="teacher-bio__exp">Репетитор-русовед · 20 лет преподавания · Работа с экспертом ЕГЭ
+                                · Создатель НЕЙРОСТАТ</p>
+
+                            <p class="teacher-bio__utp">Использую EdTech (онлайн-обучение) и ИИ в связке с живым
+                                преподаванием. Вместе с
+                                ИИ-ассистентом мы ведём каждого ученика к цели ежедневно: знаем его успехи и ошибки,
+                                помогаем преодолеть сложности там, где нужен живой человек.</p>
+
+                            <p class="teacher-bio__text">Разработал систему планингов, квизов, тренажёров, которая
+                                позволяет набрать 80+ даже тем, кто начал готовиться за 3 месяца. Среди учеников —
+                                поступившие в МГТУ, ВШЭ, МГИМО и др.</p>
+
+                            <ul class="teacher-chips">
+                                <li>20 лет преподавания</li>
+                                <li>846 учеников сдали ЕГЭ</li>
+                                <li>Средний балл учеников — 84</li>
+                                <li>Соавтор системы планингов</li>
+                                <li>Экспертное сообщество</li>
+                                <li>Создатель НЕЙРОСТАТ</li>
+                            </ul>
+
+                            <a href="{% url 'diagnostic_fix_ege' %}" class="teacher-bio__cta">Пройти диагностику ЕГЭ
+                                →</a>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <section class="reviews" id="reviews">
+                <h2 class="visually-hidden">Отзывы о подготовке к ЕГЭ</h2>
+                <div class="container">
+
+                    <header class="section-header">
+                        <h3 class="reviews-title">Результаты учеников</h3>
+                        <p class="reviews-sub">Реальные истории некоторых учеников, которые уже повысили балл</p>
+                    </header>
+
+                    <div class="reviews-grid">
+
+                        <!-- Карточка 1 -->
+                        <article class="review-card">
+                            <h4 class="visually-hidden">Отзыв Жени К.</h4>
+                            <div class="review-card__header">
+                                <div class="review-card__avatar">
+                                    <span>М</span>
+                                </div>
+                                <div class="review-card__meta">
+                                    <span class="review-card__name">Женя К.</span>
+                                    <span class="review-card__detail">11 кл. · Москва</span>
+                                </div>
+                                <div class="review-card__score">
+                                    <span class="review-card__score-value">+20</span>
+                                    <span class="review-card__score-label">баллов</span>
+                                </div>
+                            </div>
+
+                            <p class="review-card__text">«Начала с 61 баллов, поднялась до 81. ИИ-ассистент
+                                объяснял ошибки лучше, чем учебники — сразу понятно, почему правило именно такое.
+                                Поступила в ГИТИС.»</p>
+
+                            <div class="review-card__footer">
+                                <span class="review-card__stars">★★★★★</span>
+                                <span class="review-card__uni">ГИТИС</span>
+                            </div>
+                        </article>
+
+                        <!-- Карточка 2 -->
+                        <article class="review-card">
+                            <h4 class="visually-hidden">Отзыв Дмитрия С.</h4>
+                            <div class="review-card__header">
+                                <div class="review-card__avatar">
+                                    <span>Д</span>
+                                </div>
+                                <div class="review-card__meta">
+                                    <span class="review-card__name">ПЛАТОН С.</span>
+                                    <span class="review-card__detail">11 кл. · Санкт-Петербург</span>
+                                </div>
+                                <div class="review-card__score">
+                                    <span class="review-card__score-value">+16</span>
+                                    <span class="review-card__score-label">баллов</span>
+                                </div>
+                            </div>
+
+                            <p class="review-card__text">«Вырос с 73 до 89. Особенно понравились квизы и планинги —
+                                повторял практически каждый день. Классно разобирали сочинение — и итоговое, и ЕГЭ. В
+                                итоге понял, как
+                                писать и не ошибиться. СПбГТИ.»</p>
+
+                            <div class="review-card__footer">
+                                <span class="review-card__stars">★★★★★</span>
+                                <span class="review-card__uni">СПбГТИ</span>
+                            </div>
+                        </article>
+
+                        <!-- Карточка 3 -->
+                        <article class="review-card">
+                            <h4 class="visually-hidden">Отзыв Кирилла В.</h4>
+                            <div class="review-card__header">
+                                <div class="review-card__avatar">
+                                    <span>А</span>
+                                </div>
+                                <div class="review-card__meta">
+                                    <span class="review-card__name">Кирилл В.</span>
+                                    <span class="review-card__detail">11 кл. · Казань</span>
+                                </div>
+                                <div class="review-card__score">
+                                    <span class="review-card__score-value">94</span>
+                                    <span class="review-card__score-label">балла</span>
+                                </div>
+                            </div>
+
+                            <p class="review-card__text">«Боялся, что поздно начал заниматься русским. Но удалось
+                                разобраться
+                                во всех проблемных местах. На уроках объясняют четко и доступно, отработка
+                                замечательная. Поступил в КГЭУ.»</p>
+
+                            <div class="review-card__footer">
+                                <span class="review-card__stars">★★★★★</span>
+                                <span class="review-card__uni">КГЭУ</span>
+                            </div>
+                        </article>
+
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="why-us" id="why-us">
+                <h2 class="visually-hidden">Что выбрать для подготовки к ЕГЭ</h2>
+                <div class="container">
+                    <h3 class="why-title">Почему ученики выбирают Нейростат</h3>
+
+                    <div class="why-grid">
+                        <div class="why-us__decor" aria-hidden="true">
+                            <svg viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_5_4191)">
+                                    <!-- Статичные круги -->
+                                    <path
+                                        d="M240 450C355.98 450 450 355.98 450 240C450 124.02 355.98 30 240 30C124.02 30 30 124.02 30 240C30 355.98 124.02 450 240 450Z"
+                                        stroke="#4A3520" stroke-width="0.7" />
+                                    <path
+                                        d="M240 370C311.797 370 370 311.797 370 240C370 168.203 311.797 110 240 110C168.203 110 110 168.203 110 240C110 311.797 168.203 370 240 370Z"
+                                        stroke="#4A3520" stroke-width="0.5" />
+                                    <path
+                                        d="M240 320C284.183 320 320 284.183 320 240C320 195.817 284.183 160 240 160C195.817 160 160 195.817 160 240C160 284.183 195.817 320 240 320Z"
+                                        stroke="#4A3520" stroke-width="0.4" />
+                                    <path
+                                        d="M240 290C267.614 290 290 267.614 290 240C290 212.386 267.614 190 240 190C212.386 190 190 212.386 190 240C190 267.614 212.386 290 240 290Z"
+                                        stroke="#4A3520" stroke-width="0.3" />
+
+                                    <!-- Статичные оси -->
+                                    <path d="M0 240H480" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M240 0V480" stroke="#4A3520" stroke-width="0.5" />
+
+                                    <!-- Вращающаяся группа: диагонали + точки -->
+                                    <g class="rotating-cross">
+                                        <path d="M91 91L389 389" stroke="#4A3520" stroke-width="0.35" />
+                                        <path d="M389 91L91 389" stroke="#4A3520" stroke-width="0.35" />
+                                        <path
+                                            d="M389 93C390.105 93 391 92.1046 391 91C391 89.8954 390.105 89 389 89C387.895 89 387 89.8954 387 91C387 92.1046 387.895 93 389 93Z"
+                                            fill="#4A3520" />
+                                        <path
+                                            d="M91 93C92.1046 93 93 92.1046 93 91C93 89.8954 92.1046 89 91 89C89.8954 89 89 89.8954 89 91C89 92.1046 89.8954 93 91 93Z"
+                                            fill="#4A3520" />
+                                        <path
+                                            d="M91 391C92.1046 391 93 390.105 93 389C93 387.895 92.1046 387 91 387C89.8954 387 89 387.895 89 389C89 390.105 89.8954 391 91 391Z"
+                                            fill="#4A3520" />
+                                        <path
+                                            d="M389 391C390.105 391 391 390.105 391 389C391 387.895 390.105 387 389 387C387.895 387 387 387.895 387 389C387 390.105 387.895 391 389 391Z"
+                                            fill="#4A3520" />
+                                    </g>
+
+                                    <!-- Статичные тонкие лучи -->
+                                    <path d="M240 240L422 135" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L58 345" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L345 58" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L135 422" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L135 58" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L345 422" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L58 135" stroke="#4A3520" stroke-width="0.22" />
+                                    <path d="M240 240L422 345" stroke="#4A3520" stroke-width="0.22" />
+
+                                    <!-- Статичные маркеры -->
+                                    <path d="M450 237V243" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M30 237V243" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M237 450H243" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M237 30H243" stroke="#4A3520" stroke-width="0.5" />
+                                    <path d="M370 237V243" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M110 237V243" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M237 370H243" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M237 110H243" stroke="#4A3520" stroke-width="0.4" />
+
+                                    <!-- Статичная центральная точка -->
+                                    <path
+                                        d="M240 242.5C241.381 242.5 242.5 241.381 242.5 240C242.5 238.619 241.381 237.5 240 237.5C238.619 237.5 237.5 238.619 237.5 240C237.5 241.381 238.619 242.5 240 242.5Z"
+                                        stroke="#4A3520" stroke-width="0.6" />
+
+                                    <!-- Вращающаяся пунктирная дуга -->
+                                    <g class="rotating-arc">
+                                        <path
+                                            d="M370 240C370 274.478 356.304 307.544 331.924 331.924C307.544 356.304 274.478 370 240 370"
+                                            stroke="#4A3520" stroke-width="1" stroke-dasharray="4 8" />
+                                    </g>
+
+                                    <!-- Статичные угловые метки -->
+                                    <path d="M8 22V8H22" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M472 22V8H458" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M8 458V472H22" stroke="#4A3520" stroke-width="0.4" />
+                                    <path d="M472 458V472H458" stroke="#4A3520" stroke-width="0.4" />
+                                </g>
+                                <defs>
+                                    <clipPath id="clip0_5_4191">
+                                        <rect width="480" height="480" fill="white" />
+                                    </clipPath>
+                                </defs>
+                            </svg>
+                        </div>
+                        <!-- Карточка 1 -->
+                        <div class="why-card">
+                            <img src="/static/images/whyus_time.svg" alt="" class="why-card__icon">
+                            <h4 class="why-card__title">Экономия времени</h4>
+                            <p class="why-card__text">Детальная и ежедневная отработка проблемных заданий. Никакой
+                                «воды» — только то, что даёт баллы.</p>
+                        </div>
+
+                        <!-- Карточка 2 -->
+                        <div class="why-card">
+                            <img src="/static/images/whyus_progress.svg" alt="" class="why-card__icon">
+                            <h4 class="why-card__title">Видимый прогресс</h4>
+                            <p class="why-card__text">Статистика после каждого занятия. Вы видите рост в реальном
+                                времени — в баллах и орфограммах.</p>
+                        </div>
+
+                        <!-- Карточка 3 -->
+                        <div class="why-card">
+                            <img src="/static/images/whyus_opyt.svg" alt="" class="why-card__icon">
+                            <h4 class="why-card__title">ИИ + опытный преподаватель</h4>
+                            <p class="why-card__text">ИИ работает 24/7, репетитор помогает в сложных случаях.
+                                Оперативная поддержка всегда.</p>
+                        </div>
+
+                        <!-- Карточка 4 -->
+                        <div class="why-card">
+                            <img src="/static/images/whyus_desh.svg" alt="" class="why-card__icon">
+                            <h4 class="why-card__title">Дешевле репетитора</h4>
+                            <p class="why-card__text">Персональный ИИ-помощник + поддержка преподавателя. От 600
+                                ₽/занятие
+                                (vs 2 000 ₽/час).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="trial-banner-section">
+                <h2 class="visually-hidden">Как попробовать бесплатно учиться с ИИ-ассистентом</h2>
+                <div class="container">
+                    <div class="trial-banner">
+
+                        <img src="/static/images/diagnostyk.svg" alt="" class="trial-banner__icon">
+
+                        <div class="trial-banner__content">
+                            <h3 class="trial-banner__title">Начните бесплатно</h3>
+
+                            <p class="trial-banner__text">
+                                Пройдите диагностику, получите персональный план и <strong>5 дней полного
+                                    доступа</strong> ко всем функциям платформы. Без карты. Без обязательств.
+                            </p>
+
+                            <p class="trial-banner__note">
+                                После пробного периода вы автоматически перейдёте на бесплатный тариф «Я сам». Для
+                                продолжения с репетитором и ИИ — выберите подходящий тариф.
+                            </p>
+                        </div>
+
+                        <a href="{% url 'diagnostic_fix_ege' %}" class="teacher-bio__cta">Пройти диагностику ЕГЭ →</a>
+
+                    </div>
+                </div>
+            </section>
+
+            <section class="pricing" id="pricing">
+                <h2 class="visually-hidden">Цены на подготовку к ЕГЭ по русскому: тарифы</h2>
+                <div class="container">
+
+                    <header class="section-header">
+                        <h3 class="pricing-title">Тарифы</h3>
+                        <p class="pricing-sub">Все тарифы включают 5 дней полного доступа бесплатно</p>
+                    </header>
+
+                    <div class="pricing-grid">
+
+                        <!-- Тариф 0: витрина -->
+                        <div class="pricing-card">
+                            <div class="pricing-card__header">
+                                <span class="pricing-card__name">0</span>
+                                <div class="pricing-card__price">
+                                    <span class="pricing-card__amount">0 ₽</span>
+                                    <span class="pricing-card__period">/мес</span>
+                                </div>
+                            </div>
+
+                            <p class="pricing-card__desc">Бесплатный тариф: попробуйте систему</p>
+
+                            <ul class="pricing-features">
+                                <li>1 диагностика в месяц</li>
+                                <li>15 слов в планинге</li>
+                                <li>1 тренажёр и горячие квизы</li>
+                                <li>ИИ-ассистент: 15 сообщений/мес</li>
+                            </ul>
+
+                            <a href="{% url 'register' %}"
+                                class="pricing-card__cta pricing-card__cta--outline">Попробовать бесплатно</a>
+                        </div>
+
+                        <!-- Тариф: Я сам -->
+                        <div class="pricing-card">
+                            <div class="pricing-card__header">
+                                <span class="pricing-card__name">Я сам</span>
+                                <div class="pricing-card__price">
+                                    <span class="pricing-card__amount">2 490 ₽</span>
+                                    <span class="pricing-card__period">/мес</span>
+                                </div>
+                            </div>
+
+                            <p class="pricing-card__desc">Самостоятельная подготовка с ИИ и растущим курсом</p>
+
+                            <ul class="pricing-features">
+                                <li>Безлимитные диагностики и тренажёры</li>
+                                <li>Видеоуроки</li>
+                                <li>1 групповая встреча, запись</li>
+                                <li>Чат с преподавателем</li>
+                                <li>Квизы, слово дня и боты Макс/VK</li>
+                                <li>ИИ-ассистент: 150 сообщений/мес</li>
+                                <li>Полная статистика и прогресс</li>
+                            </ul>
+
+                            <a href="{% url 'buy_plan' 'self' %}"
+                                class="pricing-card__cta pricing-card__cta--outline">Выбрать</a>
+                        </div>
+
+                        <!-- Тариф: Вместе (популярный) -->
+                        <div class="pricing-card pricing-card--popular">
+                            <div class="pricing-card__badge">Популярный</div>
+
+                            <div class="pricing-card__header">
+                                <span class="pricing-card__name">Вместе</span>
+                                <div class="pricing-card__price">
+                                    <span class="pricing-card__amount">4 990 ₽</span>
+                                    <span class="pricing-card__period">/мес</span>
+                                </div>
+                            </div>
+
+                            <p class="pricing-card__desc">Поток: платформа + живой преподаватель</p>
+
+                            <ul class="pricing-features">
+                                <li>Всё из «Я сам»</li>
+                                <li>4 групповых встречи, записи</li>
+                                <li>Пробники в формате ЕГЭ, разбор</li>
+                                <li>Закрытый чат с преподавателем</li>
+                                <li>Отчёты родителям</li>
+                                <li>ИИ-ассистент: 200 сообщений/мес</li>
+                            </ul>
+
+                            <a href="{% url 'buy_plan' 'group' %}"
+                                class="pricing-card__cta pricing-card__cta--outline">Выбрать</a>
+                        </div>
+
+                        <!-- Тариф: Премиум -->
+                        <div class="pricing-card">
+                            <div class="pricing-card__header">
+                                <span class="pricing-card__name">Премиум</span>
+                                <div class="pricing-card__price">
+                                    <span class="pricing-card__amount">11 990 ₽</span>
+                                    <span class="pricing-card__period">/мес</span>
+                                </div>
+                            </div>
+
+                            <p class="pricing-card__desc">Индивидуальные занятия с репетитором</p>
+
+                            <ul class="pricing-features">
+                                <li>Всё из «Вместе»</li>
+                                <li>4 личные встречи в месяц</li>
+                                <li>Разборы диагностик и индивидуальный план</li>
+                                <li>ИИ-ассистент безлимит</li>
+                                <li>Личный чат</li>
+                                <li>Не более 5 мест в потоке</li>
+                            </ul>
+
+                            <a href="{% url 'buy_plan' 'premium' %}"
+                                class="pricing-card__cta pricing-card__cta--outline">Выбрать</a>
+                        </div>
+
+                    </div>
+
+                    <p class="pricing-note">Если встреча на «Вместе» или «Премиум» пропущена — видеозапись занятия
+                        остаётся у вас; занятие не переносится и не возвращается (п. 6.6 оферты).<br>
+                        Безопасная оплата · После пробного периода — автоматический переход на тариф
+                        «0»<br>
+                        Нажимая «Выбрать» и оплачивая, вы принимаете условия <a href="/terms/" target="_blank"
+                            rel="noopener" style="color:inherit;text-decoration:underline;">пользовательского соглашения
+                            (оферты)</a>.</p>
+
+                </div>
+            </section>
+
+
+            <section class="faq" id="faq">
+                <h2 class="visually-hidden">Как лучше подготовиться к ЕГЭ по русскому</h2>
+                <div class="container">
+
+                    <h3 class="faq-title">Частые вопросы</h3>
+
+                    <div class="faq-list">
+
+                        <!-- Вопрос 1 -->
+                        <div class="faq-item">
+                            <button class="faq-item__trigger" aria-expanded="false">
+                                <span class="faq-item__question">Что будет на диагностике? Это реально 15 минут?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-item__content">
+                                <p class="faq-item__answer">На диагностике будет решение стандартного теста в
+                                    специальном виде, разработанном в Нейростате — нужно будет вставить все буквы и
+                                    запятые, отметить правильные ответы. В конце баллы подсчитаются автоматически.</p>
+                            </div>
+                        </div>
+
+                        <!-- Вопрос 2 -->
+                        <div class="faq-item">
+                            <button class="faq-item__trigger" aria-expanded="false">
+                                <span class="faq-item__question">Подойдёт ли, если до ЕГЭ осталось 3 месяца?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-item__content">
+                                <p class="faq-item__answer">При условии вдумчивой самостоятельной работы и выполнения
+                                    рекомендаций - вполне возможно. Такие кейсы есть.</p>
+                            </div>
+                        </div>
+
+                        <!-- Вопрос 3 -->
+                        <div class="faq-item">
+                            <button class="faq-item__trigger" aria-expanded="false">
+                                <span class="faq-item__question">Как работает ИИ-ассистент? Это безопасно?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-item__content">
+                                <p class="faq-item__answer">Разумеется! Ассистент настроен таким образом, чтобы
+                                    максимально помогать. Если он не знает какие-то вещи или отвечает путано, то вопрос
+                                    переадресовывается специалистам.</p>
+                            </div>
+                        </div>
+
+                        <!-- Вопрос 4 -->
+                        <div class="faq-item">
+                            <button class="faq-item__trigger" aria-expanded="false">
+                                <span class="faq-item__question">Можно ли отменить или поставить на паузу
+                                    обучение?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-item__content">
+                                <p class="faq-item__answer">Да. Подписку можно отменить в любой момент: автопродление
+                                    отключается, а доступ остаётся до конца оплаченного периода. Если захотите вернуть
+                                    деньги за неиспользованную часть — вернём в течение 10 дней по ст. 32 Закона о
+                                    защите прав потребителей, достаточно написать в <a href="a_timof@mail.ru"
+                                        class="italic">техподдержку.</a> Паузы в обучении очень нежелательны, но
+                                    учиться можно откуда угодно, где есть интернет!</p>
+                            </div>
+                        </div>
+
+                        <!-- Вопрос 5 -->
+                        <div class="faq-item">
+                            <button class="faq-item__trigger" aria-expanded="false">
+                                <span class="faq-item__question">Что если я не наберу 85 баллов?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-item__content">
+                                <p class="faq-item__answer">В процессе обучения Вы выполните много диагностик, напишете
+                                    сочинения, поэтому реальные баллы будут Вам известны задолго до экзамена.</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+            <section class="final-cta" id="final-cta">
+                <h2 class="visually-hidden">Как исправить ошибки в русском и сдать ЕГЭ на 85+</h2>
+                <div class="container">
+                    <div class="cta-block">
+
+                        <p class="cta-block__eyebrow">Бесплатно · 15 минут · Результат сразу</p>
+
+                        <h3 class="cta-block__title">Узнайте свой уровень и получите план сегодня</h3>
+
+                        <p class="cta-block__sub">Диагностика покажет слабые места и даст конкретный путь к желаемому
+                            результату. Разбор
+                            ошибок — на бесплатном пробном занятии.</p>
+
+                        <a href="{% url 'diagnostic_fix_ege' %}" class="teacher-bio__cta">Пройти диагностику ЕГЭ →</a>
+
+                        <p class="cta-block__micro">847 учеников уже повысили балл · В полёт с Нейростатом!</p>
+
+                    </div>
+                </div>
+            </section>
+
+            {% include 'includes/footer.html' %}
 
         </main>
 
-        {% if user.is_authenticated %}
-            {% include 'chat_widget.html' %}
-        {% endif %}
-
+        {% comment %} Виджет чата теперь подключается в includes/footer.html — на всех страницах {% endcomment %}
 
     </div>
-
+    <!-- Mobile Sticky Bar — только для мобильных -->
+    <div class="mobile-sticky-bar">
+        <a href="#final-cta" class="mobile-sticky-bar__button">
+            Пройти диагностику — бесплатно
+        </a>
+    </div>
+    {% include 'includes/video_modal.html' %}
     <script src="/static/js/main.js"></script>
 </body>
 

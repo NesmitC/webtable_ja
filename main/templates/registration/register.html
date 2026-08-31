@@ -3,19 +3,158 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang='ru'>
+
 <head>
-    <title>Регистрация</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — Нейростат</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
 </head>
+
 <body>
-    <div class="container">
-        <h2>Регистрация</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Зарегистрироваться</button>
-        </form>
-        <p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
-    </div>
+    <section class="au-page">
+        <div class="au-card">
+
+            <!-- Логотип -->
+            <div class="au-card-logo-wrap">
+                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ" class="au-card__logo">
+            </div>
+
+            <!-- Табы -->
+            <div class="au-tabs">
+                <a href="{% url 'login' %}" class="au-tab">Вход</a>
+                <button class="au-tab au-tab--active" disabled>Регистрация</button>
+            </div>
+
+            <!-- Глобальные ошибки формы -->
+            {% if form.non_field_errors %}
+            <div class="au-form__errors"
+                style="color: #d32f2f; margin-bottom: 16px; padding: 12px; background: #fdecea; border-radius: 8px;">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Контейнер формы -->
+            <div id="registerFormContainer">
+                <form class="au-form" id="registerForm" method="post">
+                    {% csrf_token %}
+
+                    <!-- Скрытые поля защиты от ботов (honeypot + time trap) -->
+                    {{ form.website }}
+                    {{ form.form_timestamp }}
+
+                    <div class="au-field">
+                        <label for="regUsername" class="au-field__label">Логин</label>
+                        <div class="au-field__wrap">
+                            <input type="text" id="regUsername" name="username" class="au-field__input"
+                                placeholder="Придумайте логин" value="{{ form.username.value|default:'' }}" required>
+                        </div>
+                        {% if form.username.errors %}
+                        <small class="au-field__error" style="color: #d32f2f;">
+                            {{ form.username.errors.0 }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <div class="au-field">
+                        <label for="regEmail" class="au-field__label">Email</label>
+                        <div class="au-field__wrap">
+                            <input type="email" id="regEmail" name="email" class="au-field__input"
+                                placeholder="Ваш email" value="{{ form.email.value|default:'' }}" required>
+                        </div>
+                        {% if form.email.errors %}
+                        <small class="au-field__error" style="color: #d32f2f;">
+                            {{ form.email.errors.0 }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <div class="au-field">
+                        <label for="regPassword" class="au-field__label">Пароль</label>
+                        <div class="au-field__wrap">
+                            <input type="password" id="regPassword" name="password1" class="au-field__input"
+                                placeholder="Минимум 8 символов" required>
+                        </div>
+                        {% if form.password1.errors %}
+                        <small class="au-field__error" style="color: #d32f2f;">
+                            {{ form.password1.errors.0 }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <!-- Код результата диагностики (необязательно) -->
+                    <div class="au-field">
+                        <label for="regAccessCode" class="au-field__label">
+                            Код результата диагностики
+                            <span style="font-weight: normal; opacity: .7;">(если проходили без регистрации)</span>
+                        </label>
+                        <div class="au-field__wrap">
+                            <input type="text" id="regAccessCode" name="access_code" class="au-field__input"
+                                placeholder="DIAG-XXXXXX" maxlength="12" autocomplete="off"
+                                style="text-transform: uppercase;">
+                        </div>
+                    </div>
+
+                    <!-- Плашка согласия -->
+                    <div class="au-agree">
+                        <input type="checkbox" id="agree" class="au-agree__checkbox" required>
+                        <label for="agree" class="au-agree__label">
+                            Согласен с <a href="/terms/" target="_blank" rel="noopener" class="au-agree__link">условиями использования</a>
+                            и <a href="/privacy/" target="_blank" rel="noopener" class="au-agree__link">политикой конфиденциальности</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn--primary au-form__submit" id="submitBtn">
+                        Зарегистрироваться
+                    </button>
+                </form>
+
+                <!-- Разделитель -->
+                <div class="au-divider"></div>
+            </div>
+
+            <!-- Сообщение об успешной регистрации (скрыто по умолчанию) -->
+            <div id="successMessage" class="au-success" style="display: none;">
+                <div class="au-success__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                </div>
+                <h3 class="au-success__title">Регистрация почти завершена!</h3>
+                <p class="au-success__text">
+                    Письмо отправлено на <span id="userEmail"></span>.<br>
+                    Пройдите по ссылке в письме — регистрация будет завершена!
+                </p>
+                <a href="{% url 'login' %}" class="btn btn--outline au-success__btn">Вернуться ко входу</a>
+            </div>
+
+            <!-- Футер карточки -->
+            <div class="au-footer">
+                <p class="au-footer__copy">© 2026 Нейростат</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Автоподстановка кода диагностики из ссылки ?code=DIAG-... -->
+    <script>
+        (function () {
+            var code = new URLSearchParams(window.location.search).get('code');
+            if (code) {
+                var el = document.getElementById('regAccessCode');
+                if (el) el.value = code.toUpperCase();
+            }
+        })();
+    </script>
+
+
+    <script src="/static/js/main.js"></script>
+
 </body>
+
 </html>

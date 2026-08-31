@@ -1,104 +1,216 @@
 {% comment %} main\templates\profile.html {% endcomment %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-    {% load static %}
     <meta charset="UTF-8">
-    <title>Личный кабинет</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет ученика | Нейростат</title>
+    <meta name="description"
+        content="{{ meta_description|default:'Личный кабинет ученика Нейростата: персональные данные, статус аккаунта и управление подпиской на подготовку к ЕГЭ по русскому языку.' }}"
+        <meta name="robots" content="noindex, nofollow">
+
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
 </head>
+
 <body>
-    <header>
-        <nav>
-            <a href="/">← Назад</a>
-        </nav>
-    </header>
+    {% include 'includes/header.html' %}
 
-    <div class="container">
-        <h1>Личный кабинет</h1>
-        <p>Привет, {{ request.user.username }}!</p>
+    <main class="page-container">
+        <h1 class="page-container-title">Личный кабинет</h1>
 
-        <h2>Персональные данные</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Сохранить</button>
-        </form>
+        <div class="profile-grid">
+            <!-- Левая колонка: Данные -->
+            <div class="card-wrap">
+                <h2 class="card-title">Персональные данные</h2>
+                <form method="post" class="profile-form">
+                    {% csrf_token %}
+                    <div class="profile-form__fields">
+                        {{ form.as_p }}
+                    </div>
+                    <button type="submit" class="btn btn--primary profile-form__submit">Сохранить</button>
+                </form>
+                <div class="card indent">
+                    <h2 class="card-title">Статус аккаунта</h2>
+                    <p><strong>Email:</strong> {{ request.user.email|default:"Не указан" }}</p>
+                    <p>
+                        <strong>Подтверждение:</strong>
+                        <span
+                            class="status-badge {% if request.user.profile.email_confirmed %}status-badge--success{% else %}status-badge--warning{% endif %}">
+                            {% if request.user.profile.email_confirmed %}Подтверждён{% else %}Не подтверждён{% endif %}
+                        </span>
+                    </p>
+                </div>
 
-        <p><strong>Email:</strong> {{ request.user.email }}</p>
-        <p><strong>Статус:</strong> {% if request.user.profile.email_confirmed %}Подтверждён{% else %}Не подтверждён{% endif %}</p>
 
-        <!-- === КВИЗЫ === -->
-        <section class="block-quizzes">
-            <h3>МОИ КВИЗЫ</h3>
-            <div class="quiz-buttons">
-                <button class="quiz-trigger" data-quiz-type="planning">Слова из планинга</button>
-                <button class="quiz-trigger" data-quiz-type="orthography">Орфография</button>
-                <button class="quiz-trigger" data-quiz-type="orthoepy">Ударения</button>
-                <button class="quiz-trigger" data-quiz-type="grammar">Грамматика</button>
-                <button class="quiz-trigger" data-quiz-type="hot">🔥 Горячие</button>
             </div>
-            <!-- Контейнер для загружаемого квиза -->
-            <section class="block-answer-quiz-content" style="margin-top: 30px; display: none;"></section>
-        </section>
 
-        <!-- === СТАТИСТИКА === -->
-        <section class="block-results">
-            <h3>МОИ РЕЗУЛЬТАТЫ</h3>
-            <div id="user-stats-container">
-                <div id="user-stats">Загрузка статистики...</div>
+            <!-- Правая колонка: Тариф / Подписка -->
+            <div class="card pf-sub">
+                <h2 class="card-title">Подписка</h2>
+
+                <!-- Название тарифа -->
+                <div class="pf-sub__plan">
+                    {{ subscription.plan_name }}
+                </div>
+
+                <!-- Дата окончания -->
+                <div class="pf-sub__expiry">
+                    {% if subscription.expiry_date %}
+                    до {{ subscription.expiry_date }}
+                    {% else %}
+                    без ограничения по времени
+                    {% endif %}
+                </div>
+
+                <!-- Прогресс-бар -->
+                <div class="pf-sub__bar">
+                    <div class="pf-sub__bar-fill" style="width: {{ subscription.progress_percent }}%;"></div>
+                </div>
+
+                <!-- Осталось дней -->
+                <div class="pf-sub__days">
+                    {% if subscription.days_text %}
+                    Осталось {{ subscription.days_text }}
+                    {% else %}
+                    Доступ бессрочный
+                    {% endif %}
+                </div>
+
+                {% if subscription.trial_note %}
+                <div class="pf-sub__days">
+                    {{ subscription.trial_note }}
+                </div>
+                {% endif %}
+
+                <!-- Квота ИИ -->
+                <div class="pf-sub__days">
+                    {% if subscription.ai_limit %}
+                    ИИ-ассистент: {{ subscription.ai_used }} / {{ subscription.ai_limit }} в месяц
+                    {% else %}
+                    ИИ-ассистент: безлимит
+                    {% endif %}
+                </div>
+
+                <!-- Кнопка продления -->
+                {% if user.profile.plan != 'free' %}
+                <a href="{% url 'buy_plan' user.profile.plan %}" class="btn btn--primary pf-sub__btn">Продлить</a>
+                {% else %}
+                <a href="/#pricing" class="btn btn--primary pf-sub__btn">Выбрать тариф</a>
+                {% endif %}
+                <p style="font-size:12px;color:#7A6A54;margin-top:10px;">Оплачивая, вы принимаете условия <a href="/terms/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">пользовательского соглашения (оферты)</a>.</p>
+
+                {% if subscription.kind == 'paid' or subscription.kind == 'trial' %}
+                <section class="card card-vk-bot">
+                    <h3>Тренировки в VK</h3>
+
+                    {% if user.profile.vk_id %}
+                    <!-- Уже привязан -->
+                    <p>✅ VK подключён — слово дня и квизы приходят в личные сообщения.</p>
+                    <a href="{{ vk_bot_url }}" target="_blank" rel="noopener">Открыть диалог с ботом</a>
+                    <form method="post" action="{% url 'vk_unlink' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn">Отвязать VK</button>
+                    </form>
+
+                    {% else %}
+                    <!-- Не привязан: приглашение -->
+                    <p>Получай «Слово дня» в 12:00 и квизы по своим словам прямо в ВК.</p>
+
+                    {% if vk_link_code %}
+                    <p><strong>Твой код: {{ vk_link_code }}</strong><br>
+                        действует {{ vk_link_code_expires }}</p>
+                    <ol>
+                        <li>Открой бота: <a href="{{ vk_bot_url }}" target="_blank" rel="noopener">{{ vk_bot_url }}</a>
+                        </li>
+                        <li>Напиши ему «Привет»</li>
+                        <li>Отправь код выше одним сообщением</li>
+                    </ol>
+                    <p>Код одноразовый. Не получилось — создай новый.</p>
+                    <form method="post" action="{% url 'vk_create_link' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--primary">Создать новый код</button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'vk_create_link' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--primary">Получить код привязки</button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </section>
+                {% endif %}
+
+                {% if subscription.kind == 'paid' or subscription.kind == 'trial' %}
+                <section class="card card-max-bot">
+                    <h3>Тренировки в MAX</h3>
+
+                    {% if user.profile.max_id %}
+                    <!-- Уже привязан -->
+                    <p>✅ MAX подключён — слово дня и квизы приходят в мессенджер.</p>
+                    <a href="{{ max_bot_url }}" target="_blank" rel="noopener">Открыть диалог с ботом</a>
+                    <form method="post" action="{% url 'max_unlink' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn">Отвязать MAX</button>
+                    </form>
+
+                    {% else %}
+                    <!-- Не привязан: приглашение -->
+                    <p>Получай «Слово дня» в 12:00 и квизы по своим словам прямо в MAX.</p>
+
+                    {% if vk_link_code %}
+                    <p><strong>Твой код: {{ vk_link_code }}</strong><br>
+                        действует {{ vk_link_code_expires }}</p>
+
+                    <!-- Привязка в один клик: код подставляется в диплинк -->
+                    <a href="{{ max_deeplink }}" target="_blank" rel="noopener" class="btn btn--primary">
+                        Привязать в один клик
+                    </a>
+
+                    <p>Или вручную: открой
+                        <a href="{{ max_bot_url }}" target="_blank" rel="noopener">бота в MAX</a>
+                        и отправь ему код одним сообщением.
+                    </p>
+
+                    <form method="post" action="{% url 'max_create_link' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn">Создать новый код</button>
+                    </form>
+                    {% else %}
+                    <form method="post" action="{% url 'max_create_link' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--primary">Получить код привязки</button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                </section>
+                {% endif %}
+
             </div>
-        </section>
 
-        <!-- === ВК === -->
-        <h3>🔗 Привязка аккаунта ВКонтакте</h3>
-        <div id="vk-link-status" style="margin-bottom: 15px;">Загрузка...</div>
+            {% if user.profile.role != 'tutor' %}
+            <section class="card card-tutor">
+                <h3>Код репетитора</h3>
+                <form method="post" action="{% url 'activate_tutor_code' %}">
+                    {% csrf_token %}
+                    <input type="text" name="code" placeholder="TUTOR-XXXXXX">
+                    <button type="submit" class="btn btn--primary">Активировать</button>
+                </form>
+            </section>
+            {% endif %}
 
-        <div style="background: #f5f7fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
-            <p><strong>📱 Как получать квизы в ВК?</strong></p>
-            <ol style="margin: 10px 0 10px 20px; line-height: 1.5;">
-                <li>Перейдите в бота: <a href="https://vk.com/im?sel=-230815952" target="_blank"><strong>@neurostat_bot</strong></a></li>
-                <li>Отправьте /start или «Написать сообщение»</li>
-                <li>Нажмите кнопку «Получить код» ниже</li>
-                <li>Отправьте код боту в ВК</li>
-            </ol>
+
         </div>
 
-        <div style="background: #eef2f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
-            <p><strong>🔑 Получить код привязки</strong></p>
-            <button id="generate-code-btn" style="background: #4c75a3; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">Получить код</button>
-            
-            <div id="code-display" style="display: none; margin-top: 15px;">
-                <p>📋 <strong>Ваш код:</strong></p>
-                <code id="link-code" style="display: inline-block; background: white; padding: 8px 12px; font-size: 18px; font-weight: bold; border-radius: 5px; border: 1px solid #ccc;"></code>
-                <p>⏱️ Действует до: <span id="code-expires"></span></p>
-            </div>
-        </div>
+    </main>
 
-        <!-- Кнопка отправки квиза (скрыта по умолчанию) -->
-        <button id="vk-send-quiz-btn" style="display:none; background:#4c75a3; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; margin-top:15px; font-size:14px;">
-            📩 Прислать квиз в ВК
-        </button>
-        <p id="vk-quiz-status" style="margin-top:10px; font-size:0.9em; min-height:20px;"></p>
+    {% include 'includes/footer.html' %}
 
-        <div class="vk-link-look" style="margin-top: 20px; padding: 10px; background: #f0f2f5; border-radius: 8px;">
-            <p>📢 <strong>Наш канал:</strong> <a href="https://vk.com/neurostat" target="_blank">https://vk.com/neurostat</a></p>
-        </div>
-
-        <!-- === ПРОГРЕСС === -->
-        <h2>Прогресс обучения</h2>
-        <p id="progress-summary">Загрузка...</p>
-
-        <h2>Недельный отчёт</h2>
-        <p id="weekly-report">Загрузка...</p>
-
-        {% if user.is_authenticated %}
-            {% include 'chat_widget.html' %}
-        {% endif %}
-    </div>
-
-    <!-- Единственный скрипт -->
-    <script src="{% static 'js/quiz.js' %}?v=3"></script>
+    <script src="{% static 'js/main.js' %}"></script>
 </body>
+
 </html>

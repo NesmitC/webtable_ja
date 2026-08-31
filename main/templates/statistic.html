@@ -1,0 +1,281 @@
+{% comment %} main\templates\statistic.html {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статистика ученика | Нейростат</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+</head>
+
+<body>
+    {% include 'includes/header.html' %}
+
+    <main class="page-container">
+        <h1 class="page-container-title">Ваша статистика</h1>
+
+        {% if not is_auth %}
+        <section class="card stat-card">
+            <p>Войдите, чтобы видеть свою статистику.</p>
+            <a href="{% url 'login' %}" class="btn btn--primary">Войти</a>
+        </section>
+        {% else %}
+
+        <!-- ===== ГРИД-СЕТКА БЛОКОВ СТАТИСТИКИ ===== -->
+        <div class="stat-grid">
+            <!-- 1. Диагностика -->
+            <div class="card stat-card stat-grid__c1r1">
+                <h3 class="section-title">1. Диагностика</h3>
+                <div class="stat-card__diag-list">
+                    <div class="stat-card__diag-item">
+                        <span class="stat-card__diag-label">Входящая</span>
+                        {% if diag_starting %}
+                        <span class="stat-card__score">{{ diag_starting.primary_score }} / {{
+                            diag_starting.max_primary_score }}</span>
+                        {% else %}
+                        <span class="stat-card__score stat-card__score--muted">—</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-card__diag-item">
+                        <span class="stat-card__diag-label">Текущая</span>
+                        {% if diag_current %}
+                        <span class="stat-card__score">{{ diag_current.primary_score }} / {{
+                            diag_current.max_primary_score }}</span>
+                        {% else %}
+                        <span class="stat-card__score stat-card__score--muted">—</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-card__diag-item">
+                        <span class="stat-card__diag-label">Контрольная</span>
+                        {% if diag_final %}
+                        <span class="stat-card__score">{{ diag_final.primary_score }} / {{ diag_final.max_primary_score
+                            }}</span>
+                        {% else %}
+                        <span class="stat-card__score stat-card__score--muted">—</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Уроки -->
+            <div class="card stat-card stat-grid__c2r1">
+                <h3 class="section-title">2. Видеоуроки, материалы</h3>
+                <p class="stat-card__text">
+                    Просмотрено: <b>{{ lessons_viewed }}</b>
+                </p>
+            </div>
+
+            <!-- 3. Тренажеры -->
+            <div class="card stat-card stat-grid__c3r1">
+                <h3 class="section-title">3. Тренажеры</h3>
+                <p class="stat-card__text">
+                    Решено: <b>{{ tasks_total }}</b><br>
+                    Успешность: {{ tasks_rate }}%
+                </p>
+            </div>
+
+            <!-- 4. Словарь ударений -->
+            <div class="card stat-card stat-grid__c4r1">
+                <h3 class="section-title">4. Словарь ударений</h3>
+                <p class="stat-card__text">
+                    Прохождений: <b>{{ ortho_total }}</b><br>
+                    На отработке: {{ ortho_in_correction }}
+                </p>
+            </div>
+
+            <!-- 12. Сочинение (ЕГЭ) -->
+            <div class="card stat-card stat-grid__c1r2">
+                <h3 class="section-title">12. Сочинение (ЕГЭ)</h3>
+                <p class="stat-card__text">
+                    Балл: <b>{{ essay_score|floatformat:0 }}</b>
+                </p>
+            </div>
+
+            <!-- Центр: Прогресс успеваемости -->
+            <div class="card stat-card stat-grid__center">
+                <h3 class="section-title">Прогресс успеваемости</h3>
+
+                <div class="stat-card__summary">
+                    <div>На платформе: <b>{{ days_on_platform_text }}</b></div>
+                    <div>Ответов: <b>{{ total_answers_all }}</b></div>
+                    <div>Успешность: <b>{{ overall_rate }}%</b></div>
+                </div>
+
+                <div class="stat-card__trend" style="color:{{ trend_color }};">
+                    <span class="stat-card__trend-arrow">{{ trend_arrow }}</span>
+                    {{ trend_text }}
+                </div>
+
+                <div id="progressButtons" class="stat-card__buttons">
+                    <button class="progress-period-btn" data-period="month">Месяц</button>
+                    <button class="progress-period-btn" data-period="3months">3 месяца</button>
+                    <button class="progress-period-btn" data-period="all">Всё время</button>
+                </div>
+
+                {% if chart_has_data %}
+                <canvas id="progressChart" height="90"></canvas>
+                <div id="progressModeText" class="stat-card__mode-text">
+                    Успешность по дням: квизы и задания
+                </div>
+                {% else %}
+                <p id="progressEmpty" class="stat-card__empty">
+                    Пройдите первый <a href="{% url 'quizzes_ege' %}">квиз</a> или
+                    <a href="{% url 'trainers_ege' %}">задание</a> — график прогресса появится здесь.
+                </p>
+                <canvas id="progressChart" height="90" class="stat-card__chart-hidden"></canvas>
+                {% endif %}
+            </div>
+
+            <!-- 5. Словник паронимов -->
+            <div class="card stat-card stat-grid__c4r2">
+                <h3 class="section-title">5. Словник паронимов</h3>
+                <p class="stat-card__text">
+                    Просмотрено: <b>{{ paponims_viewed }}</b>
+                </p>
+            </div>
+
+            <!-- 11. Демо -->
+            <div class="card stat-card stat-grid__c1r3">
+                <h3 class="section-title">11. Демо</h3>
+                <p class="stat-card__text stat-card__text--muted">—</p>
+            </div>
+
+            <!-- 6. Планинги -->
+            <div class="card stat-card stat-grid__c4r3">
+                <h3 class="section-title">6. Планинги</h3>
+                <p class="stat-card__text">
+                    Слов: <b>{{ planning_total }}</b><br>
+                    С ошибками: {{ planning_weak }}
+                </p>
+            </div>
+
+            <!-- 10. Досрок -->
+            <div class="card stat-card stat-grid__c1r4">
+                <h3 class="section-title">10. Досрок</h3>
+                <p class="stat-card__text stat-card__text--muted">—</p>
+            </div>
+
+            <!-- 9. Домино -->
+            <div class="card stat-card stat-grid__c2r4">
+                <h3 class="section-title">9. Домино</h3>
+                <p class="stat-card__text stat-card__text--muted">—</p>
+            </div>
+
+            <!-- 8. Слово дня -->
+            <div class="card stat-card stat-grid__c3r4">
+                <h3 class="section-title">8. Слово дня</h3>
+                <p class="stat-card__text">
+                    Ответов: <b>{{ daily_answered }}</b>
+                </p>
+            </div>
+
+            <!-- 7. Квизы -->
+            <div class="card stat-card stat-grid__c4r4">
+                <h3 class="section-title">7. Квизы</h3>
+                <p class="stat-card__text">
+                    Успешность: <b>{{ quiz_rate }}%</b><br>
+                    Попыток: {{ quiz_total }}
+                </p>
+            </div>
+        </div>
+
+        {% endif %}
+
+        <!-- ===== ПЛАН НА ЗАВТРА ===== -->
+        <section class="card stat-card stat-card--plan">
+            <h2 class="section-title">📌 С чего начать завтра</h2>
+            {% if recommendations %}
+            <ol class="stat-card__recommendations">
+                {% for r in recommendations %}
+                <li>
+                    {{ r.icon }} {{ r.text }}
+                    — <a href="{{ r.link }}">{{ r.link_text }}</a>
+                </li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p class="stat-card__text">Отличная работа! Продолжай в том же духе.</p>
+            {% endif %}
+        </section>
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% if is_auth %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            const canvas = document.getElementById('progressChart');
+            if (!canvas) return;
+
+            let chart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: {{ chart_labels_json| safe }},
+        datasets: [{
+            label: 'Успешность, %',
+            data: {{ chart_data_json| safe }},
+            borderColor: '#9C5A1D',
+            backgroundColor: 'rgba(156,90,29,0.12)',
+            tension: 0.3,
+            spanGaps: true,
+            fill: true
+                }]
+            },
+        options: {
+            scales: { y: { min: 0, max: 100 } },
+            plugins: { legend: { display: false } }
+        }
+        });
+
+        const modeText = {
+            month: 'Успешность по дням: квизы и задания',
+            '3months': 'Успешность по неделям: квизы и задания',
+            all: 'Успешность по неделям за всё время: квизы и задания'
+        };
+
+        function setActive(period) {
+            document.querySelectorAll('.progress-period-btn').forEach(b => {
+                b.classList.toggle('progress-period-btn--active', b.dataset.period === period);
+            });
+        }
+        setActive('month');
+
+        document.querySelectorAll('.progress-period-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const period = this.dataset.period;
+                setActive(period);
+
+                fetch('/api/stats-progress/?period=' + period)
+                    .then(r => r.json())
+                    .then(d => {
+                        chart.data.labels = d.labels;
+                        chart.data.datasets[0].data = d.data;
+                        chart.update();
+
+                        const mt = document.getElementById('progressModeText');
+                        if (mt) mt.textContent = modeText[period];
+
+                        if (d.has_data) {
+                            canvas.style.display = '';
+                            const empty = document.getElementById('progressEmpty');
+                            if (empty) empty.style.display = 'none';
+                        }
+                    })
+                    .catch(() => { });
+            });
+        });
+    }) ();
+    </script>
+    {% endif %}
+</body>
+
+</html>

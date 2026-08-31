@@ -1,21 +1,89 @@
 {% comment %} main\templates\registration\login.html {% endcomment %}
 
 {% load static %}
+
 <!DOCTYPE html>
-<html>
+<html lang='ru'>
+
 <head>
-    <title>Вход</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — Нейростат</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
 </head>
+
 <body>
-    <div class="container">
-        <h2>Войти</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Войти</button>
-        </form>
-        <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
-    </div>
+    <section class="au-page">
+        <div class="au-card">
+
+            <!-- Логотип -->
+            <div class="au-card-logo-wrap">
+                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ" class="au-card__logo">
+            </div>
+
+            <!-- Табы -->
+            <div class="au-tabs">
+                <button class="au-tab au-tab--active" disabled>Вход</button>
+                <a href="{% url 'register' %}" class="au-tab">Регистрация</a>
+            </div>
+
+            <!-- Форма -->
+            <form class="au-form" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <!-- <div class="au-field">
+                    <label for="loginEmail" class="au-field__label">Email</label>
+                    <div class="au-field__wrap">
+                        <input type="email" id="loginEmail" name="email" class="au-field__input"
+                            placeholder="mail@example.com" required>
+                    </div>
+                </div>
+
+                <div class="au-field">
+                    <label for="loginPassword" class="au-field__label">Пароль</label>
+                    <div class="au-field__wrap">
+                        <input type="password" id="loginPassword" name="password" class="au-field__input"
+                            placeholder="••••••••" required>
+                        <button type="button" class="au-field__toggle" onclick="togglePassword('loginPassword')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div> -->
+
+                <!-- Опции: Запомнить меня + Забыли пароль? -->
+                <!-- <div class="au-form__options">
+                    <label class="au-remember">
+                        <input type="checkbox" name="remember" class="au-remember__checkbox">
+                        <span class="au-remember__label">Запомнить меня</span>
+                    </label>
+                    <a href="#" class="au-forgot-link">Забыли пароль?</a>
+                </div> -->
+
+                <button type="submit" class="btn btn--primary au-form__submit">Войти</button>
+            </form>
+
+            <!-- Разделитель -->
+            <div class="au-divider"></div>
+
+            <!-- Футер карточки -->
+            <div class="au-footer">
+                <p class="au-footer__copy">© 2026 Нейростат</p>
+            </div>
+
+        </div>
+    </section>
+
+    <script src="/static/js/main.js"></script>
 </body>
+
 </html>
+
+{% comment %} main\templates\registration\login.html {% endcomment %}
+
+{% load static %}

@@ -71,17 +71,54 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 # ================ Форма входа ================
+# ================ Форма входа ================
 class CustomAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
-        label='Логин',
+        label='Email',
         widget=forms.TextInput(
-            attrs={'autofocus': True, 'class': 'form-control'}
+            attrs={
+                'autofocus': True,
+                'class': 'form-control',
+                'placeholder': 'mail@example.com',
+                'type': 'email',
+            }
         ),
     )
     password = forms.CharField(
         label='Пароль',
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control'}
+        ),
     )
+
+    error_messages = {
+        'invalid_login': 'Неверный email или пароль.',
+        'inactive': 'Этот аккаунт не активирован. Проверьте почту — мы отправляли ссылку для подтверждения.',
+    }
+
+    def clean_username(self):
+        """
+        Этот метод вызывается Django ПЕРЕД общим clean().
+        Здесь мы подменяем введённый email на настоящий username,
+        чтобы стандартная проверка пароля в AuthenticationForm.clean() 
+        отработала корректно.
+        """
+        email = self.cleaned_data.get('username', '').strip()
+        if not email:
+            return email
+
+        try:
+            user = User.objects.get(email__iexact=email)
+            return user.username  # ← подменяем на настоящий username
+        except User.DoesNotExist:
+            # Вернём как есть — пусть стандартная проверка выдаст ошибку
+            return email
+        except User.MultipleObjectsReturned:
+            # Крайний случай: несколько аккаунтов с одним email
+            user = User.objects.filter(
+                email__iexact=email, is_active=True
+            ).first()
+            return user.username if user else email
 
 
 # ================ Форма профиля ================

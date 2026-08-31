@@ -1,0 +1,11 @@
+{% for card in cards %}
+<section class="paponim__card"
+    data-track-paponim="{% for col in card %}{{ col.word }}{% if not forloop.last %} / {% endif %}{% endfor %}">
+    {% for col in card %}
+    <article class="paponim__col">
+        <h2 class="paponim__word">{{ col.word }}</h2>
+        <p class="paponim__meaning">{{ col.meaning|safe }}</p>
+    </article>
+    {% endfor %}
+</section>
+{% endfor %}

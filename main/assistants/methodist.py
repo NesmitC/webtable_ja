@@ -5,7 +5,7 @@
 """
 
 import re
-from main.llm_utils import call_deepseek, get_fallback_response
+from main.llm_utils import call_deepseek, get_fallback_response, INJECTION_GUARD, user_block
 from main.assistants.knowledge_loader import knowledge_manager
 
 
@@ -111,7 +111,8 @@ class Methodist:
         
         return [
             {"role": "system", "content": system},
-            {"role": "user", "content": f"Вопрос: {message}{ctx}\nОтвет:"}
+            {"role": "system", "content": INJECTION_GUARD},
+            {"role": "user", "content": f"Вопрос:\n{user_block(message)}{ctx}\nОтвет:"}
         ]
     
     def _clean_answer(self, text: str) -> str:

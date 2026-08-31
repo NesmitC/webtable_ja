@@ -1,0 +1,127 @@
+<!-- этот файл служит "оберткой" со стилями, хедером и футером, внутри 
+ находится сниппет main\templates\diagnostic_snippet.html -->
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диагностическая работа — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+</head>
+
+<body class="test_fixdemo_ege">
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-diagnostics">
+        <section class="container-diagnostics">
+            <h2 class="diagnostic-full-test__subtitle">Диагностическая работа</h2>
+
+            {% if error %}
+            <p style="color: red; text-align: center; padding: 20px;">Ошибка загрузки: {{ error }}</p>
+            {% else %}
+            <!-- Вставляем сам тест со всеми заданиями -->
+            {% include 'diagnostic_snippet.html' %}
+            {% endif %}
+        </section>
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <!-- === ОСНОВНЫЕ СКРИПТЫ === -->
+    <script src="{% static 'js/planning.js' %}"></script>
+    <script src="{% static 'js/diagnostic.js' %}"></script>
+    <script src="{% static 'js/test_fix_ege.js' %}"></script>
+    <script src="{% static 'js/planning_eight.js' %}"></script>
+
+    <!-- === ДАННЫЕ ДЛЯ СМАЙЛИКОВ (для test_fix_ege.js, если понадобится) === -->
+    {% if task9_letter_groups %}
+    <script id="task9-letter-groups" type="application/json">{{ task9_letter_groups|safe }}</script>{% endif %}
+    {% if task9_subgroup_letters %}
+    <script id="task9-subgroup-letters" type="application/json">{{ task9_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task10_letter_groups %}
+    <script id="task10-letter-groups" type="application/json">{{ task10_letter_groups|safe }}</script>{% endif %}
+    {% if task10_subgroup_letters %}
+    <script id="task10-subgroup-letters" type="application/json">{{ task10_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task11_letter_groups %}
+    <script id="task11-letter-groups" type="application/json">{{ task11_letter_groups|safe }}</script>{% endif %}
+    {% if task11_subgroup_letters %}
+    <script id="task11-subgroup-letters" type="application/json">{{ task11_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task12_letter_groups %}
+    <script id="task12-letter-groups" type="application/json">{{ task12_letter_groups|safe }}</script>{% endif %}
+    {% if task12_subgroup_letters %}
+    <script id="task12-subgroup-letters" type="application/json">{{ task12_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task13_letter_groups %}
+    <script id="task13-letter-groups" type="application/json">{{ task13_letter_groups|safe }}</script>{% endif %}
+    {% if task13_subgroup_letters %}
+    <script id="task13-subgroup-letters" type="application/json">{{ task13_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task14_letter_groups %}
+    <script id="task14-letter-groups" type="application/json">{{ task14_letter_groups|safe }}</script>{% endif %}
+    {% if task14_subgroup_letters %}
+    <script id="task14-subgroup-letters" type="application/json">{{ task14_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task15_letter_groups %}
+    <script id="task15-letter-groups" type="application/json">{{ task15_letter_groups|safe }}</script>{% endif %}
+    {% if task15_subgroup_letters %}
+    <script id="task15-subgroup-letters" type="application/json">{{ task15_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task16_letter_groups %}
+    <script id="task16-letter-groups" type="application/json">{{ task16_letter_groups|safe }}</script>{% endif %}
+    {% if task16_subgroup_letters %}
+    <script id="task16-subgroup-letters" type="application/json">{{ task16_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task17_letter_groups %}
+    <script id="task17-letter-groups" type="application/json">{{ task17_letter_groups|safe }}</script>{% endif %}
+    {% if task17_subgroup_letters %}
+    <script id="task17-subgroup-letters" type="application/json">{{ task17_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task18_letter_groups %}
+    <script id="task18-letter-groups" type="application/json">{{ task18_letter_groups|safe }}</script>{% endif %}
+    {% if task18_subgroup_letters %}
+    <script id="task18-subgroup-letters" type="application/json">{{ task18_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task19_letter_groups %}
+    <script id="task19-letter-groups" type="application/json">{{ task19_letter_groups|safe }}</script>{% endif %}
+    {% if task19_subgroup_letters %}
+    <script id="task19-subgroup-letters" type="application/json">{{ task19_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task20_letter_groups %}
+    <script id="task20-letter-groups" type="application/json">{{ task20_letter_groups|safe }}</script>{% endif %}
+    {% if task20_subgroup_letters %}
+    <script id="task20-subgroup-letters" type="application/json">{{ task20_subgroup_letters|safe }}</script>{% endif %}
+
+    {% if task21_letter_groups %}
+    <script id="task21-letter-groups" type="application/json">{{ task21_letter_groups|safe }}</script>{% endif %}
+    {% if task21_subgroup_letters %}
+    <script id="task21-subgroup-letters" type="application/json">{{ task21_subgroup_letters|safe }}</script>{% endif %}
+
+    <!-- === ИНИЦИАЛИЗАЦИЯ СМАЙЛИКОВ ЧЕРЕЗ planning.js === -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Находим все задания со смайликами (9-21)
+            const smileyTasks = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+
+            for (const taskNum of smileyTasks) {
+                const questionBlock = document.querySelector(`[data-question-number="${taskNum}"]`);
+                if (questionBlock) {
+                    // Вызываем processPracticeContainer из planning.js
+                    // Он ищет .practice-line внутри контейнера и заменяет маски *12-1* на смайлики
+                    await processPracticeContainer(questionBlock);
+                }
+            }
+
+        });
+    </script>
+</body>
+
+</html>

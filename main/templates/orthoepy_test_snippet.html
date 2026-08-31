@@ -3,40 +3,45 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
 
-<div class="orthoepy-test-exercise" 
-    data-exercise-id="{{ exercise_id }}"
-    data-school-mode="{% if is_school_mode %}true{% else %}false{% endif %}">
-  
+<div class="orthoepy-test-exercise" data-exercise-id="{{ exercise_id }}"
+  data-school-mode="{% if is_school_mode %}true{% else %}false{% endif %}">
+
   {% if is_school_mode %}
-    <h3 class="title-practice">Отметь слова с правильным ударением:</h3>
+  <h3 class="title-practice">Отметь слова с правильным ударением:</h3>
   {% else %}
-    <h3 class="title-practice">Задание 4. Орфоэпия</h3>
-    {% if user_grade %}
-      <p class="exercise-info">Для {{ user_grade }}-го класса</p>
-    {% endif %}
+  {% if user_grade %}
+  <p class="exercise-info">Для {{ user_grade }}-го класса</p>
   {% endif %}
-  
+  {% endif %}
+
   <div class="test-questions">
     {% for variant in variants %}
-      <div class="test-option" data-option-id="{{ forloop.counter }}">
-        <label class="option-label">
-          <input type="checkbox" value="{{ variant }}" class="orthoepy-checkbox">
-          <span class="variant-text">
-            {% if is_school_mode %}
-              {{ variant }}
-            {% else %}
-              {{ forloop.counter }}) {{ variant }}
-            {% endif %}
-          </span>
-        </label>
-      </div>
+    <div class="test-option" data-option-id="{{ forloop.counter }}">
+      <label class="option-label">
+        <input type="checkbox" value="{{ variant }}" class="orthoepy-checkbox">
+        <span class="variant-text">
+          {% if is_school_mode %}
+          {{ variant }}
+          {% else %}
+          {{ forloop.counter }}) {{ variant }}
+          {% endif %}
+        </span>
+      </label>
+    </div>
     {% endfor %}
   </div>
-  
-  <button class="check-orthoepy-test">Проверить</button>
-  <a href="{% url 'orthoepy_trening' %}" style="display: block; margin-top: 8px; text-align: center;">Словарь ударений →</a>
-  
+
+  <button class="check-orthoepy-test check-task-submit">Проверить</button>
+
+  <!-- Ссылка на словарь только для режима ЕГЭ (10-11 классы) -->
   {% if not is_school_mode %}
-    <div class="orthoepy-result"></div>
+  <a href="{% url 'orthoepy_trening' %}" class="orthoepy-dictionary-link">
+    Словарь ударений <span class="arrow">→</span>
+  </a>
   {% endif %}
+
+  {% if not is_school_mode %}
+  <div class="orthoepy-result"></div>
+  {% endif %}
+
 </div>

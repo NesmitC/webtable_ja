@@ -11,7 +11,7 @@ from main.models import OrthogramExample
 from main.assistants.knowledge_loader import knowledge_manager
 
 try:
-    from main.llm_utils import call_deepseek
+    from main.llm_utils import call_deepseek, call_llm, INJECTION_GUARD
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
@@ -20,7 +20,7 @@ except ImportError:
 try:
     import pymorphy3
     MORPH = pymorphy3.MorphAnalyzer()
-    print("✅ pymorphy3 loaded")
+    # pymorphy3 загружен (без отладочного print)
 except ImportError:
     MORPH = None
     print("⚠️ pymorphy3 not available")
@@ -59,6 +59,23 @@ class TeacherRussian:
     
     def handle(self, user, message, context, history=None) -> str:
         print(f"\n🔹 TeacherRussian: '{message[:100]}'")
+
+        # 🔹 ПРИОРИТЕТ 0: RAG по проверенным источникам (Фаза 4)
+        # Ищет точные ответы в БД, ловит ложные посылки, охраняет границы охвата.
+        try:
+            from main.rag import search_knowledge, format_rag_answer
+            rag = search_knowledge(message, user)
+            if rag is not None:
+                # Охранники: задания 1-2 и темы вне охвата
+                if rag.guard:
+                    print(f"  🛡️ RAG guard: {rag.guard}")
+                    return rag.guard_message
+                if rag.found:
+                    fp = ' [ЛОЖНАЯ ПОСЫЛКА]' if rag.false_premise else ''
+                    print(f"  ✅ RAG [{rag.topic}]{fp}")
+                    return format_rag_answer(rag)
+        except Exception as e:
+            print(f"⚠️ RAG error: {e}")
         
         # 🔹 Если это уточнение после ошибки — даём человеческий ответ
         if context.get('prev_intent') in ['clarification', 'unknown']:
@@ -87,12 +104,20 @@ class TeacherRussian:
                 print(f"  ✅ БД: найдено")
                 return self._format_from_db(db_entry)
         
-        # 🔹 4. ПРИОРИТЕТ 2: pymorphy3 (с пометкой, если нет в БД)
-        if word and MORPH:
+        # 🔹 4. ПРИОРИТЕТ 2: pymorphy3 — ТОЛЬКО для вопросов о части речи
+        if word and MORPH and self._is_pos_question(message):
             morph_answer = self._format_from_morphology(word)
             if morph_answer:
                 print(f"  ✅ pymorphy3: {morph_answer[:50]}...")
                 return morph_answer
+
+        # 🔹 4.5. Вопрос о написании, но слова нет в БД → LLM объясняет правописание
+        if word and LLM_AVAILABLE and self._is_spelling_question(message):
+            spell = self._generate_spelling(word)
+            if spell:
+                print(f"  ✅ LLM (spelling): {spell[:50]}...")
+                return (f"{spell}\n\n⚠️ Этого слова пока нет в нашей базе. "
+                        "Добавьте в планинг — и объяснение станет точнее!")
         
         # 🔹 5. ПРИОРИТЕТ 3: Теория из Markdown-справочника
         intent, terms = self._analyze_question(message)
@@ -102,12 +127,16 @@ class TeacherRussian:
                 print(f"  ✅ Markdown: найдено")
                 return self._clean_response(md_result)
         
-        # 🔹 6. ПРИОРИТЕТ 4: ЛЛМ с few-shot промптом (только если разрешено)
+        # 🔹 6. ПРИОРИТЕТ 4: ЛЛМ (только если разрешено)
+        # Голое слово («метонимия») объясняем как термин, вопрос про слово — как часть речи
         if word and LLM_AVAILABLE:
-            llm_answer = self._generate_with_few_shot(word)
+            if self._is_bare_word(message):
+                llm_answer = self._generate_definition(word)
+            else:
+                llm_answer = self._generate_with_few_shot(word)
             if llm_answer:
-                print(f"  ✅ LLM (few-shot): {llm_answer[:50]}...")
-                return f"{llm_answer}\n\n⚠️ Это слово пока нет в нашей базе. Добавьте в планинг для точного объяснения!"
+                print(f"  ✅ LLM: {llm_answer[:50]}...")
+                return f"{llm_answer}\n\n⚠️ Этого слова пока нет в нашей базе. Добавьте в планинг для точного объяснения!"
         
         # 🔹 7. Fallback: честная заглушка
         if word:
@@ -210,6 +239,7 @@ class TeacherRussian:
         if not LLM_AVAILABLE:
             return None
         
+        guard = INJECTION_GUARD
         system = f"""Ты — учитель русского языка. Определи часть речи слова.
 
 ОТВЕЧАЙ СТРОГО ПО ШАБЛОНУ (без отклонений):
@@ -232,7 +262,9 @@ class TeacherRussian:
 4. НЕ добавляй "образовано от" для прилагательных, существительных, наречий
 5. В вопросе УЖЕ есть знак "?" — не добавляй второй в конце!
 6. Для глаголов: «что делать?» (несов. вид) или «что сделать?» (сов. вид)
-7. Для причастий: «какой?», для деепричастий: «что делая?» / «что сделав?»"""
+7. Для причастий: «какой?», для деепричастий: «что делая?» / «что сделав?»
+
+{guard}"""
 
         user = f"""Слово: {word}
 
@@ -347,26 +379,95 @@ class TeacherRussian:
     
     def _extract_word(self, message: str) -> Optional[str]:
         """Извлекает слово из запроса (от 3 букв)"""
+        low = message.lower()
+
+        # Слово в кавычках или после «слово …» — явная отсылка, берём как есть
+        quoted = re.search(r'[«"\'’]([а-яёa-z-]{2,30})[»"\'’]', low)
+        if quoted:
+            return quoted.group(1)
+        after_word = re.search(r'\bслово\s+([а-яё]{2,})\b', low)
+        if after_word:
+            return after_word.group(1)
+
         # Если вопрос теоретический — не извлекаем
-        if any(q in message.lower() for q in ['что такое', 'объясни правило', 'чем отличается', 'определение']):
+        if any(q in low for q in ['что такое', 'объясни', 'расскажи',
+                                  'чем отличается', 'определение', 'правило']):
             return None
-        
+
         # Ищем слова от 3 букв
-        words = re.findall(r'[а-яё]{3,}', message.lower())
-        
-        # Исключаем служебные слова вопроса
+        words = re.findall(r'[а-яё]{3,}', low)
+
+        # Исключаем служебные слова вопроса и глаголы-команды
         excluded = {
             'что', 'как', 'так', 'вот', 'это', 'того', 'чего',
             'какая', 'какой', 'какие', 'часть', 'речи', 'слово',
-            'про', 'тебя', 'меня', 'у', 'слова', 'есть', 'для'
+            'про', 'тебя', 'меня', 'у', 'слова', 'есть', 'для',
+            'объясни', 'расскажи', 'проверь', 'напиши', 'скажи',
+            'помоги', 'реши', 'найди', 'покажи', 'сделай', 'почему',
+            'пишется', 'правильно', 'писать'
         }
-        
+
         for word in words:
             if word not in excluded:
                 return word
-        
+
         return None
     
+    def _is_pos_question(self, message: str) -> bool:
+        """Вопрос именно о части речи."""
+        low = message.lower()
+        return ('часть речи' in low or 'какая часть' in low
+                or 'частями речи' in low or 'частью речи' in low)
+
+    def _is_spelling_question(self, message: str) -> bool:
+        """Вопрос о написании / правописании."""
+        low = message.lower()
+        return any(k in low for k in (
+            'как пишется', 'как правильно писать', 'почему',
+            'правописание', 'написание', 'проверочное'))
+
+    def _generate_spelling(self, word: str) -> Optional[str]:
+        """Объясняет правильную форму и правило (для вопросов «как пишется»)."""
+        if not LLM_AVAILABLE:
+            return None
+        try:
+            system = (
+                "Ты — репетитор русского языка, готовишь к ЕГЭ. Ученик спросил, "
+                "как пишется слово. Ответь кратко (2–4 предложения): правильная "
+                "форма слова и почему так пишется — правило простыми словами. "
+                "Если в слове опечатка и ты понял, какое слово имели в виду, — "
+                "сначала покажи правильную форму. Без маркдауна."
+            )
+            from main.llm_utils import cached_llm
+            reply = cached_llm('spelling', word, system, max_tokens=300)
+            return reply.strip() if reply else None
+        except Exception as e:
+            print(f"⚠️ Spelling LLM error: {e}")
+            return None
+
+    def _is_bare_word(self, message: str) -> bool:
+        """Сообщение — одно голое слово без вопроса («метонимия», «вода»)."""
+        tokens = re.findall(r'[а-яёa-z-]{2,}', message.lower())
+        return len(tokens) == 1
+
+    def _generate_definition(self, word: str) -> Optional[str]:
+        """Объясняет термин простыми словами (для голых слов)."""
+        if not LLM_AVAILABLE:
+            return None
+        try:
+            from main.llm_utils import cached_llm
+            system = (
+                "Ты — репетитор русского языка, готовишь к ЕГЭ. Кратко (2–4 предложения) "
+                "объясни термин простыми словами и приведи один короткий пример. "
+                "Если это не термин русского языка — скажи, что слова нет в базе, "
+                "и предложи добавить его в планинг. Без маркдауна."
+            )
+            reply = cached_llm('definition', word, system, max_tokens=300)
+            return reply.strip() if reply else None
+        except Exception as e:
+            print(f"⚠️ Definition LLM error: {e}")
+            return None
+
     def _ask_clarification(self, message: str) -> str:
         """Просит пользователя уточнить запрос"""
         words = re.findall(r'[а-яё]{3,}', message.lower())

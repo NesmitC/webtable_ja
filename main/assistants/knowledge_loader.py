@@ -33,7 +33,6 @@ class MarkdownKnowledgeBase:
         self.all_text = self.content.lower()
         self.parse_metadata()
         self.parse_sections()
-        print(f"  Загружено секций: {len(self.sections)} из {self.file_path.name}")
     
     def parse_metadata(self):
         """Парсит метаданные из начала файла"""
@@ -96,8 +95,6 @@ class MarkdownKnowledgeBase:
         
         all_search_terms = keywords + bigrams
         
-        print(f"  Поиск по: {all_search_terms}")  # Для отладки
-        
         for topic_id, section in self.sections.items():
             content_lower = section['content'].lower()
             topic_lower = topic_id.lower()
@@ -140,12 +137,6 @@ class MarkdownKnowledgeBase:
         
         # Сортируем по релевантности
         results.sort(key=lambda x: x['score'], reverse=True)
-        
-        # Для отладки выводим топ результатов
-        if results:
-            print(f"  Найдено результатов: {len(results)}")
-            for i, r in enumerate(results[:3]):
-                print(f"    {i+1}. {r['topic_id']} (score: {r['score']})")
         
         return results[:top_k]
     
@@ -206,8 +197,6 @@ class KnowledgeBaseManager:
         for subject_dir in self.base_path.iterdir():
             if subject_dir.is_dir():
                 self.knowledge_bases[subject_dir.name] = []
-                print(f"\nЗагрузка базы знаний: {subject_dir.name}")
-                
                 # Ищем все .md файлы в папке предмета
                 for md_file in sorted(subject_dir.glob("*.md")):
                     try:
@@ -216,7 +205,6 @@ class KnowledgeBaseManager:
                     except Exception as e:
                         print(f"  Ошибка загрузки {md_file.name}: {e}")
                 
-                print(f"  Всего загружено файлов: {len(self.knowledge_bases[subject_dir.name])}")
     
     def get_knowledge_base(self, subject: str) -> Optional[List[MarkdownKnowledgeBase]]:
         """Получает все базы знаний по предмету"""

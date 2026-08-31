@@ -1,26 +1,28 @@
 # main/urls.py
 from django.urls import path
 from django.contrib import admin
+from django.views.generic.base import RedirectView
 from . import views
 from django.contrib.auth import views as auth_views
 from django.contrib.admin.views.decorators import staff_member_required
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileForm
+
 
 
 urlpatterns = [
     # Главная страница
     path('', views.index, name='index'),
-    path(
-        'accounts/login/',
-        auth_views.LoginView.as_view(template_name='registration/login.html'),
-        name='login',
-    ),
-    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # === Аутентификация ===
+    path('accounts/login/', views.EmailLoginView.as_view(), name='login'),
+    path('accounts/logout/', views.custom_logout, name='logout'),
     path('accounts/register/', views.register, name='register'),
     path(
         'accounts/confirm/<uidb64>/<token>/',
         views.confirm_email,
         name='confirm_email',
     ),
+
     path('profile/', views.profile, name='profile'),
     path('planning/5/', views.planning_5kl, name='planning_5kl'),
     path('planning/6/', views.planning_6kl, name='planning_6kl'),
@@ -29,19 +31,13 @@ urlpatterns = [
     path('planning/9/', views.planning_9kl, name='planning_9kl'),
     path('ege/', views.ege, name='ege'),
     path('oge/', views.oge, name='oge'),
-    path('diagnostic/starting/', views.starting_diagnostic, name='starting_diagnostic'),
     path('diagnostic/starting_oge/', views.starting_diagnostic_oge, name='starting_diagnostic_oge'),
     path('test-fix-ege/<str:test_code>/', views.test_fix_ege, name='test_fix_ege'),
     path('test-fixdemo-ege/<str:test_code>/', views.test_fixdemo_ege, name='test_fixdemo_ege'),
     path('targetn/', views.targetn, name='targetn'),
-    path('save-example/', views.save_example, name='save_example'),
-    path('load-examples/', views.load_examples, name='load_examples'),
     path('api/check-exercise/', views.check_exercise, name='check_exercise'),
     path('api/orthogram/<str:orth_id>/letters/', views.get_orthogram_letters, name='orthogram_letters'),
-    path('api/daily-quiz/', views.get_daily_quiz, name='daily_quiz'),
-    path('telegram-link/', views.link_telegram, name='link_telegram'),
     path('api/generate-exercise/', views.generate_exercise, name='generate_exercise'),
-    path('api/weekly-report/', views.weekly_report, name='weekly_report'),
     path('api/generate-alphabetical-exercise/', views.generate_alphabetical_exercise, name='generate_alphabetical_exercise'),
     path('api/my-weekly-report/', views.get_weekly_report, name='my_weekly_report'),
     path('api/generate-exercise-multi/', views.generate_exercise_multi, name='generate_exercise_multi'),
@@ -70,24 +66,27 @@ urlpatterns = [
     path('api/generate-task9-exercise/', views.generate_task9_exercise, name='generate_task9_exercise'),
     path('api/generate-chered-exercise/', views.generate_chered_exercise, name='generate_chered_exercise'),
     path('orthoepy_trening/', views.orthoepy_trening, name='orthoepy_trening'),
-    path('api/daily-quiz/', views.get_daily_quiz, name='daily_quiz'),
     path('api/save-example/', views.save_example, name='save_example'),
     path('api/load-examples/', views.load_examples, name='load_examples'),
     path('api/update-example/', views.update_example, name='update_example'),
     path('api/delete-example/', views.delete_example, name='delete_example'),
-    path('api/weekly-report/', views.weekly_report, name='weekly_report'),
     path('api/user-progress/', views.user_progress, name='user_progress'),
     path('api/weak-words/', views.user_weak_words, name='weak_words'),
     path('api/user-praise/', views.user_praise, name='user_praise'),
     path('api/get-orthoepy-pair/', views.get_orthoepy_pair, name='get_orthoepy_pair'),
     path('api/get-word-by-id/', views.get_word_by_id, name='get_word_by_id'),
     path('api/get-words-by-ids/', views.get_words_by_ids, name='get_words_by_ids'),
+    path('statistic/', views.statistic, name='statistic'),
+    path('paponim_trening/', views.paponim_trening, name='paponim_trening'),
+    path('api/orthoepy-trening/check/', views.check_orthoepy_trening, name='check_orthoepy_trening_save'),
+    path('api/track-lesson/', views.track_lesson_view, name='track_lesson_view'),
+    path('api/track-paponim/', views.track_paponim_view, name='track_paponim_view'),
 
     path('api/vk/status/', views.vk_status),
     path('api/vk/generate-code/', views.vk_generate_code),
-    path('api/vk/verify-code/', views.vk_verify_code),
-    path('api/vk/get-user/', views.vk_get_user),
     path('api/health/', views.vk_health),
+    path('api/site-daily-word/', views.site_daily_word, name='site_daily_word'),
+    path('api/site-daily-answer/', views.site_daily_answer, name='site_daily_answer'),
 
     # === API для САЙТА (требуют авторизации) ===
     path('api/get-quiz/', views.get_quiz, name='get_quiz'),
@@ -97,15 +96,32 @@ urlpatterns = [
     path('api/quiz/hot-word/', views.get_hot_word_quiz, name='hot_word_quiz'),
     path('api/quiz/<str:quiz_type>/snippet/', views.quiz_snippet_api, name='quiz_snippet_api'),
     path('api/user-stats/', views.get_user_quiz_stats_site, name='user_stats_site'),
+    path('api/stats-progress/', views.stats_progress_api, name='stats_progress_api'),
 
-    # === API для БОТА (без авторизации, с @csrf_exempt) ===
-    path('api/log-quiz-answer/', views.log_quiz_answer, name='log_quiz_answer'),
-    path('api/bot/planning-quiz/', views.get_planning_quiz_api, name='get_planning_quiz_api'),  # ← ИЗМЕНЕНО
-    path('api/bot/general-orthography/', views.get_general_orthography_api, name='get_general_orthography_api'),  # ← НОВОЕ
-    path('api/bot/hot-word/', views.get_hot_word_quiz, name='get_hot_word_quiz'),
-    
+    # === Привязка ботов (сайт) ===
+    path('vk/link/', views.vk_create_link, name='vk_create_link'),
+    path('vk/unlink/', views.vk_unlink, name='vk_unlink'),
+    path('max/link/', views.max_create_link, name='max_create_link'),
+    path('max/unlink/', views.max_unlink, name='max_unlink'),
+
     # === Админка ===
     path('admin/planning-check/', views.admin_planning_check, name='admin_planning_check'),
+
+    # === Подстраницы ЕГЭ ===
+    path('ege/diagnostics/', views.diagnostics, name='diagnostics_ege'),
+    path('ege/demo/', views.demo_ege, name='demo_ege'),
+    path('ege/trainers/', views.trainers_ege, name='trainers_ege'),
+    path('ege/quizzes/', views.quizzes_ege, name='quizzes_ege'),
+    path('ege/lessons/', views.lessons_ege, name='lessons_ege'),
+
+    # Входящая диагностика ЕГЭ (фиксированный вариант из фикстуры)
+    path('diagnostic/fix-ege/', views.diagnostic_fix_ege, name='diagnostic_fix_ege'),
+    path('diagnostic/result/<uuid:attempt_id>/', views.diagnostic_result, name='diagnostic_result',),
+    path('my/diagnostic/<uuid:attempt_id>/', views.student_review, name='student_review'),
+
+    # Диагностики (универсальный маршрут)
+    path('diagnostic/<str:diagnostic_type>/', views.diagnostic_starting, name='diagnostic_starting'),
+    path('diagnostic/test/<str:diagnostic_type>/', views.start_diagnostic_test, name='start_diagnostic_test'),
 
     # ОГЭ
     path('diagnostic/oge/', views.oge_diagnostic_page, name='oge_diagnostic'),
@@ -114,15 +130,36 @@ urlpatterns = [
     path('api/check-oge-diagnostic/', views.check_oge_diagnostic, name='check_oge_diagnostic'),
     
     # чат-бот
-    path('api/chat/', views.chat_api, name='chat_api'),  # ✅ Должна быть
+    path('api/chat/proactive/', views.chat_proactive, name='chat_proactive'),
+    path('api/chat/', views.chat_api, name='chat_api'),
+    path('api/chat-feedback/', views.chat_feedback, name='chat_feedback'),  # ✅ Должна быть
     path('api/assistant/', views.chat_api, name='assistant'),  # ✅ Или эта
     
     # Аналитика для преподавателя / админа
-    path('staff/analytics/', staff_member_required(views.teacher_analytics_view), name='teacher_analytics'),
-    path('staff/student/<int:user_id>/', staff_member_required(views.student_detail_view), name='student_detail'),
+    path('tutor/activate/', views.activate_tutor_code, name='activate_tutor_code'),
+    path('staff/diagnostics/', views.diagnostic_list, name='diagnostic_list'),
+    path('staff/diagnostic/<uuid:attempt_id>/', views.diagnostic_review, name='diagnostic_review'),
+
+
+    # оплата, вебхук, активация
+    path('pay/buy/<str:plan_code>/', views.buy_plan, name='buy_plan'),
+    path('pay/success/', views.pay_success, name='pay_success'),
+    path('pay/fail/', views.pay_fail, name='pay_fail'),
+    path('api/payments/yookassa/webhook/', views.yookassa_webhook, name='yookassa_webhook'),
+
+    # Скачивание справочных материалов
+    path('download/orthoepy-dict/', views.download_reference_file, 
+         {'file_type': 'orthoepy-dict'}, name='download_orthoepy_dict'),
     
-    # тестовый !!!!
-    path('api/vk/send-quiz/', views.vk_send_quiz, name='vk_send_quiz'),
+    path('download/paronyms-dict/', views.download_reference_file, 
+         {'file_type': 'paronyms-dict'}, name='download_paronyms_dict'),
     
+    # Фавиконка: браузер сам запрашивает /favicon.ico на каждой странице —
+    # перенаправляем на наш SVG в статике (работает во всех шаблонах сразу)
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.svg', permanent=True)),
+    # Политика обработки персональных данных
+    path('privacy/', views.privacy, name='privacy'),
+    path('terms/', views.terms, name='terms'),
+
     path('admin/', admin.site.urls),  # Django admin (должен быть в конце)
 ]

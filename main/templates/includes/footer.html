@@ -1,0 +1,195 @@
+{% load static %}
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <!-- Декоративный элемент - inline SVG -->
+            <div class="footer__decor" aria-hidden="true">
+                <svg viewBox="0 0 480 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_5_4191)">
+                        <!-- Статичные круги -->
+                        <path
+                            d="M240 450C355.98 450 450 355.98 450 240C450 124.02 355.98 30 240 30C124.02 30 30 124.02 30 240C30 355.98 124.02 450 240 450Z"
+                            stroke="#4A3520" stroke-width="0.7" />
+                        <path
+                            d="M240 370C311.797 370 370 311.797 370 240C370 168.203 311.797 110 240 110C168.203 110 110 168.203 110 240C110 311.797 168.203 370 240 370Z"
+                            stroke="#4A3520" stroke-width="0.5" />
+                        <path
+                            d="M240 320C284.183 320 320 284.183 320 240C320 195.817 284.183 160 240 160C195.817 160 160 195.817 160 240C160 284.183 195.817 320 240 320Z"
+                            stroke="#4A3520" stroke-width="0.4" />
+                        <path
+                            d="M240 290C267.614 290 290 267.614 290 240C290 212.386 267.614 190 240 190C212.386 190 190 212.386 190 240C190 267.614 212.386 290 240 290Z"
+                            stroke="#4A3520" stroke-width="0.3" />
+
+                        <!-- Статичные оси -->
+                        <path d="M0 240H480" stroke="#4A3520" stroke-width="0.5" />
+                        <path d="M240 0V480" stroke="#4A3520" stroke-width="0.5" />
+
+                        <!-- Вращающаяся группа: диагонали + точки -->
+                        <g class="rotating-cross">
+                            <path d="M91 91L389 389" stroke="#4A3520" stroke-width="0.35" />
+                            <path d="M389 91L91 389" stroke="#4A3520" stroke-width="0.35" />
+                            <path
+                                d="M389 93C390.105 93 391 92.1046 391 91C391 89.8954 390.105 89 389 89C387.895 89 387 89.8954 387 91C387 92.1046 387.895 93 389 93Z"
+                                fill="#4A3520" />
+                            <path
+                                d="M91 93C92.1046 93 93 92.1046 93 91C93 89.8954 92.1046 89 91 89C89.8954 89 89 89.8954 89 91C89 92.1046 89.8954 93 91 93Z"
+                                fill="#4A3520" />
+                            <path
+                                d="M91 391C92.1046 391 93 390.105 93 389C93 387.895 92.1046 387 91 387C89.8954 387 89 387.895 89 389C89 390.105 89.8954 391 91 391Z"
+                                fill="#4A3520" />
+                            <path
+                                d="M389 391C390.105 391 391 390.105 391 389C391 387.895 390.105 387 389 387C387.895 387 387 387.895 387 389C387 390.105 387.895 391 389 391Z"
+                                fill="#4A3520" />
+                        </g>
+
+                        <!-- Статичные тонкие лучи -->
+                        <path d="M240 240L422 135" stroke="#4A3520" stroke-width="0.22" />
+                        <path d="M240 240L58 345" stroke="#4A3520" stroke-width="0.22" />
+                        <path d="M240 240L345 58" stroke="#4A3520" stroke-width="0.22" />
+                        <path d="M240 240L135 422" stroke="#4A3520" stroke-width="0.22" />
+                        <path d="M240 240L135 58" stroke="#4A3520" stroke-width="0.22" />
+                        <path d="M240 240L345 422" stroke="#4A3520" stroke-width="0.22" />
+                        <path d="M240 240L58 135" stroke="#4A3520" stroke-width="0.22" />
+                        <path d="M240 240L422 345" stroke="#4A3520" stroke-width="0.22" />
+
+                        <!-- Статичные маркеры -->
+                        <path d="M450 237V243" stroke="#4A3520" stroke-width="0.5" />
+                        <path d="M30 237V243" stroke="#4A3520" stroke-width="0.5" />
+                        <path d="M237 450H243" stroke="#4A3520" stroke-width="0.5" />
+                        <path d="M237 30H243" stroke="#4A3520" stroke-width="0.5" />
+                        <path d="M370 237V243" stroke="#4A3520" stroke-width="0.4" />
+                        <path d="M110 237V243" stroke="#4A3520" stroke-width="0.4" />
+                        <path d="M237 370H243" stroke="#4A3520" stroke-width="0.4" />
+                        <path d="M237 110H243" stroke="#4A3520" stroke-width="0.4" />
+
+                        <!-- Статичная центральная точка -->
+                        <path
+                            d="M240 242.5C241.381 242.5 242.5 241.381 242.5 240C242.5 238.619 241.381 237.5 240 237.5C238.619 237.5 237.5 238.619 237.5 240C237.5 241.381 238.619 242.5 240 242.5Z"
+                            stroke="#4A3520" stroke-width="0.6" />
+
+                        <!-- Вращающаяся пунктирная дуга -->
+                        <g class="rotating-arc">
+                            <path
+                                d="M370 240C370 274.478 356.304 307.544 331.924 331.924C307.544 356.304 274.478 370 240 370"
+                                stroke="#4A3520" stroke-width="1" stroke-dasharray="4 8" />
+                        </g>
+
+                        <!-- Статичные угловые метки -->
+                        <path d="M8 22V8H22" stroke="#4A3520" stroke-width="0.4" />
+                        <path d="M472 22V8H458" stroke="#4A3520" stroke-width="0.4" />
+                        <path d="M8 458V472H22" stroke="#4A3520" stroke-width="0.4" />
+                        <path d="M472 458V472H458" stroke="#4A3520" stroke-width="0.4" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_5_4191">
+                            <rect width="480" height="480" fill="white" />
+                        </clipPath>
+                    </defs>
+                </svg>
+            </div>
+            <!-- Колонка 1: Brand -->
+            <div class="footer__col footer__col--brand">
+                <img src="/static/images/logo_neurostat.png" alt="НЕЙРОСТАТ" class="footer__logo">
+                <p class="footer__tagline">ЕГЭ по русскому языку с репетитором и персональным ИИ-ассистентом
+                </p>
+            </div>
+
+            <!-- Колонка 2: Navigation -->
+            <div class="footer__col">
+                <h4 class="footer__col-title">Навигация</h4>
+                <nav class="footer__nav">
+                    <ul class="footer__list">
+                        <li><a href="#method" class="footer__link">Метод</a></li>
+                        <li><a href="#pricing" class="footer__link">Тарифы</a></li>
+                        <li><a href="#faq" class="footer__link">Частые вопросы</a></li>
+                        <li><a href="#final-cta" class="footer__link">Диагностика</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Колонка 3: Legal -->
+            <div class="footer__col">
+                <h4 class="footer__col-title">Документы</h4>
+                <nav class="footer__nav">
+                    <ul class="footer__list">
+                        <li><a href="/privacy/" class="footer__link js-doc-link"
+                                data-title="Политика конфиденциальности">Политика конфиденциальности</a></li>
+                        <li><a href="/terms/" class="footer__link js-doc-link"
+                                data-title="Пользовательское соглашение (оферта)">Оферта</a></li>
+                        <li><a href="/privacy/" class="footer__link js-doc-link"
+                                data-title="Согласие на обработку персональных данных">Согласие на обработку данных</a>
+                        </li>
+                        <li class="footer__contacts-wrap">
+                            <button type="button" class="footer__link footer__contacts-btn js-contacts-toggle"
+                                aria-expanded="false" aria-controls="contactsPop">Контакты</button>
+                            <div class="contacts-pop" id="contactsPop" hidden>
+                                <div class="contacts-pop__row">
+                                    <div class="contacts-pop__item">
+                                        <span class="contacts-pop__label">Email</span>
+                                        <a class="contacts-pop__value" href="mailto:a_timof@mail.ru">a_timof@mail.ru</a>
+                                    </div>
+                                    <button type="button" class="contacts-pop__copy"
+                                        data-copy="a_timof@mail.ru">Копировать</button>
+                                </div>
+                                <div class="contacts-pop__row">
+                                    <div class="contacts-pop__item">
+                                        <span class="contacts-pop__label">Телефон</span>
+                                        <a class="contacts-pop__value" href="tel:+79167143463">+7 916 714-34-63</a>
+                                    </div>
+                                    <button type="button" class="contacts-pop__copy"
+                                        data-copy="+79167143463">Копировать</button>
+                                </div>
+                                <div class="contacts-pop__row">
+                                    <div class="contacts-pop__item">
+                                        <span class="contacts-pop__label">MAX</span>
+                                        <span class="contacts-pop__value">+7 916 714-34-63</span>
+                                    </div>
+                                    <button type="button" class="contacts-pop__copy"
+                                        data-copy="+79167143463">Копировать</button>
+                                </div>
+                                <p class="contacts-pop__note">Отвечает Александр лично</p>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Колонка 4: Social -->
+            <div class="footer__col">
+                <h4 class="footer__col-title">Мы в соцсетях</h4>
+                <div class="footer__socials">
+                    <a href="https://t.me/sitesprofi" class="footer__social-link" target="_blank" rel="noopener">
+                        <img src="/static/images/socia_telegram.svg" alt="" class="footer__social-icon">
+                        <span>Telegram</span>
+                    </a>
+                    <button type="button" class="footer__social-link js-contacts-open">
+                        <img src="/static/images/socia_max.svg" alt="" class="footer__social-icon">
+                        <span>Макс</span>
+                    </button>
+                    <!-- <a href="#" class="footer__social-link">
+                        <img src="/static/images/socia_vk.svg" alt="" class="footer__social-icon">
+                        <span>Вконтакте</span>
+                    </a> -->
+
+                    <a href="tel:+79167143463" class="footer__social-link">
+                        <svg class="footer__social-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5">
+                            <path
+                                d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                        </svg>
+                        <span>Позвонить</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="footer__bottom">
+        <p class="footer__copy">© 2026 Нейростат. Все права защищены.</p>
+    </div>
+</footer>
+
+{% include 'chat_widget.html' %}
+<script src="{% static 'js/privacy_modal.js' %}"></script>
+<script src="{% static 'js/contacts_popover.js' %}"></script>

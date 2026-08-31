@@ -4,7 +4,7 @@
 Отвечает на вопросы УЧЕНИКА о статистике, прогрессе, рекомендациях
 """
 
-from main.llm_utils import call_deepseek, get_fallback_response
+from main.llm_utils import call_deepseek, get_fallback_response, INJECTION_GUARD, user_block
 
 
 class Analyst:
@@ -34,14 +34,16 @@ class Analyst:
         • Правильно: {stats['correct']} ({stats['rate']}%)
         """ if stats else "Статистика пока недоступна"
         
+        question_block = user_block(message)
         user_prompt = f"""
         {stats_text}
         
-        ВОПРОС: {message}
+        ВОПРОС:
+        {question_block}
         
         ОТВЕТ:"""
         
         return [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": system_prompt + "\n" + INJECTION_GUARD},
             {"role": "user", "content": user_prompt}
         ]

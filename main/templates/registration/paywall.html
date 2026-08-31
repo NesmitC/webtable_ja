@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доступ к разделу — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+</head>
+
+<body>
+    <section class="au-page">
+        <div class="au-card">
+            <div class="au-card-logo-wrap">
+                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ" class="au-card__logo">
+            </div>
+
+            <div class="au-paywall">
+                {% if profile.plan != 'free' %}
+                <h2 class="au-paywall__title">Подписка закончилась</h2>
+                <p class="au-paywall__text">
+                    Тариф «{{ profile.get_plan_display }}» действовал до {{ profile.plan_until|date:"d.m.Y" }}.
+                    Ваша статистика, слова и истории диагностик сохранены — продлите доступ, чтобы продолжить.
+                </p>
+                {% else %}
+                <h2 class="au-paywall__title">Этот раздел открыт на платных тарифах</h2>
+                <p class="au-paywall__text">
+                    Внутри — планинги, тренажёры, квизы, растущий курс и ИИ-ассистент.
+                    Первые 5 дней после регистрации — полный доступ бесплатно.
+                </p>
+                {% endif %}
+
+                <ul class="au-paywall__plans">
+                    <li class="au-paywall__plan">
+                        <span class="au-paywall__plan-name">Я сам</span>
+                        <span class="au-paywall__plan-price">2 490 ₽<span
+                                class="au-paywall__plan-period">/мес</span></span>
+                        <span class="au-paywall__plan-desc">Платформа и курс самостоятельно</span>
+                    </li>
+                    <li class="au-paywall__plan au-paywall__plan--popular">
+                        <span class="au-paywall__plan-badge">Популярный</span>
+                        <span class="au-paywall__plan-name">Вместе</span>
+                        <span class="au-paywall__plan-price">4 990 ₽<span
+                                class="au-paywall__plan-period">/мес</span></span>
+                        <span class="au-paywall__plan-desc">+ живой поток с преподавателем</span>
+                    </li>
+                    <li class="au-paywall__plan">
+                        <span class="au-paywall__plan-name">Премиум</span>
+                        <span class="au-paywall__plan-price">9 990 ₽<span
+                                class="au-paywall__plan-period">/мес</span></span>
+                        <span class="au-paywall__plan-desc">+ 4 личные встречи в месяц</span>
+                    </li>
+                </ul>
+
+                <a href="/#pricing" class="btn btn--primary au-paywall__cta">Выбрать тариф</a>
+
+                <p class="au-paywall__note">
+                    Онлайн-оплата подключается. Пока — напишите в Telegram
+                    <a href="https://t.me/sitesprofi" target="_blank" rel="noopener"
+                        class="au-paywall__tg-link">@sitesprofi</a>,
+                    и мы включим доступ вручную.
+                </p>
+            </div>
+
+            <div class="au-footer">
+                <p class="au-footer__copy">© 2026 Нейростат</p>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

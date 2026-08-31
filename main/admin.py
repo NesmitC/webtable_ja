@@ -4,10 +4,31 @@ from django import forms
 from django.db import models
 from django.urls import reverse
 from django.utils.html import format_html
-from .models import CorrectAnswer, Orthogram, OrthogramExample, Punktum, PunktumExample, TextAnalysisTask, TextQuestion, QuestionOption, OrthoepyWord, CorrectionExercise, TaskGrammaticEight, TaskGrammaticEightExample, TaskGrammaticTwoTwo, TaskGrammaticTwoTwoExample, TaskPaponim, WordOk
+from .models import (CorrectAnswer, Orthogram, OrthogramExample, Punktum, 
+                     PunktumExample, TextAnalysisTask, TextAnalysisTask2326, TextQuestion, QuestionOption, 
+                     OrthoepyWord, CorrectionExercise, TaskGrammaticEight, 
+                     TaskGrammaticEightExample, TaskGrammaticTwoTwo, 
+                     TaskGrammaticTwoTwoExample, TaskPaponim, WordOk,
+                     DiagnosticAttempt, TutorInvite, LLMCache, BotLog,
+)
 from django.contrib.admin.actions import delete_selected
 from django.db.models.functions import Cast
 from django.db.models import IntegerField
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import UserProfile
+from datetime import timedelta
+from django.shortcuts import render, redirect
+from django.utils import timezone
+
+
+
+# Снимаем стандартную регистрацию User
+admin.site.unregister(User)
+
+@admin.register(User)
+class CustomUserAdmin(BaseUserAdmin):
+    ordering = ['date_joined']
 
 
 class MainAdminSite(admin.AdminSite):
@@ -24,6 +45,74 @@ class MainAdminSite(admin.AdminSite):
             }]
         })
         return app_list
+
+
+@admin.register(DiagnosticAttempt)
+class DiagnosticAttemptAdmin(admin.ModelAdmin):
+    list_display = (
+        'created_at', 'user', 'test_code',
+        'score', 'max_score', 'is_reviewed_by_teacher', 'access_code',
+    )
+    list_filter = ('is_reviewed_by_teacher', 'is_completed', 'test_code')
+    search_fields = ('access_code', 'user__username', 'user__email')
+    readonly_fields = (
+        'id', 'session_key', 'answers_data', 'weak_topics', 'created_at',
+    )
+    ordering = ('-created_at',)
+    list_per_page = 25
+
+# ... DiagnosticAttemptAdmin остаётся как есть ...
+
+
+# === Выдача премиум-доступа вручную (без ЮKassa) ===
+PREMIUM_PLAN = 'premium'
+
+class GrantPremiumForm(forms.Form):
+    days = forms.IntegerField(
+        min_value=1, initial=30,
+        label='На сколько дней выдать доступ',
+        help_text='30 — месяц · 270 — 9 месяцев · 365 — год',
+    )
+
+@admin.action(description='🎓 Выдать премиум-доступ')
+def grant_premium(modeladmin, request, queryset):
+    if 'apply' in request.POST:
+        form = GrantPremiumForm(request.POST)
+        if form.is_valid():
+            days = form.cleaned_data['days']
+            now = timezone.now()
+            for profile in queryset:
+                # продление от max(сейчас, текущее окончание): остаток не сгорает
+                base = profile.plan_until if (profile.plan_until and profile.plan_until > now) else now
+                profile.plan = PREMIUM_PLAN
+                profile.plan_until = base + timedelta(days=days)
+                profile.save(update_fields=['plan', 'plan_until'])
+            modeladmin.message_user(request, f'Премиум выдан: {queryset.count()} на {days} дн.')
+            return redirect(request.get_full_path())
+    else:
+        form = GrantPremiumForm()
+
+    return render(request, 'admin/grant_premium_form.html', {
+        'form': form,
+        'profiles': queryset,
+        'title': 'Выдать премиум-доступ',
+    })
+
+
+class UserProfileAdmin(admin.ModelAdmin):
+    actions = [grant_premium]          # ← вот сюда
+    list_display = ('user', 'registered_at', 'plan', 'plan_until', 'trial_until', 'role', 'tutor_active', 'email_confirmed')
+    list_filter = ('plan',)
+    search_fields = ('user__username', 'user__email')
+    fields = ('plan', 'plan_until', 'trial_until', 'role', 'tutor_active')
+    ordering = ('-user__date_joined',)   # свежие регистрации сверху по умолчанию
+
+    @admin.display(description='Регистрация', ordering='user__date_joined')
+    def registered_at(self, obj):
+        return timezone.localtime(obj.user.date_joined).strftime('%d.%m.%Y %H:%M')
+
+if not admin.site.is_registered(UserProfile):
+    admin.site.register(UserProfile, UserProfileAdmin)
 
 
 @admin.register(CorrectAnswer)
@@ -148,10 +237,42 @@ class TextQuestionInline(admin.TabularInline):
 
 @admin.register(TextAnalysisTask)
 class TextAnalysisTaskAdmin(admin.ModelAdmin):
+    """Блок «Тексты для анализа 1–3» (микротексты)"""
     list_display = ['title', 'order', 'is_active']
     list_editable = ['order', 'is_active']
     inlines = [TextQuestionInline]
     search_fields = ['title', 'text_content']
+    exclude = ['task_type']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(task_type='1_3')
+
+    def get_changeform_initial_data(self, request):
+        return {'task_type': '1_3'}
+
+    def save_model(self, request, obj, form, change):
+        obj.task_type = '1_3'
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(TextAnalysisTask2326)
+class TextAnalysisTask2326Admin(admin.ModelAdmin):
+    """Блок «Тексты для анализа 23–26» (макротексты)"""
+    list_display = ['title', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    inlines = [TextQuestionInline]
+    search_fields = ['title', 'text_content']
+    exclude = ['task_type']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(task_type='23_26')
+
+    def get_changeform_initial_data(self, request):
+        return {'task_type': '23_26'}
+
+    def save_model(self, request, obj, form, change):
+        obj.task_type = '23_26'
+        super().save_model(request, obj, form, change)
 
 @admin.register(TextQuestion)
 class TextQuestionAdmin(admin.ModelAdmin):
@@ -200,7 +321,8 @@ class WordOkAdmin(admin.ModelAdmin):
     list_display = ['preview', 'task_type', 'correct_variants', 'is_active', 'is_for_quiz']
     list_editable = ['is_active', 'is_for_quiz']
     list_filter = ['task_type', 'is_active', 'is_for_quiz', 'grades']
-    search_fields = ['text', 'correct_variants']
+    search_fields = ['text', 'correct_variants', 'explanation']
+    fields = ['text', 'task_type', 'correct_variants', 'explanation', 'is_active', 'is_for_quiz', 'grades']
 
     def preview(self, obj):
         return obj.text[:80] + '...' if len(obj.text) > 80 else obj.text
@@ -306,6 +428,7 @@ from .models import (
     OgePunktum, OgePunktumExample,
     OgeOrthogram, OgeOrthogramExample,
     OgeCorrectionExercise, OgeWordOk,
+    RagTopic,
 )
 
 
@@ -438,3 +561,100 @@ class OgeWordOkAdmin(admin.ModelAdmin):
 
     def preview(self, obj):
         return obj.text[:80] + '...' if len(obj.text) > 80 else obj.text
+
+@admin.register(TutorInvite)
+class TutorInviteAdmin(admin.ModelAdmin):
+    list_display = ('code', 'is_active', 'used_by', 'used_at')
+    list_filter = ('is_active',)
+
+
+PREMIUM_PLAN = 'premium'   # код из PLAN_LEVEL / PLAN_PRICES
+
+
+class GrantPremiumForm(forms.Form):
+    days = forms.IntegerField(
+        min_value=1, initial=30,
+        label='На сколько дней выдать доступ',
+        help_text='30 — месяц · 270 — 9 месяцев · 365 — год',
+    )
+
+
+@admin.action(description='🎓 Выдать премиум-доступ')
+def grant_premium(modeladmin, request, queryset):
+    # Второй заход после заполнения формы — применяем
+    if 'apply' in request.POST:
+        form = GrantPremiumForm(request.POST)
+        if form.is_valid():
+            days = form.cleaned_data['days']
+            now = timezone.now()
+            for profile in queryset:
+                # продление от max(сейчас, текущее окончание): остаток не сгорает
+                base = profile.plan_until if (profile.plan_until and profile.plan_until > now) else now
+                profile.plan = PREMIUM_PLAN
+                profile.plan_until = base + timedelta(days=days)
+                profile.save(update_fields=['plan', 'plan_until'])
+            modeladmin.message_user(
+                request, f'Премиум выдан: {queryset.count()} на {days} дн.')
+            return redirect(request.get_full_path())
+    else:
+        form = GrantPremiumForm()
+
+    return render(request, 'admin/grant_premium_form.html', {
+        'form': form,
+        'profiles': queryset,
+        'title': 'Выдать премиум-доступ',
+    })
+
+
+# === Лог запросов к ИИ (аналитика качества ассистента) ===
+from .models import AiQueryLog
+
+@admin.register(AiQueryLog)
+class AiQueryLogAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "user", "specialist", "intent", "short_message", "duration_ms", "short_error")
+    list_filter = ("specialist", "intent")
+    search_fields = ("message", "reply", "user__username")
+    readonly_fields = ("user", "message", "intent", "specialist", "reply", "guessed_word",
+                       "duration_ms", "error", "chat_message", "created_at")
+    ordering = ("-created_at",)
+    list_per_page = 50
+
+    @admin.display(description="Вопрос")
+    def short_message(self, obj):
+        return obj.message[:60]
+
+    @admin.display(description="Ошибка")
+    def short_error(self, obj):
+        return obj.error[:40] if obj.error else ""
+
+# ===== РЕЕСТР ТЕМ RAG ===================================================
+@admin.register(RagTopic)
+class RagTopicAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'is_ready', 'live_examples', 'source')
+    list_editable = ('is_ready',)
+    list_filter = ('is_ready',)
+    fields = ('name', 'code', 'description', 'source', 'is_ready', 'order')
+    readonly_fields = ('code',)
+
+    def live_examples(self, obj):
+        n = obj.examples_count()
+        return n if n >= 0 else 'md'
+    live_examples.short_description = 'Примеров в БД'
+
+
+
+@admin.register(LLMCache)
+class LLMCacheAdmin(admin.ModelAdmin):
+    list_display = ('category', 'question', 'provider', 'hits', 'created_at')
+    list_filter = ('category', 'provider')
+    search_fields = ('question', 'answer')
+    readonly_fields = ('cache_key', 'hits', 'created_at')
+
+
+@admin.register(BotLog)
+class BotLogAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'platform', 'username', 'category', 'question')
+    list_filter = ('platform', 'category')
+    search_fields = ('question', 'answer', 'username')
+    readonly_fields = ('user', 'username', 'platform', 'question', 'answer',
+                       'category', 'specialist', 'created_at')

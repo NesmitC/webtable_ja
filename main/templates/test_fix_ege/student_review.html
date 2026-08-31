@@ -1,0 +1,336 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой разбор и план — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+
+<body class="test_fix_ege">
+    {% include 'includes/header.html' %}
+
+    <div class="sr-wrap">
+        <h1>Мой разбор</h1>
+        <p>
+            {{ attempt.created_at|date:"d.m.Y" }} ·
+            Балл: <b>{{ attempt.score }}/{{ attempt.max_score }}</b> ·
+            {% if attempt.is_reviewed_by_teacher %}
+            <span class="rv-ok">✅ Разобрано с преподавателем</span>
+            {% else %}
+            <span class="sw-none">⏳ Ожидает разбора</span>
+            {% endif %}
+        </p>
+        <p class="sr-hint">
+            Это ваш старт. Ниже — ваша работа и план, отсюда мы растём.
+        </p>
+
+        {% if weak %}
+        <p>
+            <b>Точки роста:</b>
+            {% for w in weak %}
+            <span class="sr-chip">задание {{ w }}</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+
+        <h2 class="sr-section-title">Моя работа</h2>
+        <p class="sr-hint">
+            Зелёным — верно; красным — ошибка (рядом правильный вариант); серым — не было ответа.
+        </p>
+
+        {% for w in work %}
+        <div class="sw-block">
+            <h3 class="sr-block-title">
+                {{ w.title }}
+            </h3>
+
+            {% if w.instruction %}
+            <p class="sr-hint">
+                {{ w.instruction }}
+            </p>
+            {% endif %}
+
+            {% if w.kind == 'lines' %}
+            {% for ln in w.rendered_lines %}
+            <div class="sw-line">
+                {{ ln|safe }}
+            </div>
+            {% endfor %}
+
+            {% elif w.kind == 'match' %}
+            {% if w.ref_lines %}
+            <div class="sr-ref-lines">
+                {% for line in w.ref_lines %}
+                <div class="sw-line">
+                    {{ line|safe }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <table class="rv-table">
+                <thead>
+                    <tr class="rv-head">
+                        <th class="rv-col--letter">Буква</th>
+                        <th>Что сопоставляем</th>
+                        <th class="rv-col--answer">Ответ</th>
+                        <th class="rv-col--correct">Правильно</th>
+                        <th class="rv-col--mark"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in w.rows %}
+                    <tr>
+                        <td><b>{{ r.letter }}</b></td>
+                        <td>
+                            {{ r.name|safe }}
+                        </td>
+                        <td>{{ r.user }}</td>
+                        <td>
+                            {% if not r.is_correct %}
+                            {{ r.correct }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.touched %}
+                            {% if r.is_correct %}
+                            <span class="rv-ok">✓</span>
+                            {% else %}
+                            <span class="rv-no">✗</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="sw-none">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% elif w.kind == 'choices' %}
+            {% for c in w.choices %}
+            <div>
+                {{ forloop.counter }}) {{ c }}
+            </div>
+            {% endfor %}
+            <p>
+                Ответ ученика:
+                {% if w.user %}
+                <span class="sw-ans
+                                {% if w.is_correct %}
+                                    sw-ans--ok
+                                {% else %}
+                                    sw-ans--no
+                                {% endif %}
+                            ">
+                    {{ w.user }}
+                </span>
+                {% else %}
+                <span class="sw-none">не было ответа</span>
+                {% endif %}
+                {% if w.correct and not w.is_correct %}
+                <span class="sw-exp">· правильно: {{ w.correct }}</span>
+                {% endif %}
+            </p>
+
+            {% elif w.kind == 'sentences' %}
+            {% for s in w.sentences %}
+            <div class="sw-line">
+                {{ s|safe }}
+            </div>
+            {% endfor %}
+            <p>
+                Ответ ученика:
+                {% if w.user %}
+                <span class="sw-ans
+                                {% if w.is_correct %}
+                                    sw-ans--ok
+                                {% else %}
+                                    sw-ans--no
+                                {% endif %}
+                            ">
+                    {{ w.user }}
+                </span>
+                {% else %}
+                <span class="sw-none">не было ответа</span>
+                {% endif %}
+                {% if w.correct and not w.is_correct %}
+                <span class="sw-exp">· правильно: {{ w.correct }}</span>
+                {% endif %}
+            </p>
+
+            {% elif w.kind == 'phrases' %}
+            {% for p in w.phrases %}
+            <div class="sw-line">
+                {{ p }}
+            </div>
+            {% endfor %}
+            <p>
+                Ответ ученика:
+                {% if w.user %}
+                <span class="sw-ans
+                                {% if w.is_correct %}
+                                    sw-ans--ok
+                                {% else %}
+                                    sw-ans--no
+                                {% endif %}
+                            ">
+                    {{ w.user }}
+                </span>
+                {% else %}
+                <span class="sw-none">не было ответа</span>
+                {% endif %}
+                {% if w.correct and not w.is_correct %}
+                <span class="sw-exp">· правильно: {{ w.correct }}</span>
+                {% endif %}
+            </p>
+
+            {% elif w.kind == 'exclude' %}
+            <div class="sw-line">
+                {{ w.text }}
+            </div>
+            <p>
+                Ответ ученика:
+                {% if w.user %}
+                <span class="sw-ans
+                                {% if w.is_correct %}
+                                    sw-ans--ok
+                                {% else %}
+                                    sw-ans--no
+                                {% endif %}
+                            ">
+                    {{ w.user }}
+                </span>
+                {% else %}
+                <span class="sw-none">не было ответа</span>
+                {% endif %}
+                {% if w.correct and not w.is_correct %}
+                <span class="sw-exp">· правильно: {{ w.correct }}</span>
+                {% endif %}
+            </p>
+
+            {% elif w.kind == 'textblock' %}
+            {% if w.paragraphs %}
+            <div class="sw-line sr-preline">
+                {{ w.paragraphs|safe }}
+            </div>
+            {% endif %}
+            {% for q in w.questions %}
+            <div class="sw-q">
+                <b>{{ q.num }}.</b>
+                <div class="sr-preline">
+                    {{ q.text|safe }}
+                </div>
+                {% if q.choices %}
+                <div class="sr-choices-indent">
+                    {% for c in q.choices %}
+                    <div>
+                        {{ forloop.counter }}) {{ c|safe }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div>
+                    Ответ ученика:
+                    {% if q.user %}
+                    <span class="sw-ans
+                                        {% if q.is_correct %}
+                                            sw-ans--ok
+                                        {% else %}
+                                            sw-ans--no
+                                        {% endif %}
+                                    ">
+                        {{ q.user }}
+                    </span>
+                    {% else %}
+                    <span class="sw-none">не было ответа</span>
+                    {% endif %}
+                    {% if q.correct and not q.is_correct %}
+                    <span class="sw-exp">· правильно: {{ q.correct }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% elif w.kind == 'essay' %}
+            <p>
+                Вы указали средний балл за сочинение: <b>{{ w.user }}</b> (из 22)
+            </p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="cta-block cta-block--success">
+            <h3 class="sr-cta-title">Итог диагностики</h3>
+            <p class="sr-cta-score">
+                Вы набрали <b>{{ primary }}</b> первичных баллов —
+                это <b>{{ secondary }}</b> вторичных баллов из 100.
+            </p>
+            <p class="sr-hint">
+                Это ваша стартовая точка. План ниже ведёт к росту — неделя за неделей.
+            </p>
+        </div>
+
+        <h2 class="sr-section-title sr-section-title--lg">Мой план · 10 недель</h2>
+        <p class="sr-plan-level">
+            {{ plan.level }}
+        </p>
+        <p class="sr-hint">
+            План собран автоматически по вашим ответам. На занятии преподаватель настроит его под вас.
+        </p>
+        {% for p in plan.weeks %}
+        <div class="plan-week">
+            <span class="plan-week__num">Неделя {{ p.week }}</span>
+            <span>
+                {{ p.title }}
+                {% if p.badge %}
+                <span class="sr-chip">ваша точка роста</span>
+                {% endif %}
+            </span>
+            <span class="plan-week__links">
+                {% for l in p.links %}
+                {% if l.url %}
+                <a href="{{ l.url }}" {% if l.ext %} target="_blank" rel="noopener" {% endif %}>{{ l.label }} →</a>
+                {% else %}
+                <span class="sw-none">{{ l.label }} — скоро</span>
+                {% endif %}
+                {% endfor %}
+            </span>
+        </div>
+        {% endfor %}
+
+        {% if attempt.is_reviewed_by_teacher %}
+        <div class="cta-block">
+            <h3 class="sr-block-title">Разбор с преподавателем выполнен ✅</h3>
+            <p>
+                План скорректирован на занятии. Открывайте тренажёры текущей недели и вперёд.
+            </p>
+        </div>
+        {% else %}
+        <div class="cta-block">
+            <h3 class="sr-block-title">Следующий шаг — бесплатное занятие</h3>
+            <p>
+                План — это отлично! Но понять, <b>ПОЧЕМУ</b> Вы ошибаетесь и <b>КАК</b> это исправить —
+                видно только в живом общении. На занятии (до 45 минут) мы разберём
+                ошибки и определим оптимальный план действий по их устранению.
+            </p>
+            <p>
+                Напишите мне (в тг или макс) или позвоните. И мы договоримся о занятии:
+            </p>
+            <p>
+                Telegram: <a href="https://t.me/sitesprofi">@sitesprofi</a> ·
+                Телефон: <a href="tel:+98765432109">+9-876-543-21-09</a>
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% include 'includes/footer.html' %}
+</body>
+
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <title>Оплата получена</title>
+</head>
+
+<body>
+    <div>
+        <h2>💰 Новая оплата на Нейростате</h2>
+
+        <table cellpadding="4" cellspacing="0">
+            <tr>
+                <td>Ученик</td>
+                <td><strong>{{ name }}</strong></td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td>{{ email }}</td>
+            </tr>
+            {% if phone %}<tr>
+                <td>Телефон</td>
+                <td>{{ phone }}</td>
+            </tr>{% endif %}
+            <tr>
+                <td>Тариф</td>
+                <td><strong>{{ plan_name }}</strong></td>
+            </tr>
+            {% if amount %}<tr>
+                <td>Сумма</td>
+                <td><strong>{{ amount.value }} {{ amount.currency }}</strong></td>
+            </tr>{% endif %}
+            <tr>
+                <td>Платёж ЮKassa</td>
+                <td>{{ payment_id }}</td>
+            </tr>
+        </table>
+
+        <p>
+            <a href="{{ admin_url }}">Открыть профиль в админке</a>
+        </p>
+
+        <p>Хороший момент, чтобы написать семье и спланировать занятия.</p>
+    </div>
+</body>
+
+</html>

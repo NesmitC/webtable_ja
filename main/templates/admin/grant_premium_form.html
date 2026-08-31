@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    {% for p in profiles %}
+    <input type="hidden" name="_selected_action" value="{{ p.pk }}">
+    {% endfor %}
+    <input type="hidden" name="action" value="grant_premium">
+
+    <p><strong>Выдать премиум-доступ:</strong></p>
+    <ul>
+        {% for p in profiles %}
+        <li>{{ p.user.get_full_name|default:p.user.username }} — {{ p.user.email }}</li>
+        {% endfor %}
+    </ul>
+
+    {{ form.as_p }}
+
+    <button type="submit" name="apply" class="default">Выдать</button>
+    <a href="#" onclick="window.history.back(); return false;">Отмена</a>
+</form>
+{% endblock %}

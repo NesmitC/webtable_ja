@@ -1,22 +1,35 @@
 <!-- task_paponim_snippet.html -->
-<div class="task-paponim-exercise">
-    <h3>Задание 5: Паронимы</h3>
-    <p>В одном из приведённых ниже предложений НЕВЕРНО употреблено выделенное слово. Исправьте лексическую ошибку, подобрав к выделенному слову пароним. Запишите подобранное слово, соблюдая нормы современного русского литературного языка.</p>
+<div class="task-paponim-exercise diagnostic-full-test">
+    <div class="question-diagnostic diagnostic-full-test__question" data-question-number="5">
+        <h4 class="diagnostic-full-test__title">
+            Задание 5. Паронимы
+        </h4>
+        <p class="diagnostic-full-test__instruction">
+            В одном из приведённых ниже предложений НЕВЕРНО употреблено выделенное слово.
+            Исправьте лексическую ошибку, подобрав к выделенному слову пароним.
+            Запишите подобранное слово, соблюдая нормы современного русского литературного языка.
+        </p>
 
-    <div class="paponim-sentences" style="margin: 15px 0; line-height: 1.6;">
-        {% for sent in sentences %}
-        <div>{{ sent.text|safe }}</div>
-        {% endfor %}
+        <div class="diagnostic-full-test__lines">
+            {% for sent in sentences %}
+            <div class="diagnostic-full-test__line">
+                <span class="practice-line diagnostic-full-test__line-text">
+                    {{ sent.text|safe }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <input type="text" class="paponim-input diagnostic-full-test__input input-text"
+            placeholder="Напишите правильное слово" autocomplete="off" data-question="5">
     </div>
 
-    <input
-        type="text"
-        class="paponim-input"
-        placeholder="Напишите правильное слово"
-        autocomplete="off"
-        style="width: 40%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"
-    >
+    <button class="check-task-paponim check-task-submit">Проверить</button>
 
-    <button class="check-task-paponim" style="margin-top: 5px;">Проверить</button>
-    <div class="task-paponim-result" style="margin-top: 15px; display: none; font-weight: bold;"></div>
+    <section class="orthoepy-dictionary-link">
+        <a href="{% url 'paponim_trening' %}">Онлайн-словник паронимов →</a>
+        </p>
+    </section>
+
+    <div class="task-paponim-result diagnostic-full-test__result"></div>
 </div>

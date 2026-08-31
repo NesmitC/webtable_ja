@@ -1,35 +1,215 @@
 /* main\static\css\reset.css */
+
+/* Подключение шрифтов */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
 /* Сброс общих стилей */
 *,
 *::before,
 *::after {
     margin: 0;
     padding: 0;
-    box-sizing: border-box; /* учитывает padding и border в ширину элемента */
+    box-sizing: border-box;
 }
 
-ul, ol {
-    list-style-type: none;            /* Скрываем маркеры списков */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    clip: rect(0 0 0 0);
+}
+
+ul,
+ol {
+    list-style-type: none;
 }
 
 a {
-    text-decoration: none;            /* Убираем подчеркивания ссылок */
-    color: inherit;                   /* Наследование цвета текста */
+    text-decoration: none;
+    color: inherit;
 }
 
 img {
-    max-width: 100%;                  /* Изображения адаптируются под контейнер */
-    height: auto;                     /* Сохраняем пропорции изображений */
+    max-width: 100%;
+    height: auto;
 }
 
-button,
-input[type="submit"],
-input[type="button"] {
-    cursor: pointer;                  /* Курсор-клик для кнопок */
-    outline: none;                    /* Убираем выделение кнопки при фокусировке */
-}
-
-/* ------- плавное перемещение по якорной ссылке -------- */
+/* Плавная прокрутка */
 html {
     scroll-behavior: smooth;
+}
+
+/* ---------- Кнопки ---------- */
+button,
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+    cursor: pointer;
+    outline: none;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    padding: 0;
+    margin: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    user-select: none;
+}
+
+/* ---------- Поля ввода ---------- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+textarea,
+select {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+}
+
+/* Убираем стрелки у number */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Убираем крестик у search */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+}
+
+/* Убираем синий цвет у автозаполнения */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+    background-color: transparent !important;
+    background-clip: content-box !important;
+}
+
+/* ------- Переменные темы -------- */
+:root {
+    /* Цвета */
+    --color-bg: #F5EDE0;
+    --color-header-bg: #FDFBF7;
+    --color-text: #333333;
+    --color-primary: #8B5A2B;
+    --color-border: #D3C8B8;
+    --color-nav-text: #7A6A54;
+    --color-btn-border: rgba(24, 14, 5, 0.18);
+    /* #180E052E */
+    --color-wchat-bg-top: #FDFAF5B8;
+    --color-wchat-bg-btm: #FDFAF5E0;
+    --color-wchat-border-med: #fff5e5;
+    --color-wchat-border: #7A523038;
+    --color-btn-primary: #9C5A1D;
+    --color-btn-text-light: #FDFAF5;
+    --color-btn-text-dark: #180E05;
+
+    /* Секции */
+    --color-hero-gradient-start: #F5EDE0;
+    --color-hero-gradient-mid: #EDD8BC;
+    --color-hero-gradient-end: #E5CAAA;
+    --color-hero-badge-border: rgba(24, 14, 5, 0.18);
+    --color-hero-badge-text: #7A6A54;
+    --color-hero-title: #180E05;
+    --color-chess-bg-light: #FDFAF5;
+    --color-chess-bg-dark: #E3D5BA;
+    --color-chess-border: rgba(122, 82, 48, 0.12);
+    --color-chess-icon-border: rgba(122, 82, 48, 0.2);
+    --color-chess-title: #180E05;
+    --color-chess-desc: #7A6A54;
+    --color-chess-link: #9C5A1D;
+    --color-how-it-works-bg: #EDE2CE;
+    --color-stars: #B8892A;
+    --color-final-cta: #FFFFFF6B;
+    --color-agree: #F5EDE066;
+
+    /* Типографика */
+    --font-heading: 'Cormorant', serif;
+    --font-body: 'DM Sans', sans-serif;
+}
+
+/* ------- Глобальные настройки -------- */
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ------- Типографика -------- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+h2 {
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+h3 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+h4 {
+    font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+}
+
+h5 {
+    font-size: clamp(1.125rem, 2vw, 1.25rem);
+}
+
+h6 {
+    font-size: clamp(1rem, 1.5vw, 1.125rem);
+}
+
+p {
+    font-size: 1rem;
+    line-height: 1.7;
 }

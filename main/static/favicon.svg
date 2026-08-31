@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Neurostat favicon: vintage hot-air balloon, full view -->
+  <defs>
+    <linearGradient id="env" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ead9b3"/>
+      <stop offset=".55" stop-color="#c9ab7c"/>
+      <stop offset="1" stop-color="#8f6a44"/>
+    </linearGradient>
+  </defs>
+
+  <!-- envelope -->
+  <path d="M32 3C20 3 11 12 11 23c0 10 9 18 18 24h6c9-6 18-14 18-24C53 12 44 3 32 3Z" fill="url(#env)"/>
+
+  <!-- gores (vertical panels) -->
+  <g fill="none" stroke="#7c5a38" stroke-opacity=".4" stroke-width="1">
+    <path d="M32 3v44"/>
+    <path d="M32 3c-7 5-10 27-2.5 44"/>
+    <path d="M32 3c7 5 10 27 2.5 44"/>
+    <path d="M32 3c-13 6-16 27-4 44"/>
+    <path d="M32 3c13 6 16 27 4 44"/>
+  </g>
+
+  <!-- soft highlight -->
+  <path d="M21 9c-4 4-6 9-6 13 0 3 1 6 2 8" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- neck -->
+  <path d="M29 47h6l-1 3h-4Z" fill="#6b4a2e"/>
+
+  <!-- ropes -->
+  <path d="M30 50l-3 6M34 50l3 6M31.5 50l-.5 6M32.5 50l.5 6" stroke="#6b4a2e" stroke-width=".9" fill="none"/>
+
+  <!-- gondola -->
+  <path d="M24 57h16c0 3-3.5 5-8 5s-8-2-8-5Z" fill="#7a5535"/>
+  <rect x="23.5" y="55.4" width="17" height="2" rx="1" fill="#5a3d26"/>
+
+  <!-- три светлых точки на гондоле -->
+  <g fill="#f6ecd7">
+    <circle cx="28" cy="59.2" r="1.2"/>
+    <circle cx="32" cy="59.6" r="1.2"/>
+    <circle cx="36" cy="59.2" r="1.2"/>
+  </g>
+</svg>

@@ -27,20 +27,20 @@ function initStrictValidation() {
         input.setAttribute('spellcheck', 'false');
 
         // 1. Фильтрация при обычном вводе (с клавиатуры)
-        input.addEventListener('input', function(e) {
+        input.addEventListener('input', function (e) {
             if (forbiddenCharsRegex.test(this.value)) {
                 this.value = this.value.replace(forbiddenCharsRegex, '');
             }
         });
 
         // 2. Фильтрация при вставке (Ctrl+V)
-        input.addEventListener('paste', function(e) {
+        input.addEventListener('paste', function (e) {
             e.preventDefault(); // Отменяем стандартную вставку
-            
+
             // Берем текст из буфера, очищаем его от мусора
             const pastedText = (e.clipboardData || window.clipboardData).getData('text/plain');
             const cleanText = pastedText.replace(forbiddenCharsRegex, '');
-            
+
             // Вставляем чистый текст в место курсора
             const start = this.selectionStart;
             const end = this.selectionEnd;
@@ -55,25 +55,25 @@ document.addEventListener('DOMContentLoaded', initStrictValidation);
 // === ФОРМАТИРОВАНИЕ ЗАДАНИЙ С ВАРИАНТАМИ ОТВЕТОВ ===
 document.querySelectorAll('.question h4').forEach(h4 => {
     if (h4.dataset.formatted) return; // Защита от повторной обработки
-    
+
     let text = h4.textContent.trim();
     const qBlock = h4.closest('.question');
     const qNum = qBlock?.dataset.questionNumber;
-    
+
     // Убираем дублирование номера, если в БД он уже есть (например: "2. 2. В тексте...")
     if (qNum && text.startsWith(`${qNum}. `)) {
         text = text.slice(qNum.length + 2).trim();
     }
-    
+
     // Ищем начало первого варианта "1) "
     const firstOptionIndex = text.search(/\d+\)/);
     if (firstOptionIndex > 0) {
         const prompt = text.slice(0, firstOptionIndex).trim();
         let options = text.slice(firstOptionIndex);
-        
+
         // Добавляем перенос строки перед каждым номером варианта
         options = options.replace(/(\d+\))/g, '\n$1');
-        
+
         h4.innerHTML = `
             <div style="font-weight: bold; margin-bottom: 3px;">${prompt}</div>
             <div style="font-weight: normal; white-space: pre-line;">${options}</div>
@@ -88,16 +88,16 @@ window.taskLetterGroups = {};
 window.taskSubgroupLetters = {};
 
 // При загрузке страницы заполняем для всех заданий 9-21
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     for (let num = 9; num <= 21; num++) {
         const groupsScript = document.getElementById(`task${num}-letter-groups`);
         const subgroupsScript = document.getElementById(`task${num}-subgroup-letters`);
-        
+
         if (groupsScript && subgroupsScript) {
             try {
                 window.taskLetterGroups[num] = JSON.parse(groupsScript.textContent);
                 window.taskSubgroupLetters[num] = JSON.parse(subgroupsScript.textContent);
-            } catch(e) {
+            } catch (e) {
                 console.warn(`Ошибка загрузки task${num}:`, e);
             }
         }
@@ -112,11 +112,11 @@ function getLettersForMask(orthId) {
     if (orthId.startsWith('21_2-')) {
         return ['2', '3', '4.0', '4.1', '4.2', '5', '6', '7', '10', '11', '12', '13', '14', '15', '17'];
     }
-    
+
     if (orthId.startsWith('14-')) return ['|', '/', '-'];
     if (orthId.startsWith('15-')) return ['н', 'нн'];
     if (orthId.match(/^(16|17|18|19|20)-/)) return [',', 'х'];
-    
+
     // === УНИВЕРСАЛЬНАЯ ОБРАБОТКА ДЛЯ ЗАДАНИЙ 9-21 ===
     const match = orthId.match(/^(\d+)-/);
     if (match) {
@@ -128,7 +128,7 @@ function getLettersForMask(orthId) {
                 const letters = window.taskSubgroupLetters[taskNum]?.[groupKey];
                 if (letters && letters.length) return letters;
             }
-            
+
             // Fallback для задания 9
             if (taskNum === 9) {
                 const idx = parseInt(orthId.split('-')[1]);
@@ -141,7 +141,7 @@ function getLettersForMask(orthId) {
                 };
                 return groups[idx] || ['а', 'о', 'е', 'и', 'я'];
             }
-            
+
             // Fallback для заданий 10-12
             if (taskNum === 10) {
                 const idx = parseInt(orthId.split('-')[1]);
@@ -154,11 +154,11 @@ function getLettersForMask(orthId) {
                 };
                 return groups[idx] || ['а', 'о', 'е', 'и', 'с', 'з', 'ъ', 'ь', 'ы'];
             }
-            
+
             if (taskNum === 11 || taskNum === 12) {
                 return ['е', 'и'];
             }
-            
+
             if (taskNum === 13) return ['/', '|'];
             if (taskNum === 14) return ['/', '|', '-'];
             if (taskNum === 15) return ['н', 'нн'];
@@ -168,7 +168,7 @@ function getLettersForMask(orthId) {
             }
         }
     }
-    
+
     return ['а', 'о', 'е', 'и', 'я'];
 }
 
@@ -213,26 +213,26 @@ function processLine(line) {
         const orthId = match[1];
         const letters = getLettersForMask(orthId);
         const liItems = letters.map(l => `<li data-letter="${l}">${l}</li>`).join('');
-        result += `<span class="smiley-button" data-orth-id="${orthId}" style="position:relative; display:inline-block; margin:0 0;">
-            <span class="smiley-icon" style="cursor:pointer; font-size:1.2rem; display:inline-block; padding:2px 4px; border-radius:4px;">😊</span>
-            <ul class="smiley-options" style="display:none; position:absolute; top:100%; left:0; background:white; border:1px solid #ccc; list-style:none; padding:5px; margin:0; z-index:100; border-radius:5px; box-shadow:0 2px 5px rgba(0,0,0,0.2); white-space:nowrap;">
+        result += `<span class="smiley-button" data-orth-id="${orthId}">
+            <span class="smiley-icon">😊</span>
+            <ul class="smiley-options">
                 ${liItems}
             </ul>
         </span>`;
         lastIndex = match.index + match[0].length;
     }
     result += html.slice(lastIndex);
-    
+
     if (result !== html) {
         line.innerHTML = result;
         line.querySelectorAll('.smiley-button').forEach(setupSmiley);
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.practice-line').forEach(processLine);
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (!e.target.closest('.smiley-button')) {
             document.querySelectorAll('.smiley-options').forEach(opt => opt.style.display = 'none');
         }
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (checkBtn) {
         checkBtn.addEventListener('click', async () => {
             const answers = {};
-            
+
             document.querySelectorAll('[data-question]').forEach(el => {
                 const q = el.dataset.question;
                 if (el.type === 'checkbox') {
@@ -255,23 +255,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (val !== '') answers[q] = val;
                 }
             });
-            
+
             document.querySelectorAll('[data-question^="8_"]').forEach(el => {
                 const val = (el.value || '').trim();
                 if (val !== '') answers[el.dataset.question] = val;
             });
- 
+
             // === СБОР ОТВЕТОВ ДЛЯ ВСЕХ ЗАДАНИЙ СО СМАЙЛИКАМИ (9, 14, 15, 16 и т.д.) ===
             document.querySelectorAll('.smiley-button').forEach(btn => {
                 const orthId = btn.dataset.orthId;
                 if (!orthId) return;
-                
+
                 const icon = btn.querySelector('.smiley-icon');
                 let letter = icon ? icon.textContent.trim() : '😊';
-                
+
                 // Пропускаем невыбранные смайлики
                 if (letter === '😊') return;
-                
+
                 // Нормализация: во всех заданиях со смайликами используем одинаковые правила
                 // Для пунктуации (запятая → !, Х → ?)
                 if (!orthId.startsWith('16-') && !orthId.startsWith('17-') && !orthId.startsWith('18-') && !orthId.startsWith('19-') && !orthId.startsWith('20-')) {
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     else if (letter === 'х' || letter === 'x') letter = '?';
                 }
                 // Для задания 14 (раздельное/дефис) оставляем как есть: | / -
-                
+
                 answers[orthId] = letter;
             });
 
@@ -295,8 +295,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // Если случайно смешались цифры и буквы, оставляем только один тип
                     if (hasNum && hasLet) {
-                        clean = /\d/.test(clean.charAt(0)) 
-                            ? clean.replace(/[^0-9]/g, '') 
+                        clean = /\d/.test(clean.charAt(0))
+                            ? clean.replace(/[^0-9]/g, '')
                             : clean.replace(/[^а-яё]/g, '');
                     } else if (hasNum) {
                         clean = clean.replace(/[^0-9]/g, '');
@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Вызов функции
             initAnswerValidation();
-            
+
             try {
                 const res = await fetch(window.location.href, {
                     method: 'POST',
@@ -358,8 +358,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 const result = await res.json();
+
+                if (result.paywall) {
+                    alert(result.message || 'Доступно на платных тарифах');
+                    window.location.href = '/#pricing';
+                    return;
+                }
+
+                // === МЯГКИЙ PAYWALL: анонима ведём на страницу результата ===
+                console.log('[PAYWALL] needs_registration=', result.needs_registration, 'attempt_id=', result.attempt_id);
+                if (result.attempt_id) {
+                    // Аноним → страница результата с CTA регистрации.
+                    // Залогиненный → сразу «Мой разбор» с планом и сводкой.
+                    window.location.href = result.needs_registration
+                        ? '/diagnostic/result/' + result.attempt_id + '/'
+                        : '/my/diagnostic/' + result.attempt_id + '/';
+                    return;
+                }
+
                 const container = document.getElementById('test-results');
                 if (container) {
+
                     // 1. Подсчет первичных баллов на основе детальных результатов
                     let primaryScore = 0;
                     const res = result.results || {};
@@ -383,10 +402,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // 2. Конвертация во вторичные баллы
                     const conversionTable = {
-                        0:0,1:3,2:5,3:8,4:10,5:12,6:15,7:17,8:20,9:22,10:24,11:27,12:29,13:32,14:34,
-                        15:36,16:37,17:39,18:40,19:42,20:43,21:45,22:46,23:48,24:49,25:51,26:52,27:54,
-                        28:55,29:57,30:58,31:60,32:61,33:63,34:64,35:66,36:67,37:69,38:70,39:72,40:73,
-                        41:75,42:78,43:81,44:83,45:86,46:89,47:91,48:94,49:97,50:100
+                        0: 0, 1: 3, 2: 5, 3: 8, 4: 10, 5: 12, 6: 15, 7: 17, 8: 20, 9: 22, 10: 24, 11: 27, 12: 29, 13: 32, 14: 34,
+                        15: 36, 16: 37, 17: 39, 18: 40, 19: 42, 20: 43, 21: 45, 22: 46, 23: 48, 24: 49, 25: 51, 26: 52, 27: 54,
+                        28: 55, 29: 57, 30: 58, 31: 60, 32: 61, 33: 63, 34: 64, 35: 66, 36: 67, 37: 69, 38: 70, 39: 72, 40: 73,
+                        41: 75, 42: 78, 43: 81, 44: 83, 45: 86, 46: 89, 47: 91, 48: 94, 49: 97, 50: 100
                     };
                     let secondaryScore = conversionTable[primaryScore];
                     if (secondaryScore === undefined) {
@@ -394,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     // 3. Вывод (ровно 2 строки, как просили)
-                    let html = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">';
+                    let html = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;margin-bottom:10px;">';
                     for (let i = 1; i <= 26; i++) {
                         const task = res[String(i)];
                         if (!task) continue;
@@ -427,15 +446,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.querySelectorAll('.smiley-button').forEach(btn => {
                         const orthId = btn.dataset.orthId;
                         if (!orthId) return;
-                        
+
                         const icon = btn.querySelector('.smiley-icon');
                         if (!icon) return;
-                        
+
                         const taskResult = result.results[orthId];
-                        
+
                         if (taskResult) {
                             icon.classList.remove('correct', 'incorrect', 'selected');
-                            
+
                             if (taskResult.is_correct === true) {
                                 icon.classList.add('correct');
                             } else if (taskResult.is_correct === false) {
@@ -448,12 +467,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.querySelectorAll('[data-question^="8_"]').forEach(select => {
                         const questionKey = select.dataset.question; // "8_А", "8_Б" и т.д.
                         const taskResult = result.results[questionKey]; // ← Теперь это работает!
-                        
+
                         if (taskResult) {
                             select.classList.remove('task-match-correct', 'task-match-incorrect');
                             select.style.borderColor = '';
                             select.style.backgroundColor = '';
-                            
+
                             if (taskResult.is_correct === true) {
                                 select.classList.add('task-match-correct');
                                 select.style.backgroundColor = '#d4edda';
@@ -470,10 +489,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.querySelectorAll('[data-question^="22_"]').forEach(select => {
                         const questionKey = select.dataset.question;
                         const taskResult = result.results[questionKey];
-                        
+
                         if (taskResult) {
                             select.classList.remove('task-match-correct', 'task-match-incorrect');
-                            
+
                             if (taskResult.is_correct === true) {
                                 select.classList.add('task-match-correct');
                                 select.style.backgroundColor = '#d4edda';
@@ -489,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.question').forEach(question => {
                     const checkboxes = question.querySelectorAll('input[type="checkbox"][data-question]');
                     const textInput = question.querySelector('input[type="text"][data-question]');
-                    
+
                     if (checkboxes.length > 0 && textInput) {
                         // Функция обновления текстового поля
                         const updateTextInput = () => {
@@ -500,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 .join('');
                             textInput.value = checkedValues;
                         };
-                        
+
                         // Добавляем обработчики на чекбоксы
                         checkboxes.forEach(cb => {
                             cb.addEventListener('change', updateTextInput);
@@ -534,16 +553,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.task-header').forEach(h4 => {
                     if (h4.dataset.formatted) return;
                     let text = h4.textContent.trim();
-                    
+
                     // Ищем начало первого варианта: "1) ", "1." и т.д.
                     const match = text.match(/(\d+\)\s+)/);
                     if (match) {
                         const prompt = text.slice(0, match.index).trim();
                         let options = text.slice(match.index);
-                        
+
                         // Добавляем перенос строки перед каждым номером варианта
                         options = options.replace(/(\d+\)\s+)/g, '\n$1').trim();
-                        
+
                         h4.innerHTML = `
                             <div style="font-weight: bold; margin-bottom: 3px;">${prompt}</div>
                             <div class="task-options">${options}</div>

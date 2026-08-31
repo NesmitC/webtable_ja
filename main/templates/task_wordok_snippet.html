@@ -1,17 +1,22 @@
 <!-- task_wordok_snippet.html -->
-<div class="task-wordok-exercise">
-    <h3>Задание 6: Лексические нормы</h3>
-    <p>{{ instruction }}</p>
-    <div style="margin: 15px 0; line-height: 1.6;">
-        {{ text }}
+<div class="task-wordok-exercise diagnostic-full-test">
+    <div class="question-diagnostic diagnostic-full-test__question" data-question-number="6">
+        <h4 class="diagnostic-full-test__title">
+            Задание 6. Лексические нормы
+        </h4>
+        <p class="diagnostic-full-test__instruction">
+            {{ instruction }}
+        </p>
+
+        <div class="diagnostic-full-test__text">
+            {{ text|safe }}
+        </div>
+
+        <input type="text" class="wordok-input diagnostic-full-test__input input-text" placeholder="Напишите слово"
+            autocomplete="off" data-question="6">
     </div>
-    <input
-        type="text"
-        class="wordok-input"
-        placeholder="Напишите слово"
-        autocomplete="off"
-        style="width: 40%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"
-    >
-    <button class="check-task-wordok" style="margin-top: 5px;">Проверить</button>
-    <div class="task-wordok-result" style="margin-top: 15px; display: none; font-weight: bold;"></div>
+
+    <button class="check-task-wordok check-task-submit">Проверить</button>
+
+    <div class="task-wordok-result diagnostic-full-test__result"></div>
 </div>

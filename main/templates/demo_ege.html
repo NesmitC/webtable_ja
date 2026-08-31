@@ -1,0 +1,71 @@
+{% comment %} main\templates\demo_ege.html {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демоверсии и досрок ЕГЭ — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+
+<body>
+
+    {% include 'includes/header.html' %}
+
+    <main class="page-container">
+
+        <!-- Бейдж-строка: плашка + ромбик + раздел (классы переиспользованы со страницы диагностик) -->
+        <div class="diag-badge-wrap">
+            <span class="hero__badge">ЕГЭ · Русский язык · 2027</span>
+            <span class="diag-badge-sep" aria-hidden="true"></span>
+            <span class="diag-badge-label">Демоверсии, досрок</span>
+        </div>
+
+        <!-- Две колонки вариантов -->
+        <div class="demo-grid">
+
+            <!-- ЛЕВАЯ колонка: Демоверсии -->
+            <div class="demo-col">
+                <button class="demo-tab" type="button" data-demo-type="demo2026">
+                    <span class="demo-tab__year">2026</span>
+                    <span class="demo-tab__title">Демоверсия ЕГЭ по русскому</span>
+                </button>
+                <button class="demo-tab" type="button" data-demo-type="demo2027">
+                    <span class="demo-tab__year">2027</span>
+                    <span class="demo-tab__title">Демоверсия ЕГЭ по русскому</span>
+                </button>
+            </div>
+
+            <!-- ПРАВАЯ колонка: Досрочные варианты -->
+            <div class="demo-col">
+                <button class="demo-tab" type="button" data-demo-type="early2025">
+                    <span class="demo-tab__year">2025</span>
+                    <span class="demo-tab__title">Досрочный вариант ЕГЭ по русскому</span>
+                </button>
+                <button class="demo-tab" type="button" data-demo-type="early2026">
+                    <span class="demo-tab__year">2026</span>
+                    <span class="demo-tab__title">Досрочный вариант ЕГЭ по русскому</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Контейнер для загружаемого теста -->
+        <section class="demo-content" id="demoContent">
+            <div class="demo-content__placeholder">
+                Выберите вариант, чтобы открыть тест
+            </div>
+        </section>
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="/static/js/main.js"></script>
+</body>
+
+</html>

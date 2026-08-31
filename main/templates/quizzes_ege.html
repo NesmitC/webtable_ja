@@ -1,0 +1,82 @@
+{% comment %} main\templates\quizzes_ege.html {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квизы ЕГЭ по русскому языку онлайн — ударения, орфография | Нейростат</title>
+    <meta name="description"
+        content="{{ meta_description|default:'Онлайн-игры квизы по русскому языку на актуальных примерах из ЕГЭ: 5 минут в день и автоматическое запоминание слов и ударений. Играйте, повышая грамотность.' }}">
+
+
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+
+<body>
+
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-quizzes">
+        <h1 class="visually-hidden">Квизы ЕГЭ по русскому языку: интерактивные игры для запоминания слов и ударений</h1>
+        <!-- Бейдж-строка (классы переиспользованы) -->
+        <div class="diag-badge-wrap">
+            <span class="hero__badge">ЕГЭ · Русский язык · 2027</span>
+            <span class="diag-badge-sep" aria-hidden="true"></span>
+            <span class="diag-badge-label">Квизы</span>
+        </div>
+
+        <div class="quizzes-layout">
+            <!-- === ЛЕВАЯ КОЛОНКА: КВИЗЫ + РЕЗУЛЬТАТЫ === -->
+            <div class="quizzes-col-main">
+                <section class="block-quizzes">
+                    {% if level == 0 %}<div class="freemium-banner">🔥 «Горячие» квизы открыты бесплатно. Личные квизы по вашим словам из планинга — в тарифе «Я сам». <a href="/#pricing">Выбрать тариф →</a></div>{% endif %}
+                    <h2>МОИ КВИЗЫ</h2>
+                    <h3 class="visually-hidden">Темы квизов: слова из планинга, орфография, ударения, грамматика</h3>
+                    <div class="quiz-buttons">
+                        <button class="quiz-trigger{% if level == 0 %} locked{% endif %}" data-quiz-type="planning">Слова из планинга</button>
+                        <button class="quiz-trigger{% if level == 0 %} locked{% endif %}" data-quiz-type="orthography">Орфография</button>
+                        <button class="quiz-trigger{% if level == 0 %} locked{% endif %}" data-quiz-type="orthoepy">Ударения</button>
+                        <button class="quiz-trigger{% if level == 0 %} locked{% endif %}" data-quiz-type="grammar">Грамматика</button>
+                        <button class="quiz-trigger" data-quiz-type="hot">🔥 Горячие</button>
+                    </div>
+                    <section class="block-answer-quiz-content"></section>
+                </section>
+
+                <section class="block-results">
+                    <h2>МОИ РЕЗУЛЬТАТЫ</h2>
+                    <div id="user-stats-container">
+                        <div id="user-stats">Загрузка статистики...</div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- === ПРАВАЯ КОЛОНКА: СЛОВО ДНЯ === -->
+            {% if subscription.kind == 'paid' or subscription.kind == 'trial' %}
+            <aside class="quizzes-col-side">
+                <section class="card card-daily-word">
+                    <h3 class="daily-word__title">Слово дня</h3>
+                    <div id="daily-word-clock" class="daily-word__clock"></div>
+                    <div id="daily-word-container" class="daily-word__body">Загрузка...</div>
+                    <div id="daily-word-result" class="daily-word__result"></div>
+                </section>
+            </aside>
+            {% endif %}
+        </div>
+
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/quiz.js' %}?v=4"></script>
+    <script src="{% static 'js/freemium_lock.js' %}"></script>
+
+</body>
+
+</html>

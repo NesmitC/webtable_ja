@@ -1,62 +1,65 @@
 <!-- main/templates/task_grammatic_twotwo_snippet.html -->
-<!-- main/templates/task_grammatic_twotwo_snippet.html -->
-<div class="task-twotwo-exercise">
-    <h3>Задание 22: Установите соответствие между примерами и средствами выразительности</h3>
-    <p>К каждой позиции первого столбца подберите соответствующую позицию из второго столбца.</p>
+<div class="task-twotwo-exercise diagnostic-full-test">
+    <div class="question-diagnostic diagnostic-full-test__question" data-question-number="22">
+        <h4 class="diagnostic-full-test__title">
+            Задание 22. Средства выразительности
+        </h4>
+        <p class="diagnostic-full-test__instruction">
+            Установите соответствие между примерами и средствами выразительности.
+            К каждой позиции первого столбца подберите соответствующую позицию из второго столбца.
+        </p>
 
-    <div class="task-match-container">
-        
-        <!-- ЛЕВАЯ КОЛОНКА: Примеры -->
-        <div class="task-match-left-column">
-            <h4>ПРЕДЛОЖЕНИЯ</h4>
-            
-            {% for item in sentences %}
-                <div class="task-match-row">
-                    <select class="task-twotwo-select" 
-                            data-error-letter="{% if forloop.counter == 1 %}А{% elif forloop.counter == 2 %}Б{% elif forloop.counter == 3 %}В{% elif forloop.counter == 4 %}Г{% elif forloop.counter == 5 %}Д{% endif %}">
-                        <option value="-">—</option>
-                        {% for num, name in device_names_list %}
-                            <option value="{{ num }}">{{ num }}</option>
-                        {% endfor %}
-                    </select>
-                    <span class="task-match-letter">
-                        {% if forloop.counter == 1 %}А.
-                        {% elif forloop.counter == 2 %}Б.
-                        {% elif forloop.counter == 3 %}В.
-                        {% elif forloop.counter == 4 %}Г.
-                        {% elif forloop.counter == 5 %}Д.
-                        {% endif %}
-                    </span>
-                    <div class="task-match-content">
-                        {{ item.text }}
-                        {% if item.author %}
-                            <div class="task-match-author">({{ item.author }})</div>
-                        {% endif %}
-                    </div>
+        <div class="task-match-container">
+            <!-- ЛЕВАЯ КОЛОНКА: Предложения -->
+            <div class="task-match-column">
+                <div class="diagnostic-full-test__match-title">
+                    ПРЕДЛОЖЕНИЯ
                 </div>
-            {% endfor %}
-        </div>
+                {% for item in sentences %}
+                <div class="diagnostic-full-test__match-row">
+                    <strong>{{ item.letter }})</strong> {{ item.text|safe }}
+                    {% if item.author %}
+                    <div class="task-twotwo-author">({{ item.author }})</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
 
-        <!-- ПРАВАЯ КОЛОНКА: Средства выразительности -->
-        <div class="task-match-right-column">
-            <h4>ИЗОБРАЗИТЕЛЬНО-ВЫРАЗИТЕЛЬНЫЕ СРЕДСТВА ЯЗЫКА</h4>
-            
-            <div>
+            <!-- ПРАВАЯ КОЛОНКА: Средства выразительности -->
+            <div class="task-match-column">
+                <div class="diagnostic-full-test__match-title">
+                    ИЗОБРАЗИТЕЛЬНО-ВЫРАЗИТЕЛЬНЫЕ СРЕДСТВА
+                </div>
                 {% for num, name in device_names_list %}
-                    <div class="task-match-row">
-                        <span class="task-match-item-number">{{ num }}.</span>
-                        <span class="task-match-content">{{ name }}</span>
-                    </div>
+                <div class="diagnostic-full-test__match-row">
+                    <strong>{{ num }})</strong> {{ name }}
+                </div>
                 {% endfor %}
             </div>
         </div>
-        
+
+        <!-- СЕКЦИЯ ВВОДА ОТВЕТОВ -->
+        <div class="task-twotwo-inputs">
+            <div class="task-twotwo-input-row">
+                {% for item in sentences %}
+                <div class="task-twotwo-input-item">
+                    <label class="task-twotwo-input-label">{{ item.letter }})</label>
+                    <select class="task-twotwo-select diagnostic-full-test__select"
+                        data-error-letter="{{ item.letter }}">
+                        <option value="">--</option>
+                        {% for num, name in device_names_list %}
+                        <option value="{{ num }}">{{ num }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
-    <!-- Кнопка только для тренажёров (не для диагностики) -->
+    <!-- Кнопка только для тренажёров -->
     {% if show_check_button|default:True %}
-    <button class="check-task-twotwo">Проверить</button>
-    <div class="task-twotwo-result" style="display: none;"></div>
+    <button class="check-task-twotwo check-task-submit">Проверить</button>
+    <div class="task-twotwo-result diagnostic-full-test__result"></div>
     {% endif %}
-
 </div>

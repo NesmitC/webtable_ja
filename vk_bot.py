@@ -1,33 +1,71 @@
 # vk_bot.py
-import os, json, logging, requests
-from dotenv import load_dotenv
+"""
+VK-бот Нейростата. Тонкий адаптер над main.bot_core.
+
+Получает события через Long Polling; вся логика (квизы, статистика,
+привязка) — в bot_core прямыми вызовами ORM, без HTTP.
+
+Запуск:  python vk_bot.py   (systemd-сервис vk-bot.service)
+"""
+import os
+import sys
+import json
+import logging
+
+import django
+
+# --- Поднимаем Django ДО импорта проектных модулей ---
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'main.settings')
+django.setup()
+
 import vk_api
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.utils import get_random_id
-import random
 
-# Глобальное хранилище данных пользователей
-user_data = {}
+from main import bot_core
 
-# 🔹 Настройка логирования
+# --- Настройка логирования ---
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
         logging.FileHandler('vk_bot.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+        logging.StreamHandler(),
+    ],
 )
 log = logging.getLogger('vk_bot')
 
-load_dotenv()
 VK_TOKEN = os.getenv('VK_GROUP_TOKEN')
 VK_GROUP_ID = int(os.getenv('VK_GROUP_ID', 0))
-API_URL = os.getenv('DJANGO_API_URL', 'http://127.0.0.1:8000').rstrip('/')
 
 vk_session = vk_api.VkApi(token=VK_TOKEN)
 vk = vk_session.get_api()
 longpoll = VkBotLongPoll(vk_session, VK_GROUP_ID)
+
+# --- Состояние в памяти процесса (сбрасывается при рестарте — допустимо) ---
+pending_questions = {}   # vk_id -> dict квиза из bot_core
+_chat_hinted = set()       # vk_id, кому уже показали подсказку о привязке
+user_data = {}           # vk_id -> {'last_mode': str, 'hot_index': int}
+
+LINK_PROMPT = (
+    '🔗 Сначала привяжи аккаунт с сайта:\n'
+    '1. Сайт → Личный кабинет → блок VK → «Получить код»\n'
+    '2. Отправь этот код сюда'
+)
+ACCESS_DENIED = (
+    '⚠️ Тренировки в боте доступны на платных тарифах '
+    '(«Я сам», «Вместе», «Премиум») и на триале.\n'
+    'Выбрать тариф: https://neurostat.ru/profile/'
+)
+
+MODES = {'personalized', 'orthography', 'orthoepy', 'hot_word', 'weak'}
+_last_simplify = {}  # последний вопрос для кнопки «Объясни проще»
+
+
+# ========================================================================
+# ОТПРАВКА / КЛАВИАТУРЫ
+# ========================================================================
 
 def send(user_id, text, keyboard=None):
     try:
@@ -36,36 +74,179 @@ def send(user_id, text, keyboard=None):
             params['keyboard'] = json.dumps(keyboard, ensure_ascii=False)
         vk.messages.send(**params)
     except Exception as e:
-        log.error(f"❌ VK send error: {e}")
+        log.error(f'VK send error: {e}')
 
-def api_post(endpoint, data):
-    try:
-        r = requests.post(f"{API_URL}{endpoint}", json=data, timeout=10)
-        r.raise_for_status()
-        return r.json()
-    except Exception as e:
-        log.error(f"❌ Django API error {endpoint}: {e}")
-        return None
 
-def get_user_by_vk(vk_id):
-    res = api_post('/api/vk/get-user/', {'vk_id': vk_id})
-    return res if res and res.get('found') else None
+def _btn(label, payload):
+    return {'action': {'type': 'text', 'label': label,
+                       'payload': json.dumps(payload, ensure_ascii=False)}}
 
-def send_main_menu(vk_id, username=""):
-    keyboard = {
-        "inline": True, "buttons": [
-            [{"action": {"type": "text", "label": "📖 Планинг", "payload": '{"action":"planning"}'}},
-             {"action": {"type": "text", "label": "📝 Все орф.", "payload": '{"action":"all_orthography"}'}}],
-            [{"action": {"type": "text", "label": "🎯 Ударения", "payload": '{"action":"orthoepy"}'}},
-             {"action": {"type": "text", "label": "🔥 Горячие", "payload": '{"action":"hot_word"}'}},
-             {"action": {"type": "text", "label": "📊 Стат.", "payload": '{"action":"stats"}'}}]
-        ]
+
+def kb_main_menu():
+    return {
+        'inline': True,
+        'buttons': [
+            [_btn('📖 Мои слова', {'a': 'personalized'}),
+             _btn('📝 Орфография', {'a': 'orthography'})],
+            [_btn('🎯 Ударения', {'a': 'orthoepy'}),
+             _btn('🔥 Горячие', {'a': 'hot_word'}),
+             _btn('📊 Стат.', {'a': 'stats'})],
+        ],
     }
-    send(vk_id, f"👋 Привет, {username}! Главное меню:", keyboard)
+
+
+def kb_next(mode):
+    return {
+        'inline': True,
+        'buttons': [[
+            _btn('🎯 Ещё', {'a': mode}),
+            _btn('📊 Стат.', {'a': 'stats'}),
+            _btn('🏠 Меню', {'a': 'menu'}),
+        ]],
+    }
+
+
+def set_activity(vk_id):
+    try:
+        vk.messages.setActivity(user_id=vk_id, type='typing')
+    except Exception:
+        pass
+
+
+# ========================================================================
+# ДОСТУП
+# ========================================================================
+
+def get_active_profile(vk_id):
+    """Возвращает (profile, None) либо (None, текст для отправки)."""
+    profile = bot_core.get_profile_by_platform('vk', vk_id)
+    if not profile:
+        return None, LINK_PROMPT
+    if not bot_core.user_can_use_bot(profile):
+        return None, ACCESS_DENIED
+    return profile, None
+
+
+# ========================================================================
+# КВИЗЫ
+# ========================================================================
+
+def send_quiz(vk_id, profile, mode):
+    index = 0
+    if mode == 'hot_word':
+        index = user_data.setdefault(vk_id, {}).get('hot_index', 0)
+
+    set_activity(vk_id)
+    quiz = bot_core.get_quiz(profile, mode, index=index)
+
+    if not quiz.get('available'):
+        send(vk_id, quiz.get('message') or 'Вопросы пока закончились. Попробуй позже.')
+        return
+
+    if mode == 'hot_word' and 'next_index' in quiz:
+        user_data.setdefault(vk_id, {})['hot_index'] = quiz['next_index']
+
+    user_data.setdefault(vk_id, {})['last_mode'] = mode
+    pending_questions[vk_id] = quiz
+
+    buttons = []
+    for i, opt in enumerate(quiz.get('options', [])):
+        buttons.append([_btn(str(opt['text'])[:40], {'a': 'answer', 'i': i})])
+
+    send(vk_id, f"❓ {quiz['question']}", {'inline': True, 'buttons': buttons})
+
+
+def handle_answer(vk_id, idx):
+    profile, err = get_active_profile(vk_id)
+    if err:
+        return send(vk_id, err)
+
+    quiz = pending_questions.pop(vk_id, None)
+    if not quiz:
+        return send(vk_id, 'Вопрос устарел. Нажми /start и выбери тренировку заново.')
+
+    options = quiz.get('options') or []
+    if not isinstance(idx, int) or not (0 <= idx < len(options)):
+        return send(vk_id, 'Не понял ответ. Попробуй ещё раз.')
+
+    selected = options[idx]
+    was_correct = bool(selected.get('is_correct'))
+
+    result = bot_core.log_answer(
+        profile,
+        quiz.get('example_id'),
+        quiz.get('user_word_id'),
+        was_correct,
+    )
+
+    explanation = result.get('explanation') or ''
+    correct_text = result.get('correct_text') or quiz.get('correct_text') or '?'
+
+    if was_correct:
+        text = '✅ Верно!'
+        if explanation:
+            text += f'\n📚 {explanation}'
+    else:
+        text = f'❌ Ошибка! Правильно: {correct_text}'
+        if explanation:
+            text += f'\n📚 {explanation}'
+
+    send(vk_id, text)
+
+    last_mode = user_data.get(vk_id, {}).get('last_mode', 'personalized')
+    send(vk_id, 'Что дальше?', kb_next(last_mode))
+
+
+# ========================================================================
+# СТАТИСТИКА / СПРАВКА / МЕНЮ
+# ========================================================================
+
+def handle_stats(vk_id):
+    profile, err = get_active_profile(vk_id)
+    if err:
+        return send(vk_id, err)
+    set_activity(vk_id)
+    try:
+        stats = bot_core.get_stats(profile)
+        send(vk_id, bot_core.format_stats_message(stats))
+    except Exception as e:
+        log.exception(f'Stats error: {e}')
+        send(vk_id, '⚠️ Не удалось загрузить статистику')
+
 
 def send_help(vk_id):
-    send(vk_id, "📚 Команды:\n• /start — главное меню\n• планинг — квиз из твоих слов\n• все орф. — орфография из базы\n• ударение — тест по ударениям\n• статистика — ваш прогресс")
+    send(vk_id,
+         '📚 Команды:\n'
+         '• /start — главное меню\n'
+         '• мои слова — квиз из твоего планинга\n'
+         '• орфография — вопросы из эталонной базы\n'
+         '• ударения — тренировка ударений\n'
+         '• горячие — горячие слова ЕГЭ\n'
+         '• статистика — твой прогресс за неделю')
 
+
+def handle_start(vk_id):
+    profile = bot_core.get_profile_by_platform('vk', vk_id)
+    if not profile:
+        return send(vk_id, LINK_PROMPT)
+    if not bot_core.user_can_use_bot(profile):
+        return send(vk_id, ACCESS_DENIED)
+    name = profile.first_name or profile.user.first_name or 'друг'
+    send(vk_id, f'👋 Привет, {name}! Главное меню:', kb_main_menu())
+
+
+def handle_link_code(vk_id, code):
+    res = bot_core.link_by_code(code, 'vk', vk_id)
+    if res['success']:
+        send(vk_id, f"✅ Привязан! Привет, {res['username']}!")
+        send(vk_id, 'Главное меню:', kb_main_menu())
+    else:
+        send(vk_id, res['message'])
+
+
+# ========================================================================
+# ДИСПЕТЧЕР СОБЫТИЙ
+# ========================================================================
 
 def handle(event):
     obj = event.object
@@ -74,413 +255,121 @@ def handle(event):
     if not vk_id:
         return
 
-    text = msg.get('text', '').strip()
+    text = (msg.get('text') or '').strip()
     payload = msg.get('payload')
 
-    # --- Обработка нажатия на кнопку (Payload) ---
+    # --- Кнопки ---
     if payload:
         try:
-            data = json.loads(payload)
+            data = json.loads(payload) if isinstance(payload, str) else payload
             action = data.get('a') or data.get('action')
 
-            if action == 'quiz_answer':
-                user = get_user_by_vk(vk_id)
-                if not user:
-                    return send(vk_id, "⚠️ Сначала привяжи аккаунт: /start")
-
-                word_id = data.get('w') or data.get('word_id')
-                if not word_id:
-                    return send(vk_id, "⚠️ Ошибка данных вопроса")
-
-                # Логируем ответ
-                log_res = api_post('/api/log-quiz-answer/', {
-                    'user_id': user['user_id'],
-                    'word_id': word_id,
-                    'user_answer_correct': data.get('c') if 'c' in data else data.get('is_correct')
-                })
-
-                if log_res:
-                    is_correct = log_res.get('was_correct', False)
-                    explanation = log_res.get('explanation', '')
-                    correct_text = log_res.get('correct_text', '?')
-
-                    if is_correct:
-                        send(vk_id, f"✅ Верно!\n📚 {explanation}")
-                    else:
-                        send(vk_id, f"❌ Ошибка!\n📚 Правильно: {correct_text}\n💡 {explanation}")
+            if action == 'answer':
+                handle_answer(vk_id, data.get('i', -1))
+            elif action in MODES:
+                profile, err = get_active_profile(vk_id)
+                if err:
+                    send(vk_id, err)
                 else:
-                    send(vk_id, "⚠️ Не удалось проверить ответ")
-
-                # Определяем режим для кнопки "Ещё"
-                last_mode = user_data.get(vk_id, {}).get('last_mode', 'all_orthography')
-
-                send(vk_id, "Что дальше?", {
-                    "inline": True,
-                    "buttons": [[
-                        {"action": {"type": "text", "label": "🎯 Ещё", "payload": json.dumps({"a": last_mode})}},
-                        {"action": {"type": "text", "label": "📊 Стат.", "payload": json.dumps({"a": "stats"})}}
-                    ]]
-                })
-                return
-
-            elif action == 'orthoepy_answer':
-                user = get_user_by_vk(vk_id)
-                if not user:
-                    return send(vk_id, "⚠️ Сначала привяжи аккаунт: /start")
-
-                word_id = data.get('word_id')
-                is_correct = data.get('is_correct', False)
-                correct_text = data.get('correct', '?')
-
-                # Логируем ответ
-                api_post('/api/log-quiz-answer/', {
-                    'user_id': user['user_id'],
-                    'word_id': word_id,
-                    'was_correct': is_correct
-                })
-
-                if is_correct:
-                    send(vk_id, f"✅ Верно!")
+                    send_quiz(vk_id, profile, action)
+            elif action in ('planning',):
+                profile, err = get_active_profile(vk_id)
+                if err:
+                    send(vk_id, err)
                 else:
-                    send(vk_id, f"❌ Ошибка!\n📚 Правильно: {correct_text}")
-
-                last_mode = user_data.get(vk_id, {}).get('last_mode', 'orthoepy')
-                send(vk_id, "Что дальше?", {
-                    "inline": True,
-                    "buttons": [[
-                        {"action": {"type": "text", "label": "🎯 Ещё", "payload": json.dumps({"a": last_mode})}},
-                        {"action": {"type": "text", "label": "📊 Стат.", "payload": json.dumps({"a": "stats"})}}
-                    ]]
-                })
-                return
-
-            # Обработка других действий
-            elif action == 'planning':
-                handle_planning(vk_id)
-            elif action in ['all_orthography', 'ortho']:
-                handle_all_orthography(vk_id)
-            elif action == 'orthoepy':
-                handle_orthoepy(vk_id)
+                    send_quiz(vk_id, profile, 'personalized')
+            elif action in ('all_orthography', 'ortho'):
+                profile, err = get_active_profile(vk_id)
+                if err:
+                    send(vk_id, err)
+                else:
+                    send_quiz(vk_id, profile, 'orthography')
             elif action == 'stats':
                 handle_stats(vk_id)
             elif action == 'help':
                 send_help(vk_id)
-            elif action == 'hot_word':
-                handle_hot_word(vk_id)
-
+            elif action == 'menu':
+                handle_start(vk_id)
+            elif action == 'daily_answer':
+                handle_daily_answer(vk_id, data.get('i', -1))
+            elif action == 'sales_goal':
+                profile, _err = get_active_profile(vk_id)
+                send(vk_id, bot_core.sales_goal_answer(profile, data.get('g')))
+            elif action == 'simplify':
+                q = _last_simplify.pop(vk_id, None)
+                if not q:
+                    send(vk_id, 'Пришли вопрос ещё раз — объясню проще 🙂')
+                else:
+                    r2 = bot_core.free_chat('vk', vk_id, q, simplify=True)
+                    send(vk_id, r2['reply'])
         except Exception as e:
-            log.error(f"Payload error: {e}")
+            log.exception(f'Payload error: {e}')
         return
 
-    # --- Обработка текстовых команд ---
+    # --- Текстовые команды ---
     cmd = text.lower()
 
-    if cmd in ['/start', 'start', 'привет', 'меню', 'menu']:
-        user = get_user_by_vk(vk_id)
-        if user:
-            send_main_menu(vk_id, user.get('username', 'друг'))
-        else:
-            send(vk_id, "🔗 Привяжи аккаунт:\n1. Сайт → Профиль → Получить код\n2. Отправь код сюда")
-
-    elif cmd in ['планинг', 'planning']:
-        handle_planning(vk_id)
-    elif cmd in ['все орф.', 'орфография', 'all_orthography']:
-        handle_all_orthography(vk_id)
-    elif cmd in ['ударение', 'орфоэпия', 'orthoepy']:
-        handle_orthoepy(vk_id)
-    elif cmd in ['статистика', 'stats']:
+    if cmd in ('/start', 'start', 'привет', 'меню', 'menu'):
+        handle_start(vk_id)
+    elif cmd in ('мои слова', 'планинг', 'planning'):
+        profile, err = get_active_profile(vk_id)
+        send(vk_id, err) if err else send_quiz(vk_id, profile, 'personalized')
+    elif cmd in ('орфография', 'все орф.', 'orthography'):
+        profile, err = get_active_profile(vk_id)
+        send(vk_id, err) if err else send_quiz(vk_id, profile, 'orthography')
+    elif cmd in ('ударение', 'ударения', 'орфоэпия', 'orthoepy'):
+        profile, err = get_active_profile(vk_id)
+        send(vk_id, err) if err else send_quiz(vk_id, profile, 'orthoepy')
+    elif cmd in ('горячие', 'hot'):
+        profile, err = get_active_profile(vk_id)
+        send(vk_id, err) if err else send_quiz(vk_id, profile, 'hot_word')
+    elif cmd in ('статистика', 'stats'):
         handle_stats(vk_id)
-    elif cmd in ['помощь', 'help']:
+    elif cmd in ('помощь', 'help'):
         send_help(vk_id)
-    elif cmd in ['горячие', 'hot', 'hot_word']:
-        handle_hot_word(vk_id)
     elif len(text) == 8 and text.isalnum():
-        res = api_post('/api/vk/verify-code/', {'code': text.upper(), 'vk_id': vk_id})
-        if res and res.get('success'):
-            username = res.get('username', 'друг')
-            send(vk_id, f"✅ Привязан! Привет, {username}!")
-            send_main_menu(vk_id, username)
-        else:
-            send(vk_id, "❌ Код не подошёл или устарел")
+        handle_link_code(vk_id, text)
     else:
-        send(vk_id, "❓ Неизвестная команда. Нажми /start")
-        
+        set_activity(vk_id)
+        res = bot_core.free_chat('vk', vk_id, text)
+        if not res['allowed']:
+            return send(vk_id, LINK_PROMPT)
+        reply = res['reply']
+        if not res['linked'] and vk_id not in _chat_hinted:
+            _chat_hinted.add(vk_id)
+            reply += ('\n\n🔗 Хочешь личные квизы и статистику? '
+                      'Привяжи аккаунт: пришли код из личного кабинета.')
+        rows = [[_btn(b['label'], b['payload']) for b in row]
+                for row in (res.get('buttons') or [])]
+        if res.get('simplifiable'):
+            _last_simplify[vk_id] = text
+            rows.append([_btn('🧒 Простыми словами', {'a': 'simplify'})])
+        send(vk_id, reply, keyboard={'inline': True, 'buttons': rows} if rows else None)
 
-def handle_planning(vk_id):
-    user = get_user_by_vk(vk_id)
-    if not user:
-        return send(vk_id, "❌ Сначала привяжи аккаунт: отправь /start")
+def handle_daily_answer(vk_id, idx):
+    profile, err = get_active_profile(vk_id)
+    if err:
+        return send(vk_id, err)
+    state = bot_core.get_daily_word_state(profile)
+    if state.get('state') != 'revealed':
+        return send(vk_id, 'Слово дня уже отвечено или ещё не открыто.')
+    res = bot_core.answer_daily_word(profile, state['period_date'], idx)
+    if res.get('status') == 'already':
+        return send(vk_id, 'Слово дня уже отвечено.')
+    if res.get('was_correct'):
+        text = '✅ Верно!'
+    else:
+        text = f"❌ Ошибка! Правильно: {res.get('correct_text') or '?'}"
+    if res.get('explanation'):
+        text += f"\n📚 {res['explanation']}"
+    send(vk_id, text)
 
-    try:
-        vk.messages.setActivity(user_id=vk_id, type='typing')
-        r = requests.post(f"{API_URL}/api/bot/planning-quiz/", json={'user_id': user['user_id']}, timeout=5)
-        
-        if r.status_code != 200:
-            raise Exception(f"HTTP {r.status_code}")
-        
-        data = r.json()
-        
-        # ✅ Универсальная обработка ответов
-        if data.get('status') == 'empty':
-            return send(vk_id, data['message'])
-        if data.get('error'):
-            return send(vk_id, f"⚠️ {data['error']}")
-        if 'options' not in data:
-            return send(vk_id, "⚠️ Неверный формат ответа от сервера")
-
-        opts = data['options']
-        correct = opts[0]['text'] if opts[0]['is_correct'] else opts[1]['text']
-        
-        # Безопасное извлечение букв
-        l_corr = data.get('letter_correct', '?')
-        l_incorr = data.get('letter_incorrect', '?')
-        
-        buttons = [
-            {"action": {"type": "text", "label": l_corr, "payload": json.dumps({
-                "a": "quiz_answer", "w": data['example_id'], "c": 1
-            }, ensure_ascii=False)}},
-            {"action": {"type": "text", "label": l_incorr, "payload": json.dumps({
-                "a": "quiz_answer", "w": data['example_id'], "c": 0
-            }, ensure_ascii=False)}}
-        ]
-
-        # Текст с буквами НАД кнопками
-        message = f"❓ {data['question']}\n-{l_corr}-   -{l_incorr}-"
-
-        send(vk_id, message, {
-            "inline": True,
-            "buttons": [buttons]  # одна строка, две кнопки
-        })
-        
-    except Exception as e:
-        log.error(f"❌ Planning error: {e}")
-        send(vk_id, "⚠️ Ошибка загрузки планинга")
-
-
-def handle_quiz(vk_id):
-    """Квиз из эталонной базы (общая орфография)"""
-    user = get_user_by_vk(vk_id)
-    if not user:
-        return send(vk_id, "❌ Сначала привяжи аккаунт: отправь /start")
-
-    try:
-        vk.messages.setActivity(user_id=vk_id, type='typing')
-        r = requests.post(f"{API_URL}/api/daily-quiz/", json={'user_id': user['user_id']}, timeout=5)
-        if r.status_code != 200:
-            raise Exception(f"HTTP {r.status_code}")
-        quiz = r.json()
-
-        if 'options' not in quiz:
-            return send(vk_id, "⚠️ Не удалось сформировать вопрос")
-
-        opts = quiz['options']
-        correct = opts[0]['text'] if opts[0]['is_correct'] else opts[1]['text']
-        
-        # Собираем уникальные варианты букв
-        letters = []
-        for opt in opts:
-            letter = quiz.get('letter_correct') if opt['is_correct'] else quiz.get('letter_incorrect')
-            if letter and letter not in [l['label'] for l in letters]:
-                letters.append({
-                    'label': letter,
-                    'is_correct': opt['is_correct']
-                })
-
-        buttons = []
-        for letter in letters:
-            payload = {
-                "action": "quiz_answer",
-                "word_id": quiz['example_id'],
-                "is_correct": letter['is_correct'],
-                "correct": correct,
-                "exp": quiz.get('explanation', '')
-            }
-            buttons.append({
-                "action": {"type": "text", "label": letter['label'], "payload": json.dumps(payload, ensure_ascii=False)}
-            })
-
-        button_rows = [buttons[i:i+4] for i in range(0, len(buttons), 4)]
-
-        send(vk_id, f"❓ {quiz.get('question', 'Как пишется?')}", {
-            "inline": True,
-            "buttons": button_rows
-        })
-    except Exception as e:
-        log.error(f"❌ Quiz error: {e}")
-        send(vk_id, "⚠️ Ошибка загрузки квиза")
-
-def handle_all_orthography(vk_id):
-    """Квиз из эталонной базы (игнорирует планинг)"""
-    user = get_user_by_vk(vk_id)
-    if not user:
-        return send(vk_id, "❌ Сначала привяжи аккаунт: отправь /start")
-
-    try:
-        vk.messages.setActivity(user_id=vk_id, type='typing')
-        r = requests.post(f"{API_URL}/api/bot/general-orthography/", json={'user_id': user['user_id']}, timeout=5)
-        if r.status_code != 200:
-            raise Exception(f"HTTP {r.status_code}")
-        quiz = r.json()
-
-        if 'options' not in quiz:
-            return send(vk_id, "⚠️ Не удалось сформировать вопрос")
-
-        opts = quiz['options']
-        correct = opts[0]['text'] if opts[0]['is_correct'] else opts[1]['text']
-        
-        # Собираем уникальные варианты букв
-        letters = []
-        for opt in opts:
-            letter = quiz.get('letter_correct') if opt['is_correct'] else quiz.get('letter_incorrect')
-            if letter and letter not in [l['label'] for l in letters]:
-                letters.append({
-                    'label': letter,
-                    'is_correct': opt['is_correct']
-                })
-
-        buttons = []
-        for letter in letters:
-            payload = {
-                "action": "quiz_answer",
-                "word_id": quiz['example_id'],
-                "is_correct": letter['is_correct'],
-                "correct": correct,
-                "exp": quiz.get('explanation', '')
-            }
-            buttons.append({
-                "action": {"type": "text", "label": letter['label'], "payload": json.dumps(payload, ensure_ascii=False)}
-            })
-
-        # Разбиваем кнопки по рядам (максимум 4 в ряд)
-        button_rows = [buttons[i:i+4] for i in range(0, len(buttons), 4)]
-
-        send(vk_id, f"❓ {quiz.get('question', 'Как пишется?')}", {
-            "inline": True,
-            "buttons": button_rows
-        })
-    except Exception as e:
-        log.error(f"❌ All orthography error: {e}")
-        send(vk_id, "⚠️ Ошибка загрузки")
-
-def handle_orthoepy(vk_id):
-    """Квиз по ударениям"""
-    user = get_user_by_vk(vk_id)
-    if not user:
-        return send(vk_id, "❌ Сначала /start")
-
-    # Сохраняем режим для кнопки "Ещё"
-    if vk_id not in user_data:
-        user_data[vk_id] = {}
-    user_data[vk_id]['last_mode'] = 'orthoepy'
-
-    try:
-        vk.messages.setActivity(user_id=vk_id, type='typing')
-        r = requests.post(f"{API_URL}/api/get-orthoepy-pair/", json={}, timeout=5)
-        
-        if r.status_code != 200:
-            raise Exception(f"HTTP {r.status_code}")
-        pair = r.json()
-
-        if pair and pair.get('variant1'):
-            v1, v2, cor = pair['variant1'], pair['variant2'], pair['correct']
-            
-            # 🔹 Формируем payload (без лишнего explanation)
-            p1 = {
-                "action": "orthoepy_answer", 
-                "word_id": pair['id'], 
-                "is_correct": (v1 == cor),
-                "correct": cor
-            }
-            p2 = {
-                "action": "orthoepy_answer", 
-                "word_id": pair['id'], 
-                "is_correct": (v2 == cor),
-                "correct": cor
-            }
-
-            send(vk_id, f"❓ Как правильно?\n1. {v1}\n2. {v2}", {
-                "inline": True, "buttons": [[
-                    {"action": {"type": "text", "label": "1️⃣", "payload": json.dumps(p1, ensure_ascii=False)}},
-                    {"action": {"type": "text", "label": "2️⃣", "payload": json.dumps(p2, ensure_ascii=False)}}
-                ]]
-            })
-    except Exception as e:
-        log.error(f"❌ Orthoepy error: {e}")
-        send(vk_id, "⚠️ Ошибка загрузки")
-
-def handle_hot_word(vk_id):
-    """Квиз из горячих слов (ЕГЭ-список)"""
-    user = get_user_by_vk(vk_id)
-    if not user:
-        return send(vk_id, "❌ Сначала привяжи аккаунт: отправь /start")
-
-    # Сохраняем режим для кнопки "Ещё"
-    if vk_id not in user_data:
-        user_data[vk_id] = {}
-    user_data[vk_id]['last_mode'] = 'hot_word'
-
-    try:
-        vk.messages.setActivity(user_id=vk_id, type='typing')
-        r = requests.post(f"{API_URL}/api/bot/hot-word/", json={'user_id': user['user_id']}, timeout=5)
-        if r.status_code != 200:
-            raise Exception(f"HTTP {r.status_code}")
-        quiz = r.json()
-
-        if 'options' not in quiz:
-            return send(vk_id, "⚠️ Не удалось сформировать вопрос")
-
-        opts = quiz['options']
-        correct = opts[0]['text'] if opts[0]['is_correct'] else opts[1]['text']
-
-        letters = []
-        for opt in opts:
-            letter = quiz.get('letter_correct') if opt['is_correct'] else quiz.get('letter_incorrect')
-            if letter and letter not in [l['label'] for l in letters]:
-                letters.append({'label': letter, 'is_correct': opt['is_correct']})
-
-        buttons = []
-        for letter in letters:
-            payload = {
-                "action": "quiz_answer",
-                "word_id": quiz['example_id'],
-                "is_correct": letter['is_correct'],
-                "correct": correct,
-                "exp": quiz.get('explanation', '')
-            }
-            buttons.append({
-                "action": {"type": "text", "label": letter['label'], "payload": json.dumps(payload, ensure_ascii=False)}
-            })
-
-        button_rows = [buttons[i:i+4] for i in range(0, len(buttons), 4)]
-
-        send(vk_id, f"❓ {quiz.get('question', 'Как пишется?')}", {
-            "inline": True,
-            "buttons": button_rows
-        })
-    except Exception as e:
-        log.error(f"❌ Hot word error: {e}")
-        send(vk_id, "⚠️ Ошибка загрузки")
-
-def handle_stats(vk_id):
-    user = get_user_by_vk(vk_id)
-    if not user: return send(vk_id, "❌ Сначала /start")
-    try:
-        r = requests.post(f"{API_URL}/api/weekly-report/", json={'user_id': user['user_id']}, timeout=10)
-        if r.status_code == 200:
-            s = r.json()
-            report = f"📊 Статистика\n📚 Слов: {s.get('total_words',0)}\n🎯 Попыток: {s.get('total_attempts',0)}\n✅ Правильно: {s.get('correct_answers',0)}\n📈 {s.get('success_rate',0)}%"
-            if s.get('weak_orthograms'):
-                report += "\n⚠️ Сложные темы:\n" + "\n".join([f"• {o['name']}" for o in s['weak_orthograms']])
-            send(vk_id, report)
-    except Exception as e:
-        log.error(f"❌ Stats error: {e}")
-        send(vk_id, "⚠️ Не удалось загрузить статистику")
 
 if __name__ == '__main__':
-    log.info("✅ VK Bot starting...")
+    log.info('VK Bot starting (bot_core mode)...')
     for event in longpoll.listen():
         if event.type == VkBotEventType.MESSAGE_NEW:
             try:
                 handle(event)
             except Exception as e:
-                log.error(f"❌ Global error: {e}")
+                log.exception(f'Global error: {e}')

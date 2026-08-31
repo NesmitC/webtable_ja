@@ -2,20 +2,21 @@
 from pathlib import Path
 from decouple import config
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / '.env')
+
 # для продакшна
 SECRET_KEY = config('SECRET_KEY')
-# DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 # ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+# Для локальной разработки в .env стоит DEBUG=True
 
-
-# Для локальной разработки должно быть DEBUG=True - Включаем режим разработки.
-# Django не будет обслуживать статику через runserver
-DEBUG = True
-ALLOWED_HOSTS = ['91.197.96.233', 'webtable-ja.ru', 'localhost', '127.0.0.1']
+# ALLOWED_HOSTS = ['91.197.96.233', 'webtable-ja.ru', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['91.197.96.233', 'webtable-ja.ru', 'localhost', '127.0.0.1', 'neurostat.ru', 'www.neurostat.ru']
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Для collectstatic
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')         # Для загруженных файлов
@@ -75,8 +76,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'neurostat',
-        'USER': 'myuser',
-        'PASSWORD': 'mypassword',
+        # 'USER': 'myuser',
+        # 'PASSWORD': 'mypassword',
+        'USER': 'mysimpleuser',
+        'PASSWORD': config('DB_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -177,8 +180,14 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'main': {                      # ← новый логгер для всего приложения
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
     },
 }
+
 
 CACHES = {
     'default': {
@@ -186,3 +195,19 @@ CACHES = {
         'LOCATION': 'bot-cache',
     }
 }
+
+YOOKASSA_SHOP_ID = os.environ.get('YOOKASSA_SHOP_ID', '')
+YOOKASSA_SECRET_KEY = os.environ.get('YOOKASSA_SECRET_KEY', '')
+
+# --- EMAIL: уведомления об оплате ---
+EMAIL_SUBJECT_PREFIX = '[Нейростат] '
+DEFAULT_FROM_EMAIL = 'Нейростат <neurostat@bk.ru>'   # имя отправителя в письмах
+EMAIL_TIMEOUT = 10                                   # чтобы SMTP не подвешивал вебхук
+OWNER_NOTIFY_EMAIL = 'a_timof@mail.ru'               # куда слать себе уведомления
+SITE_URL = 'https://neurostat.ru'                    # для ссылок в письмах
+
+VK_BOT_LINK = 'https://vk.me/neurostat'
+MAX_BOT_LINK = 'https://max.ru/id450400800854_bot'
+
+# Имя ИИ-ассистента (используется в промптах и приветствиях)
+BOT_NAME = 'Алекс'

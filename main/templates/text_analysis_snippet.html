@@ -1,60 +1,61 @@
 <!-- main/templates/text_analysis_snippet.html -->
 {% load static %}
 {% load custom_filters %}
-<link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
-<div class="text-analysis-exercise" data-exercise-id="{{ exercise_id }}">
-    <!-- Текст -->
-    <div class="text-content" style="white-space: pre-wrap; margin-bottom: 20px;">
-        {{ text_task.text_content|bold_words|safe }}
+
+<div class="text-analysis-exercise diagnostic-full-test" data-exercise-id="{{ exercise_id }}">
+
+    <!-- Текст задания -->
+    <div class="text-content-diagnostic diagnostic-full-test__text">
+        <h3 class="diagnostic-full-test__subtitle">Прочитайте текст и выполните задания {% if task_range %}{{ task_range }}{% else %}1–3{% endif %}.</h3>{{ text_task.text_content|bold_words|safe }}
     </div>
 
     <!-- Вопросы -->
-    <div class="questions">
+    <div class="questions-diagnostic">
         {% for question in questions %}
-        <div class="question" data-question-number="{{ question.number }}">
-        <h4>{{ question.number }}. {{ question.text }}</h4>
+        <div class="question-diagnostic diagnostic-full-test__question" data-question-number="{{ question.number }}">
+            <h4 class="diagnostic-full-test__title">
+                {{ question.number }}. {{ question.text }}
+            </h4>
 
-        {% if question.type == 'missing_word' %}
-            <!-- Задание 1 (в будущем не используется здесь, но оставлено для совместимости) -->
-            <input type="text" class="answer-input"
-                data-question="{{ question.number }}"
-                placeholder="Введите слово..."
-                style="width: 200px; padding: 5px;">
+            {% if question.type == 'missing_word' %}
+            <!-- Задание 1: ввод слова -->
+            <input type="text" class="diagnostic-full-test__input input-text" data-question="{{ question.number }}"
+                placeholder="Введите слово...">
 
-        {% elif question.type == 'multiple_choice' or question.type == 'text_characteristics' %}
-            <!-- Задания 23 и 24: чекбоксы -->
-            <div class="options">
-            {% for option in question.options %}
-            <div class="option">
-                <label>
-                <input type="checkbox"
-                        value="{{ option.number }}"
+            {% elif question.type == 'multiple_choice' or question.type == 'text_characteristics' %}
+            <!-- Задания 2 и 3: чекбоксы -->
+            <div class="diagnostic-full-test__options">
+                {% for option in question.options %}
+                <label class="diagnostic-full-test__option">
+                    <input type="checkbox" class="diagnostic-full-test__checkbox" value="{{ option.number }}"
                         data-question="{{ question.number }}">
-                {{ option.number }}) {{ option.text }}
+                    <span class="diagnostic-full-test__option-text">
+                        {{ option.number }}) {{ option.text }}
+                    </span>
                 </label>
-            </div>
-            {% endfor %}
+                {% endfor %}
             </div>
 
-        {% elif question.type == 'free_text' %}
-            <!-- Задания 25 и 26: текстовое поле -->
-            <input type="text"
-                class="answer-input free-text-answer"
-                data-question="{{ question.number }}"
-                placeholder="Введите ответ..."
-                style="width: 200px; padding: 5px;">
-
-        {% endif %}
+            {% elif question.type == 'free_text' %}
+            <!-- Свободный ответ (на всякий случай) -->
+            <input type="text" class="diagnostic-full-test__input input-text free-text-answer"
+                data-question="{{ question.number }}" placeholder="Введите ответ...">
+            {% endif %}
         </div>
-        <hr>
         {% endfor %}
     </div>
 
     <!-- Кнопка проверки -->
-    <button class="check-text-analysis" style="margin-top: 20px; padding: 10px 20px;">
-        Проверить ответы
+    <button class="check-text-analysis check-task-submit">
+        Проверить
     </button>
 
-    <!-- Результат -->
-    <div class="result" style="margin-top: 20px; display: none;"></div>
+    <a href="https://app.neurostud.ru/domino/single/ruLangEge" target="_blank"
+        class="check-text-analysis-domino orthoepy-dictionary-link">
+        Играть в Домино
+        <span class="arrow">→</span>
+    </a>
+
+    <!-- Блок для вывода результата -->
+    <div class="result-diagnostic"></div>
 </div>

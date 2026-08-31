@@ -1,0 +1,68 @@
+{% comment %} main\templates\diagnostics_ege.html {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диагностики ЕГЭ — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+
+<body>
+
+    {% include 'includes/header.html' %}
+
+    <form style="display:none;">
+        {% csrf_token %}
+    </form>
+
+    <main class="page-container-diagnostics">
+
+        <!-- Центрированный бейдж -->
+        <div class="diag-badge-wrap">
+            <span class="hero__badge">ЕГЭ · Русский язык · 2027</span>
+            <span class="diag-badge-sep" aria-hidden="true"></span>
+            <span class="diag-badge-label">Диагностики</span>
+        </div>
+
+        <!-- Три кнопки-карточки диагностики -->
+        <div class="diag-tabs">
+            <a class="diag-tab" href="{% url 'starting_diagnostic' %}">
+                <span class="diag-tab__num">01</span>
+                <span class="diag-tab__title">Входящая</span>
+                <span class="diag-tab__desc">Определи стартовый уровень</span>
+            </a>
+
+            <button class="diag-tab" type="button" disabled>
+                <span class="diag-tab__num">02</span>
+                <span class="diag-tab__title">Текущая</span>
+                <span class="diag-tab__desc">Проверь прогресс по темам</span>
+            </button>
+
+            <button class="diag-tab" type="button" disabled>
+                <span class="diag-tab__num">03</span>
+                <span class="diag-tab__title">Финальная</span>
+                <span class="diag-tab__desc">Итоговый срез перед экзаменом</span>
+            </button>
+        </div>
+
+        <!-- Контейнер для загружаемого теста -->
+        <section class="diag-content" id="diagContent">
+            <div class="diag-content__placeholder">
+                Выберите тип диагностики, чтобы начать тест
+            </div>
+        </section>
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="/static/js/main.js"></script>
+</body>
+
+</html>

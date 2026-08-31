@@ -17,6 +17,60 @@ function getCookie(name) {
 }
 
 // ===========================================================================
+// УНИВЕРСАЛЬНЫЙ МАППИНГ: ID кнопки → номер задания (для заголовка)
+// ===========================================================================
+const ORTHOGRAM_TO_TASK_NUMBER = {
+    '1_3': '1–3',
+    '1_5': '1–2 (5 кл.)', '2_5': '1–2 (5 кл.)',
+    '1_6': '1–2 (6 кл.)', '2_6': '1–2 (6 кл.)',
+    '1_7': '1–2 (7 кл.)', '2_7': '1–2 (7 кл.)',
+    '1_8': '1–2 (8 кл.)', '2_8': '1–2 (8 кл.)',
+    '4000': '4 (ЕГЭ)',
+    '4_5': '4 (5 кл.)', '4_6': '4 (6 кл.)', '4_7': '4 (7 кл.)', '4_8': '4 (8 кл.)',
+    '5000': '5', '6000': '6', '711': '7', '8000': '8',
+    '1_11,2_11,12,13,14,15,24,26,27,271,272,273,274,275': '9',
+    '10,11,28,29,6': '10',
+    '31,33,34,35,37,39,48,481,482,483,484,60,61,610,485': '11',
+    '25,49,50,51,511,512,513': '12',
+    '21,32,36,46,54,56,57,58,581,582': '13',
+    '1400': '14', '1500': '15',
+    '2200': '22', '23_26': '23–26',
+};
+
+const PUNKTOGRAM_TO_TASK_NUMBER = {
+    '1600': '16', '1700': '17', '1800': '18', '1900': '19', '2000': '20',
+    '21': '21', '2100': '21', '2101': '21', '2102': '21',
+};
+
+function getTaskNumberByButton(orthogramIds, punktogramId) {
+    if (punktogramId) {
+        return PUNKTOGRAM_TO_TASK_NUMBER[punktogramId] || null;
+    }
+    if (orthogramIds) {
+        const normalized = (orthogramIds || '').replace(/\s+/g, '');
+
+        // === СПЕЦИАЛЬНАЯ ПРОВЕРКА ДЛЯ ЗАДАНИЯ 9 ===
+        const TASK9_IDS = '1_11,2_11,12,13,14,15,24,26,27,271,272,273,274,275';
+        if (normalized === TASK9_IDS) {
+            return '9';
+        }
+
+        return ORTHOGRAM_TO_TASK_NUMBER[normalized] || null;
+    }
+    return null;
+}
+
+function insertTaskHeader(answerSection, taskNumber) {
+    if (!taskNumber || !answerSection) return;
+    const old = answerSection.querySelector('.task-loaded-header');
+    if (old) old.remove();
+    const h = document.createElement('h3');
+    h.className = 'task-loaded-header';
+    h.textContent = `Задание ${taskNumber}`;
+    answerSection.prepend(h);
+}
+
+// ===========================================================================
 // ФУНКЦИИ ОБРАБОТКИ СМАЙЛИКОВ
 // ===========================================================================
 // для задания 9
@@ -121,170 +175,6 @@ const quickLettersMap = {
     '2_11': ['а', 'о', 'е', 'и', 'я', 'у', 'ю'],
 };
 
-// async function getLettersForOrthogram(orthId) {
-//     if (typeof orthId !== 'string') orthId = String(orthId);
-
-//     // Кэш
-//     if (lettersCache.has(orthId)) return lettersCache.get(orthId);
-
-//     // Задание 10 - для ЕГЭ используем подгруппы из task10_letter_groups
-//     if (orthId.startsWith('10_')) {
-//         try {
-//             const groupsElem = document.getElementById('task10-letter-groups');
-//             const lettersElem = document.getElementById('task10-subgroup-letters');
-
-//             if (groupsElem && lettersElem) {
-//                 const groups = JSON.parse(groupsElem.textContent);
-//                 const subgroupLetters = JSON.parse(lettersElem.textContent);
-//                 const subgroupKey = groups[orthId];
-
-//                 if (subgroupKey && subgroupLetters[subgroupKey]) {
-//                     lettersCache.set(orthId, subgroupLetters[subgroupKey]);
-//                     return subgroupLetters[subgroupKey];
-//                 }
-//             }
-//         } catch (e) {
-//             console.warn("Ошибка при получении подгруппы:", e);
-//         }
-
-//         // Fallback для ЕГЭ - тоже по подгруппам!
-//         const baseOrthId = orthId.split('-')[0].split('_')[1];
-//         const fallback = {
-//             "10": ["с", "з", "д", "т", "а", "о"],  // для 10 - все буквы
-//             "11": ["з", "с"],                      // для 11 - з/с
-//             "28": ["и", "ы"],                     // для 28 - и/ы
-//             "29": ["е", "и"],                     // для 29 - е/и
-//             "6": ["ъ", "ь", "/"]                  // для 6 - ъ/ь/
-//         };
-//         const letters = fallback[baseOrthId] || ['а', 'о', 'е', 'и', 'я'];
-//         lettersCache.set(orthId, letters);
-//         return letters;
-//     }
-
-//     // === ЗАДАНИЕ 9: алфавитное упражнение ===
-//     // Если ID содержит буквы (не только цифры) - это алфавитное задание
-//     if (!/^\d+(-\d+)?$/.test(orthId)) {
-//         const letters = ['а', 'о', 'е', 'и', 'я', 'у', 'ю'];
-//         lettersCache.set(orthId, letters);
-//         return letters;
-//     }
-
-//     // Задание 9
-//     if (orthId.startsWith('9-')) {
-//         const index = parseInt(orthId.split('-')[1]) - 1;
-//         const groupIndex = Math.floor(index / 3);
-//         const groups = [
-//             ['о', 'а', 'е', 'и', 'я', 'у', 'ю'],
-//             ['о', 'а'],
-//             ['е', 'и', 'я'],
-//             ['ё', 'о'],
-//             ['и', 'ы']
-//         ];
-//         const letters = groups[groupIndex] || groups[0];
-//         lettersCache.set(orthId, letters);
-//         return letters;
-//     }
-
-//     // === Задание 1 или 2 (обычные ID) ===
-//     if (orthId === '1' || orthId === '2') {
-//         const letters = ['а', 'о', 'е', 'и', 'я', 'у', 'ю'];
-//         lettersCache.set(orthId, letters);
-//         return letters;
-//     }
-
-//     // === ЗАДАНИЕ 14 ===
-//     if (orthId.startsWith('14-')) {
-//         return ['|', '/', '-'];
-//     }
-//     // === ЗАДАНИЕ 15 ===
-//     if (orthId.startsWith('15-')) {
-//         return ['н', 'нн'];
-//     }
-
-//     // Орфограмма 35 и 37 - буквы ё/о/е (для 6 класса)
-//     if (orthId === '35' || orthId.startsWith('35') || orthId === '37' || orthId.startsWith('37')) {
-//         const letters = ['ё', 'о', 'е'];
-//         lettersCache.set(orthId, letters);
-//         return letters;
-//     }
-
-//     // === ПУНКТОГРАММЫ 16–20 ===
-//     const PUNKTUM_TASKS = ['16', '17', '18', '19', '20'];
-//     if (PUNKTUM_TASKS.some(task => orthId.startsWith(task))) {
-//         const letters = [',', 'х'];
-//         lettersCache.set(orthId, letters);
-//         return letters;
-//     }
-
-//     // === ЗАДАНИЕ 21: ПУНКТОГРАММЫ ЕГЭ (ТОЛЬКО С ДЕФИСОМ!) ===
-//     if (orthId.startsWith('21-')) {
-
-//         // Пытаемся получить данные из скрипта в шаблоне
-//         const script = document.getElementById('task21-subgroup-letters');
-//         if (script) {
-//             console.log('✅ Найден script#task21-subgroup-letters');
-//             try {
-//                 const data = JSON.parse(script.textContent);
-//                 console.log('📦 Распарсенные данные:', data);
-
-//                 if (data.punktum_21) {
-//                     console.log('🎯 Цифры для задания 21:', data.punktum_21);
-//                     lettersCache.set(orthId, data.punktum_21);
-//                     return data.punktum_21;
-//                 } else {
-//                     console.warn('⚠️ punktum_21 не найден в данных');
-//                 }
-//             } catch (e) {
-//                 console.error('❌ Ошибка парсинга task21-subgroup-letters:', e);
-//             }
-//         } else {
-//             console.warn('⚠️ script#task21-subgroup-letters НЕ НАЙДЕН!');
-//         }
-
-//         // Fallback: определяем тип задания 21 по orthId или по наличию кнопки
-//         let letters;
-//         if (orthId.includes('2100') || document.querySelector('[data-punktogram="2100"]')) {
-//             letters = ['5', '8', '8.1', '9.2', '10', '13', '16', '18'];
-//         } else if (orthId.includes('2101') || document.querySelector('[data-punktogram="2101"]')) {
-//             letters = ['5', '9.1', '19'];
-//         } else if (orthId.includes('2102') || document.querySelector('[data-punktogram="2102"]')) {
-//             letters = ['2', '4.0', '4.1', '4.2', '5', '6', '7', '11', '12', '13', '14', '15', '16', '17'];
-//         } else {
-//             letters = ['5', '8', '8.1', '9.2', '10', '13', '16', '18'];
-//         }
-
-//         console.log('🔄 Используем fallback для задания 21:', letters);
-//         lettersCache.set(orthId, letters);
-//         return letters;
-//     }
-
-//     // === ОРФОГРАММА 21: СЛИТНО/РАЗДЕЛЬНО (ТОЧНО '21' - 5 класс) ===
-//     if (orthId === '21') {
-//         const letters = ['|', '/'];
-//         lettersCache.set(orthId, letters);
-//         return letters;
-//     }
-
-//     // Все остальные
-//     const baseId = orthId.includes('-') ? orthId.split('-')[0] : orthId;
-
-//     try {
-//         const res = await fetch(`/api/orthogram/${baseId}/letters/`);
-//         if (res.ok) {
-//             const data = await res.json();
-//             const letters = Array.isArray(data.letters) ? data.letters : ['а', 'о', 'е', 'и', 'я'];
-//             lettersCache.set(orthId, letters);
-//             return letters;
-//         }
-//     } catch (err) {
-//         // Пропускаем ошибку
-//     }
-
-//     const letters = ['а', 'о', 'е', 'и', 'я'];
-//     lettersCache.set(orthId, letters);
-//     return letters;
-// }
-
 
 async function getLettersForOrthogram(orthId) {
     // === ЗАЩИТА: проверяем orthId ===
@@ -293,15 +183,15 @@ async function getLettersForOrthogram(orthId) {
         return [',', 'х'];  // ← Для пунктограмм fallback
     }
     if (typeof orthId !== 'string') orthId = String(orthId);
-    
+
     // Кэш
     if (lettersCache.has(orthId)) return lettersCache.get(orthId);
 
     // === ПУНКТОГРАММЫ 16–20 (ПРОВЕРЯЕМ ПЕРЕВЫЕ!) ===
-    if (orthId === '1600' || orthId === '1700' || orthId === '1800' || 
+    if (orthId === '1600' || orthId === '1700' || orthId === '1800' ||
         orthId === '1900' || orthId === '2000' ||
-        orthId.startsWith('16-') || orthId.startsWith('17-') || 
-        orthId.startsWith('18-') || orthId.startsWith('19-') || 
+        orthId.startsWith('16-') || orthId.startsWith('17-') ||
+        orthId.startsWith('18-') || orthId.startsWith('19-') ||
         orthId.startsWith('20-')) {
         const letters = [',', 'х'];
         lettersCache.set(orthId, letters);
@@ -372,12 +262,12 @@ async function getLettersForOrthogram(orthId) {
         try {
             const groupsElem = document.getElementById('task9-letter-groups');
             const lettersElem = document.getElementById('task9-subgroup-letters');
-            
+
             if (groupsElem && lettersElem) {
                 const groups = JSON.parse(groupsElem.textContent);
                 const subgroupLetters = JSON.parse(lettersElem.textContent);
                 const subgroupKey = groups[orthId];
-                
+
                 if (subgroupKey && subgroupLetters[subgroupKey]) {
                     lettersCache.set(orthId, subgroupLetters[subgroupKey]);
                     return subgroupLetters[subgroupKey];
@@ -386,7 +276,7 @@ async function getLettersForOrthogram(orthId) {
         } catch (e) {
             console.warn("Ошибка при получении подгруппы для 9:", e);
         }
-        
+
         // Fallback: возвращаем стандартный набор букв
         const letters = ['а', 'о', 'е', 'и', 'я', 'у', 'ю'];
         lettersCache.set(orthId, letters);
@@ -455,7 +345,7 @@ async function getLettersForOrthogram(orthId) {
             lettersCache.set(orthId, letters);
             return letters;
         }
-    } catch (err) {}
+    } catch (err) { }
 
     const letters = ['а', 'о', 'е', 'и', 'я'];
     lettersCache.set(orthId, letters);
@@ -673,6 +563,9 @@ async function processPracticeContainer(container) {
 
 function setupCheckAnswers(container = document) {
     container.querySelectorAll('.check-answers').forEach(button => {
+        // === ДОБАВЛЯЕМ УНИВЕРСАЛЬНЫЙ СТИЛЬ КНОПКИ ПРОВЕРИТЬ ===
+        button.classList.add('check-task-submit');
+
         if (button._clickHandler) {
             button.removeEventListener('click', button._clickHandler);
         }
@@ -768,55 +661,19 @@ function setupPaponimCheck() {
     };
 }
 
-// === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ОРФОЭПИИ ===
-
-// async function loadOrthoepyTest(grade = null) {
-//     const answerSection = document.querySelector('.block-answer');
-//     if (!answerSection) return;
-    
-//     answerSection.innerHTML = '<p>Загрузка теста по орфоэпии...</p>';
-    
-//     try {
-//         const csrf = getCookie('csrftoken');
-//         if (!csrf) {
-//             answerSection.innerHTML = '<p class="error">Сессия истекла.</p>';
-//             return;
-//         }
-        
-//         const payload = grade ? { grade } : {};
-        
-//         const res = await fetch('/api/generate-orthoepy-test/', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'X-CSRFToken': csrf
-//             },
-//             body: JSON.stringify(payload)
-//         });
-        
-//         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        
-//         const data = await res.json();
-        
-//         if (data.html) {
-//             answerSection.innerHTML = data.html;
-//             setupOrthoepyListeners();
-//         } else {
-//             answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки теста'}</p>`;
-//         }
-//     } catch {
-//         answerSection.innerHTML = '<p class="error">Не удалось загрузить тест</p>';
-//     }
-// }
-
 async function loadOrthoepyTest(grade = null) {
     const answerSection = document.querySelector('.block-answer');
     if (!answerSection) return;
     answerSection.innerHTML = '<p>Загрузка теста по орфоэпии...</p>';
+    // === ВСТАВЛЯЕМ ЗАГОЛОВОК ЗАДАНИЯ ===
+    const taskNumber = getTaskNumberByButton(orthogramIds, punktogramId);
+    if (taskNumber) {
+        insertTaskHeader(answerSection, taskNumber);
+    }
     try {
         const csrf = getCookie('csrftoken');
         const payload = grade ? { grade } : {};
-        
+
         const res = await fetch('/api/generate-orthoepy-test/', {
             method: 'POST',
             headers: {
@@ -825,13 +682,14 @@ async function loadOrthoepyTest(grade = null) {
             },
             body: JSON.stringify(payload)
         });
-        
+
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        
+
         if (data.html) {
-            answerSection.innerHTML = data.html;
-            
+            answerSection.innerHTML = `<h3 class="task-loaded-header">Задание 5</h3>${data.html}`;
+            setupPaponimCheck();
+
             // === ВАЖНОЕ ИСПРАВЛЕНИЕ ===
             // Если сервер сказал, что это школьный режим, но в HTML нет атрибута — добавляем его вручную!
             const container = document.querySelector('.orthoepy-test-exercise');
@@ -841,7 +699,7 @@ async function loadOrthoepyTest(grade = null) {
             } else if (container) {
                 console.log('ℹ️ Режим:', container.dataset.schoolMode === 'true' ? 'ШКОЛЬНЫЙ' : 'ЕГЭ');
             }
-            
+
             setupOrthoepyListeners();
         } else {
             answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки теста'}</p>`;
@@ -863,21 +721,21 @@ function setupOrthoepyListeners() {
 // async function checkOrthoepyTest() {
 //     const container = document.querySelector('.orthoepy-test-exercise');
 //     if (!container) return;
-    
+
 //     const selected = [...container.querySelectorAll('.orthoepy-checkbox:checked')]
 //         .map(el => el.value);
-    
+
 //     if (!selected.length) {
 //         alert('Выберите хотя бы один вариант');
 //         return;
 //     }
-    
+
 //     const btn = document.querySelector('.check-orthoepy-test');
 //     if (btn) {
 //         btn.disabled = true;
 //         btn.textContent = 'Проверка...';
 //     }
-    
+
 //     try {
 //         const csrf = getCookie('csrftoken');
 //         const res = await fetch('/api/check-orthoepy-test/', {
@@ -888,12 +746,12 @@ function setupOrthoepyListeners() {
 //             },
 //             body: JSON.stringify({ selected })
 //         });
-        
+
 //         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        
+
 //         const result = await res.json();
 //         displayOrthoepyResults(result);
-        
+
 //     } catch (e) {
 //         alert('Ошибка при проверке');
 //     } finally {
@@ -912,21 +770,21 @@ async function checkOrthoepyTest() {
         console.error('Контейнер .orthoepy-test-exercise не найден');
         return;
     }
-    
+
     const selected = [...container.querySelectorAll('.orthoepy-checkbox:checked')]
         .map(el => el.value);
-    
+
     if (!selected.length) {
         alert('Выберите хотя бы один вариант');
         return;
     }
-    
+
     const btn = document.querySelector('.check-orthoepy-test');
     if (btn) {
         btn.disabled = true;
         btn.textContent = 'Проверка...';
     }
-    
+
     try {
         const csrf = getCookie('csrftoken');
         const res = await fetch('/api/check-orthoepy-test/', {
@@ -937,14 +795,14 @@ async function checkOrthoepyTest() {
             },
             body: JSON.stringify({ selected })
         });
-        
+
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
             throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
         }
-        
+
         const result = await res.json();
-        
+
         // Используем глобальную функцию displayOrthoepyResults
         if (window.displayOrthoepyResults) {
             window.displayOrthoepyResults(result);
@@ -952,7 +810,7 @@ async function checkOrthoepyTest() {
             console.error('Функция displayOrthoepyResults не найдена');
             alert('Ошибка отображения результатов');
         }
-        
+
     } catch (e) {
         console.error('Ошибка при проверке:', e);
         alert(`Ошибка при проверке: ${e.message}`);
@@ -969,32 +827,32 @@ async function checkOrthoepyTest() {
 // function displayOrthoepyResults(results) {
 //     const container = document.querySelector('.orthoepy-test-exercise');
 //     const isSchoolMode = container?.dataset.schoolMode === 'true';
-    
+
 //     const task4Results = results.results?.['4'];
 //     if (!task4Results?.variant_results) return;
-    
+
 //     const variantResults = task4Results.variant_results;
 //     const options = document.querySelectorAll('.test-option');
-    
+
 //     // Считаем количество правильных ответов
 //     let correctCount = 0;
 //     let totalSelected = 0;
-    
+
 //     options.forEach((option, index) => {
 //         const variantResult = variantResults[`4-${index + 1}`];
 //         if (!variantResult) return;
-        
+
 //         const checkbox = option.querySelector('.orthoepy-checkbox');
 //         const textSpan = option.querySelector('.variant-text');
 //         if (!checkbox || !textSpan) return;
-        
+
 //         textSpan.style.color = variantResult.is_correct ? '#28a745' : '#dc3545';
 //         textSpan.style.fontWeight = '600';
-        
+
 //         if (checkbox.checked) {
 //             totalSelected++;
 //             if (variantResult.is_correct) correctCount++;
-            
+
 //             checkbox.style.outline = 'none';
 //             checkbox.style.border = variantResult.is_correct ? 
 //                 '3px solid #10b981' : '3px solid #ef4444';
@@ -1003,35 +861,35 @@ async function checkOrthoepyTest() {
 //                 '0 0 6px 2px rgba(239, 68, 68, 0.7)';
 //         }
 //     });
-    
+
 //     document.querySelectorAll('.orthoepy-checkbox').forEach(cb => cb.disabled = true);
-    
+
 //     const checkBtn = document.querySelector('.check-orthoepy-test');
 //     if (checkBtn) {
 //         checkBtn.textContent = 'Проверено';
 //         checkBtn.disabled = true;
 //     }
-    
+
 //     // === ПОКАЗ РЕЗУЛЬТАТА ===
 //     if (isSchoolMode) {
 //         // Для школьного режима - создаем элемент для результата, если его нет
 //         let resultDiv = document.querySelector('.orthoepy-result');
-        
+
 //         if (!resultDiv) {
 //             // Создаем новый элемент
 //             resultDiv = document.createElement('div');
 //             resultDiv.className = 'orthoepy-result';
 //             container.appendChild(resultDiv);
 //         }
-        
+
 //         // Показываем сообщение
 //         const allCorrect = correctCount === totalSelected && totalSelected > 0;
 //         resultDiv.innerHTML = allCorrect ? 
 //             '<p style="color: #28a745; font-weight: bold; font-size: 1.1em; margin-top: 15px;">✓ Правильно!</p>' : 
 //             '<p style="color: #dc3545; font-weight: bold; font-size: 1.1em; margin-top: 15px;">✗ Неправильно, есть ошибки</p>';
-        
+
 //         resultDiv.style.display = 'block';
-        
+
 //     } else {
 //         // Для ЕГЭ - используем существующий элемент
 //         const resultDiv = document.querySelector('.orthoepy-result');
@@ -1053,17 +911,17 @@ function displayOrthoepyResults(results) {
     }
 
     const isSchoolMode = container.dataset.schoolMode === 'true';
-    
+
     // Извлекаем данные. Бэкенд отдает: results.results['4'].variant_results
     const task4Data = results.results?.['4'];
     if (!task4Data || !task4Data.variant_results) {
         console.error('Нет данных variant_results в ответе:', results);
         return;
     }
-    
+
     const variantResults = task4Data.variant_results;
     const options = document.querySelectorAll('.test-option');
-    
+
     let correctCount = 0;
     let totalSelected = 0;
     let totalCorrectExists = 0;
@@ -1075,11 +933,11 @@ function displayOrthoepyResults(results) {
             console.warn('У варианта нет data-option-id, пропускаем');
             return;
         }
-        
+
         // Ключ в ответе сервера: "4-1", "4-2" и т.д.
         const resultKey = `4-${optionId}`;
         const data = variantResults[resultKey];
-        
+
         if (!data) {
             console.warn(`Не найден результат для ключа ${resultKey}`);
             return;
@@ -1102,7 +960,7 @@ function displayOrthoepyResults(results) {
         if (checkbox.checked) {
             totalSelected++;
             if (data.is_correct) correctCount++;
-            
+
             checkbox.style.outline = 'none';
             if (data.is_correct) {
                 checkbox.style.border = '3px solid #10b981';
@@ -1115,7 +973,7 @@ function displayOrthoepyResults(results) {
             checkbox.style.border = '';
             checkbox.style.boxShadow = '';
         }
-        
+
         checkbox.disabled = true;
     });
 
@@ -1128,7 +986,7 @@ function displayOrthoepyResults(results) {
 
     // === ВЫВОД СООБЩЕНИЯ ===
     let resultDiv = document.querySelector('.orthoepy-result');
-    
+
     if (isSchoolMode) {
         if (!resultDiv) {
             resultDiv = document.createElement('div');
@@ -1217,7 +1075,7 @@ function setupWordOkCheck() {
 // ===========================================================================
 document.addEventListener('click', async (e) => {
 
-   // --- Орфограммы и пунктограммы ---
+    // --- Орфограммы и пунктограммы ---
     const button = e.target.closest('[data-orthogram], [data-punktogram]');
     if (!button) return;
 
@@ -1230,20 +1088,23 @@ document.addEventListener('click', async (e) => {
         return;
     }
     answerSection.innerHTML = '<p>Загрузка...</p>';
+    // === ВСТАВЛЯЕМ ЗАГОЛОВОК ЗАДАНИЯ ===
+    const taskNumber = getTaskNumberByButton(orthogramIds, punktogramId);
+    if (taskNumber) {
+        insertTaskHeader(answerSection, taskNumber);
+    }
 
     // === НОВЫЙ БЛОК: ПУНКТОГРАММЫ 16-21 ===
     if (punktogramId) {
         e.preventDefault();
-        
+
         // Задание 21 - случайный подтип
         let punktumId = punktogramId;
         if (punktogramId === '21') {
             const variants = ['2100', '2101', '2102'];
             punktumId = variants[Math.floor(Math.random() * variants.length)];
         }
-        
-        console.log(`🎯 Загрузка пунктограммы ${punktumId}`);
-        
+
         try {
             const csrf = getCookie('csrftoken');
             const res = await fetch('/api/generate-punktum-exercise-multi/', {
@@ -1254,22 +1115,19 @@ document.addEventListener('click', async (e) => {
                 },
                 body: JSON.stringify({ orthogram_ids: [punktumId] })
             });
-            
+
             if (!res.ok) throw new Error('Ошибка загрузки');
             const data = await res.json();
-            
+
             // Добавляем заголовок для заданий 16-20
-            if (['1600', '1700', '1800', '1900', '2000'].includes(punktumId)) {
-                answerSection.innerHTML = `<h3>Задание № ${punktumId.slice(0, 2)}</h3>${data.html}`;
-            } else {
-                answerSection.innerHTML = data.html;
-            }
-            
+            const taskNumber = punktumId.slice(0, 2);
+            answerSection.innerHTML = `<h3 class="task-loaded-header">Задание ${taskNumber}</h3>${data.html}`;
+
             // Обработка смайликов
             const container = answerSection.querySelector('.article-practice') || answerSection;
             await processPracticeContainer(container);
             setupCheckAnswers(container);
-            
+
         } catch (err) {
             console.error('❌ Ошибка:', err);
             answerSection.innerHTML = `<p class="error">Ошибка: ${err.message}</p>`;
@@ -1282,7 +1140,7 @@ document.addEventListener('click', async (e) => {
     // === ОРФОЭПИЯ (задание 4) ===
     if (orthogramIds === '4000' || orthogramIds.startsWith('4_')) {
         e.preventDefault();
-        
+
         // Извлекаем класс: '4_6' → 6, '4000' → null (ЕГЭ режим)
         let grade = null;
         if (orthogramIds.startsWith('4_')) {
@@ -1297,19 +1155,24 @@ document.addEventListener('click', async (e) => {
             console.error('Блок .block-answer не найден');
             return;
         }
-        
+
         answerSection.innerHTML = '<p>Загрузка теста по орфоэпии...</p>';
-        
+        // === ВСТАВЛЯЕМ ЗАГОЛОВОК ЗАДАНИЯ ===
+        const taskNumber = getTaskNumberByButton(orthogramIds, punktogramId);
+        if (taskNumber) {
+            insertTaskHeader(answerSection, taskNumber);
+        }
+
         try {
             const csrf = getCookie('csrftoken');
             if (!csrf) {
                 answerSection.innerHTML = '<p class="error">Сессия истекла. Обновите страницу.</p>';
                 return;
             }
-            
+
             // Для ЕГЭ режима передаем grade: null или вообще не передаем
             const payload = grade ? { grade: grade } : {};
-            
+
             fetch('/api/generate-orthoepy-test/', {
                 method: 'POST',
                 headers: {
@@ -1318,52 +1181,58 @@ document.addEventListener('click', async (e) => {
                 },
                 body: JSON.stringify(payload)
             })
-            .then(async res => {
-                if (!res.ok) {
-                    const errorData = await res.json().catch(() => ({}));
-                    throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data.html) {
-                    answerSection.innerHTML = data.html;
-                    
-                    // Добавляем data-атрибут school-mode из ответа сервера
-                    const container = document.querySelector('.orthoepy-test-exercise');
-                    if (container) {
-                        container.dataset.schoolMode = data.is_school_mode ? 'true' : 'false';
+                .then(async res => {
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
                     }
-                    
-                    // Назначаем обработчик для кнопки проверки
-                    const checkBtn = document.querySelector('.check-orthoepy-test');
-                    if (checkBtn) {
-                        checkBtn.onclick = function() {
-                            checkOrthoepyTest();
-                        };
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.html) {
+                        const taskTitle = grade ? `Задание 4 (${grade} класс)` : 'Задание 4 (ЕГЭ)';
+                        answerSection.innerHTML = `<h3 class="task-loaded-header">${taskTitle}</h3>${data.html}`;
+
+
+                        // Добавляем data-атрибут school-mode из ответа сервера
+                        const container = document.querySelector('.orthoepy-test-exercise');
+                        if (container) {
+                            container.dataset.schoolMode = data.is_school_mode ? 'true' : 'false';
+                        }
+
+                        // Назначаем обработчик для кнопки проверки
+                        const checkBtn = document.querySelector('.check-orthoepy-test');
+                        if (checkBtn) {
+                            checkBtn.onclick = function () {
+                                checkOrthoepyTest();
+                            };
+                        }
+
+                    } else {
+                        answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки теста'}</p>`;
                     }
-                    
-                    console.log('Тест загружен успешно');
-                } else {
-                    answerSection.innerHTML = `<p class="error">${data.error || 'Ошибка загрузки теста'}</p>`;
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки теста:', error);
-                answerSection.innerHTML = `<p class="error">Не удалось загрузить тест: ${error.message}</p>`;
-            });
-            
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки теста:', error);
+                    answerSection.innerHTML = `<p class="error">Не удалось загрузить тест: ${error.message}</p>`;
+                });
+
         } catch (error) {
             console.error('Критическая ошибка:', error);
             answerSection.innerHTML = '<p class="error">Произошла ошибка при загрузке</p>';
         }
-        
+
         return; // ВАЖНО: выходим, чтобы не выполнялся другой код
     }
 
     // === ЗАДАНИЕ 5: Паронимы ===
     if (orthogramIds === '5000') {
         answerSection.innerHTML = '<p>Загрузка задания 5...</p>';
+        // === ВСТАВЛЯЕМ ЗАГОЛОВОК ЗАДАНИЯ ===
+        const taskNumber = getTaskNumberByButton(orthogramIds, punktogramId);
+        if (taskNumber) {
+            insertTaskHeader(answerSection, taskNumber);
+        }
         const csrf = getCookie('csrftoken');
         try {
             const res = await fetch('/api/generate-task-paponim-test/', {
@@ -1388,6 +1257,11 @@ document.addEventListener('click', async (e) => {
     // === ЗАДАНИЕ 6: Лексические нормы ===
     if (orthogramIds === '6000') {
         answerSection.innerHTML = '<p>Загрузка задания 6...</p>';
+        // === ВСТАВЛЯЕМ ЗАГОЛОВОК ЗАДАНИЯ ===
+        const taskNumber = getTaskNumberByButton(orthogramIds, punktogramId);
+        if (taskNumber) {
+            insertTaskHeader(answerSection, taskNumber);
+        }
         const csrf = getCookie('csrftoken');
         try {
             const res = await fetch('/api/generate-task-wordok-test/', {
@@ -1434,11 +1308,14 @@ document.addEventListener('click', async (e) => {
     // === СПЕЦИАЛЬНАЯ ОБРАБОТКА ЗАДАНИЯ 9 ===
     // Нормализуем строку: убираем пробелы
     const normalizedOrthogramIds = (orthogramIds || '').replace(/\s+/g, '');
-    const TASK9_IDS = '1_11,2_11,12,13,14,15,24,26,27,271';
+    const TASK9_IDS = '1_11,2_11,12,13,14,15,24,26,27,271,272,273,274,275';
 
+    // === СПЕЦИАЛЬНАЯ ОБРАБОТКА ЗАДАНИЯ 9 ===
     if (normalizedOrthogramIds === TASK9_IDS) {
         e.preventDefault();
-        answerSection.innerHTML = '<p>Загрузка задания 9...</p>';
+
+        // ✅ ВСТАВЛЯЕМ ЗАГОЛОВОК СРАЗУ
+        answerSection.innerHTML = `<h3 class="task-loaded-header">Задание 9</h3><p>Загрузка...</p>`;
 
         fetch('/api/generate-task9-exercise/', {
             method: 'POST',
@@ -1454,9 +1331,10 @@ document.addEventListener('click', async (e) => {
             })
             .then(data => {
                 if (data.error) {
-                    answerSection.innerHTML = `<p class="error">${data.error}</p>`;
+                    answerSection.innerHTML = `<h3 class="task-loaded-header">Задание 9</h3><p class="error">${data.error}</p>`;
                 } else {
-                    answerSection.innerHTML = data.html;
+                    // ✅ ВСТАВЛЯЕМ ЗАГОЛОВОК ВМЕСТЕ С HTML
+                    answerSection.innerHTML = `<h3 class="task-loaded-header">Задание 9</h3>${data.html}`;
 
                     // Обработка смайликов
                     const container = answerSection.querySelector('.article-practice') || answerSection;
@@ -1466,7 +1344,7 @@ document.addEventListener('click', async (e) => {
             })
             .catch(err => {
                 console.error('❌ Ошибка задания 9:', err);
-                answerSection.innerHTML = '<p class="error">Не удалось загрузить задание 9</p>';
+                answerSection.innerHTML = `<h3 class="task-loaded-header">Задание 9</h3><p class="error">Не удалось загрузить задание 9</p>`;
             });
         return;
     }
@@ -1517,6 +1395,11 @@ document.addEventListener('click', async (e) => {
         // Задание 8
         if (orthogramIds === '8000') {
             answerSection.innerHTML = '<p>Загрузка задания 8...</p>';
+            // === ВСТАВЛЯЕМ ЗАГОЛОВОК ЗАДАНИЯ ===
+            const taskNumber = getTaskNumberByButton(orthogramIds, punktogramId);
+            if (taskNumber) {
+                insertTaskHeader(answerSection, taskNumber);
+            }
             const csrf = getCookie('csrftoken');
             fetch('/api/generate-task-eight-test/', {
                 method: 'POST',
@@ -1539,6 +1422,11 @@ document.addEventListener('click', async (e) => {
         // Задание 22
         if (orthogramIds === '2200') {
             answerSection.innerHTML = '<p>Загрузка задания 22...</p>';
+            // === ВСТАВЛЯЕМ ЗАГОЛОВОК ЗАДАНИЯ ===
+            const taskNumber = getTaskNumberByButton(orthogramIds, punktogramId);
+            if (taskNumber) {
+                insertTaskHeader(answerSection, taskNumber);
+            }
             const csrf = getCookie('csrftoken');
             fetch('/api/generate-task-twotwo-test/', {
                 method: 'POST',
@@ -1578,7 +1466,7 @@ document.addEventListener('click', async (e) => {
             }
         }
 
-        // Общий запрос
+        // === ОБЩИЙ ЗАПРОС ДЛЯ ОРФОГРАММ (9-13) ===
         const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
@@ -1586,10 +1474,51 @@ document.addEventListener('click', async (e) => {
         });
         if (!res.ok) throw new Error('Ошибка загрузки');
         const data = await res.json();
-        if (punktogramId && ['1600', '1700', '1800', '1900', '2000'].includes(punktogramId)) {
-            answerSection.innerHTML = `<h3>Задание № ${punktogramId.slice(0, 2)}</h3>${data.html}`;
+
+        // === ВСТАВЛЯЕМ ЗАГОЛОВОК ДО HTML ===
+        let taskNumber = null;
+        if (orthogramIds) {
+            // Пытаемся получить номер задания из маппинга
+            const normalized = orthogramIds.replace(/\s+/g, '');
+            taskNumber = ORTHOGRAM_TO_TASK_NUMBER[normalized] || null;
+        }
+
+        // Формируем HTML с заголовком
+        let htmlWithHeader = '';
+        if (taskNumber) {
+            htmlWithHeader = `<h3 class="task-loaded-header">Задание ${taskNumber}</h3>${data.html}`;
         } else {
-            answerSection.innerHTML = data.html;
+            htmlWithHeader = data.html;
+        }
+
+        // Если это пунктограммы (16-20) — используем другой формат
+        if (punktogramId && ['1600', '1700', '1800', '1900', '2000'].includes(punktogramId)) {
+            const taskNum = punktogramId.slice(0, 2);
+            htmlWithHeader = `<h3>Задание № ${taskNum}</h3>${data.html}`;
+        }
+
+        answerSection.innerHTML = htmlWithHeader;
+
+        // === ВСТАВЛЯЕМ КАРТИНКУ ДЛЯ ЗАДАНИЯ 15 (Н/НН) ===
+        if (orthogramIds === '1500') {
+            const article = answerSection.querySelector('.article-practice');
+            if (article && !article.querySelector('.nn-reference-image')) {
+                const img = document.createElement('img');
+                img.src = '/static/images/nn.webp';
+                img.alt = 'Н и НН — справочная таблица';
+                img.className = 'nn-reference-image';
+                img.loading = 'lazy';
+                article.insertBefore(img, article.firstChild);
+            }
+            // Ссылка на игру "Попади в цель" — в КОНЕЦ блока
+            if (!article.querySelector('.nn-game-link')) {
+                article.insertAdjacentHTML('beforeend', `
+            <a href="/targetn/" class="orthoepy-dictionary-link nn-game-link">
+                Играть в «Попади в цель»: Н и НН
+                <span class="arrow">→</span>
+            </a>
+        `);
+            }
         }
 
         // === СОЗДАЁМ СКРИПТЫ ДЛЯ ЗАДАНИЯ 10 ===
@@ -1814,35 +1743,53 @@ function handleCheredExercise() {
         },
         body: JSON.stringify({})
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            container.innerHTML = `<div class="error">${data.error}</div>`;
-        } else {
-            container.innerHTML = data.html;
-            setTimeout(() => {
-                const article = container.querySelector('.article-practice');
-                processPracticeContainer(article || container);
-                setupCheckAnswers(article || container);
-            }, 0);
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка:', error);
-        container.innerHTML = `<div class="error">Ошибка загрузки</div>`;
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                container.innerHTML = `<div class="error">${data.error}</div>`;
+            } else {
+                container.innerHTML = data.html;
+                setTimeout(() => {
+                    const article = container.querySelector('.article-practice');
+                    processPracticeContainer(article || container);
+                    setupCheckAnswers(article || container);
+                }, 0);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            container.innerHTML = `<div class="error">Ошибка загрузки</div>`;
+        });
 }
 
 
 // ========================================================================
 // ✅ АВТО-СОХРАНЕНИЕ ПЛАНИНГА — НА ГЛОБАЛЬНОМ УРОВНЕ!
 // ========================================================================
-(function() {
+(function () {
     'use strict';
-    
+
     // ← НЕ определяем getCookie здесь! Используем глобальную из начала файла
     const csrftoken = getCookie('csrftoken');
-    
+
+    // Лёгкий тост для сообщений планинга (лимиты и т.п.)
+    function planningToast(text) {
+        let t = document.querySelector('.planning-toast');
+        if (!t) {
+            t = document.createElement('div');
+            t.className = 'planning-toast';
+            t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);' +
+                'background:#4A3520;color:#FDFAF5;padding:10px 18px;border-radius:10px;' +
+                'font-size:14px;z-index:2000;box-shadow:0 8px 24px rgba(24,14,5,.3);max-width:90vw;text-align:center;';
+            document.body.appendChild(t);
+        }
+        t.textContent = text;
+        t.style.opacity = '1';
+        clearTimeout(t._h);
+        t._h = setTimeout(() => { t.style.opacity = '0'; }, 5000);
+        t.style.transition = 'opacity .4s';
+    }
+
     async function saveField(field) {
         const fieldName = field.name;
         const content = field.value.trim();
@@ -1875,6 +1822,7 @@ function handleCheredExercise() {
                 console.log(`✅ Saved: ${fieldName}`);
                 field.style.borderColor = '#4caf50';
                 setTimeout(() => { field.style.borderColor = ''; }, 1000);
+                if (result.cap_reached) planningToast(result.message);
             } else {
                 console.error(`❌ Save failed: ${result.message}`);
             }
@@ -1882,7 +1830,7 @@ function handleCheredExercise() {
             console.error(`🔥 Fetch error: ${error}`);
         }
     }
-    
+
     async function loadSavedExamples() {
         console.log('🔄 Loading saved planning examples...');
         try {
@@ -1907,7 +1855,7 @@ function handleCheredExercise() {
             console.error('🔥 Load error:', error);
         }
     }
-    
+
     function init() {
         const planFields = document.querySelectorAll(
             '.input-text[name^="user-input-orf-"], .input-text[name^="user-input-punktum-"]'
@@ -1917,11 +1865,11 @@ function handleCheredExercise() {
             return;
         }
         planFields.forEach(field => {
-            field.addEventListener('blur', function() {
+            field.addEventListener('blur', function () {
                 saveField(this);
             });
         });
-        window.addEventListener('beforeunload', function() {
+        window.addEventListener('beforeunload', function () {
             planFields.forEach(field => {
                 navigator.sendBeacon('/api/save-example/', new URLSearchParams({
                     'field_name': field.name,
@@ -1932,7 +1880,7 @@ function handleCheredExercise() {
         loadSavedExamples();
         console.log(`🚀 Planning auto-save/load ready (${planFields.length} fields)`);
     }
-    
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
@@ -1943,41 +1891,39 @@ function handleCheredExercise() {
 // ========================================================================
 // ✅ ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ ТРЕНАЖЁРОВ ОГЭ (oge.html) — ОТДЕЛЬНО!
 // ========================================================================
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     'use strict';
-    
+
     var taskButtonsContainer = document.querySelector('.task-buttons');
     if (!taskButtonsContainer) {
         console.log('📋 OGE Trainer: не страница тренажёров');
         return;
     }
-    
+
     var taskButtons = taskButtonsContainer.querySelectorAll('.check-task');
     if (taskButtons.length === 0) {
         console.log('📋 OGE Trainer: нет кнопок');
         return;
     }
-    
+
     console.log('🚀 OGE Trainer: инициализация', taskButtons.length, 'кнопок');
-    
-    taskButtons.forEach(function(btn) {
+
+    taskButtons.forEach(function (btn) {
         if (btn._ogeClickHandler) {
             btn.removeEventListener('click', btn._ogeClickHandler);
         }
-        
-        btn._ogeClickHandler = function(e) {
+
+        btn._ogeClickHandler = function (e) {
             e.preventDefault();
-            
+
             var taskNumber = this.textContent.trim();
             var orthogramData = this.dataset.orthogram;
-            
-            console.log('🎯 Клик: задание', taskNumber, 'data-orthogram:', orthogramData);
-            
-            document.querySelectorAll('.task-buttons .check-task').forEach(function(b) {
+
+            document.querySelectorAll('.task-buttons .check-task').forEach(function (b) {
                 b.classList.remove('active');
             });
             this.classList.add('active');
-            
+
             if (taskNumber === '2-3' || orthogramData === '2_3') {
                 if (typeof handleOgeTask2_3 === 'function') {
                     handleOgeTask2_3();
@@ -1997,10 +1943,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         };
-        
+
         btn.addEventListener('click', btn._ogeClickHandler);
     });
-    
+
     console.log('✅ OGE Trainer: инициализация завершена');
 });
 
@@ -2019,7 +1965,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let clean = textarea.value.replace(/<[^>]*>/g, '');
             // 2. Обрезаем, если вставка превысила лимит
             if (clean.length > MAX) clean = clean.slice(0, MAX);
-            
+
             textarea.value = clean;
             if (counter) counter.textContent = `${clean.length} / ${MAX}`;
         });

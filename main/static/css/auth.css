@@ -1,0 +1,688 @@
+/* ============================================
+   СТРАНИЦА АВТОРИЗАЦИИ (Register / Login)
+   ============================================ */
+
+/* Фон страницы — центрирование карточки */
+.au-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: var(--color-bg);
+    box-sizing: border-box;
+}
+
+/* Карточка регистрации */
+.au-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--color-chess-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(24, 14, 5, 0.06);
+}
+
+/* Обёртка логотипа */
+.au-card-logo-wrap {
+    width: 184px;
+    height: 65px;
+    margin: 28px auto 20px;
+}
+
+/* Логотип */
+.au-card__logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Табы */
+.au-tabs {
+    display: flex;
+    width: 374px;
+    max-width: 100%;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.au-tab {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-family: var(--font-body);
+    font-size: 15.2px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--color-chess-desc);
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+}
+
+/* Активный таб */
+.au-tab--active {
+    font-weight: 600;
+    color: var(--color-btn-primary);
+    border-bottom-color: var(--color-btn-primary);
+}
+
+/* Форма */
+.au-form {
+    width: 374px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 28px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-sizing: border-box;
+}
+
+/* Поле ввода */
+.au-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.au-field__label {
+    font-size: 13.1px;
+    line-height: 20.99px;
+    font-weight: 500;
+    color: var(--color-chess-desc);
+}
+
+.au-field__wrap {
+    width: 100%;
+    height: 41px;
+    padding: 11px 40px 11px 14px;
+    /* Справа место для иконки глаза */
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-bg);
+    font-family: var(--font-body);
+    font-size: 14.4px;
+    font-weight: 400;
+    color: var(--color-text);
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+*/ .au-field__input::placeholder {
+    color: var(--color-chess-desc);
+    opacity: 0.7;
+}
+
+.au-field__input:focus {
+    outline: none;
+    border-color: var(--color-btn-primary);
+}
+
+/* Иконка глаза для пароля */
+.au-field__toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-chess-desc);
+    transition: color 0.2s;
+}
+
+.au-field__toggle:hover {
+    color: var(--color-btn-primary);
+}
+
+.au-field__toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Плашка согласия */
+.au-agree {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-agree);
+}
+
+.au-agree__checkbox {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--color-btn-primary);
+    cursor: pointer;
+}
+
+.au-agree__label {
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 400;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.au-agree__link {
+    color: var(--color-btn-primary);
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+
+.au-agree__link:hover {
+    opacity: 0.8;
+}
+
+/* Кнопка отправки — на всю ширину */
+.au-form__submit {
+    width: 100%;
+    margin-top: 8px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Разделитель */
+.au-divider {
+    width: 100%;
+    max-width: 438px;
+    margin: 32px auto 0;
+    padding: 0 32px;
+    border-top: 1px solid var(--color-border);
+    box-sizing: border-box;
+}
+
+/* Футер карточки */
+.au-footer {
+    width: 100%;
+    max-width: 438px;
+    margin: 0 auto;
+    padding: 19px 32px 24px;
+    opacity: 0.7;
+    box-sizing: border-box;
+}
+
+.au-footer__copy {
+    font-size: 12px;
+    line-height: 19.2px;
+    font-weight: 400;
+    color: var(--color-chess-desc);
+    text-align: center;
+    margin: 0;
+}
+
+/* ============================================
+   СТРАНИЦА ВХОДА — дополнительные элементы
+   ============================================ */
+
+/* Блок опций: "Запомнить меня" + "Забыли пароль?" */
+.au-form__options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 4px;
+}
+
+/* Чекбокс "Запомнить меня" */
+.au-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.au-remember__checkbox {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--color-btn-primary);
+    cursor: pointer;
+    margin: 0;
+}
+
+.au-remember__label {
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 400;
+    color: var(--color-text);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Ссылка "Забыли пароль?" */
+.au-forgot-link {
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 400;
+    color: var(--color-btn-primary);
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.au-forgot-link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+/* ============================================
+   Исправление для .au-field__wrap
+   ============================================ */
+
+/* .au-field__wrap — это обёртка, а не сам input.
+   Нужно сделать её position: relative и перенести стили на input */
+
+.au-field__wrap {
+    position: relative;
+    width: 100%;
+    height: 41px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-bg);
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    /* Убираем лишние свойства, которые были у input */
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    color: inherit;
+}
+
+.au-field__wrap:focus-within {
+    border-color: var(--color-btn-primary);
+}
+
+.au-field__input {
+    width: 100%;
+    height: 100%;
+    padding: 11px 40px 11px 14px;
+    border: none;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 14.4px;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--color-text);
+    box-sizing: border-box;
+}
+
+.au-field__input::placeholder {
+    color: var(--color-chess-desc);
+    opacity: 0.7;
+}
+
+.au-field__input:focus {
+    outline: none;
+}
+
+/* ============================================
+   БЛОК УСПЕШНОЙ РЕГИСТРАЦИИ
+   ============================================ */
+
+.au-success {
+    width: 374px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 40px 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.au-success__icon {
+    width: 64px;
+    height: 64px;
+    color: var(--color-btn-primary);
+    margin-bottom: 8px;
+}
+
+.au-success__icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.au-success__title {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.au-success__text {
+    font-size: 14px;
+    line-height: 22px;
+    font-weight: 400;
+    color: var(--color-chess-desc);
+    margin: 0;
+}
+
+.au-success__btn {
+    margin-top: 16px;
+    max-width: 280px;
+}
+
+/* Адаптив для успеха */
+@media (max-width: 480px) {
+    .au-success {
+        padding: 32px 0;
+    }
+
+    .au-success__icon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .au-success__title {
+        font-size: 18px;
+    }
+
+    .au-success__text {
+        font-size: 13px;
+    }
+}
+
+/* ============================================
+   PAYWALL — страница ограничения доступа
+   ============================================ */
+
+.au-paywall {
+    width: 374px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 28px 0 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    box-sizing: border-box;
+}
+
+.au-paywall__title {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--color-btn-text-dark);
+    text-align: center;
+    margin: 0;
+}
+
+.au-paywall__text {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 22px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    text-align: center;
+    margin: 0;
+    max-width: 340px;
+}
+
+/* Список тарифов */
+.au-paywall__plans {
+    list-style: none;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 4px 0 0;
+    padding: 0;
+}
+
+.au-paywall__plan {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 2px 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-chess-bg-light);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.au-paywall__plan:hover {
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 2px 12px rgba(156, 90, 29, 0.08);
+}
+
+/* Популярный тариф */
+.au-paywall__plan--popular {
+    border-color: var(--color-btn-primary);
+    background: linear-gradient(129.18deg, #EDE2CE 0%, #E3D5BA 100%);
+}
+
+.au-paywall__plan-badge {
+    position: absolute;
+    top: -8px;
+    right: 14px;
+    padding: 2px 10px;
+    border-radius: 3px;
+    background: var(--color-btn-primary);
+    color: var(--color-btn-text-light);
+    font-family: var(--font-body);
+    font-size: 10px;
+    line-height: 16px;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+.au-paywall__plan-name {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 600;
+    color: var(--color-btn-text-dark);
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.au-paywall__plan-price {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 600;
+    color: var(--color-btn-primary);
+    white-space: nowrap;
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.au-paywall__plan-period {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-chess-desc);
+}
+
+.au-paywall__plan-desc {
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    line-height: 18px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    grid-column: 1 / -1;
+    grid-row: 2;
+}
+
+/* CTA-кнопка */
+.au-paywall__cta {
+    width: 100%;
+    margin-top: 4px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Примечание */
+.au-paywall__note {
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 19px;
+    font-weight: 300;
+    color: var(--color-chess-desc);
+    text-align: center;
+    margin: 0;
+    opacity: 0.85;
+}
+
+.au-paywall__tg-link {
+    color: var(--color-btn-primary);
+    font-weight: 500;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+
+.au-paywall__tg-link:hover {
+    opacity: 0.75;
+}
+
+/* Адаптив paywall */
+@media (max-width: 480px) {
+    .au-paywall {
+        width: 100%;
+        padding: 20px 0 4px;
+        gap: 14px;
+    }
+
+    .au-paywall__title {
+        font-size: 20px;
+        line-height: 26px;
+    }
+
+    .au-paywall__text {
+        font-size: 13px;
+        line-height: 20px;
+    }
+
+    .au-paywall__plan {
+        padding: 12px 14px;
+    }
+
+    .au-paywall__plan-name,
+    .au-paywall__plan-price {
+        font-size: 16px;
+    }
+}
+
+/* ========================================
+   Адаптив
+   ======================================== */
+
+@media (max-width: 480px) {
+    .au-card {
+        width: 100%;
+        max-width: 100%;
+        min-height: auto;
+        border-radius: 8px;
+        padding: 0 16px;
+    }
+
+    .au-card__logo {
+        width: 100%;
+        height: auto;
+    }
+
+    .au-card__title {
+        width: 100%;
+        font-size: 20px;
+    }
+
+    .au-tabs {
+        width: 100%;
+        margin: 0;
+    }
+
+    .au-tab {
+        width: 50%;
+        font-size: 14px;
+    }
+
+    .au-form {
+        width: 100%;
+        padding-top: 20px;
+        gap: 14px;
+    }
+
+    .au-field__input {
+        height: 38px;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .au-agree {
+        padding: 10px 12px;
+    }
+
+    .au-agree__label {
+        font-size: 12px;
+    }
+
+    .au-divider {
+        width: 100%;
+        padding: 24px 16px 0 16px;
+    }
+
+    .au-footer {
+        width: 100%;
+        padding: 16px 16px 20px 16px;
+    }
+
+    .au-form__submit {
+        height: 40px;
+        font-size: 13px;
+    }
+
+    .au-form__options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .au-forgot-link {
+        align-self: flex-end;
+    }
+
+    .au-success {
+        padding: 32px 0;
+    }
+
+    .au-success__icon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .au-success__title {
+        font-size: 18px;
+    }
+
+    .au-success__text {
+        font-size: 13px;
+    }
+
+}

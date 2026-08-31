@@ -1,0 +1,44 @@
+/* Общие стили юридических документов (privacy.html, terms.html) */
+.doc-content {
+    max-width: 860px;
+    margin: 24px auto 60px;
+    padding: 32px 36px;
+}
+
+.doc-content h1 {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    line-height: 1.25;
+    margin: 0 0 6px;
+}
+
+.doc-updated {
+    color: var(--color-nav-text);
+    font-size: 13px;
+    margin: 0 0 24px;
+}
+
+.doc-content h2 {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    margin: 28px 0 10px;
+}
+
+.doc-content p,
+.doc-content li {
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 0 0 8px;
+}
+
+.doc-content ul {
+    padding-left: 20px;
+    margin: 0 0 10px;
+}
+
+@media (max-width: 600px) {
+    .doc-content {
+        padding: 20px 18px;
+        margin: 16px 0 40px;
+    }
+}

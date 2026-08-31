@@ -2,16 +2,12 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
 <article class="article-practice">
-    <!-- ЗАГОЛОВОК орфограммы -->
-    {% if exercise_title %}
-    <h3 class="exercise-title">{{ exercise_title }}</h3>
-    {% endif %}
 
     <!-- === КАРТИНКА ДЛЯ ПУНКТОГРАММ 16-21 === -->
     {% if image_name %}
     <div class="punktum-image-container" style="margin: 15px 0; text-align: center;">
-        <img src="{% static image_name %}" alt="Задание" 
-             style="max-width: 100%; height: auto; border: 1px solid #dee2e6; border-radius: 4px;">
+        <img src="{% static image_name %}" alt="Задание"
+            style="max-width: 100%; height: auto; border: 1px solid #dee2e6; border-radius: 4px;">
     </div>
     {% endif %}
 
@@ -20,38 +16,38 @@
         {% if exercise_instruction %}
         <p class="exercise-instruction">{{ exercise_instruction }}</p>
         {% endif %}
-        
+
         {% if is_punktum_exercise and is_punktum_with_paragraphs and structured_examples %}
-            {# === ПУНКТОГРАММЫ С АБЗАЦАМИ (только 18) === #}
-            {% for example in structured_examples %}
-            <div class="punktum-example punktum-with-paragraphs">
-                {% for paragraph in example %}
-                <p class="practice-line">{{ paragraph|safe }}</p>
-                {% endfor %}
-            </div>
+        {# === ПУНКТОГРАММЫ С АБЗАЦАМИ (только 18) === #}
+        {% for example in structured_examples %}
+        <div class="punktum-example punktum-with-paragraphs">
+            {% for paragraph in example %}
+            <p class="practice-line">{{ paragraph|safe }}</p>
             {% endfor %}
+        </div>
+        {% endfor %}
         {% elif is_punktum_exercise and not is_punktum_with_paragraphs and words_lines %}
-            {# === ПУНКТОГРАММЫ БЕЗ АБЗАЦЕВ (16, 17, 21 и др.) === #}
-            {% for line in words_lines %}
-            <p class="practice-line">{{ line|safe }}</p>
-            {% endfor %}
+        {# === ПУНКТОГРАММЫ БЕЗ АБЗАЦЕВ (16, 17, 21 и др.) === #}
+        {% for line in words_lines %}
+        <p class="practice-line">{{ line|safe }}</p>
+        {% endfor %}
         {% elif is_orth21_lines and words_lines %}
-            {# === ОРФОГРАММЫ с построчным форматом (включая 13, 1400 и др.) === #}
-            {% for line in words_lines %}
-            <p class="practice-line">{{ line|safe }}</p>
-            {% endfor %}
+        {# === ОРФОГРАММЫ с построчным форматом (включая 13, 1400 и др.) === #}
+        {% for line in words_lines %}
+        <p class="practice-line">{{ line|safe }}</p>
+        {% endfor %}
         {% elif words_text %}
-            {# === ОДНОСТРОЧНЫЕ УПРАЖНЕНИЯ (стандартные орфограммы 1–25 и др.) === #}
-            <p class="practice-line">{{ words_text|safe }}</p>
+        {# === ОДНОСТРОЧНЫЕ УПРАЖНЕНИЯ (стандартные орфограммы 1–25 и др.) === #}
+        <p class="practice-line">{{ words_text|safe }}</p>
         {% else %}
-            <p class="practice-line">Упражнение загружено.</p>
+        <p class="practice-line">Упражнение загружено.</p>
         {% endif %}
     </div>
-    
+
     <div class="practice-buttons">
-        <button class="check-answers">Проверить</button>
+        <button class="check-answers check-task-submit">Проверить</button>
     </div>
-    
+
     <!-- === СКРИПТЫ ДЛЯ ПОДГРУПП ЗАДАНИЙ 10-15 (ВНУТРИ <article>) === -->
     {% if task10_letter_groups and task10_letter_groups != '{}' %}
     <script id="task10-letter-groups" type="application/json">
@@ -61,7 +57,7 @@
         {{ task10_subgroup_letters|safe }}
     </script>
     {% endif %}
-    
+
     {% if task11_letter_groups and task11_letter_groups != '{}' %}
     <script id="task11-letter-groups" type="application/json">
         {{ task11_letter_groups|safe }}
@@ -70,7 +66,7 @@
         {{ task11_subgroup_letters|safe }}
     </script>
     {% endif %}
-    
+
     {% if task12_letter_groups and task12_letter_groups != '{}' %}
     <script id="task12-letter-groups" type="application/json">
         {{ task12_letter_groups|safe }}
@@ -79,7 +75,7 @@
         {{ task12_subgroup_letters|safe }}
     </script>
     {% endif %}
-    
+
     {% if task13_letter_groups and task13_letter_groups != '{}' %}
     <script id="task13-letter-groups" type="application/json">
         {{ task13_letter_groups|safe }}
@@ -88,7 +84,7 @@
         {{ task13_subgroup_letters|safe }}
     </script>
     {% endif %}
-    
+
     {% if task14_letter_groups and task14_letter_groups != '{}' %}
     <script id="task14-letter-groups" type="application/json">
         {{ task14_letter_groups|safe }}
@@ -97,7 +93,7 @@
         {{ task14_subgroup_letters|safe }}
     </script>
     {% endif %}
-    
+
     {% if task15_letter_groups and task15_letter_groups != '{}' %}
     <script id="task15-letter-groups" type="application/json">
         {{ task15_letter_groups|safe }}

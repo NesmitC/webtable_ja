@@ -1,0 +1,706 @@
+{% comment %} main/templates/lessons_ege.html {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Видеоуроки ЕГЭ по русскому языку: задания 1–27 и сочинение | Нейростат</title>
+    <meta name="description"
+        content="{{ meta_description|default:'Видеоуроки ЕГЭ по русскому языку: разбор всех заданий 1–27 и итогового сочинения. Конспекты, шпаргалки и тренажёры к каждому уроку — учитесь в своём темпе.' }}">
+
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+        "@type": "Course",
+        "@id": "https://neurostat.ru/lessons/#course",
+        "name": "Видеоуроки ЕГЭ по русскому языку: задания 1–27 и итоговое сочинение",
+        "description": "Видеоуроки по каждому заданию ЕГЭ с конспектами, шпаргалками и тренажёрами. 29 уроков, учитесь в своём темпе.",
+        "educationalLevel": "10-11 класс",
+        "teaches": "Подготовка ко всем заданиям ЕГЭ по русскому языку и итоговому сочинению",
+        "inLanguage": "ru",
+        "numberOfCredits": 29,
+        "provider": {"@id": "https://neurostat.ru/#organization"},
+        "instructor": {"@id": "https://neurostat.ru/#person"},
+        "hasCourseInstance": {
+            "@type": "CourseInstance",
+            "courseMode": "online",
+            "inLanguage": "ru"
+        }
+        },
+        {
+        "@type": "ItemList",
+        "name": "Уроки курса",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Задание 1–3: микротекст и речевые ошибки"},
+            {"@type": "ListItem", "position": 2, "name": "Задание 4: ударения (орфоэпический словник ФИПИ)"},
+            {"@type": "ListItem", "position": 3, "name": "Итоговое сочинение: структура и аргументы"}
+        ]
+        }
+    ]
+    }
+    </script>
+
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+
+<body>
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-lessons">
+        <h1 class="visually-hidden">Видеоуроки и материалы ЕГЭ по русскому языку: задания 1-27, включая Итоговое
+            сочинение</h1>
+        <!-- ===== Шапка страницы ===== -->
+        <header class="lessons-header">
+            <!-- Бейдж-строка (классы переиспользованы) -->
+            <div class="diag-badge-wrap">
+                <span class="hero__badge">ЕГЭ · Русский язык · 2027</span>
+                <span class="diag-badge-sep" aria-hidden="true"></span>
+                <span class="diag-badge-label">Видеоуроки и материалы</span>
+            </div>
+
+            <!-- Прогресс -->
+            <div class="lessons-progress">
+                <div class="lessons-progress__info">
+                    <span class="lessons-progress__label">Открыто</span>
+                    <span class="lessons-progress__count">7 из 29 уроков</span>
+                </div>
+                <div class="lessons-progress__bar">
+                    <div class="lessons-progress__fill" style="width: 24%;"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== Группа 1: Задания 1–26 ===== -->
+        <section class="lessons-group">
+            <h2 class="lessons-group__label">
+                <span class="lessons-group__sep"></span>
+                <span class="lessons-group__text">Задания 1–26</span>
+                <span class="lessons-group__sep"></span>
+            </h2>
+
+            <div class="lessons-grid">
+
+                <!-- Урок 1: АКТИВНЫЙ -->
+                <details class="lesson-card lesson-card--active">
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 1–3 (микротекст)</h3>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
+                        </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://rutube.ru/play/embed/0be2d618d504791255d2433ae61db24f/?p=chBZvMudaSugUgeHnVLi-A">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="https://app.neurostud.ru/domino/single/ruLangEge">Морфологическое
+                                        домино</a></li>
+                                <li><a href="{% url 'trainers_ege' %}">Тренажёр: задания 1-3</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Урок 2: АКТИВНЫЙ -->
+                <details class="lesson-card lesson-card--active">
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 4 (ударения)</h3>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
+                        </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/madcmxh9UWTDXwrpQgrNtj">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'orthoepy_trening' %}">Интерактивный словник ударений ФИПИ+</a></li>
+                                <li><a href="{% url 'trainers_ege' %}">Тренажёр: ударения</a></li>
+                                <li><a href="{% url 'quizzes_ege' %}">Квизы</a></li>
+                            </ul>
+                            <a href="{% url 'download_orthoepy_dict' %}" class="lesson-file" download>
+                                <span class="lesson-file__icon">📄</span>
+                                <span class="lesson-file__name">Орфоэпический_словник_ФИПИ_2027.pdf</span>
+                                <span class="lesson-file__size">2.4 МБ</span>
+                            </a>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Урок 3: АКТИВНЫЙ -->
+                <details class="lesson-card lesson-card--active">
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 5 (паронимы)</h3>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
+                        </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://rutube.ru/play/embed/b12dc0a7d1e24706580fdf3839892714/?p=CY9pddSM2G7_y0vc1n44wg">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'paponim_trening' %}">Интерактивный словник паронимов</a></li>
+                                <li><a href="{% url 'trainers_ege' %}">Тренажёр: паронимы</a></li>
+                            </ul>
+                            <a href="{% url 'download_paronyms_dict' %}" class="lesson-file" download>
+                                <span class="lesson-file__icon">📄</span>
+                                <span class="lesson-file__name">Словник_паронимов_ФИПИ.pdf</span>
+                                <span class="lesson-file__size">1.8 МБ</span>
+                            </a>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Урок 4: АКТИВНЫЙ -->
+                <details class="lesson-card lesson-card--active">
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 6 (речевые нормы)</h3>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
+                        </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://rutube.ru/play/embed/32cf355ba9513543eff3a296da7582be/?p=G2sc3S97gfDoU1iREJdDrw">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}">Тренажер</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Урок 5: АКТИВНЫЙ -->
+                <details class="lesson-card lesson-card--active">
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 7 (грамматические нормы)</h3>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
+                        </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}">Тренажер</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Урок 6: АКТИВНЫЙ -->
+                <details class="lesson-card lesson-card--active">
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 8 (грамматические нормы)</h3>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
+                        </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}">Тренажер</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Урок 7: АКТИВНЫЙ -->
+                <details class="lesson-card lesson-card--active">
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 9.1 (корни: гласные, ПРОВЕРЯЕМЫЕ ударениями)</h3>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
+                        </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/2f36Y5HgPkae9NRMPzjFPz">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}">Тренажёр, задание по навигатору ФИПИ</a></li>
+                                <li><a href="{% url 'quizzes_ege' %}">Квизы</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- ===== ЗАКРЫТЫЕ УРОКИ ===== -->
+
+                <!-- Урок 8: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 9.2 (корни: гласные, НЕПРОВЕРЯЕМЫЕ ударениями)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 8: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 9.3 (корни: гласные ЧЕРЕДУЮЩИЕСЯ)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 8: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 10 (орфография, приставки)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 9: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 11 (орфография, суффиксы)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 10: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 12.1 (спряжения глаголов)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 10: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 12.2 (гласные в суффиксах причастий)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 11: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 13 (орфография, НЕ и НИ слитно / раздельно)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 12: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 14 (орфография, слитно / раздельно / дефис)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 13: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 15 (орфография, Н и НН)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 14: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 16 (пунктуация, простые осложнённые и сложные
+                                предложения)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 15: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 17 (пунктуация, причастные и деепричастные
+                                обороты)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 16: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 18 (пунктуация, вводные конструкции и
+                                обращения)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 17: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 19 (пунктуация, СПП с несколькими
+                                придаточными)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 18: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 20 (пунктуация, СПП с различными видами
+                                связи)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 19: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 21 (пунктуация, тире / двоеточия / запятые)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 20: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 22 (средства выразительности)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 21: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 23 (текст, содержание)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 22: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 24 (текст, описание / повествование /
+                                рассуждение)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 23: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 25 (текст, лексика)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Урок 24: ЗАКРЫТ -->
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 26 (текст, средства связи)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===== Группа 2: Задание 27 (сочинение) ===== -->
+        <section class="lessons-group">
+            <h2 class="lessons-group__label">
+                <span class="lessons-group__sep"></span>
+                <h3 class="lessons-group__text">Задание 27 · Сочинение</h3>
+                <span class="lessons-group__sep"></span>
+            </h2>
+
+            <div class="lessons-grid lessons-grid--single">
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 27 (сочинение)</h3>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Группа 3: Итоговое сочинение ===== -->
+        <section class="lessons-group">
+            <div class="lessons-group__label">
+                <span class="lessons-group__sep"></span>
+                <span class="lessons-group__text">Итоговое сочинение</span>
+                <span class="lessons-group__sep"></span>
+            </div>
+
+            <div class="lessons-grid lessons-grid--single">
+                <div class="lesson-card lesson-card--locked">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <span class="lesson-card__title">Итоговое сочинение (декабрьское)</span>
+                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    {% include 'includes/video_modal.html' %}
+</body>
+
+</html>

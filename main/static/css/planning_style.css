@@ -1,37 +1,696 @@
 /* main\static\css\planning_style.css */
-/* Минималистичный CSS Grid для таблицы планирования */
+
+/* ============================================
+ЗАГОЛОВОК ЗАГРУЖЕННОГО ЗАДАНИЯ
+============================================ */
+.task-loaded-header {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 24px;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 20px 0;
+    text-align: center;
+}
+
+/* ============================================
+СТРАНИЦА ДИАГНОСТИК ЕГЭ
+============================================ */
+.diag-badge-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 0;
+}
+
+.diag-badge-sep {
+    width: 6px;
+    height: 6px;
+    background: var(--color-btn-primary);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.diag-badge-label {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1;
+    letter-spacing: 0.3px;
+    color: var(--color-chess-desc);
+}
+
+.diag-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.diag-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-body);
+    overflow: hidden;
+}
+
+.diag-tab:hover {
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 4px 16px rgba(122, 82, 48, 0.12);
+    transform: translateY(-2px);
+}
+
+.diag-tab--active {
+    border-color: var(--color-btn-primary);
+    background: var(--color-how-it-works-bg);
+    box-shadow: 0 4px 16px rgba(122, 82, 48, 0.15);
+}
+
+.diag-tab__num {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--color-btn-primary);
+    opacity: 0.7;
+}
+
+.diag-tab__title {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 20.8px;
+    line-height: 28px;
+    color: var(--color-text);
+}
+
+.diag-tab__desc {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 300;
+    font-size: 13.6px;
+    line-height: 21.76px;
+    color: var(--color-chess-desc);
+}
+
+.diag-content,
+.demo-content {
+    max-width: 800px;
+    margin: 32px auto 0;
+    padding: 0 20px;
+}
+
+.diag-content__placeholder,
+.demo-content__placeholder {
+    padding: 15px 24px;
+    text-align: center;
+    border: 1px dashed var(--color-border);
+    border-radius: 12px;
+    font-size: 14px;
+    color: var(--color-chess-desc);
+}
+
+/* ============================================
+СТРАНИЦА ДЕМО / ДОСРОК ЕГЭ
+============================================ */
+.demo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.demo-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.demo-col__title {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1;
+    letter-spacing: 0.3px;
+    color: var(--color-chess-desc);
+    margin: 0 0 4px 4px;
+}
+
+.demo-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+    padding: 20px 24px;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    font-family: var(--font-body);
+}
+
+.demo-tab:hover {
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 4px 16px rgba(122, 82, 48, 0.12);
+    transform: translateY(-2px);
+}
+
+.demo-tab--active {
+    border-color: var(--color-btn-primary);
+    background: var(--color-how-it-works-bg);
+    box-shadow: 0 4px 16px rgba(122, 82, 48, 0.15);
+}
+
+.demo-tab__year {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--color-btn-primary);
+    opacity: 0.8;
+}
+
+.demo-tab__title {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 22px;
+    color: var(--color-text);
+}
+
+/* ============================================
+КОНТЕЙНЕР СТРАНИЦЫ ТРЕНАЖЁРОВ
+============================================ */
+.page-container-trainers {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 45px;
+}
+
+.block-planning {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 7px 20px;
+}
+
+.block-planning-title {
+    margin: 0;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc);
+}
+
+.block-planning-subtitle {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.planning-item {
+    padding: 6px 14px;
+    border: 1px solid var(--color-border);
+    background: var(--color-how-it-works-bg);
+    border-radius: 20px;
+    color: var(--color-btn-primary);
+    transition: all 0.2s ease;
+}
+
+.planning-item a {
+    color: inherit;
+    text-decoration: none;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.planning-item:hover {
+    background: #ffffff;
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.15);
+    transform: translateY(-1px);
+}
+
+.block-task {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 7px 20px;
+    margin: 20px 0;
+}
 
 .title-planing {
+    margin: 0 0 18px 0;
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 28px;
+    color: var(--color-text);
+}
+
+/* ============================================
+РАБОТА НАД ОШИБКАМИ / ИСТОРИЯ (орфоэпия)
+============================================ */
+.block-correction,
+.block-history {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 7px 20px 20px;
+    margin: 20px 0;
+}
+
+.block-correction .title-planing span,
+.block-history .title-planing span {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--color-chess-desc);
+    margin-left: 8px;
+}
+
+/* --- Группа ошибок по дате --- */
+.correction-group {
+    margin-bottom: 18px;
+}
+
+.correction-group:last-child {
+    margin-bottom: 0;
+}
+
+.correction-group__title {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc);
+    margin: 0 0 10px 0;
+}
+
+.correction-group__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* --- Карточка слова (ошибка) --- */
+.correction-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    background: var(--color-how-it-works-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.3;
+    color: var(--color-text);
+    min-width: 120px;
+    text-align: center;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.correction-item:hover {
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.12);
+}
+
+.correction-item .wrong-stress {
+    color: #dc3545;
+    font-weight: 700;
+}
+
+/* --- Сообщение «Молодца» / «Отработано» --- */
+.correction-success {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    color: #16a34a;
+    padding: 12px 0;
+}
+
+.correction-resolved {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+    color: #16a34a;
+    margin-bottom: 14px;
+    padding: 10px 16px;
+    background: rgba(22, 163, 74, 0.06);
+    border: 1px solid rgba(22, 163, 74, 0.18);
+    border-radius: 10px;
+}
+
+/* --- Таблица истории --- */
+.history-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+}
+
+.history-table thead th {
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc);
+    padding: 8px 16px 8px 0;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+}
+
+.history-table tbody td {
+    padding: 10px 16px 10px 0;
+    border-bottom: 1px solid rgba(211, 200, 184, 0.4);
+    color: var(--color-text);
+}
+
+.history-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.history-table .history-pct {
+    font-weight: 600;
+}
+
+.history-pct--high {
+    color: #16a34a;
+}
+
+.history-pct--mid {
+    color: #e6a817;
+}
+
+.history-pct--low {
+    color: #dc3545;
+}
+
+.history-empty {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+    color: var(--color-chess-desc);
+    padding: 8px 0;
+}
+
+.block-task-num {
+    margin: 0;
+}
+
+.task-buttons {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(2, auto);
+    gap: 8px;
+    margin: 8px 0;
+    max-width: 100%;
+}
+
+.check-task {
+    padding: 10px 4px;
+    border: 1px solid var(--color-border);
+    background: #ffffff;
+    border-radius: 8px;
+    color: var(--color-text);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.check-task--wide {
+    grid-column: span 3;
+    white-space: nowrap;
+    padding: 10px 12px;
+}
+
+.check-task:hover {
+    border-color: var(--color-btn-primary);
+    background: var(--color-how-it-works-bg);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.12);
+    transform: translateY(-1px);
+}
+
+.check-task.green {
+    background: rgba(22, 163, 74, 0.1);
+    border-color: rgba(22, 163, 74, 0.3);
+    color: #16a34a;
+}
+
+.check-task.green:hover {
+    background: rgba(22, 163, 74, 0.18);
+    border-color: #16a34a;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2);
+}
+
+.block-task-num .check-task:not(.green) {
+    background: transparent;
+    border: 1px dashed var(--color-border);
+    color: var(--color-chess-desc);
+}
+
+.block-task-num .check-task:not(.green):hover {
+    border-color: var(--color-chess-desc);
+    background: var(--color-bg);
+    box-shadow: none;
+    transform: none;
+}
+
+.block-task p {
+    margin: 16px 0 0 0;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 12.5px;
+    line-height: 1;
+    color: var(--color-chess-desc);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.block-task p::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: rgba(22, 163, 74, 0.1);
+    border: 1px solid rgba(22, 163, 74, 0.3);
+    flex-shrink: 0;
+}
+
+.block-answer-still {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0;
+    box-sizing: border-box;
+}
+
+.block-answer-still .title-planing {
+    margin: 0 0 18px 0;
+}
+
+.answer-still-num>article {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.answer-still-num>article>div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 8px;
+    background: var(--color-how-it-works-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-sizing: border-box;
+}
+
+.sub-title-planing {
+    flex-basis: 100%;
+    margin: 0 0 2px 0;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.3;
+    letter-spacing: 0.2px;
+    color: var(--color-text);
+}
+
+.check-task-still {
+    padding: 7px 16px;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    color: var(--color-btn-primary);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.check-task-still:hover {
+    border-color: var(--color-btn-primary);
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.15);
+    transform: translateY(-1px);
+}
+
+.block-answer-still-content {
+    margin-top: 20px;
+}
+
+.block-answer-still-content:empty {
+    margin-top: 0;
+}
+
+.practice-text-container {
+    word-break: keep-all;
+    overflow-wrap: normal;
     margin: 10px 0;
+}
+
+.practice-line {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 0 0 12px 0;
+    box-sizing: border-box;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.9;
+    color: var(--color-text);
+    letter-spacing: 0.01em;
+    word-break: keep-all;
+    overflow-wrap: normal;
+}
+
+.practice-line:last-child {
+    margin-bottom: 0;
 }
 
 .table-container {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     grid-auto-flow: row dense;
+    border-radius: 12px;
 }
 
-.item {
-    border: 1px solid black;
-    /* Рамка вокруг каждого элемента */
-    font-size: .9em;
-    /* Размер шрифта */
-    color: black;
-    /* Цвет текста */
-    padding: 3px;
-    /* Внутренние отступы */
-    text-align: center;
-    /* Выравнивание текста по центру */
+.article-table-container {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    padding: 24px;
+    margin: 24px 0;
+}
+
+.title-table-container {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 25px;
+    line-height: 28px;
+    color: var(--color-text);
+    margin: 0 0 6px 0;
+}
+
+.subtitle-table-container {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.3;
+    color: var(--color-chess-desc);
+    margin: 0 0 16px 0;
+}
+
+.article-table-container .table-container {
+    gap: 2px;
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-container .item {
     display: flex;
-    /* Активируем Flexbox */
     flex-direction: column;
-    /* Направление расположения дочерних элементов вертикально */
     align-items: center;
-    /* Центруем по горизонтали */
+    justify-content: flex-start;
+    text-align: center;
 }
 
-.text-orf {
-    text-align: left;
+.table-container .circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    background-color: #FDFAF5;
+    border: 1px solid var(--color-btn-primary);
+    color: var(--color-btn-primary);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.table-container .title-orf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    margin: 0 0 6px 0;
+}
+
+.table-container .subtitle-orf,
+.table-container .text-orf {
+    text-align: center;
+    width: 100%;
+    line-height: 1.5;
 }
 
 .item-1,
@@ -39,7 +698,8 @@
 .item-3,
 .item-4,
 .item-5 {
-    background-color: rgb(47, 197, 33);
+    background-color: #E3D5BA;
+    padding: 12px 8px;
 }
 
 .item-6,
@@ -47,7 +707,8 @@
 .item-8,
 .item-9,
 .item-10 {
-    background-color: rgb(215, 54, 230);
+    background-color: #b3f5b3;
+    padding: 10px 8px;
 }
 
 .item-11,
@@ -55,186 +716,2097 @@
 .item-13,
 .item-14,
 .item-15 {
-    background-color: rgb(255, 255, 0);
-    width: 100%;
-    height: 55px;
-    padding: 7px;
+    background-color: #F0E0DA;
+    padding: 6px;
+}
+
+.item-16,
+.item-17,
+.item-18,
+.item-19,
+.item-20 {
+    background-color: #FBF7F0;
 }
 
 .input-text {
     width: 100%;
+    padding: 8px 10px;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text);
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
     resize: vertical;
-    /* Возможность изменять высоту руками пользователя */
     overflow-y: auto;
-    /* Появляется прокрутка, если текста много */
-    margin: 0 0;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.item-png {
-    width: 100%;
-    height: 100%;
+.input-text::placeholder {
+    color: var(--color-chess-desc);
+    opacity: 0.7;
+}
+
+.input-text:focus {
+    outline: none;
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 0 0 3px rgba(122, 82, 48, 0.12);
+}
+
+.table-container .item.item-11,
+.table-container .item.item-12,
+.table-container .item.item-13,
+.table-container .item.item-14,
+.table-container .item.item-15 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 96px;
+    background-color: #F4E6B0;
+}
+
+.table-container .item-png {
+    display: block;
+    width: 75%;
+    height: 75%;
     object-fit: contain;
 }
 
-.circle {
-    width: 30px;
-    /* диаметр окружности */
-    height: 30px;
-    /* делаем квадрат для будущей окружности */
-    border-radius: 50%;
-    /* преобразует прямоугольник в круг */
+.table-container-onetwo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, auto);
+    gap: 2px;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-container-onetwo .item {
     display: flex;
-    /* центрирование содержимого */
+    flex-direction: column;
     align-items: center;
-    /* центровка по вертикали */
+    justify-content: flex-start;
+    text-align: center;
+}
+
+.table-container-onetwo .circle {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    /* центровка по горизонтали */
-    background-color: rgb(255, 255, 0);
-    /* желтый фон */
-    border: 1px solid black;
-    /* тонкая черная обводка */
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 50%;
+    background-color: #FDFAF5;
+    border: 1px solid var(--color-btn-primary);
+    color: var(--color-btn-primary);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.blue {
-    background-color: #8fbafa;
+.table-container-onetwo .title-orf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    margin: 0 0 6px 0;
 }
 
-.text-orf-effects {
-    font-weight: bold;
-    /* Выделяем важное слово полужирным */
-    text-decoration: underline;
-    /* Подчеркивание текста */
+.table-container-onetwo .subtitle-orf,
+.table-container-onetwo .text-orf {
+    text-align: center;
+    width: 100%;
+    line-height: 1.5;
 }
 
-.bold {
-    font-weight: bold;
-    /* Выделяем полужирным */
+.table-container-onetwo .item-1,
+.table-container-onetwo .item-2 {
+    background-color: #E3D5BA;
+    padding: 12px 8px;
 }
 
-/* ---------------- контейнер для пунктограмм ------------------- */
+.table-container-onetwo .item-6,
+.table-container-onetwo .item-7 {
+    background-color: #b3f5b3;
+    padding: 10px 8px;
+}
+
+.table-container-onetwo .item-11,
+.table-container-onetwo .item-12 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 96px;
+    background-color: #F4E6B0;
+    padding: 6px;
+}
+
+.table-container-onetwo .item-16,
+.table-container-onetwo .item-17 {
+    background-color: #FBF7F0;
+}
+
+.table-container-onetwo .item-png {
+    display: block;
+    width: 75%;
+    height: 75%;
+    object-fit: contain;
+}
+
 .table-container-punktum {
     display: grid;
     grid-template-columns: 5fr 25fr 15fr 55fr;
-    /* = 5% | 25% | 15% | 55% */
     grid-auto-flow: row dense;
     margin: 5px 0;
+    gap: 2px;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.title-punktum {
+    display: flex;
+    justify-content: center;
 }
 
 .item-punktum-1 {
-    background-color: rgb(56, 238, 40);
+    background-color: #E3D5BA;
 }
 
 .item-punktum-2 {
-    background-color: rgb(243, 92, 112);
+    background-color: #b3f5b3;
 }
 
 .item-punktum-3 {
-    background-color: rgb(248, 248, 80);
+    background-color: #F4E6B0;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: start;
     gap: 5px;
+    padding: 5px 0;
 }
 
-.wrap-circle-punktum .item {
-    border: none;
+.item-punktum-4 {
+    background-color: #FBF7F0;
+    height: 100%;
+}
+
+.item-punktum-1 .circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #FDFAF5;
+    border: 1px solid var(--color-btn-primary);
+    color: var(--color-btn-primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .circle-punktum {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    border: 1px solid #000;
+    background: #fff;
+    border: 1px solid var(--color-btn-primary);
 }
 
-.item-punktum-4 {
-    height: 100%;
+.wrap-circle-punktum .item {
+    border: none;
 }
 
 .input-text-punktum {
     height: 100%;
+    width: 100%;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.input-text-punktum:focus {
+    outline: none;
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 0 0 3px rgba(122, 82, 48, 0.12);
+}
+
+.page-container-quizzes {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 50px 60px;
+}
+
+.quizzes-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.quizzes-col-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.quizzes-col-side {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+/* --- Секции квизов и результатов --- */
+.block-quizzes,
+.block-results {
+    background: var(--color-chess-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    box-shadow: 0 4px 16px rgba(122, 82, 48, 0.08);
+}
+
+.block-quizzes h2,
+.block-results h2 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    color: var(--color-hero-title);
+    margin: 0 0 20px 0;
+    text-align: center;
+}
+
+.block-quizzes h3,
+.block-results h3 {
+    margin: 0 0 18px 0;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc);
+}
+
+/* --- Карточка «Слово дня» --- */
+.quizzes-col-side .card-daily-word {
+    position: sticky;
+    top: 24px;
+    background: var(--color-chess-bg-light);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+    box-shadow: 0 4px 16px rgba(122, 82, 48, 0.08);
+}
+
+.daily-word__title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--color-hero-title);
+    margin: 0 0 12px 0;
+    text-align: center;
+}
+
+.daily-word__clock {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--color-chess-desc);
+}
+
+.daily-word__body {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-text);
+    margin-top: 10px;
+    line-height: 1.5;
+}
+
+.daily-word__result {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-hero-title);
+    margin-top: 12px;
+    white-space: pre-line;
+}
+
+.quiz-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+.quiz-trigger {
+    min-width: 150px;
+    padding: 14px 22px;
+    background: var(--color-how-it-works-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    color: var(--color-btn-primary);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quiz-trigger:hover {
+    background: #ffffff;
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.15);
+    transform: translateY(-1px);
+}
+
+.block-answer-quiz-content {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: 80%;
+    margin: 20px auto;
+    background: var(--color-btn-text-light);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    padding: 28px 32px;
+}
+
+.quiz-snippet {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+
+.quiz-word {
+    font-weight: 700;
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+}
+
+#question {
+    align-self: stretch;
+    margin: 0;
+    text-align: center;
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 23px;
+    line-height: 1.3;
+    color: var(--color-text);
+}
+
+#options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    align-self: stretch;
+}
+
+#options>* {
+    padding: 14px 18px;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    color: var(--color-text);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    width: auto;
+    flex: 0 0 auto;
+    max-width: 100%;
+}
+
+#options>*:hover {
+    border-color: var(--color-btn-primary);
+    background: var(--color-how-it-works-bg);
+    box-shadow: 0 2px 10px rgba(122, 82, 48, 0.12);
+}
+
+#result {
+    margin: 4px 0 0;
+    text-align: center;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text);
+}
+
+#next-btn {
+    align-self: center;
+    padding: 12px 28px;
+    background: var(--color-btn-primary);
+    border: 1px solid var(--color-btn-primary);
+    border-radius: 8px;
+    color: var(--color-btn-text-light);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+#next-btn:hover {
+    box-shadow: 0 4px 14px rgba(122, 82, 48, 0.25);
+    opacity: 0.95;
+}
+
+.page-container-lessons {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 60px 60px;
+}
+
+.lessons-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.lessons-progress {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.lessons-progress__info {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.lessons-progress__label {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--color-chess-desc);
+}
+
+.lessons-progress__count {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-btn-primary);
+}
+
+.lessons-progress__bar {
+    height: 6px;
+    background: var(--color-border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.lessons-progress__fill {
+    height: 100%;
+    background: var(--color-btn-primary);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+}
+
+.lessons-group {
+    margin-bottom: 30px;
+}
+
+.lessons-group__label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.lessons-group__sep {
+    width: 6px;
+    height: 6px;
+    background: var(--color-btn-primary);
+    transform: rotate(45deg);
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+.lessons-group__text {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc);
+}
+
+.lessons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    justify-content: space-between;
+}
+
+.lessons-grid--single {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.lesson-card {
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lesson-card--active:hover {
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 4px 16px rgba(122, 82, 48, 0.1);
+}
+
+.lesson-card--locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--color-bg);
+}
+
+.lesson-card__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.lesson-card__header::-webkit-details-marker {
+    display: none;
+}
+
+.lesson-card--locked .lesson-card__header {
+    cursor: not-allowed;
+}
+
+.lesson-card__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.lesson-card__icon--play {
+    background: rgba(156, 90, 29, 0.1);
+    border: 1px solid rgba(156, 90, 29, 0.25);
+    color: var(--color-btn-primary);
+}
+
+.lesson-card__icon--lock {
+    background: rgba(122, 106, 84, 0.08);
+    border: 1px solid rgba(122, 106, 84, 0.15);
+    color: var(--color-chess-desc);
+}
+
+.lesson-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.lesson-card__title {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.35;
+    color: var(--color-text);
+}
+
+.lesson-card--locked .lesson-card__title {
+    color: var(--color-chess-desc);
+}
+
+.lesson-card__status {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+}
+
+.lesson-card__status--open {
+    color: #16a34a;
+}
+
+.lesson-card__status--locked {
+    color: var(--color-chess-desc);
+    opacity: 0.7;
+}
+
+.lesson-card__chevron {
+    font-size: 14px;
+    color: var(--color-chess-desc);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+details[open] .lesson-card__chevron {
+    transform: rotate(180deg);
+}
+
+.lesson-card__body {
+    padding: 0 20px 20px;
+    border-top: 1px solid var(--color-border);
+    margin-top: 0;
+}
+
+.lesson-card__video-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 10px 20px;
+    background: var(--color-btn-primary);
+    border-radius: 8px;
+    color: var(--color-btn-text-light);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    transition: box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.lesson-card__video-btn:hover {
+    box-shadow: 0 4px 14px rgba(122, 82, 48, 0.25);
+    opacity: 0.95;
+}
+
+.lesson-card__materials {
+    margin-top: 18px;
+}
+
+.lesson-card__materials-title {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc);
+    margin-bottom: 10px;
+}
+
+.lesson-card__links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.lesson-card__links a {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+    color: var(--color-btn-primary);
+    text-decoration: none;
+    padding: 6px 0;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.2s ease;
+}
+
+.lesson-card__links a:hover {
+    border-bottom-color: var(--color-btn-primary);
+}
+
+.lesson-card__files {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lesson-file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--color-how-it-works-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lesson-file:hover {
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.12);
+}
+
+.lesson-file__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.lesson-file__name {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--color-text);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lesson-file__size {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 12px;
+    color: var(--color-chess-desc);
+    flex-shrink: 0;
+}
+
+.diag-tab:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+a.diag-tab {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.diagnostic-full-test .practice-line,
+.page-container-diagnostics .practice-line {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: normal;
+}
+
+.diagnostic-full-test .practice-line:last-child,
+.page-container-diagnostics .practice-line:last-child {
+    margin-bottom: 0;
+}
+
+.page-container-diagnostics {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 10px 20px 60px;
+}
+
+.container-diagnostics {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    background: #ffffff;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 12px;
+    padding: 16px 5%;
+}
+
+.title-planing-diagnostics {
+    margin: 0 0 14px;
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--color-text, #2f2a25);
+    text-align: center;
+}
+
+.instruction-diagnostics {
+    font-family: 'DM Sans', var(--font-body, sans-serif);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--color-chess-desc, #6f6a64);
+    padding: 0 12%;
+    margin-bottom: 15px;
+}
+
+.diagnostic-full-test__input.input-text {
+    width: 100%;
+    max-width: 360px;
+    margin-top: 10px;
+    padding: 7px 12px;
+    background: #ffffff;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 10px;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-text, #2f2a25);
+    box-shadow: inset 0 1px 2px rgba(47, 42, 37, 0.04), 0 0 0 3px rgba(122, 82, 48, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    box-sizing: border-box;
+}
+
+.diagnostic-full-test__input.input-text::placeholder {
+    color: var(--color-chess-desc, #6f6a64);
+    opacity: 0.65;
+}
+
+.diagnostic-full-test__input.input-text:hover {
+    border-color: rgba(122, 82, 48, 0.45);
+}
+
+.diagnostic-full-test__input.input-text:focus {
+    outline: none;
+    border-color: var(--color-btn-primary, #7a5230);
+    background: #ffffff;
+    box-shadow: inset 0 1px 2px rgba(47, 42, 37, 0.03), 0 0 0 3px rgba(122, 82, 48, 0.12);
+}
+
+#result-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border, #e5e0d8);
+}
+
+#result-section h3 {
+    margin: 0 0 16px;
+    font-family: 'DM Sans', var(--font-body, sans-serif);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc, #6f6a64);
+}
+
+#result-details {
+    display: grid;
+    gap: 12px;
+}
+
+#result-details>* {
+    background: var(--color-how-it-works-bg, #faf6ef);
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: 'DM Sans', var(--font-body, sans-serif);
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--color-text, #2f2a25);
+}
+
+#result-details:empty {
+    display: none;
+}
+
+.page-container-diagnostics:has(.diagnostic-full-test) .title-planing-diagnostics,
+.page-container-diagnostics:has(.diagnostic-full-test) .instruction-diagnostics {
+    display: none;
+}
+
+.diagnostic-full-test {
+    display: grid;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.question-diagnostic {
+    padding: 0;
+    margin: 12px 0;
+}
+
+.text-content-diagnostic {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--color-text, #2f2a25);
+}
+
+.text-content-diagnostic h3,
+.diagnostic-full-test__subtitle {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 25px;
+    line-height: 1.3;
+    color: var(--color-chess-desc);
+}
+
+.diagnostic-full-test__title {
+    font-family: 'Cormorant', serif;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 1.35;
+    color: var(--color-text, #2f2a25);
+}
+
+.diagnostic-full-test__options {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.diagnostic-full-test__option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #ffffff;
+    font-size: 15px;
+    padding: 0;
+    margin: 0;
+}
+
+.diagnostic-full-test__checkbox {
+    margin: 0;
+    margin-top: 3px;
+    flex-shrink: 0;
+    accent-color: var(--color-btn-primary, #7a5230);
+    width: 16px;
+    height: 16px;
+}
+
+.diagnostic-full-test__option-text {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text, #2f2a25);
+}
+
+.diagnostic-full-test__lines {
+    display: grid;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.diagnostic-full-test__line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.diagnostic-full-test__line-num {
+    flex-shrink: 0;
+    min-width: 22px;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--color-chess-desc, #6f6a64);
+}
+
+.diagnostic-full-test__line-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.diagnostic-full-test__line .practice-line,
+.diagnostic-full-test__paragraph.practice-line {
+    margin: 0;
+}
+
+.diagnostic-full-test__paragraph {
+    margin: 0 0 14px;
+}
+
+.diagnostic-full-test__paragraph:last-child {
+    margin-bottom: 0;
+}
+
+.diagnostic-full-test__input {
+    width: 100%;
+    max-width: 360px;
+    margin-top: 14px;
+}
+
+.diagnostic-full-test__input--number {
+    max-width: 180px;
+}
+
+.diagnostic-full-test__media {
+    margin: 0 0 14px;
+}
+
+.diagnostic-full-test__image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 10px;
+}
+
+.chapter {
+    text-align: center;
+    margin: 24px 0;
+    font-weight: 600;
+    font-size: 16px;
+    color: red;
+}
+
+.punktum-example {
+    display: grid;
+    gap: 10px;
+}
+
+.diagnostic-full-test__custom-html:empty {
+    display: none;
+}
+
+.diagnostic-full-test__questions-left {
+    margin-right: auto;
+}
+
+.test_fixdemo_ege .check-task-eight,
+.test_fixdemo_ege .check-task-twotwo,
+.test_fix_ege .check-task-eight,
+.test_fix_ege .check-task-twotwo {
+    display: none !important;
+}
+
+.task-eight-inputs,
+.task-twotwo-inputs {
+    width: fit-content;
+    padding: 10px;
+    background: var(--color-how-it-works-bg, #faf6ef);
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 12px;
+}
+
+.task-eight-input-row,
+.task-twotwo-input-row {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.task-eight-input-item,
+.task-twotwo-input-item {
+    display: flex;
+    align-items: center;
+}
+
+.task-eight-input-label,
+.task-twotwo-input-label {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text, #2f2a25);
+    min-width: 24px;
+}
+
+.task-eight-select.diagnostic-full-test__select,
+.task-twotwo-select.diagnostic-full-test__select {
+    min-width: 80px;
+    max-width: 100px;
+    padding: 7px 12px;
+    background: #ffffff;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 10px;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-text, #2f2a25);
+    box-shadow: inset 0 1px 2px rgba(47, 42, 37, 0.04), 0 0 0 3px rgba(122, 82, 48, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237a5230' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 32px;
+}
+
+#orthoepy-words-container {
+    column-count: 4;
+    column-gap: 32px;
+    column-rule: 1px solid var(--color-border, #e5e0d8);
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.orthoepy-word {
+    display: block;
+    font-size: 1.3em;
+    line-height: 1.6;
+    margin-bottom: 6px;
+    break-inside: avoid;
+}
+
+.orthoepy-alpha-heading {
+    display: block;
+    margin: 24px 0 10px;
+    padding-bottom: 4px;
+    font-size: 1.1em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-btn-primary, #7a5230);
+    break-inside: avoid;
+}
+
+.orthoepy-vowel {
+    display: inline-block;
+    cursor: pointer;
+    transition: transform 0.15s ease, color 0.15s ease;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.orthoepy-vowel:hover {
+    transform: scale(1.4);
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.diagnostic-starting__title {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 1.2;
+    color: var(--color-text, #2f2a25);
+    text-align: center;
+    margin: 0 0 32px;
+}
+
+.diagnostic-starting__content {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    background: var(--color-chess-bg-light);
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 16px;
+}
+
+.diagnostic-starting__text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--color-chess-desc);
+    margin-bottom: 32px;
+    white-space: pre-line;
+}
+
+.diagnostic-starting__text p:first-child {
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.diagnostic-starting__text p:not(:first-child)::before {
+    content: "◆";
+    color: var(--color-btn-primary, #7a5230);
+    font-size: 14px;
+    line-height: 1.8;
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.orthoepy-dictionary-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin: 12px auto 0;
+    width: fit-content;
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 20px;
+    color: var(--color-btn-primary, #7a5230);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.orthoepy-dictionary-link:hover {
+    background: var(--color-how-it-works-bg, #faf6ef);
+    border-color: var(--color-btn-primary, #7a5230);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.15);
+    transform: translateY(-1px);
+}
+
+.orthoepy-dictionary-link .arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.orthoepy-dictionary-link:hover .arrow {
+    transform: translateX(3px);
+}
+
+.text-analysis-exercise .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.text-analysis-exercise .option label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-text, #2f2a25);
+}
+
+.text-analysis-exercise input[type="checkbox"] {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--color-btn-primary, #7a5230);
+    cursor: pointer;
+}
+
+.text-analysis-exercise .question,
+.text-analysis-exercise .option,
+.block-answer {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+.text-content-diagnostic.diagnostic-full-test__text {
+    background: #ffffff;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-text, #2f2a25);
+    white-space: pre-wrap;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.diagnostic-full-test__subtitle {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 10px 0;
+    text-align: center;
+}
+
+.text-content-diagnostic h3.diagnostic-full-test__subtitle {
+    text-align: left;
+}
+
+.question-diagnostic.diagnostic-full-test__question {
+    background: #ffffff;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.diagnostic-full-test__title {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 10px 0;
+}
+
+.result-diagnostic {
+    margin-top: 24px;
+    display: none;
+}
+
+.diagnostic-full-test__input.task-match-correct {
+    background-color: #d4edda !important;
+    border-color: #28a745 !important;
+}
+
+.diagnostic-full-test__input.task-match-incorrect {
+    background-color: #f8d7da !important;
+    border-color: #dc3545 !important;
+}
+
+.diagnostic-full-test__checkbox.task-match-correct {
+    accent-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.diagnostic-full-test__checkbox.task-match-incorrect {
+    accent-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.diagnostic-full-test__option-text.correct-text {
+    color: #28a745 !important;
+    font-weight: 600 !important;
+}
+
+.diagnostic-full-test__option-text.incorrect-text {
+    color: #dc3545 !important;
+    font-weight: 600 !important;
+}
+
+/* ============================================
+УНИВЕРСАЛЬНЫЕ СТИЛИ ДЛЯ ЗАДАНИЙ 5-8, 22
+============================================ */
+
+/* Контейнеры заданий */
+.task-paponim-exercise.diagnostic-full-test,
+.task-wordok-exercise.diagnostic-full-test,
+.correction-exercise.diagnostic-full-test,
+.task-eight-exercise.diagnostic-full-test,
+.task-twotwo-exercise.diagnostic-full-test {
+    max-width: 900px;
+    margin: 24px auto;
+}
+
+.task-eight-exercise.diagnostic-full-test,
+.task-twotwo-exercise.diagnostic-full-test {
+    display: block !important;
+}
+
+/* Инструкция */
+.diagnostic-full-test__instruction {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text-muted, #6c6560);
+    margin: 0 0 20px 0;
+}
+
+/* Блок с текстом задания */
+.task-wordok-exercise .diagnostic-full-test__text {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-text, #2f2a25);
+    padding: 14px 18px;
+    background: var(--color-how-it-works-bg, #faf6ef);
+    border-radius: 10px;
+    margin: 16px 0 20px;
+}
+
+/* Блок с предложениями/словами */
+.diagnostic-full-test__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0 24px;
+}
+
+.diagnostic-full-test__line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.diagnostic-full-test__line-text {
+    flex: 1;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-text, #2f2a25);
+}
+
+/* Автор (для задания 22) */
+.task-twotwo-exercise .task-twotwo-author {
+    font-size: 13px;
+    color: #6c6560;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* Поля ввода */
+.task-paponim-exercise .paponim-input.diagnostic-full-test__input,
+.task-wordok-exercise .wordok-input.diagnostic-full-test__input,
+.correction-exercise .correction-input.diagnostic-full-test__input {
+    width: 100%;
+    max-width: 400px;
+    margin-top: 8px;
+}
+
+/* Контейнер с двумя колонками (задания 8, 22) */
+.task-eight-exercise .task-match-container,
+.task-twotwo-exercise .task-match-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 28px;
+}
+
+.task-eight-exercise .task-match-column,
+.task-twotwo-exercise .task-match-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.task-eight-exercise .diagnostic-full-test__match-title,
+.task-twotwo-exercise .diagnostic-full-test__match-title {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted, #6c6560);
+    margin-bottom: 8px;
+}
+
+.task-eight-exercise .diagnostic-full-test__match-row,
+.task-twotwo-exercise .diagnostic-full-test__match-row {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text, #2f2a25);
+    padding: 6px 0;
+}
+
+.task-eight-exercise .diagnostic-full-test__match-row strong,
+.task-twotwo-exercise .diagnostic-full-test__match-row strong {
+    color: var(--color-text, #2f2a25);
+    font-weight: 600;
+    margin-right: 6px;
+}
+
+/* Секция ввода ответов */
+.task-eight-exercise .task-eight-inputs,
+.task-twotwo-exercise .task-twotwo-inputs {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border, #e5e0d8);
+}
+
+.task-eight-exercise .task-eight-input-row,
+.task-twotwo-exercise .task-twotwo-input-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+}
+
+.task-eight-exercise .task-eight-input-item,
+.task-twotwo-exercise .task-twotwo-input-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.task-eight-exercise .task-eight-input-label,
+.task-twotwo-exercise .task-twotwo-input-label {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-text, #2f2a25);
+    min-width: 24px;
+}
+
+.task-eight-exercise .task-eight-select,
+.task-twotwo-exercise .task-twotwo-select {
+    padding: 8px 12px;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 6px;
+    background: #ffffff;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    color: var(--color-text, #2f2a25);
+    cursor: pointer;
+    min-width: 60px;
+    transition: border-color 0.2s ease;
+}
+
+.task-eight-exercise .task-eight-select:hover,
+.task-twotwo-exercise .task-twotwo-select:hover {
+    border-color: var(--color-text-muted, #6c6560);
+}
+
+.task-eight-exercise .task-eight-select:focus,
+.task-twotwo-exercise .task-twotwo-select:focus {
+    outline: none;
+    border-color: var(--color-btn-primary, #7a5230);
+}
+
+/* Блоки результата */
+.task-paponim-exercise .task-paponim-result,
+.task-wordok-exercise .task-wordok-result,
+.correction-exercise .correction-result,
+.task-eight-exercise .task-eight-result,
+.task-twotwo-exercise .task-twotwo-result {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: var(--color-how-it-works-bg, #faf6ef);
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 10px;
+    text-align: center;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    color: var(--color-text, #2f2a25);
+    display: none;
+}
+
+.task-paponim-exercise .task-paponim-result:not(:empty),
+.task-wordok-exercise .task-wordok-result:not(:empty),
+.correction-exercise .correction-result:not(:empty),
+.task-eight-exercise .task-eight-result:not(:empty),
+.task-twotwo-exercise .task-twotwo-result:not(:empty) {
+    display: block;
+}
+
+/* Подсветка полей ввода */
+.task-paponim-exercise .paponim-input.task-match-correct,
+.task-wordok-exercise .wordok-input.task-match-correct,
+.correction-exercise .correction-input.task-match-correct {
+    background-color: #d4edda !important;
+    border-color: #28a745 !important;
+}
+
+.task-paponim-exercise .paponim-input.task-match-incorrect,
+.task-wordok-exercise .wordok-input.task-match-incorrect,
+.correction-exercise .correction-input.task-match-incorrect {
+    background-color: #f8d7da !important;
+    border-color: #dc3545 !important;
+}
+
+/* Подсветка select */
+.task-eight-exercise .task-eight-select.task-match-correct,
+.task-twotwo-exercise .task-twotwo-select.task-match-correct {
+    background-color: #d4edda !important;
+    border-color: #28a745 !important;
+}
+
+.task-eight-exercise .task-eight-select.task-match-incorrect,
+.task-twotwo-exercise .task-twotwo-select.task-match-incorrect {
+    background-color: #f8d7da !important;
+    border-color: #dc3545 !important;
+}
+
+.article-practice,
+.block-answer .article-practice {
+    max-width: 900px;
+    margin: 24px auto;
+    background: #ffffff;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.article-practice .practice-line {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 6px 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--color-text, #2f2a25);
+}
+
+.nn-reference-image {
+    display: block;
+    max-width: 100%;
+    width: 720px;
+    height: auto;
+    margin: 0 auto 24px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid var(--color-border, #e5e0d8);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(47, 42, 37, 0.04);
+}
+
+.bold {
+    font-weight: 700;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.bold-underline {
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.bold-italic {
+    font-weight: 700;
+    font-style: italic;
+}
+
+.italic-underline {
+    font-style: italic;
+    text-decoration: underline;
+}
+
+.bold-italic-underline {
+    font-weight: 700;
+    font-style: italic;
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .diag-badge-wrap {
+        gap: 8px;
+        padding: 10px 0;
+    }
+
+    .diag-badge-label {
+        font-size: 13px;
+    }
+
+    .diag-tabs {
+        gap: 16px;
+    }
+
+    .diag-tab {
+        max-width: 150px;
+    }
+
+    .demo-tab {
+        min-height: 132px;
+    }
+
+    .demo-tab__year {
+        font-size: 18px;
+    }
+
+    .demo-tab__title {
+        font-size: 13.6px;
+    }
+
+    .page-container-trainers {
+        padding: 5px 19.5px 40px 19.5px;
+    }
+
+    .block-planning {
+        padding: 16px 18px;
+    }
+
+    .task-buttons {
+        grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+        grid-template-rows: auto;
+        gap: 6px;
+    }
+
+    .check-task {
+        padding: 9px 2px;
+        font-size: 13px;
+    }
+
+    .block-task {
+        padding: 18px;
+    }
+
+    .block-answer-still {
+        padding: 18px;
+    }
+
+    .answer-still-num>article>div {
+        padding: 14px 16px;
+    }
+
+    .sub-title-planing {
+        font-size: 13px;
+    }
+
+    .check-task-still {
+        padding: 6px 13px;
+        font-size: 12.5px;
+    }
+
+    .practice-line {
+        padding: 14px 16px;
+        font-size: 15px;
+        line-height: 1.85;
+        border-radius: 10px;
+    }
+
+    .table-container,
+    .article-table-container .table-container {
+        grid-template-columns: 1fr;
+        grid-auto-flow: row;
+    }
+
+    .item-1 {
+        order: 1;
+    }
+
+    .item-6 {
+        order: 2;
+    }
+
+    .item-11 {
+        order: 3;
+    }
+
+    .item-16 {
+        order: 4;
+    }
+
+    .item-2 {
+        order: 5;
+    }
+
+    .item-7 {
+        order: 6;
+    }
+
+    .item-12 {
+        order: 7;
+    }
+
+    .item-17 {
+        order: 8;
+    }
+
+    .item-3 {
+        order: 9;
+    }
+
+    .item-8 {
+        order: 10;
+    }
+
+    .item-13 {
+        order: 11;
+    }
+
+    .item-18 {
+        order: 12;
+    }
+
+    .item-4 {
+        order: 13;
+    }
+
+    .item-9 {
+        order: 14;
+    }
+
+    .item-14 {
+        order: 15;
+    }
+
+    .item-19 {
+        order: 16;
+    }
+
+    .item-5 {
+        order: 17;
+    }
+
+    .item-10 {
+        order: 18;
+    }
+
+    .item-15 {
+        order: 19;
+    }
+
+    .item-20 {
+        order: 20;
+    }
+
+    .table-container-punktum {
+        grid-template-columns: 1fr;
+    }
+
+    .input-text-punktum {
+        height: auto;
+        min-height: 80px;
+    }
+
+    .page-container-quizzes {
+        padding: 24px 19.5px 40px;
+    }
+
+    .quizzes-layout {
+        flex-direction: column;
+    }
+
+    .quizzes-col-side {
+        width: 100%;
+    }
+
+    .quizzes-col-side .card-daily-word {
+        position: static;
+    }
+
+    .page-container-lessons {
+        padding: 24px 20px 60px;
+    }
+
+    .lessons-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lesson-card__header {
+        padding: 14px 16px;
+    }
+
+    .lesson-card__body {
+        padding: 0 16px 16px;
+    }
+
+    .lesson-card__icon {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+    }
+
+    .lesson-card__title {
+        font-size: 14px;
+    }
+
+    #orthoepy-words-container {
+        column-count: 2;
+        column-gap: 20px;
+    }
+
+    .orthoepy-word {
+        font-size: 1.2em;
+    }
+
+    .diagnostic-starting__title {
+        font-size: 26px;
+        margin-bottom: 24px;
+    }
+
+    .diagnostic-starting__content {
+        padding: 24px 20px;
+    }
+
+    .diagnostic-starting__text {
+        font-size: 16px;
+    }
+
+    .diagnostic-starting__button {
+        min-width: 240px;
+        font-size: 16px;
+    }
+
+    .nn-reference-image {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 16px;
+    }
+
+    .task-eight-exercise .task-match-container,
+    .task-twotwo-exercise .task-match-container {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .task-eight-exercise .task-eight-input-row,
+    .task-twotwo-exercise .task-twotwo-input-row {
+        gap: 12px;
+    }
+
+    .task-eight-exercise .task-eight-input-item,
+    .task-twotwo-exercise .task-twotwo-input-item {
+        flex: 1 1 calc(50% - 6px);
+        min-width: 120px;
+    }
+
+    .task-eight-exercise .task-eight-select,
+    .task-twotwo-exercise .task-twotwo-select {
+        flex: 1;
+    }
+}
+
+/* ============================================
+УНИВЕРСАЛЬНАЯ КНОПКА "ПРОВЕРИТЬ" ДЛЯ СНИППЕТОВ
+Заменяет teacher-bio__cta в заданиях 1-3, 5-8, 22
+============================================ */
+.check-task-submit {
+    display: block;
+    margin: 20px auto 0;
+    width: 200px;
+    padding: 10px 16px;
+    background: var(--color-btn-primary, #7a5230);
+    border: 1px solid var(--color-btn-primary, #7a5230);
+    border-radius: 8px;
+    color: var(--color-btn-text-light, #ffffff);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.check-task-submit:hover {
+    box-shadow: 0 4px 14px rgba(122, 82, 48, 0.25);
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+.check-task-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Облако слов-ловушек ─────────────────────────────────────── */
+.wrap-not-intro {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 4px 0;
+}
+
+.not-intro-word {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    padding: 7px 14px;
+    border: 1.5px solid rgba(0, 0, 0, .18);
+    border-radius: 999px;
+    font-size: .95em;
+    line-height: 1.2;
+    cursor: default;
+    user-select: none;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.not-intro-word i {
+    font-style: normal;
+    font-size: .82em;
+    opacity: .55;
+}
+
+/* Зачёркивание: «это не вводное» */
+.not-intro-word::after {
+    content: "";
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: 52%;
+    height: 2px;
+    background: #e53935;
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform .3s ease;
+}
+
+/* Штамп «не вводное» */
+.not-intro-word::before {
+    content: "не вводное";
+    position: absolute;
+    top: -11px;
+    right: -8px;
+    padding: 2px 7px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: #e53935;
+    border: 1.5px solid #e53935;
+    border-radius: 3px;
+    background: #fff;
+    transform: rotate(10deg) scale(0);
+    transform-origin: bottom left;
+    transition: transform .28s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.not-intro-word:hover {
+    transform: translateY(-3px) rotate(-1deg);
+    border-color: rgba(229, 57, 53, .5);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .10);
+}
+
+.not-intro-word:hover::after {
+    transform: scaleX(1);
+}
+
+.not-intro-word:hover::before {
+    transform: rotate(-8deg) scale(1);
 }
 
 
-/* ---------------- стили для смайла ------------------- */
-/* Минимальные отступы и естественный внешний вид смайлов */
+
+
+
+
 .smiley-placeholder {
     width: 25px;
     display: inline-block;
     vertical-align: baseline;
-    /* Вертикальное выравнивание по базовой линии текста */
     position: relative;
-    /* Позиционирование относительное, чтобы можно было слегка подкорректировать расположение */
     margin: 0;
-    /* Без лишних отступов */
     padding: 0;
-    /* Без внутреннего заполнения */
     line-height: normal;
-    /* Высота строки совпадает с обычным текстом */
     margin-right: 5px;
     margin-left: -1px;
 }
 
 .smiley-button {
     position: relative;
-    /* Ключевое! Для правильного позиционирования выпадающего списка */
     display: inline-block;
-    /* Чтобы не ломалась строка */
     vertical-align: baseline;
-    /* Выравнивание по базовой линии текста */
     cursor: pointer;
     white-space: nowrap;
 }
 
-/* Оформление смайлов */
 .smiley-icon {
     background-color: transparent;
-    /* Прозрачный фон */
     border: none;
-    /* Без границ */
     padding: 0;
-    /* Без отступов */
     width: 24px;
     height: 24px;
     display: inline-block;
-    /* Расположение в одну линию с текстом */
     text-align: center;
-    /* Центрирование иконки */
     line-height: 1.2;
-    /* Однострочный режим */
     transition: color 0.3s ease;
-    /* Анимация цвета */
     font-size: 1.2em;
-    /* Размер шрифта соответствует тексту */
     cursor: pointer;
     white-space: nowrap;
-}
-
-/* Стили списков вариантов ответов */
-.practice-line {
-    letter-spacing: 0.01em;
-    word-break: keep-all;
-    overflow-wrap: normal;
-}
-
-.diagnostic-full-test hr {
-    margin: 0 0 20px 0;
-}
-
-/* Для контейнера с текстом упражнения */
-.practice-text-container {
-    word-break: keep-all;
-    overflow-wrap: normal;
 }
 
 .smiley-options {
     display: none;
     position: absolute;
-    /* Появляется ниже смайлика */
-    /* top: 100%; */
     top: calc(100% + 5px);
-    /* Отступ сверху */
     left: 0;
     background: white;
     border: 1px solid #ccc;
@@ -245,7 +2817,7 @@
     z-index: 100;
     white-space: nowrap;
     width: 35px;
-    min-width: 20px;          /* ← Минимальная ширина */
+    min-width: 20px;
 }
 
 .smiley-options li {
@@ -257,33 +2829,25 @@
     white-space: nowrap;
     display: block;
     text-align: center;
-    min-width: 15px;          /* ← Минимальная ширина для буквы */
+    min-width: 15px;
 }
 
-/* Серый фон — выбрано, но не проверено */
 .smiley-icon.selected {
     background-color: #e9ecef;
-    /* светло-серый */
     color: #495057;
     border-radius: 3px;
     padding: 0 2px;
+    opacity: 0.5;
 }
 
-/* Зелёный фон — правильный ответ */
 .smiley-icon.correct {
     background-color: #d4edda;
     color: #155724;
 }
 
-/* Красный фон — неправильный ответ */
 .smiley-icon.incorrect {
     background-color: #f8d7da;
     color: #721c24;
-}
-
-/* Прозрачность — при выборе */
-.smiley-icon.selected {
-    opacity: 0.5;
 }
 
 .smiley-options li:hover {
@@ -291,7 +2855,6 @@
     cursor: pointer;
 }
 
-/* ------- задания к 6 классу -------- */
 .orthogram-buttons {
     display: grid;
     grid-template-columns: repeat(13, 1fr);
@@ -299,152 +2862,6 @@
     max-width: 100%;
 }
 
-.table-container-onetwo {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: repeat(4, auto);
-}
-
-/* ------- задания к егэ -------- */
-.block-task,
-.block-answer,
-.block-answer-still,
-.orthogram-buttons-container, .block-quizzes, .block-answer-quiz-content {
-    background-color: #f0f0f0d2;
-    border-radius: 5px;
-    margin: 20px 0;
-    padding: 5px;
-}
-
-.block-answer {
-    min-height: 20px;
-}
-
-.block-planning {
-    display: flex;
-    align-items: center;
-}
-
-.block-planning-title {
-    margin-right: 5px;
-}
-
-.block-planning-subtitle {
-    display: flex;
-    flex-wrap: wrap;
-    /* Позволяет элементам переноситься на новую строку при необходимости */
-    gap: 10px;
-}
-
-.planning-item {
-    /* Дополнительные стили для элементов */
-    padding: 3px 10px;
-    border: 1px solid #ff62ff;
-    background-color: #f1fc8f;
-    border-radius: 10px;
-    transition: all 0.3s;
-}
-
-.planning-item:hover {
-    background-color: #eaff2b;
-}
-
-.task-buttons {
-    display: grid;
-    grid-template-columns: repeat(11, 1fr);
-    grid-template-rows: repeat(2, auto);
-    gap: 0;
-    max-width: 100%;
-}
-
-.check-task {
-    padding: 3px 5px;
-    border: 1px solid #ccc;
-    background-color: #f5f5f5;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.check-task:hover {
-    background-color: #e0e0e0;
-}
-
-.task-1-container {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.sub-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.check-task-sub {
-    font-size: 0.9em;
-    padding: 4px 8px;
-    background-color: #e0e0e0;
-    border: 1px solid #ccc;
-    cursor: pointer;
-}
-
-
-/* ----------------------------------------------- */
-.exercise-instruction {
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 16px;
-    padding: 12px;
-    background-color: #f8f9fa;
-    border-left: 4px solid #3498db;
-    border-radius: 4px;
-}
-
-
-/* Компенсация padding родительского .block-answer */
-.block-answer .text-analysis-exercise {
-    margin-left: -5px !important;
-    padding-left: 0 !important;
-}
-
-
-/* Компенсация padding родительского .block-answer */
-.block-answer .text-analysis-exercise {
-    margin-left: -5px !important;
-    padding-left: 0 !important;
-}
-
-/* ------- Стилизация ответа нейроасситента -------- */
-
-.practice-buttons {
-    margin-top: 12px;
-    display: flex;
-    gap: 10px;
-}
-
-.practice-buttons button {
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-.advice-block {
-    display: none;
-    margin-top: 16px;
-    padding: 12px;
-    background-color: #f8f9fa;
-    border-left: 4px solid #0d6efd;
-    font-style: italic;
-    border-radius: 0 4px 4px 0;
-}
-
-
-.green {
-    background: rgb(170, 236, 170);
-}
-
-
-/* картинка для заданий 16-21 */
 .punktum-image-container {
     margin-bottom: 20px;
     text-align: center;
@@ -457,14 +2874,11 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Опционально: мягкие скругления */
 .test-option {
     padding: 6px 0;
     border-radius: 4px;
 }
 
-
-/* ОБЩИЕ СТИЛИ для заданий с соответствиями (8, 22 и другие) */
 .task-match-container {
     display: flex;
     gap: 30px;
@@ -504,6 +2918,7 @@
 .task-match-content {
     flex: 1;
     line-height: 1.4;
+    padding-left: 10px;
 }
 
 .task-match-content strong {
@@ -524,42 +2939,11 @@
     display: inline-block;
 }
 
-.check-match-button {
-    margin-top: 15px;
-    padding: 10px 20px;
-}
-
 .task-match-result {
     margin-top: 15px;
     display: none;
 }
 
-/* Классы для подсветки результатов */
-.task-match-correct {
-    background-color: #e8f5e9 !important;
-    border: 1px solid #c8e6c9 !important;
-}
-
-.task-match-incorrect {
-    background-color: #ffebee !important;
-    border: 1px solid #ffcdd2 !important;
-}
-
-.task-match-select-correct {
-    border-color: #4CAF50 !important;
-}
-
-.task-match-select-incorrect {
-    border-color: #f44336 !important;
-}
-
-.task-match-correct-hint {
-    color: #4CAF50;
-    margin-left: 10px;
-    font-size: 0.9em;
-}
-
-/* Подсветка для выпадающих списков задания 22 в фикс диагностике */
 .task-match-correct {
     background-color: #d4edda !important;
     border: 1px solid #4CAF50 !important;
@@ -578,30 +2962,25 @@ select.task-match-incorrect option {
     color: black;
 }
 
-/* === ФОРМАТИРОВАНИЕ ТЕКСТА ЗАДАНИЙ 1-3 === */
 .task-main-text p,
 .task-main-text br {
-    margin-bottom: 5px !important; /* ✅ Отступ 5px после каждого \n */
+    margin-bottom: 5px !important;
     display: block;
 }
 
 .task-main-text p {
-    text-indent: 15px; /* ✅ Красная строка для каждого абзаца */
+    text-indent: 15px;
 }
 
-/* === ЗАГОЛОВОК-ИНСТРУКЦИЯ ПЕРЕД ТЕКСТОМ (ЗАДАНИЯ 1-3) === */
 .task13-instruction {
-    text-align: center;      /* По центру */
-    font-style: italic;      /* Курсив */
-    margin: 0 0 15px 0;      /* Отступ снизу, чтобы отделить от текста */
-    font-size: 1.05em;       /* Чуть крупнее основного текста */
+    text-align: center;
+    font-style: italic;
+    margin: 0 0 15px 0;
+    font-size: 1.05em;
 }
 
-/* === ЗАГОЛОВКИ И ТЕКСТ ЗАДАНИЙ 1-3 в фикс диагностике === */
 .diagnostic-paragraph {
-    /* Выравнивание по ширине (как в книгах) */
-    text-align: justify;    
-    /* Красная строка (отступ первой строки) */
+    text-align: justify;
     text-indent: 25px;
     margin: 0;
 }
@@ -611,22 +2990,13 @@ select.task-match-incorrect option {
     margin-bottom: 50px;
 }
 
-/* === СТИЛИЗАЦИЯ ИСТОЧНИКА (Последний абзац) === */
 .diagnostic-paragraph:last-child {
-    /* 1. Выравнивание по правому краю */
     text-align: right !important;
-    
-    /* 2. Убираем красную строку, иначе текст "уедет" вправо с отступом */
     text-indent: 0 !important;
-    
-    /* 3. Отступ сверху 5px (как просили) */
     margin-top: 5px;
-    
-    /* 4. Убираем стандартный нижний отступ, чтобы не было лишней дыры */
     margin-bottom: 0;
 }
 
-/* Стили для абзацев текста 23-27 */
 .text23-26 {
     margin: 0 !important;
     padding: 0 !important;
@@ -634,7 +3004,6 @@ select.task-match-incorrect option {
     text-indent: 25px;
 }
 
-/* убираем отступы от чекбоксов Сдвинуть влево	Shift + Tab */
 .question input[type="checkbox"],
 .orthoepy-checkbox {
     margin: 0;
@@ -653,7 +3022,6 @@ select.task-match-incorrect option {
     line-height: 1.4;
 }
 
-/* Только рамка для ВЫБРАННЫХ чекбоксов */
 input[type="checkbox"]:checked.task-match-correct {
     outline: 2px solid #4CAF50 !important;
 }
@@ -662,7 +3030,6 @@ input[type="checkbox"]:checked.task-match-incorrect {
     outline: 2px solid #f44336 !important;
 }
 
-/* --- Dropdown for Task 5 --- */
 .task-dropdown {
     position: relative;
     display: inline-flex;
@@ -670,7 +3037,6 @@ input[type="checkbox"]:checked.task-match-incorrect {
     justify-content: center;
     overflow: visible;
     margin: 5px !important;
-    /* Forces it to match standard <button> margins */
     box-sizing: border-box;
 }
 
@@ -696,7 +3062,6 @@ input[type="checkbox"]:checked.task-match-incorrect {
 }
 
 .task-dropdown-item {
-    /* position: relative removed so submenus align to main menu */
     padding: 6px 10px;
     cursor: pointer;
     color: #333;
@@ -734,44 +3099,964 @@ input[type="checkbox"]:checked.task-match-incorrect {
     display: flex !important;
 }
 
-/* === ОРФОЭПИЯ: ТРЕНИРОВКА === */
 .orthoepy-word {
-    font-size: 1.3em; 
+    font-size: 1.3em;
     line-height: 1;
 }
 
 .orthoepy-vowel {
     display: inline-block;
-    cursor: pointer;            /* Курсор-рука при наведении */
+    cursor: pointer;
     transition: transform 0.15s ease, color 0.15s ease;
     padding: 2px 4px;
     border-radius: 3px;
 }
 
 .orthoepy-vowel:hover {
-    transform: scale(1.4);      /* Увеличение буквы на 40% при наведении */
-    color: #2563eb;             /* Синий акцент (опционально) */
+    transform: scale(1.4);
+    color: #2563eb;
     background: rgba(37, 99, 235, 0.1);
 }
 
 .orthoepy-alpha-heading {
     margin: 24px 0 10px;
     padding-bottom: 4px;
-    font-size: 1.1em;
+    font-size: 25px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 #orthoepy-words-container {
-    column-width: 300px;        /* Автоматическое кол-во колонок под ширину экрана */
-    column-gap: 32px;           /* Отступ между колонками */
+    column-width: 300px;
+    column-gap: 32px;
     max-width: 1400px;
-    margin: 0 auto;          /* Центрирование */
-    padding: 0 20px;         /* Безопасные отступы на мобильных */
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .orthoepy-alpha-heading,
 .orthoepy-word {
-    break-inside: avoid;        /* Запрещает разрыв заголовка или слова между колонками */
+    break-inside: avoid;
 }
+
+/* ============================================
+СЛОВНИК ПАРОНИМОВ (paponim_trening.html)
+============================================ */
+.paponim-page {
+    max-width: 900px;
+    margin: 32px auto;
+    padding: 0 16px;
+    font-family: 'DM Sans', var(--font-body);
+    color: var(--color-text, #2f2a25);
+}
+
+.paponim__title {
+    margin: 0 0 8px;
+    font-family: 'Cormorant', var(--font-heading);
+    color: var(--color-hero-title, #180E05);
+}
+
+.paponim__hint {
+    margin: 0 0 24px;
+    opacity: .7;
+    font-size: 14px;
+    color: var(--color-text-muted, #6c6560);
+}
+
+/* Карточка-пара: тянется на всю ширину родителя, колонки — флексы */
+.paponim__card {
+    display: flex;
+    width: 100%;
+    margin: 0 0 20px;
+    border: 1px solid var(--color-border, #D3C8B8);
+    background: var(--color-header-bg, #FDFBF7);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(24, 14, 5, 0.04);
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.paponim__card:hover {
+    box-shadow: 0 6px 20px rgba(24, 14, 5, 0.08);
+}
+
+.paponim__col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.paponim__col+.paponim__col {
+    border-left: 1px solid var(--color-border, #D3C8B8);
+}
+
+.paponim__word {
+    margin: 0;
+    padding: 12px 14px;
+    text-align: center;
+    text-transform: uppercase;
+    font-family: 'Cormorant', var(--font-heading);
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: .5px;
+    background: var(--color-bg, #F5EDE0);
+    border-bottom: 1px solid var(--color-border, #D3C8B8);
+    color: var(--color-hero-title, #180E05);
+}
+
+.paponim__meaning {
+    flex: 1;
+    margin: 0;
+    padding: 14px;
+    font-size: 16px;
+    line-height: 1.55;
+    cursor: pointer;
+    color: #fff;
+    /* самопроверка: скрыто по умолчанию */
+    transition: color .35s ease;
+}
+
+.paponim__meaning:hover {
+    color: #1a1a1a;
+}
+
+/* Переключатель «показать/скрыть значения» */
+.paponim__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 24px;
+    cursor: pointer;
+    user-select: none;
+    font-family: 'DM Sans', var(--font-body);
+}
+
+.paponim__toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.paponim__toggle-slider {
+    width: 44px;
+    height: 24px;
+    border-radius: 12px;
+    background: var(--color-border, #D3C8B8);
+    position: relative;
+    transition: background .25s ease;
+    flex-shrink: 0;
+}
+
+.paponim__toggle-slider::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform .25s ease;
+    box-shadow: 0 1px 3px rgba(24, 14, 5, 0.2);
+}
+
+.paponim__toggle-input:checked+.paponim__toggle-slider {
+    background: var(--color-btn-primary, #9C5A1D);
+}
+
+.paponim__toggle-input:checked+.paponim__toggle-slider::after {
+    transform: translateX(20px);
+}
+
+.paponim__toggle-label {
+    font-size: 14px;
+    color: var(--color-text, #333333);
+}
+
+/* Тогл включён: все значения видимы, курсор обычный */
+.paponim-page--revealed .paponim__meaning {
+    color: #1a1a1a;
+    cursor: default;
+}
+
+.paponim__alphabet {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0 0 24px;
+}
+
+.paponim__alphabet a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+    color: var(--color-btn-primary, #9C5A1D);
+    background: var(--color-header-bg, #FDFBF7);
+    border: 1px solid var(--color-border, #D3C8B8);
+    text-decoration: none;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.paponim__alphabet a:hover {
+    background: var(--color-btn-primary, #9C5A1D);
+    color: var(--color-btn-text-light, #FDFAF5);
+    border-color: var(--color-btn-primary, #9C5A1D);
+}
+
+.paponim__letter {
+    margin: 28px 0 12px;
+    font-family: 'Cormorant', var(--font-heading);
+    color: var(--color-hero-title, #180E05);
+}
+
+/* =========================
+ОТЧЕТНАЯ СТРАНИЦА ДИАГНОСТИКИ student_review.html
+========================= */
+/* ============================================
+СТРАНИЦА РАЗБОРА РЕЗУЛЬТАТОВ (student_review)
+============================================ */
+.sr-wrap {
+    max-width: 960px;
+    margin: 32px auto;
+    padding: 0 16px;
+}
+
+.sr-wrap h1 {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 32px;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 8px;
+}
+
+.sr-wrap h1+p {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    color: var(--color-chess-desc, #8c7b6b);
+    margin: 0 0 8px;
+}
+
+.sr-wrap h1+p b {
+    color: var(--color-btn-primary, #7a5230);
+}
+
+.sr-section-title {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 1.2;
+    color: var(--color-text, #2f2a25);
+    margin: 24px 0 12px;
+}
+
+.sr-section-title--lg {
+    margin-top: 32px;
+}
+
+.sr-block-title {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.3;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 8px;
+}
+
+.sr-hint {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-chess-desc, #8c7b6b);
+    opacity: 0.8;
+}
+
+.sr-chip {
+    display: inline-block;
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 12px;
+    background: rgba(192, 57, 43, 0.08);
+    color: #c0392b;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin: 2px 4px 2px 0;
+}
+
+.sr-preline {
+    white-space: pre-line;
+}
+
+.sr-ref-lines {
+    margin: 6px 0 12px;
+}
+
+.sr-choices-indent {
+    margin: 4px 0 4px 16px;
+}
+
+.sr-plan-level {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--color-btn-primary, #7a5230);
+    margin: 4px 0 8px;
+}
+
+.sr-cta-title {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 6px;
+}
+
+.sr-cta-score {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--color-text, #2f2a25);
+    margin: 0;
+}
+
+.sr-cta-score b {
+    color: var(--color-btn-primary, #7a5230);
+}
+
+/* --- Таблица сопоставления --- */
+.rv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+}
+
+.rv-table th,
+.rv-table td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+.rv-table tbody tr {
+    border-bottom: 1px solid var(--color-border, #e8ddd0);
+    transition: background 0.15s ease;
+}
+
+.rv-table tbody tr:hover {
+    background: rgba(122, 82, 48, 0.03);
+}
+
+.rv-head {
+    text-align: left;
+}
+
+.rv-head th {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc, #8c7b6b);
+    border-bottom: 2px solid var(--color-border, #e8ddd0);
+    padding-bottom: 10px;
+}
+
+.rv-col--letter {
+    width: 30px;
+    text-align: center;
+}
+
+.rv-col--answer {
+    width: 90px;
+    text-align: center;
+}
+
+.rv-col--correct {
+    width: 70px;
+    text-align: center;
+}
+
+.rv-col--mark {
+    width: 40px;
+    text-align: center;
+}
+
+.rv-ok {
+    color: #27ae60;
+    font-weight: 700;
+}
+
+.rv-no {
+    color: #c0392b;
+    font-weight: 700;
+}
+
+/* --- Блоки заданий --- */
+.sw-block {
+    margin: 18px 0;
+    padding: 20px 24px;
+    border: 1px solid var(--color-border, #e8ddd0);
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.04);
+}
+
+.sw-line {
+    font-family: 'DM Sans', var(--font-body);
+    line-height: 1.9;
+    font-size: 16px;
+    color: var(--color-text, #2f2a25);
+}
+
+.sw-ok {
+    color: #1d7a3f;
+    font-weight: bold;
+}
+
+.sw-no {
+    color: #b3261e;
+    font-weight: bold;
+}
+
+.sw-exp {
+    font-family: 'DM Sans', var(--font-body);
+    color: var(--color-chess-desc, #8c7b6b);
+    font-size: 13px;
+}
+
+.sw-ans {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.sw-ans--ok {
+    color: #1d7a3f;
+    background: rgba(29, 122, 63, 0.08);
+}
+
+.sw-ans--no {
+    color: #b3261e;
+    background: rgba(179, 38, 30, 0.08);
+}
+
+.sw-none {
+    color: var(--color-chess-desc, #8c7b6b);
+    font-style: italic;
+}
+
+.sw-q {
+    margin: 12px 0;
+    padding: 14px 16px;
+    border: 1px solid var(--color-border, #e8ddd0);
+    border-radius: 10px;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.bold-italic {
+    font-weight: bold;
+    font-style: italic;
+}
+
+/* --- План недель --- */
+.plan-week {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-border, #e8ddd0);
+    flex-wrap: wrap;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    color: var(--color-text, #2f2a25);
+    transition: background 0.15s ease;
+}
+
+.plan-week:last-child {
+    border-bottom: none;
+}
+
+.plan-week:hover {
+    background: rgba(122, 82, 48, 0.02);
+}
+
+.plan-week__num {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--color-btn-primary, #7a5230);
+    min-width: 100px;
+}
+
+.plan-week__links a {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--color-btn-primary, #7a5230);
+    text-decoration: none;
+    margin-right: 14px;
+    transition: opacity 0.2s ease;
+}
+
+.plan-week__links a:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+/* --- CTA-блоки (в контексте разбора) --- */
+.sr-wrap .cta-block {
+    margin-top: 28px;
+    padding: 24px 28px;
+    border: 2px solid var(--color-btn-primary, #7a5230);
+    border-radius: 14px;
+    background: #f2fbf5;
+    box-shadow: 0 4px 16px rgba(122, 82, 48, 0.08);
+}
+
+.sr-wrap .cta-block h3 {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 8px;
+}
+
+.sr-wrap .cta-block p {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text, #2f2a25);
+    margin: 8px 0 0;
+}
+
+.sr-wrap .cta-block a {
+    color: var(--color-btn-primary, #7a5230);
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.sr-wrap .cta-block a:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+.sr-wrap .cta-block--success {
+    border-color: #27ae60;
+    background: #f2fbf5;
+    box-shadow: 0 4px 16px rgba(39, 174, 96, 0.08);
+}
+
+/* ============================================
+РАЗБОР ДИАГНОСТИКИ (diagnostic_review)
+============================================ */
+.rv-col--num {
+    width: 40px;
+    text-align: center;
+}
+
+.rv-col--result {
+    width: 90px;
+    text-align: center;
+}
+
+.rv-row {
+    border-bottom: 1px solid var(--color-border, #e8ddd0);
+    transition: background 0.15s ease;
+}
+
+.rv-row--weak {
+    background: rgba(192, 57, 43, 0.05);
+}
+
+.rv-row--wrong td {
+    color: #c0392b;
+}
+
+.rv-dash {
+    opacity: 0.4;
+}
+
+.rv-notes {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--color-border, #e8ddd0);
+    border-radius: 10px;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text, #2f2a25);
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rv-notes:focus {
+    outline: none;
+    border-color: var(--color-btn-primary, #7a5230);
+    box-shadow: 0 0 0 3px rgba(122, 82, 48, 0.12);
+}
+
+.rv-msg {
+    font-family: 'DM Sans', var(--font-body);
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.rv-mono {
+    font-family: 'DM Sans', monospace;
+    font-size: 14px;
+}
+
+.sr-form-row {
+    margin-top: 10px;
+}
+
+.sr-form-row label {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-text, #2f2a25);
+    cursor: pointer;
+}
+
+/* ============================================
+СПИСОК ДИАГНОСТИК (diagnostic_list)
+============================================ */
+.dl-wrap {
+    max-width: 960px;
+    margin: 32px auto;
+    padding: 0 16px;
+}
+
+.dl-title {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 32px;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 8px;
+}
+
+.dl-subtitle {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--color-chess-desc, #8c7b6b);
+    margin: 0 0 24px;
+}
+
+.dl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+}
+
+.dl-head {
+    text-align: left;
+}
+
+.dl-head th {
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-chess-desc, #8c7b6b);
+    padding: 0 12px 12px;
+    border-bottom: 2px solid var(--color-border, #e8ddd0);
+}
+
+.dl-row td {
+    padding: 14px 12px;
+    color: var(--color-text, #2f2a25);
+    border-bottom: 1px solid var(--color-border, #e8ddd0);
+}
+
+.dl-row:last-child td {
+    border-bottom: none;
+}
+
+.dl-row b {
+    color: var(--color-btn-primary, #7a5230);
+}
+
+.dl-link {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--color-btn-primary, #7a5230);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+.dl-link:hover {
+    opacity: 0.7;
+}
+
+.dl-empty {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 15px;
+    color: var(--color-chess-desc, #8c7b6b);
+    margin: 32px 0;
+    text-align: center;
+}
+
+/* ============================================
+РЕЗУЛЬТАТ ДИАГНОСТИКИ — анонимная страница
+(diagnostic_ege_result, внутри .au-card)
+============================================ */
+.au-card .diag-result {
+    padding: 0 28px 8px;
+    text-align: center;
+}
+
+.au-card .diag-result__title {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.3;
+    color: var(--color-text, #2f2a25);
+    margin: 0 0 20px;
+}
+
+.au-card .weak-topics {
+    text-align: left;
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    background: rgba(192, 57, 43, 0.04);
+    border: 1px solid var(--color-border, #e8ddd0);
+    border-radius: 10px;
+}
+
+.au-card .weak-topics h3 {
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    color: var(--color-chess-desc, #8c7b6b);
+    margin: 0 0 8px;
+}
+
+.au-card .weak-topics ul {
+    margin: 0;
+    padding: 0 0 0 18px;
+    list-style: none;
+}
+
+.au-card .weak-topics li {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text, #2f2a25);
+    padding: 2px 0;
+}
+
+.au-card .weak-topics li::before {
+    content: "·";
+    color: var(--color-btn-primary, #7a5230);
+    font-weight: 700;
+    margin-right: 8px;
+}
+
+.au-card .cta-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 16px;
+    padding: 20px;
+    border: 2px solid var(--color-btn-primary, #7a5230);
+    border-radius: 12px;
+    background: #f2fbf5;
+    text-align: center;
+}
+
+.au-card .cta-block h3 {
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--color-text, #2f2a25);
+    margin: 0;
+}
+
+.au-card .cta-block p {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-text, #2f2a25);
+    margin: 0;
+}
+
+.au-card .cta-block .hint {
+    font-family: 'DM Sans', var(--font-body);
+    font-size: 13px;
+    color: var(--color-chess-desc, #8c7b6b);
+    margin: 4px 0 0;
+}
+
+.au-card .cta-block .hint strong {
+    color: var(--color-btn-primary, #7a5230);
+}
+
+.au-card .diag-actions {
+    margin-top: 24px;
+    text-align: center;
+}
+
+
+
+
+
+
+@media (max-width: 470px) {
+    .demo-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .demo-tab {
+        padding: 18px 20px;
+    }
+
+    .demo-content__card {
+        padding: 24px;
+    }
+
+    .page-container-quizzes {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .block-quizzes,
+    .block-results {
+        padding: 18px;
+    }
+
+    .quiz-buttons {
+        gap: 10px;
+    }
+
+    .quiz-trigger {
+        min-width: 0;
+        flex: 1 1 calc(50% - 10px);
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 430px) {
+    .diag-badge-wrap {
+        gap: 8px;
+        padding: 10px 0;
+    }
+
+    .diag-tabs {
+        flex: 0 0 100%;
+    }
+
+    .demo-tab {
+        min-height: 95px;
+    }
+
+    .page-container-trainers {
+        padding-left: 0 16px;
+    }
+
+    .task-buttons {
+        grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    }
+
+    .title-planing {
+        font-size: 20px;
+    }
+
+    .block-answer-still {
+        padding: 16px;
+    }
+
+    .answer-still-num>article {
+        gap: 12px;
+    }
+
+    .check-task-still {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+
+    .practice-line {
+        padding: 12px 14px;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    .page-container-lessons {
+        padding: 16px 16px 48px;
+    }
+
+    .lessons-header__title {
+        font-size: 1.6rem;
+    }
+
+    .lesson-card__header {
+        gap: 10px;
+        padding: 12px 14px;
+    }
+
+    .lesson-card__video-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .question-diagnostic {
+        padding: 0;
+    }
+
+    .diagnostic-full-test__title {
+        font-size: 18px;
+    }
+
+    .diagnostic-full-test__input,
+    .diagnostic-full-test__input--number {
+        max-width: 100%;
+    }
+
+    .page-container-diagnostics {
+        padding: 0 16px 40px;
+    }
+
+    .container-diagnostics {
+        padding: 20px;
+    }
+
+    .title-planing-diagnostics {
+        font-size: 26px;
+    }
+
+    .instruction-diagnostics {
+        font-size: 15px;
+    }
+
+    #start-diagnostic-btn.check-task {
+        width: 100%;
+    }
+}
+/* ===== Видеоуроки: модальный плеер ===== */
+.video-modal{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:16px;}
+.video-modal[hidden]{display:none;}
+.video-modal__backdrop{position:absolute;inset:0;background:rgba(20,12,4,.78);}
+.video-modal__box{position:relative;width:min(960px,96vw);aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);}
+.video-modal__frame{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.video-modal__close{position:absolute;top:10px;right:10px;z-index:3;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,247,232,.92);color:#4A3520;font-size:20px;line-height:1;cursor:pointer;}
+.video-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:1300;background:#4A3520;color:#FFF7E8;padding:10px 18px;border-radius:999px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.25);}
+.video-toast[hidden]{display:none;}
+@media (max-width:430px){.video-modal{padding:8px;}.video-modal__box{border-radius:10px;}}

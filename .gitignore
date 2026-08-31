@@ -55,3 +55,6 @@ logs/
 # Django migrations (если нужно — иногда их коммитят, но не автогенерённые конфликты)
 # migrations/
 # !migrations/__init__.py
+# Cleanup folders
+_trash/
+backups/

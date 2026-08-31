@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>н и нн в причастиях и прилагательных игры как запомнить правило потренироваться</title>
+    <title>Попади в цель: Н или НН — онлайн-игра по русскому языку | Нейростат</title>
+    <meta name="description"
+        content="{{ meta_description|default:'Онлайн-игра «Н или НН» для 6–11 классов: тренируйте одну из самых сложных тем русского языка в игре — более 1000 слов с Н и НН в прилагательных и причастиях. Готовит к ОГЭ и ЕГЭ.' }}">
+
     <link rel="stylesheet" href="{% static 'css/games_css/reset_targetn.css' %}">
     <link rel="stylesheet" href="{% static 'css/games_css/targetn.css' %}">
 </head>
@@ -1012,12 +1015,11 @@
     </svg>
 
     <div class="page">
-        <a href="{% url 'planning_7kl' %}">Назад</a>
-        <h1 class="play-title">Попади в цель Н и НН: Наведи стрелку на верное объяснение в секторах</h1>
+        <h1 class="visually-hidden">Н или НН в прилагательных и причастиях - интерактивная онлайн-игра</h1>
+        <a href="{% url 'trainers_ege' %}">Назад</a>
+        <h2 class="play-title">Попади в цель Н и НН: Наведи стрелку на верное объяснение в секторах</h2>
         <section class="play">
-            <h2 class="visually-hidden">н и нн в причастиях и прилагательных правописание игра</h2>
             <article class="wrapper">
-                <h2 class="visually-hidden">н и нн в игре игровой способ запоминания и тренировки</h2>
                 <figure id="target">
                     <svg class="svg__base" id="svg_base">
                         <use xlink:href="#base"></use>
@@ -1073,7 +1075,7 @@
                 </figure>
 
                 <section class="ushki">
-                    <h3 class="visually-hidden">правила написания Н и НН в причастиях и прилагательных</h3>
+                    <h3 class="visually-hidden">Справка: правила написания Н и НН в причастиях и прилагательных</h3>
                     <button data-btn="7" class="inf pril1"><span class="red">прилаг.</span> на Н и с основой на
                         Н</button>
                     <button data-btn="8" class="inf pril2"><span class="red">прилаг.</span> с <br> -ЕНН- -ОНН-</button>
@@ -1112,7 +1114,7 @@
                             <li class="modal__li">порциОННый</li>
                             <li class="modal__li">обществЕННый</li>
                         </ul>
-                        <p class="modal__text"><span class="red">&#33</span> Кроме слова ветрЕНый</p>
+                        <p class="modal__text"><span class="red">&#33;</span> Кроме слова ветрЕНый</p>
                     </section>
                 </dialog>
                 <dialog class="modal">
@@ -1199,7 +1201,7 @@
                             <li class="modal__li">серебрЯНый</li>
                             <li class="modal__li">гостИНый</li>
                         </ul>
-                        <p class="modal__text"><span class="red">&#33</span> Кроме 3 слов-исключений: стеклЯННый,
+                        <p class="modal__text"><span class="red">&#33;</span> Кроме 3 слов-исключений: стеклЯННый,
                             оловЯННый, деревЯННый</p>
                     </section>
                 </dialog>
@@ -1237,7 +1239,7 @@
                 <dialog class="modal">
                     <button data-btn="pravClose" class="btn-promo-close">&#9421</button>
                     <section class="modal-card pravila">
-                        <h3 class="modal__title"><span class="red">ПРАВИЛА ИГРЫ</h3>
+                        <h3 class="modal__title"><span class="red">ПРАВИЛА ИГРЫ</span></h3>
                         <p class="modal__text">КАК ИГРАТЬ:</p>
                         <ol class="modal__subtext">
                             <li class="modal__li">Подхватить стрелку мышкой (пальцем на телефоне), подвести к мишени.
@@ -1264,7 +1266,7 @@
                 <dialog class="modal" id="modal_game_over">
                     <button class="btn-promo-close" onclick="closeGameOver()">&#9421</button>
                     <section class="modal-card pravila">
-                        <h3 class="modal__title"><span class="red">КОНЕЦ ИГРЫ</h3>
+                        <h3 class="modal__title"><span class="red">КОНЕЦ ИГРЫ</span></h3>
                         <p class="modal__text">Вы попали в цель <span id="game_over_count"></span> раз</p>
                         <p class="modal__text">Ваша оценка: <span id="game_over_mark"></span></p>
                     </section>

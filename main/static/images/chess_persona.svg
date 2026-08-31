@@ -1,0 +1,15 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g opacity="0.82">
+<path d="M18 29.7C24.4618 29.7 29.7 24.4617 29.7 18C29.7 11.5383 24.4618 6.29999 18 6.29999C11.5383 6.29999 6.30005 11.5383 6.30005 18C6.30005 24.4617 11.5383 29.7 18 29.7Z" stroke="#7A5230" stroke-width="0.81"/>
+<path opacity="0.6" d="M18 24.3C21.4793 24.3 24.3 21.4794 24.3 18C24.3 14.5206 21.4793 11.7 18 11.7C14.5206 11.7 11.7 14.5206 11.7 18C11.7 21.4794 14.5206 24.3 18 24.3Z" stroke="#7A5230" stroke-width="0.45"/>
+<path opacity="0.6" d="M18 20.25C19.2426 20.25 20.25 19.2426 20.25 18C20.25 16.7574 19.2426 15.75 18 15.75C16.7574 15.75 15.75 16.7574 15.75 18C15.75 19.2426 16.7574 20.25 18 20.25Z" fill="#9C5A1D"/>
+<path opacity="0.5" d="M18 6.29999V11.7" stroke="#7A5230" stroke-width="0.54"/>
+<path opacity="0.5" d="M18 24.3V29.7" stroke="#7A5230" stroke-width="0.54"/>
+<path opacity="0.5" d="M6.30005 18H11.7" stroke="#7A5230" stroke-width="0.54"/>
+<path opacity="0.5" d="M24.3 18H29.7" stroke="#7A5230" stroke-width="0.54"/>
+<path opacity="0.4" d="M9.8999 9.89999L13.4999 13.5" stroke="#7A5230" stroke-width="0.45"/>
+<path opacity="0.4" d="M22.5 22.5L26.1 26.1" stroke="#7A5230" stroke-width="0.45"/>
+<path opacity="0.4" d="M22.5 13.5L26.1 9.89999" stroke="#7A5230" stroke-width="0.45"/>
+<path opacity="0.4" d="M13.4999 22.5L9.8999 26.1" stroke="#7A5230" stroke-width="0.45"/>
+</g>
+</svg>

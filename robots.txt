@@ -1,0 +1,35 @@
+# robots.txt для Нейростат
+# Обновлено: 2026-07-31
+
+User-agent: *
+# Запрет служебных и личных разделов
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /statistic/
+Disallow: /accounts/
+Disallow: /login/
+Disallow: /logout/
+Disallow: /register/
+# Технические параметры и сортировки
+Disallow: /*?utm_
+Disallow: /*?sort=
+Disallow: /*?page=
+
+# Явно разрешаем AI-краулеров (для попадания в ответы нейросетей)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Карта сайта
+Sitemap: https://neurostat.ru/sitemap.xml

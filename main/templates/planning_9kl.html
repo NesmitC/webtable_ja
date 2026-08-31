@@ -1,26 +1,36 @@
-{% comment %} main\templates\planning_9kl.html {% endcomment %}
-
+{% comment %} main/templates/planning_9kl.html {% endcomment %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 
 <head>
-    {% load static %} <!-- ЭТО ОБЯЗАТЕЛЬНО! -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>9 класс — NeuroStat</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=8">
-    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=8">
-    <link rel="stylesheet" href="{% static 'css/media_planning.css' %}?v=8">
-    <link rel="stylesheet" href="{% static 'css/reset.css' %}?v=8">
+    <title>Тренажёры по русскому языку онлайн 9 класс: орфограммы 1-2, пунктограммы, орфоэпические нормы | Нейростат
+    </title>
+    <meta name="description"
+        content="Интерактивные тренажёры по русскому: отработка орфограмм, планинги с примерами и самопроверкой. Точечная подготовка — только ваши слабые места. Бесплатный доступ.">
+
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
 </head>
 
 <body>
-    <header class="header">
-        <a href="/">← Назад</a>
-    </header>
+    {% include 'includes/header.html' %}
 
-    <main>
+    <main class="page-container-trainers">
+        <h1 class="visually-hidden">Онлайн-тренажёры по русскому языку 9 класс:
+            орфограммы 1-2, пунктограммы, орфоэпические нормы</h1>
+        <!-- Бейдж-строка -->
+        <div class="diag-badge-wrap">
+            <span class="hero__badge">9 класс · Русский язык · ОГЭ</span>
+            <span class="diag-badge-sep" aria-hidden="true"></span>
+            <span class="diag-badge-label">Тренажёры по заданиям ОГЭ</span>
+        </div>
 
+        <!-- Выбор задания по номеру -->
         <section class="block-task">
             <h2 class="title-planing">Выберите задание по номеру</h2>
 
@@ -30,6 +40,8 @@
                         onclick="handleOgeSingleTask('2-3'); this.classList.add('active');">2-3</button>
                     <button class="check-task green"
                         onclick="handleOgeSingleTask('4'); this.classList.add('active');">4</button>
+
+                    <!-- Задание 5 с выпадающим меню -->
                     <div class="task-dropdown check-task green">
                         <span style="pointer-events: none;">5</span>
                         <div class="task-dropdown-menu">
@@ -38,13 +50,16 @@
                                 <div class="task-submenu">
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_2100'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Общее упр.</div>
+                                        Общее упр.
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_8'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 8</div>
+                                        Пунктограмма 8
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_18'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 18</div>
+                                        Пунктограмма 18
+                                    </div>
                                 </div>
                             </div>
                             <div class="task-dropdown-item">
@@ -52,10 +67,12 @@
                                 <div class="task-submenu">
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_2101'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Общее упр.</div>
+                                        Общее упр.
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_19'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 19</div>
+                                        Пунктограмма 19
+                                    </div>
                                 </div>
                             </div>
                             <div class="task-dropdown-item">
@@ -63,25 +80,32 @@
                                 <div class="task-submenu">
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_2102'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Общее упр.</div>
+                                        Общее упр.
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_2'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 2</div>
+                                        Пунктограмма 2
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_3'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 3</div>
+                                        Пунктограмма 3
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_4'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 4</div>
+                                        Пунктограмма 4
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_6_7'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 6,7</div>
+                                        Пунктограмма 6,7
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_11_14'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 11-14</div>
+                                        Пунктограмма 11-14
+                                    </div>
                                     <div class="task-dropdown-item"
                                         onclick="handleOgeSingleTask('5_15'); document.querySelectorAll('.task-buttons .check-task').forEach(btn => btn.classList.remove('active')); this.closest('.task-dropdown').querySelector('.check-task').classList.add('active');">
-                                        Пунктограмма 15</div>
+                                        Пунктограмма 15
+                                    </div>
                                 </div>
                             </div>
                             <div class="task-dropdown-item"
@@ -90,6 +114,7 @@
                             </div>
                         </div>
                     </div>
+
                     <button class="check-task green"
                         onclick="handleOgeSingleTask('6'); this.classList.add('active');">6</button>
                     <button class="check-task green"
@@ -105,17 +130,20 @@
                     <button class="check-task">13.3</button>
                 </div>
             </article>
-            <p>* готовые задания отмечены зеленым</p>
+            <p>* готовые задания отмечены зелёным</p>
         </section>
 
+        <!-- Контейнер для рендера заданий -->
         <section class="block-answer"></section>
-
 
         <!-- Скрытое поле с CSRF-токеном -->
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     </main>
 
-    <script src="{% static 'js/planning_oge.js' %}?v=1"></script>
+    {% include 'includes/footer.html' %}
+
+    <!-- Скрипты -->
+    <script src="{% static 'js/planning_oge.js' %}"></script>
 </body>
 
 </html>

@@ -1,29 +1,62 @@
 {% comment %} main\templates\orthoepy_trening.html {% endcomment %}
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
-    <title>Тренировка: орфоэпия</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренировка: орфоэпия — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
 </head>
+
 <body>
-    <h2>Расставьте ударения: кликните по ударной гласной</h2>
-    <div id="orthoepy-words-container"></div>
-    <button id="check-orthoepy-trening" style="margin: 20px 0; padding: 10px 20px;">Проверить</button>
-    <div id="orthoepy-trening-result"></div>
-    <a href="{% url 'ege' %}" style="display: block; margin-top: 10px;">← Вернуться к заданиям</a>
+    {% include 'includes/header.html' %}
 
-    <!-- === ПОДКЛЮЧЕНИЕ СТИЛЕЙ === -->
-    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <main class="page-container-trainers">
+        <section class="block-task">
+            <h2 class="title-planing">Расставьте ударения: кликните по ударной гласной</h2>
 
-    <script>window.ORTHOEPY_WORDS = {{ words_data|safe }};</script>
-    <script src="{% static 'js/planning_orthoepos.js' %}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.initOrthoepyTrening) window.initOrthoepyTrening();
-        });
-    </script>
+            <div id="orthoepy-words-container" class="orthoepy-trening__container"></div>
+
+            <div id="orthoepy-trening-result" class="orthoepy-trening__result"></div>
+        </section>
+        <section class="orthoepy-trening__actions">
+            <button id="check-orthoepy-trening" class="check-task-submit">
+                Проверить
+            </button>
+            <a href="{% url 'trainers_ege' %}" class="orthoepy-trening__back">
+                ← Вернуться к заданиям
+            </a>
+        </section>
+
+        <!-- === РАБОТА НАД ОШИБКАМИ === -->
+        <section class="block-correction">
+            <h2 class="title-planing">Работа над ошибками
+                <span id="orthoepy-correction-count"></span>
+            </h2>
+            <div id="orthoepy-resolved-note"></div>
+            <div id="orthoepy-correction-blocks">Загрузка...</div>
+        </section>
+
+        <!-- === ИСТОРИЯ ПРОХОЖДЕНИЙ === -->
+        <section class="block-history">
+            <h2 class="title-planing">История прохождений</h2>
+            <div id="orthoepy-history-container">Загрузка...</div>
+        </section>
+
+        {{ correction_data|json_script:"correction-data" }}
+        {{ attempts_data|json_script:"attempts-data" }}
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <script>window.ORTHOEPY_WORDS = {{ words_data | safe }};</script>
+    <script src="{% static 'js/planning_orthoepos.js' %}?v=2"></script>
 </body>
+
 </html>

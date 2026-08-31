@@ -1,0 +1,65 @@
+{% comment %} main\templates\test_fix_ege\diagnostic_ege_result.html {% endcomment %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результат диагностики — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+
+<body>
+    <section class="au-page">
+        <div class="au-card">
+
+            <div class="au-card-logo-wrap">
+                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ" class="au-card__logo">
+            </div>
+
+            <div class="diag-result">
+                <h2 class="diag-result__title">Ваш результат: {{ attempt.score }}/{{ attempt.max_score }}</h2>
+
+                {% if attempt.weak_topics %}
+                <div class="weak-topics">
+                    <h3>Слабые задания:</h3>
+                    <ul>
+                        {% for topic in attempt.weak_topics %}
+                        <li>Задание {{ topic }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if not user.is_authenticated %}
+                <div class="cta-block">
+                    <h3>Разберите ошибки с преподавателем</h3>
+                    <p>Зарегистрируйтесь — результат сохранится и будет всегда доступен в разделе <b>Статистика</b>.</p>
+                    <a href="{% url 'register' %}?code={{ attempt.access_code }}"
+                        class="btn btn--primary au-form__submit">Зарегистрироваться</a>
+                    <p class="hint">Код результата: <strong>{{ attempt.access_code }}</strong></p>
+                </div>
+                {% else %}
+                <p>✅ Результат сохранён. История и разбор — в разделе <a href="{% url 'statistic' %}">Статистика</a>.
+                </p>
+                {% endif %}
+
+                <div class="diag-actions">
+                    <a href="{% url 'index' %}" class="btn btn--outline">На главную</a>
+                </div>
+            </div>
+
+            <div class="au-footer">
+                <p class="au-footer__copy">© 2026 Нейростат</p>
+            </div>
+
+        </div>
+    </section>
+</body>
+
+</html>

@@ -1,0 +1,12 @@
+{% load static %}
+<!-- ===== Модальное окно видеоурока (общее для всех страниц) ===== -->
+<div class="video-modal" id="videoModal" hidden role="dialog" aria-modal="true" aria-label="Видео">
+    <div class="video-modal__backdrop" data-video-close></div>
+    <div class="video-modal__box">
+        <button class="video-modal__close" type="button" data-video-close aria-label="Закрыть видео">×</button>
+        <iframe class="video-modal__frame" id="videoModalFrame" src="" title="Видео"
+            allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>
+    </div>
+</div>
+<div class="video-toast" id="videoToast" hidden></div>
+<script src="{% static 'js/lessons_video.js' %}"></script>

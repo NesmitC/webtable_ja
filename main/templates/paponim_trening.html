@@ -1,0 +1,53 @@
+{% load static paponim_tags %}
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Паронимы — онлайн-словник | Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+
+<body class="test_fix_ege">
+    {% include 'includes/header.html' %}
+
+    <main class="paponim-page">
+        <h1 class="paponim__title">Онлайн-словник паронимов</h1>
+        <p class="paponim__hint">
+            Значения скрыты: сначала вспомните сами, затем наведите курсор, чтобы проверить себя.
+        </p>
+
+        <label class="paponim__toggle">
+            <input type="checkbox" id="paponimReveal" class="paponim__toggle-input">
+            <span class="paponim__toggle-slider"></span>
+            <span class="paponim__toggle-label" id="paponimToggleLabel">Показать значения</span>
+        </label>
+
+        {% paponim_groups as groups %}
+
+        <!-- Алфавитная навигация -->
+        <nav class="paponim__alphabet">
+            {% for g in groups %}
+            <a href="#letter-{{ g.letter }}">{{ g.letter }}</a>
+            {% endfor %}
+        </nav>
+
+        <!-- Секции по буквам -->
+        {% for g in groups %}
+        <h2 class="paponim__letter" id="letter-{{ g.letter }}">{{ g.letter }}</h2>
+        {% include 'includes/paponim_card.html' with cards=g.cards %}
+        {% endfor %}
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+
+</html>
