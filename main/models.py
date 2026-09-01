@@ -1348,8 +1348,8 @@ class OgeTaskGrammaticEight(models.Model):
         return self.name or self.id
 
     class Meta:
-        verbose_name = "ОГЭ: Пунктуационное правило (задание 5)"
-        verbose_name_plural = "ОГЭ: Пунктуационные правила (задание 5)"
+        verbose_name = "ОГЭ: Пунктуационное правило (задание 4)"
+        verbose_name_plural = "ОГЭ: Пунктуационные правила (задание 4)"
 
 
 class OgeTaskGrammaticEightExample(models.Model):

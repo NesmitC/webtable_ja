@@ -211,3 +211,5 @@ MAX_BOT_LINK = 'https://max.ru/id450400800854_bot'
 
 # Имя ИИ-ассистента (используется в промптах и приветствиях)
 BOT_NAME = 'Алекс'
+
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'

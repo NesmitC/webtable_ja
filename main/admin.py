@@ -144,8 +144,20 @@ class OrthogramAdmin(admin.ModelAdmin):
             'all': ('main/static/css/admin.css',)
         }
 
+class OrthogramExampleForm(forms.ModelForm):
+    """Резиновые многострочные поля Text и Masked word для длинных предложений"""
+    class Meta:
+        model = OrthogramExample
+        fields = '__all__'
+        widgets = {
+            'text': forms.Textarea(attrs={'rows': 3, 'style': 'width: 100%;'}),
+            'masked_word': forms.Textarea(attrs={'rows': 3, 'style': 'width: 100%;'}),
+        }
+
+
 @admin.register(OrthogramExample)
 class OrthogramExampleAdmin(admin.ModelAdmin):
+    form = OrthogramExampleForm
     list_display = ['text', 'orthogram', 'masked_word', 'grades', 'difficulty', 'is_for_quiz', 'is_active', 'planning_check_link']
     actions = ['delete_selected']
     list_filter = ['orthogram', 'difficulty', 'is_for_quiz', 'is_active']
@@ -203,8 +215,12 @@ class PunktumExampleAdmin(admin.ModelAdmin):
     list_display = ('text', 'punktum', 'is_active', 'added_by', 'created_at')
     list_filter = ('is_active', 'punktum', 'added_by', 'grades')
     search_fields = ('text', 'masked_word')
-    ordering = ('-created_at',)
     readonly_fields = ('created_at',)
+
+    def get_queryset(self, request):
+        """По умолчанию — по номеру пунктограммы: 1600, 1700, ... (числовая сортировка)"""
+        qs = super().get_queryset(request)
+        return qs.extra(select={'punktum_int': 'CAST(punktum_id AS INTEGER)'}).order_by('punktum_int', 'id')
 
     formfield_overrides = {
         models.TextField: {'widget': forms.Textarea(attrs={'rows': 5, 'cols': 80})},
@@ -304,6 +320,12 @@ class TaskPaponimAdmin(admin.ModelAdmin):
     list_editable = ['is_active', 'is_for_quiz']
     list_filter = ['is_active', 'is_for_quiz', 'root']
     search_fields = ['text', 'correct_word', 'root']
+
+    def get_ordering(self, request):
+        # Алфавитная сортировка по корню (А–Я), без учёта регистра:
+        # одинаковые корни стоят рядом — видно, что уже внесено
+        from django.db.models.functions import Lower
+        return [Lower('root')]
 
     def preview(self, obj):
         return obj.text[:80] + '...' if len(obj.text) > 80 else obj.text
