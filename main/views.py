@@ -38,6 +38,7 @@ from .models import (
     TRIAL_DAYS, Payment, PLAN_NAMES, PLAN_PRICES, TutorInvite, FREE_PLANNING_WORDS,
     OrthoepyAttempt, OrthoepyAttemptWord, OrthoepyWordStat,
     LessonView, PaponimView, ChatMessage, AiQueryLog,
+    Task9Attempt, Task9AttemptWord, Task9WordStat,
 )
 from .models import (
     OgeTextAnalysisTask, OgeTextQuestion, OgeQuestionOption,
@@ -2344,7 +2345,10 @@ def generate_alphabetical_exercise(request):
         
         return JsonResponse({
             'html': html,
-            'word_count': len(words)
+            'word_count': len(words),
+            'orthogram_id': orthogram_id,
+            'range_code': range_code,
+            'report': _task9_report(request.user, orthogram_id, range_code),
         })
     
     except json.JSONDecodeError:
@@ -2578,6 +2582,40 @@ def generate_chered_exercise(request):
         logger.error(f"Ошибка в generate_chered_exercise: {e}", exc_info=True)
         return JsonResponse({'error': 'Внутренняя ошибка сервера'}, status=500)
 
+def _task9_correction_data(user, orthogram_id: str, range_code: str) -> list:
+    """Слова, стоящие на коррекции в блоке задания 9 (группировка по датам — на фронте)."""
+    stats = Task9WordStat.objects.filter(
+        user=user, orthogram_id=orthogram_id, range_code=range_code, in_correction=True,
+    ).order_by('-correction_since')
+    return [{
+        'word': s.word,
+        'chosen_letter': s.last_chosen_letter,
+        'correct_letter': s.correct_letter,
+        'errors': s.errors,
+        'correction_since': s.correction_since.strftime('%d.%m.%Y') if s.correction_since else '',
+    } for s in stats]
+
+
+def _task9_attempts_data(user, orthogram_id: str, range_code: str) -> list:
+    """История прохождений блока задания 9 (20 последних)."""
+    attempts = Task9Attempt.objects.filter(
+        user=user, orthogram_id=orthogram_id, range_code=range_code,
+    ).order_by('-created_at')[:20]
+    return [{
+        'date': a.created_at.strftime('%d.%m.%Y %H:%M'),
+        'chosen': a.chosen_count,
+        'correct': a.correct_count,
+    } for a in attempts]
+
+
+def _task9_report(user, orthogram_id: str, range_code: str) -> dict:
+    """Проверочно-отчётный блок: текущие ошибки + история прохождений."""
+    return {
+        'correction': _task9_correction_data(user, orthogram_id, range_code),
+        'attempts': _task9_attempts_data(user, orthogram_id, range_code),
+    }
+
+
 @login_required
 def check_alphabetical_exercise(request):
     if request.method != 'POST':
@@ -2618,11 +2656,67 @@ def check_alphabetical_exercise(request):
         
         all_correct = correct_count == total_count
         
+        # === ЛЕТОПИСЬ: сохраняем прохождение и обновляем статистику слов ===
+        orthogram_id = str(exercise_data.get('orthogram_id', ''))
+        range_code = str(exercise_data.get('range_code', ''))
+        correct_words = exercise_data.get('correct_words', [])
+        resolved = []
+
+        if orthogram_id and range_code:
+            now = timezone.now()
+            with transaction.atomic():
+                attempt = Task9Attempt.objects.create(
+                    user=request.user,
+                    orthogram_id=orthogram_id,
+                    range_code=range_code,
+                    total_words=total_count,
+                    chosen_count=sum(1 for s in selected_letters if s is not None),
+                    correct_count=correct_count,
+                )
+                for i, is_correct in enumerate(results):
+                    if i >= len(selected_letters) or selected_letters[i] is None:
+                        continue   # буква не выбрана — в летопись не пишем
+                    word = correct_words[i] if i < len(correct_words) else f'#{i}'
+                    chosen = selected_letters[i]
+                    Task9AttemptWord.objects.create(
+                        attempt=attempt, word=word,
+                        chosen_letter=chosen, correct_letter=correct_letters[i],
+                        is_correct=is_correct,
+                    )
+                    stat, _ = Task9WordStat.objects.get_or_create(
+                        user=request.user, orthogram_id=orthogram_id, word=word,
+                        defaults={'range_code': range_code,
+                                  'correct_letter': correct_letters[i]},
+                    )
+                    stat.range_code = range_code
+                    stat.correct_letter = correct_letters[i]
+                    stat.attempts += 1
+                    stat.last_seen = now
+                    stat.last_result = is_correct
+                    stat.last_chosen_letter = chosen
+                    if is_correct:
+                        if stat.in_correction:
+                            resolved.append({'word': word,
+                                           'correct_letter': correct_letters[i]})
+                        stat.in_correction = False
+                        stat.correction_since = None
+                    else:
+                        stat.errors += 1
+                        if not stat.in_correction:
+                            stat.in_correction = True
+                            stat.correction_since = now.date()
+                    stat.save()
+
         return JsonResponse({
             'results': results,
             'correct_count': correct_count,
             'total_count': total_count,
-            'all_correct': all_correct
+            'all_correct': all_correct,
+            'orthogram_id': orthogram_id,
+            'range_code': range_code,
+            'resolved': resolved,
+            'report': (_task9_report(request.user, orthogram_id, range_code)
+                       if orthogram_id and range_code else None),
         })
         
     except Exception as e:

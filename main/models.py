@@ -910,6 +910,57 @@ class OrthoepyWordStat(models.Model):
     def __str__(self):
         return f'{self.user.username}: {self.word}'
 
+
+# ===== ЛЕТОПИСЬ ЗАДАНИЯ 9 (алфавитные блоки тренажёров) ======================
+class Task9Attempt(models.Model):
+    """Одно прохождение алфавитного блока задания 9 (диапазон А-О, П-С и т.д.)."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task9_attempts')
+    orthogram_id = models.CharField(max_length=10, db_index=True)
+    range_code = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_words = models.IntegerField(default=0)
+    chosen_count = models.IntegerField(default=0)
+    correct_count = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return (f'{self.user.username} orth{self.orthogram_id}/{self.range_code} '
+                f'{self.created_at:%d.%m.%Y %H:%M}')
+
+
+class Task9AttemptWord(models.Model):
+    """Результат по одному слову в прохождении: для летописи и разбора ошибок."""
+    attempt = models.ForeignKey(Task9Attempt, on_delete=models.CASCADE, related_name='words')
+    word = models.CharField(max_length=100)  # маскированное: з*1*мля
+    chosen_letter = models.CharField(max_length=10, null=True, blank=True)
+    correct_letter = models.CharField(max_length=10)
+    is_correct = models.BooleanField()
+
+
+class Task9WordStat(models.Model):
+    """Накопительная статистика по слову: какие ошибки ставить на коррекцию."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task9_stats')
+    orthogram_id = models.CharField(max_length=10)
+    range_code = models.CharField(max_length=10)
+    word = models.CharField(max_length=100)
+    correct_letter = models.CharField(max_length=10)
+    attempts = models.IntegerField(default=0)
+    errors = models.IntegerField(default=0)
+    last_result = models.BooleanField(null=True, blank=True)
+    last_chosen_letter = models.CharField(max_length=10, null=True, blank=True)
+    last_seen = models.DateTimeField(null=True, blank=True)
+    in_correction = models.BooleanField(default=False)
+    correction_since = models.DateField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'orthogram_id', 'word')
+        ordering = ['-correction_since']
+
+    def __str__(self):
+        return f'{self.user.username}: {self.word} [orth{self.orthogram_id}]'
+
 # ===== ЗАДАНИЕ 5 ==============================================================
 class TaskPaponim(models.Model):
     text = models.TextField(
