@@ -27,6 +27,7 @@ import traceback
 import json, secrets, datetime
 from pathlib import Path
 import logging
+import threading
 from .forms import CustomUserCreationForm, ProfileForm, CustomAuthenticationForm
 from .models import (
     UserExample, UserProfile, OrthogramExample, Orthogram, 
@@ -246,8 +247,32 @@ def yookassa_webhook(request):
 
 @login_required
 def pay_success(request):
-    messages.info(request, 'Оплата получена! Доступ активируется в течение минуты.')
-    return redirect('profile')
+    """Возврат из ЮKassa после оплаты.
+
+    Настоящая HTML-страница вместо прежнего redirect('profile'): при редиректе
+    счётчик Метрики не успевал выполниться, и главная конверсия сайта — оплата —
+    не фиксировалась вовсе.
+
+    Источник правды о платеже — вебхук, а он приходит асинхронно. Поэтому
+    страница показывает фактический статус и один раз обновляется сама, если
+    вебхук ещё не пришёл (параметр ?wait=1 не даёт зациклиться).
+    """
+    # ЮKassa возвращает на return_url без идентификатора платежа,
+    # поэтому берём последний платёж пользователя.
+    pay = Payment.objects.filter(user=request.user).order_by('-created_at').first()
+
+    # Прямой заход на /pay/success/ без платежа конверсией считаться не должен,
+    # иначе её можно накрутить простым открытием URL.
+    if pay is None:
+        return redirect('profile')
+
+    succeeded = pay.status == 'succeeded'
+    return render(request, 'registration/payment_success_page.html', {
+        'pay': pay,
+        'plan_name': PLAN_NAMES.get(pay.plan, pay.plan),
+        'succeeded': succeeded,
+        'need_refresh': not succeeded and request.GET.get('wait') != '1',
+    })
 
 @login_required
 def pay_fail(request):
@@ -864,6 +889,38 @@ def save_user_inputs(request):
 
 # === Аутентификация и профиль ===
 
+def _send_activation_email_bg(user_pk: int, subject: str, body: str, to_email: str) -> None:
+    """Отправляет письмо активации в фоновом потоке.
+
+    SMTP с EMAIL_TIMEOUT=10 иначе держит POST-запрос открытым: школьник жмёт
+    «Зарегистрироваться» и до 10 секунд смотрит на зависшую кнопку.
+
+    Тема и тело рендерятся в основном потоке, сюда приходят готовыми строками —
+    поток не обращается ни к БД, ни к шаблонам. send_mail() сам открывает и
+    закрывает соединение, поэтому утечки SMTP-сессий нет.
+    """
+    try:
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [to_email])
+    except Exception as e:  # noqa: BLE001
+        # Аккаунт создан, но не активирован и письмо не ушло — пользователь
+        # застрял. Молча терять регистрацию нельзя, поэтому пишем в лог и
+        # уведомляем владельца. Если лежит весь SMTP, это уведомление тоже не
+        # отправится — значит, спама при массовой аварии не будет.
+        logger.error(f"Письмо активации не отправлено, user_id={user_pk}: {e}")
+        try:
+            send_mail(
+                '❌ Регистрация осталась без письма активации',
+                f"Пользователь id={user_pk} ({to_email}) зарегистрировался,\n"
+                f"но письмо активации не отправилось — аккаунт неактивен.\n\n"
+                f"Ошибка: {e}",
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.OWNER_NOTIFY_EMAIL],
+                fail_silently=True,
+            )
+        except Exception:  # noqa: BLE001
+            pass
+
+
 def register(request):
     # Получаем IP пользователя
     ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
@@ -882,10 +939,6 @@ def register(request):
                 user.is_active = False
                 user.save()
 
-                user = form.save(commit=False)
-                user.is_active = False
-                user.save()
-
                 # === Привязка анонимной диагностики по коду (страховка кросс-устройства) ===
                 # Код однозначно идентифицирует попытку независимо от сессии/устройства,
                 # поэтому привязываем СРАЗУ при создании user — до письма и активации.
@@ -898,9 +951,6 @@ def register(request):
                         logger.info(f"Register-migration by code {code}: {bound} -> {user.username}")
 
                 current_site = get_current_site(request)
-
-
-                current_site = get_current_site(request)
                 mail_subject = 'Активируйте ваш аккаунт'
                 message = render_to_string('registration/confirm_email.html', {
                     'user': user,
@@ -909,9 +959,23 @@ def register(request):
                     'token': default_token_generator.make_token(user),
                     'scheme': 'https' if not settings.DEBUG else 'http',
                 })
-                send_mail(mail_subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+                # Письмо — в фоновый поток: ответ пользователю не ждёт SMTP.
+                threading.Thread(
+                    target=_send_activation_email_bg,
+                    args=(user.pk, mail_subject, message, user.email),
+                    daemon=True,
+                ).start()
+
                 cache.set(cache_key, attempts + 1, timeout=3600)
-                return render(request, 'registration/email_sent.html')
+
+                # PRG: редирект вместо render(). Чинит повторную отправку формы
+                # по F5 и даёт Метрике отдельный URL страницы цели — сам POST
+                # идёт на тот же /accounts/register/, что неотличимо от
+                # простого открытия формы.
+                # Флаг в сессии: прямой заход на /accounts/register/done/
+                # не должен засчитываться как конверсия.
+                request.session['reg_done'] = True
+                return redirect('register_done')
             except Exception as e:
                 logger.error(f"Ошибка при регистрации: {e}")
                 messages.error(request, "Произошла ошибка при регистрации. Попробуйте позже.")
@@ -919,6 +983,50 @@ def register(request):
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
+
+
+def register_done(request):
+    """Страница-цель «Письмо отправлено» (финал PRG после регистрации).
+
+    Отдельный URL нужен потому, что успешный POST идёт на тот же
+    /accounts/register/, и Яндекс.Метрика не может отличить отправку формы от
+    простого её открытия. Флаг в сессии отсекает прямые заходы на этот адрес:
+    иначе конверсию можно накрутить любой перезагрузкой URL.
+    """
+    if not request.session.pop('reg_done', False):
+        return redirect('register')
+    return render(request, 'registration/email_sent.html')
+
+
+def _plural_ru(n: int, one: str, few: str, many: str) -> str:
+    """Русское склонение при числительном: 1 день, 2 дня, 5 дней, 21 день.
+
+    Штатный фильтр pluralize тут не годится: он понимает максимум две формы,
+    а при трёх аргументах молча возвращает пустую строку.
+    """
+    n10, n100 = n % 10, n % 100
+    if n10 == 1 and n100 != 11:
+        return one
+    if 2 <= n10 <= 4 and not 12 <= n100 <= 14:
+        return few
+    return many
+
+
+@login_required
+def account_activated(request):
+    """Страница-цель «Аккаунт активирован».
+
+    Фиксирует подтверждение e-mail и старт триала, затем уводит лида в
+    wow-момент — на разбор его диагностики.
+    """
+    next_url = request.session.pop('post_activate_next', None)
+    profile = getattr(request.user, 'profile', None)
+    return render(request, 'registration/account_activated.html', {
+        'next_url': next_url or reverse('index'),
+        'trial_until': getattr(profile, 'trial_until', None),
+        'trial_days': TRIAL_DAYS,
+        'trial_days_word': _plural_ru(TRIAL_DAYS, 'день', 'дня', 'дней'),
+    })
 
 
 def confirm_email(request, uidb64, token):
@@ -953,11 +1061,18 @@ def confirm_email(request, uidb64, token):
         
         login(request, user)
 
-        # Wow-момент: лид сразу видит свой разбор и план
         last_attempt = DiagnosticAttempt.objects.filter(user=user).order_by('-created_at').first()
-        if last_attempt:
-            return redirect('student_review', attempt_id=last_attempt.id)
-        return redirect('index')
+        # Куда вести лида после страницы-цели. Храним в сессии, а не в
+        # query-параметре: ссылка активации приходит из письма, дописывать
+        # к ней next= нельзя.
+        request.session['post_activate_next'] = (
+            reverse('student_review', args=[last_attempt.id]) if last_attempt
+            else reverse('index')
+        )
+        # PRG на страницу-цель: её URL и reachGoal фиксируют завершение
+        # активации. Прежний редирект на '/' был неотличим от обычного
+        # визита, поэтому Метрика не видела эту конверсию.
+        return redirect('account_activated')
     
     return render(request, 'registration/invalid_link.html')
 
@@ -1778,7 +1893,7 @@ def generate_exercise_multi(request):
 def extract_from_text_and_masks(text, masked_word, orthogram_id):
     """
     Извлекает правильные символы из text по позициям масок.
-    Для орфограммы 1400 нормализует \ в |.
+    Для орфограммы 1400 нормализует обратный слэш в вертикальную черту.
     """
     parts = []
     masked = masked_word

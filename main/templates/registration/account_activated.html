@@ -1,0 +1,78 @@
+{% comment %}
+main/templates/registration/account_activated.html
+
+Страница-цель «Аккаунт активирован» (шаг 3 воронки).
+Рендерится views.account_activated после подтверждения e-mail.
+
+Отдельная страница нужна по двум причинам:
+1. Яндекс.Метрика должна отличать завершённую активацию от обычного визита —
+   прежний редирект на '/' был неотличим.
+2. Это точка wow-момента: отсюда лид уходит на разбор своей диагностики.
+{% endcomment %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    {% include 'includes/metrika.html' %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация завершена — Нейростат</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+</head>
+
+<body>
+    <section class="au-page">
+        <div class="au-card">
+
+            <!-- Логотип -->
+            <div class="au-card-logo-wrap">
+                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ" class="au-card__logo">
+            </div>
+
+            <h2 class="au-card__title">Регистрация</h2>
+
+            <!-- Иконка успеха -->
+            <div class="au-success__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+            </div>
+
+            <div class="au-success">
+                <h3 class="au-success__title">Аккаунт активирован!</h3>
+                <p class="au-success__text">
+                    {% if trial_until %}
+                        Бесплатный доступ открыт до {{ trial_until|date:"d.m.Y" }}
+                        ({{ trial_days }} {{ trial_days_word }}).<br>
+                    {% else %}
+                        Бесплатный доступ открыт на {{ trial_days }}
+                        {{ trial_days_word }}.<br>
+                    {% endif %}
+                    Можно начинать заниматься.
+                </p>
+
+                <a href="{{ next_url }}" class="btn btn--primary au-success__btn">Продолжить</a>
+            </div>
+
+            <div class="au-divider"></div>
+
+            <div class="au-footer">
+                <p class="au-footer__copy">© 2026 Нейростат</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Шаг 3 воронки: e-mail подтверждён, аккаунт активирован -->
+    {% include 'includes/metrika_goal.html' with goal_name='ACCOUNT_ACTIVATED' %}
+
+</body>
+
+</html>

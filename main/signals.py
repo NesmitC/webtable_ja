@@ -1,10 +1,14 @@
 import logging
+import threading
+from zoneinfo import ZoneInfo
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from .models import UserWord
+from django.urls import reverse
+from django.utils import timezone
+from .models import DiagnosticAttempt, UserWord
 
 log = logging.getLogger(__name__)
 
@@ -96,3 +100,97 @@ def notify_new_user_registration(sender, instance, created, **kwargs):
         )
     except Exception as e:
         log.error(f"❌ Ошибка письма о регистрации: {e}")
+
+
+# ========== УВЕДОМЛЕНИЕ ВЛАДЕЛЬЦА О ПРОЙДЕННОЙ ДИАГНОСТИКЕ ==================
+MSK = ZoneInfo('Europe/Moscow')  # TIME_ZONE в настройках — UTC, а в письме нужно МСК
+
+# diagnostic_type -> название в винительном падеже для фразы «прошёл ... диагностику»
+DIAG_TYPE_ACCUSATIVE = {
+    'starting': 'входящую',
+    'current': 'промежуточную',
+    'final': 'итоговую',
+}
+
+
+def _send_owner_mail(subject: str, message: str) -> None:
+    """Отправляет письмо владельцу. Работает в фоновом потоке."""
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.OWNER_NOTIFY_EMAIL],
+            fail_silently=False,
+        )
+        log.info("✅ Письмо о пройденной диагностике отправлено владельцу")
+    except Exception as e:  # noqa: BLE001
+        log.error(f"❌ Не удалось отправить письмо о диагностике: {e}")
+
+
+@receiver(post_save, sender=DiagnosticAttempt)
+def notify_owner_about_completed_diagnostic(
+    sender: type[DiagnosticAttempt],
+    instance: DiagnosticAttempt,
+    created: bool,
+    **kwargs,
+) -> None:
+    """
+    Письмо владельцу о каждой завершённой диагностике — анонимной и авторизованной.
+
+    Попытка создаётся сразу с is_completed=True (views.check_exercise), поэтому
+    срабатываем только на created: повторные save() не должны дублировать письмо.
+    """
+    if not created or not instance.is_completed:
+        return
+
+    # Данные собираем в основном потоке: соединения с БД между потоками не
+    # разделяются, а SMTP-ответ может занять секунды и задержать вывод
+    # результата ученику. В поток передаём только готовые строки.
+    if instance.user_id:
+        owner = instance.user
+        who_short = f"Пользователь {owner.username}"
+        who = (
+            "👤 Зарегистрированный пользователь\n"
+            f"   Логин: {owner.username}\n"
+            f"   E-mail: {owner.email or '—'}"
+        )
+    else:
+        who_short = "Незарегистрированный пользователь"
+        who = (
+            "👤 Незарегистрированный пользователь (аноним)\n"
+            f"   Код доступа к результату: {instance.access_code or '—'}"
+        )
+
+    when = timezone.localtime(instance.created_at, MSK)
+    diag_acc = DIAG_TYPE_ACCUSATIVE.get(instance.diagnostic_type)
+    phrase = f"{diag_acc} диагностику" if diag_acc else "диагностику"
+
+    primary = instance.primary_score if instance.primary_score is not None else '—'
+    secondary = instance.score if instance.score is not None else '—'
+    weak = ', '.join(str(t) for t in (instance.weak_topics or [])) or '—'
+
+    review_url = f"{settings.SITE_URL}{reverse('diagnostic_review', args=[instance.id])}"
+    registry_url = f"{settings.SITE_URL}{reverse('diagnostic_list')}"
+
+    subject = (
+        f"🩺 Диагностика пройдена [{instance.diagnostic_type or 'тип не указан'}]: "
+        f"{primary}/{instance.max_primary_score}"
+    )
+    message = (
+        f"{who_short} прошёл {phrase} {when:%d.%m.%Y в %H:%M} по московскому времени.\n"
+        f"Результаты тестирования можно посмотреть по ссылке в конце письма.\n\n"
+        f"{who}\n\n"
+        f"🩺 Тип диагностики: {instance.diagnostic_type or '—'}\n"
+        f"📊 Первичный балл: {primary} из {instance.max_primary_score}\n"
+        f"📈 Тестовый балл: {secondary} из {instance.max_score}\n"
+        f"🧩 Слабые задания: {weak}\n"
+        f"🧪 Код теста: {instance.test_code}\n"
+        f"🆔 ID попытки: {instance.id}\n\n"
+        f"🔗 Результаты и ответы ученика:\n{review_url}\n\n"
+        f"🗂 Реестр всех диагностик:\n{registry_url}\n"
+    )
+
+    threading.Thread(
+        target=_send_owner_mail, args=(subject, message), daemon=True,
+    ).start()

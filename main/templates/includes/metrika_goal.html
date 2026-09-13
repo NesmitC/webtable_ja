@@ -1,0 +1,30 @@
+{% comment %}
+main/templates/includes/metrika_goal.html
+
+Универсальная отправка цели в Яндекс.Метрику (reachGoal).
+
+Использование — в конце <body>, ОБЯЗАТЕЛЬНО после того, как в <head> подключён
+'includes/metrika.html' (иначе ym() ещё не определена):
+
+    {% include 'includes/metrika_goal.html' with goal_name='REGISTRATION_SUBMIT' %}
+
+Счётчик 112180656 — тот же, что в includes/metrika.html.
+
+ym() работает как очередь: вызовы, сделанные до загрузки tag.js, не теряются,
+а выполняются после его загрузки. Поэтому ждать window.load не нужно — цель
+уходит сразу и не зависит от того, успели ли загрузиться картинки и CSS.
+{% endcomment %}
+<script>
+    (function () {
+        var METRIKA_ID = 112180656;
+        var GOAL = '{{ goal_name|escapejs }}';
+        if (!GOAL) { return; }
+        try {
+            if (typeof ym === 'function') {
+                ym(METRIKA_ID, 'reachGoal', GOAL);
+            }
+        } catch (e) {
+            /* Счётчик заблокирован (adblock) — на работу сайта не влияет */
+        }
+    })();
+</script>

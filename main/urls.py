@@ -17,6 +17,11 @@ urlpatterns = [
     path('accounts/login/', views.EmailLoginView.as_view(), name='login'),
     path('accounts/logout/', views.custom_logout, name='logout'),
     path('accounts/register/', views.register, name='register'),
+    # Страницы-цели Яндекс.Метрики. Отдельные URL нужны потому, что успешный
+    # POST регистрации идёт на тот же /accounts/register/, а активация
+    # редиректила на '/' — Метрика не могла отличить конверсию от визита.
+    path('accounts/register/done/', views.register_done, name='register_done'),
+    path('accounts/activated/', views.account_activated, name='account_activated'),
     path(
         'accounts/confirm/<uidb64>/<token>/',
         views.confirm_email,

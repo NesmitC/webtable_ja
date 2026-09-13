@@ -1,0 +1,107 @@
+{% comment %}
+main/templates/registration/payment_success_page.html
+
+Страница-цель «Оплата» (шаг 4 воронки). Рендерится views.pay_success —
+это return_url из ЮKassa.
+
+Почему отдельная страница, а не редирект на профиль:
+при redirect браузер делает новый запрос и счётчик Метрики на /pay/success/
+не выполняется вовсе — то есть главная конверсия сайта не фиксировалась.
+
+Цель PAYMENT_SUCCESS уходит ТОЛЬКО при статусе 'succeeded'. Источник правды —
+вебхук ЮKassa, а он приходит асинхронно, поэтому при статусе 'pending' страница
+один раз обновляется сама (need_refresh), чтобы дождаться подтверждения и
+не записать в конверсии незавершённый платёж.
+{% endcomment %}
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    {% include 'includes/metrika.html' %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if succeeded %}Оплата прошла{% else %}Проверяем платёж{% endif %} — Нейростат</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+</head>
+
+<body>
+    <section class="au-page">
+        <div class="au-card">
+
+            <div class="au-card-logo-wrap">
+                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ" class="au-card__logo">
+            </div>
+
+            <h2 class="au-card__title">Оплата</h2>
+
+            <div class="au-success__icon">
+                {% if succeeded %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                {% else %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+                {% endif %}
+            </div>
+
+            <div class="au-success">
+                {% if succeeded %}
+                <h3 class="au-success__title">Оплата прошла!</h3>
+                <p class="au-success__text">
+                    Тариф «{{ plan_name }}» активирован.<br>
+                    Сумма: {{ pay.amount|floatformat:"0" }} ₽.<br>
+                    Чек придёт на вашу почту, доступ уже открыт.
+                </p>
+                {% else %}
+                <h3 class="au-success__title">Проверяем платёж…</h3>
+                <p class="au-success__text">
+                    Банк получил оплату, доступ активируется в течение минуты.<br>
+                    Страница обновится сама. Если через минуту доступ не открылся —
+                    напишите нам, мы проверим вручную.
+                </p>
+                {% endif %}
+
+                <a href="{% url 'profile' %}" class="btn btn--primary au-success__btn">
+                    {% if succeeded %}Перейти в личный кабинет{% else %}В личный кабинет{% endif %}
+                </a>
+            </div>
+
+            <div class="au-divider"></div>
+
+            <div class="au-footer">
+                <p class="au-footer__copy">© 2026 Нейростат</p>
+            </div>
+
+        </div>
+    </section>
+
+    {% if need_refresh %}
+    <!-- Один автопереход, чтобы дождаться вебхука ЮKassa.
+         location.replace не добавляет запись в историю: кнопка «назад»
+         не зациклит пользователя на этой странице. -->
+    <script>
+        setTimeout(function () {
+            window.location.replace(window.location.pathname + '?wait=1');
+        }, 6000);
+    </script>
+    {% endif %}
+
+    <!-- Шаг 4 воронки: платёж подтверждён. Только при статусе succeeded —
+         иначе в конверсии попали бы незавершённые платежи. -->
+    {% if succeeded %}
+    {% include 'includes/metrika_goal.html' with goal_name='PAYMENT_SUCCESS' %}
+    {% endif %}
+
+</body>
+
+</html>
