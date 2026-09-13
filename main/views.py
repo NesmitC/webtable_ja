@@ -2566,6 +2566,12 @@ def generate_chered_exercise(request):
             'example_ids': example_ids[:len(formatted_items)],
             'correct_letters': correct_letters,
             'orthogram_ids': ORTH_IDS,
+            # Летопись: маски слов и ключ блока. Общий эндпоинт проверки
+            # (check_alphabetical_exercise) пишет по ним прохождение —
+            # отдельный check для чередующихся не нужен.
+            'correct_words': formatted_items,
+            'orthogram_id': 'CHERED',
+            'range_code': 'CHERED',
         }
         
         # 5. Рендерим
@@ -2576,7 +2582,13 @@ def generate_chered_exercise(request):
             'show_next_button': False,
         })
         
-        return JsonResponse({'html': html})
+        return JsonResponse({
+            'html': html,
+            'word_count': len(formatted_items),
+            'orthogram_id': 'CHERED',
+            'range_code': 'CHERED',
+            'report': _task9_report(request.user, 'CHERED', 'CHERED'),
+        })
         
     except Exception as e:
         logger.error(f"Ошибка в generate_chered_exercise: {e}", exc_info=True)

@@ -155,14 +155,20 @@ r = c.post('/api/generate-alphabetical-exercise/',
            data=json.dumps({'orthogram_id': '2', 'range': 'A-D'}),
            content_type='application/json')
 check(r.status_code == 200, f'generate orth2 -> {r.status_code}')
+gen_o2 = r.json()
+check('report' in gen_o2, 'generate orth2 возвращает report')
 cw = c.session['current_exercise']['correct_letters']
+wrong = 'о' if cw[0] != 'о' else 'а'
 r = c.post('/api/check-alphabetical-exercise/',
-           data=json.dumps({'selected_letters': ['о' if cw[0] != 'о' else 'а']}),
+           data=json.dumps({'selected_letters': [wrong]}),
            content_type='application/json')
 chk3 = r.json()
 check(chk3.get('orthogram_id') == '2', 'orth2 в ответе')
+rep3 = chk3.get('report') or {}
+check(len(rep3.get('correction', [])) == 1, 'ошибка orth2 попала в коррекцию')
+check(len(rep3.get('attempts', [])) == 1, 'история orth2: 1 прохождение')
 check(Task9Attempt.objects.filter(orthogram_id='2').count() == 1,
-      'проход orth2 сохранён (данные копятся заранее под будущий UI)')
+      'проход orth2 сохранён')
 
 print('\n=== ШАГ 7. буква не выбрана (None) не попадает в летопись ===')
 before_words = Task9AttemptWord.objects.count()
@@ -181,6 +187,44 @@ check(Task9WordStat.objects.count() == before_stats,
       'статистика слов не тронута')
 last = Task9Attempt.objects.order_by('-created_at').first()
 check(last.chosen_count == 0, 'chosen_count = 0 при пустом проходе')
+
+print('\n=== ШАГ 8. Чередующиеся гласные (CHERED) ===')
+Orthogram.objects.create(id='12', name='Чередование а/о', rule='тест', letters='а,о')
+OrthogramExample.objects.create(orthogram_id='12', text='лагерь', masked_word='л*12*герь',
+                                is_active=True, grades='10,11')
+OrthogramExample.objects.create(orthogram_id='12', text='полог', masked_word='п*12*лог',
+                                is_active=True, grades='10,11')
+r = c.post('/api/generate-chered-exercise/', data=json.dumps({}),
+           content_type='application/json')
+check(r.status_code == 200, f'generate chered -> {r.status_code}')
+gen_ch = r.json()
+check(gen_ch.get('orthogram_id') == 'CHERED', 'ключ CHERED в ответе generate')
+check('report' in gen_ch, 'generate chered возвращает report')
+sess_ch = c.session['current_exercise']
+check(sess_ch.get('orthogram_id') == 'CHERED' and sess_ch.get('range_code') == 'CHERED',
+      'ключи CHERED в сессии')
+check(len(sess_ch.get('correct_words', [])) == 2, 'маски слов сохранены в сессии')
+cw_ch = sess_ch['correct_letters']
+answers_ch = [('о' if cw_ch[0] != 'о' else 'а'), cw_ch[1]]  # одна ошибка
+r = c.post('/api/check-alphabetical-exercise/',
+           data=json.dumps({'selected_letters': answers_ch}),
+           content_type='application/json')
+chk_ch = r.json()
+check(chk_ch.get('orthogram_id') == 'CHERED', 'check возвращает CHERED')
+rep_ch = chk_ch.get('report') or {}
+corr_ch = rep_ch.get('correction', [])
+check(len(corr_ch) == 1, f'chered: 1 ошибка в коррекции (факт {len(corr_ch)})')
+if corr_ch:
+    check('*12*' in corr_ch[0]['word'],
+          'многоцифровая маска *12* сохранена для красной буквы')
+check(len(rep_ch.get('attempts', [])) == 1, 'chered: история 1 прохождение')
+check(Task9Attempt.objects.filter(orthogram_id='CHERED').count() == 1,
+      'проход CHERED сохранён')
+r = c.post('/api/generate-chered-exercise/', data=json.dumps({}),
+           content_type='application/json')
+gen_ch2 = r.json()
+check(len(gen_ch2['report']['attempts']) == 1,
+      'летопись chered видна при повторном открытии блока')
 
 print('\n' + ('🎉 ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ' if not FAILS else f'⚠️ ПРОВАЛЕНО: {len(FAILS)}'))
 for f in FAILS:

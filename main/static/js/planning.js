@@ -1691,7 +1691,7 @@ async function checkAlphabeticalExercise() {
     });
 
     // Летопись задания 9: проверочно-отчётный блок под упражнением
-    if (data.orthogram_id === '1' && data.report) {
+    if (data.orthogram_id && Task9Report.SUPPORTED.includes(data.orthogram_id) && data.report) {
         Task9Report.renderInto(container, data.report, data.resolved || []);
     }
 }
@@ -1724,7 +1724,7 @@ function handleAlphabeticalExercise(orthogramId, rangeCode) {
                     processPracticeContainer(container);
                 }, 0);
                 // Летопись: проверочно-отчётный блок под упражнением
-                if (orthogramId === '1' && data.report) {
+                if (Task9Report.SUPPORTED.includes(orthogramId) && data.report) {
                     Task9Report.renderInto(container, data.report, []);
                 }
             }
@@ -1763,6 +1763,10 @@ function handleCheredExercise() {
                     processPracticeContainer(article || container);
                     setupCheckAnswers(article || container);
                 }, 0);
+                // Летопись: проверочно-отчётный блок под упражнением
+                if (data.report) {
+                    Task9Report.renderInto(container, data.report, []);
+                }
             }
         })
         .catch(error => {
@@ -1987,6 +1991,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================================
 
 window.Task9Report = {
+
+    // Блоки задания 9, где включена летопись:
+    // 1 — проверяемые гласные, 2 — непроверяемые, CHERED — чередующиеся
+    SUPPORTED: ['1', '2', 'CHERED'],
 
     esc(s) {
         const d = document.createElement('div');
