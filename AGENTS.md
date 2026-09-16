@@ -39,7 +39,6 @@
 ### Корень
 - **`manage.py`** — точка входа. `DJANGO_SETTINGS_MODULE = main.settings`.
 - **`max_bot.py`, `vk_bot.py`** — автономные скрипты ботов.
-- **`download.py`** — служебный скрипт.
 - **`settings_prod.py`** — ⚠️ **МЁРТВЫЙ ФАЙЛ.** Не используется: `wsgi.py`/`asgi.py` грузят `main.settings`. Не править его, думая, что меняешь прод.
 
 ### `main/` — единственное Django-приложение
