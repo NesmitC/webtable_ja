@@ -92,6 +92,73 @@
         return answers;
     }
 
+    function applyResults(results) {
+        // Текстовые инпуты (1-7): зелёный/красный фон, как в диагностике
+        document.querySelectorAll('input[data-question]').forEach(input => {
+            const qKey = input.dataset.question;
+            const taskResult = results[qKey];
+            input.style.backgroundColor = '';
+            input.style.border = '';
+            if (taskResult && typeof taskResult.is_correct === 'boolean') {
+                if (taskResult.is_correct) {
+                    input.style.backgroundColor = '#d4edda';
+                    input.style.border = '1px solid #4CAF50';
+                } else {
+                    input.style.backgroundColor = '#f8d7da';
+                    input.style.border = '1px solid #f44336';
+                }
+            }
+        });
+        // Задание 8: селекты соответствия
+        document.querySelectorAll('.task-eight-select').forEach(select => {
+            const letter = select.dataset.errorLetter;
+            if (!letter) return;
+            const taskResult = results['8_' + letter];
+            select.classList.remove('task-match-correct', 'task-match-incorrect');
+            select.style.backgroundColor = '';
+            select.style.borderColor = '';
+            if (taskResult && typeof taskResult.is_correct === 'boolean') {
+                if (taskResult.is_correct) {
+                    select.classList.add('task-match-correct');
+                    select.style.backgroundColor = '#d4edda';
+                    select.style.borderColor = '#4CAF50';
+                } else {
+                    select.classList.add('task-match-incorrect');
+                    select.style.backgroundColor = '#f8d7da';
+                    select.style.borderColor = '#f44336';
+                }
+            }
+        });
+        // Задание 9: буквы под смайликами
+        document.querySelectorAll('.smiley-button').forEach(btn => {
+            const orthId = btn.dataset.orthId;
+            if (!orthId) return;
+            const icon = btn.querySelector('.smiley-icon');
+            if (!icon) return;
+            const taskResult = results[orthId];
+            if (taskResult) {
+                icon.classList.remove('correct', 'incorrect', 'selected');
+                icon.classList.add(taskResult.is_correct ? 'correct' : 'incorrect');
+            }
+        });
+    }
+
+    function showVerdictLink(resultUrl, passed, errorCount) {
+        const btn = document.getElementById('check-checkpoint-btn');
+        if (!btn) return;
+        const link = document.createElement('a');
+        link.href = resultUrl;
+        link.className = 'check-task-submit';
+        link.style.display = 'block';
+        link.style.textAlign = 'center';
+        link.style.textDecoration = 'none';
+        link.textContent = passed
+            ? 'Рубеж сдан — смотреть вердикт →'
+            : `Ошибок: ${errorCount} — смотреть вердикт и рекомендации →`;
+        btn.replaceWith(link);
+        link.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         initInputs();
         const btn = document.getElementById('check-checkpoint-btn');
@@ -119,17 +186,22 @@
                 }
                 const result = await res.json();
                 if (result.result_url) {
-                    window.location.href = result.result_url;
+                    if (result.results) applyResults(result.results);
+                    document.querySelectorAll('input[data-question], .task-eight-select')
+                        .forEach(el => { el.disabled = true; });
+                    document.querySelectorAll('.smiley-button')
+                        .forEach(b => { b.style.pointerEvents = 'none'; });
+                    showVerdictLink(result.result_url, result.passed, result.error_count);
                 } else {
                     alert(result.error || 'Неизвестная ошибка проверки.');
                     btn.disabled = false;
-                    btn.textContent = 'Проверить и завершить рубеж';
+                    btn.textContent = 'Проверить и сдать рубеж';
                 }
             } catch (e) {
                 console.error(e);
                 alert('Ошибка сети. Попробуйте ещё раз.');
                 btn.disabled = false;
-                btn.textContent = 'Проверить и завершить рубеж';
+                btn.textContent = 'Проверить и сдать рубеж';
             }
         });
     });

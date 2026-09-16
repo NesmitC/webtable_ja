@@ -28,7 +28,7 @@ call_command('migrate', verbosity=0, run_syncdb=True)
 from django.contrib.auth import get_user_model
 
 from main.models import (CheckpointAttempt, Orthogram, OrthogramExample,
-                         UserProfile, UserWord)
+                         TaskPaponim, UserProfile, UserWord)
 
 fails = []
 
@@ -73,6 +73,19 @@ for ex in (ex1, ex2, ex3):
     UserWord.objects.create(user=u, field_name='корни', text=ex.text,
                             reference_word=ex, error_count=3)
 
+# паронимы для задания 5: 1 ошибочное + 4 корректных (разные корни)
+TaskPaponim.objects.create(text='Он решил **одеть** очки и вышел на улицу.',
+                           correct_word='надеть', root='дет',
+                           is_active=True, is_for_quiz=True)
+for i, (sent, root) in enumerate([
+        ('Это было **гарантийное** обслуживание, а не ремонт.', 'гарант'),
+        ('Она **адресовала** письмо подруге в Сочи.', 'адрес'),
+        ('Мы **оплатили** проезд и сели в автобус.', 'оплат'),
+        ('**Дипломатичный** ответ устроил обе стороны.', 'диплом'),
+]):
+    TaskPaponim.objects.create(text=sent, correct_word='', root=root,
+                               is_active=True, is_for_quiz=True)
+
 c = Client()
 c.force_login(u)
 
@@ -83,6 +96,9 @@ body = r.content.decode('utf-8')
 check('Рубежный тест: задания 1–9' in body, 'заголовок страницы на месте')
 check('data-question="4"' in body, 'задание 4 отрендерено')
 check('data-question="5"' in body, 'задание 5 отрендерено')
+check('пароним' in body, 'задание 5 — на паронимы (формулировка)')
+check('<u>одеть</u>' in body, 'задание 5: предложение с выделенным словом из пула паронимов')
+check('check-task-submit' in body, 'кнопка в едином стиле check-task-submit')
 check('data-error-letter="А"' in body or 'task-eight-select' in body, 'задание 8 (соответствие) на месте')
 check('data-question-number="9"' in body, 'задание 9 (смайлики) на месте')
 check('Рубежный тест: задания 1–9' in body, 'подпись: задания 1–9')
@@ -90,6 +106,7 @@ sess = c.session
 correct = sess.get('checkpoint_9_correct', {})
 check(bool(correct), 'correct-ответы лежат в сессии')
 check(correct.get('4') is not None, 'персональный correct для задания 4')
+check(correct.get('5') == 'надеть', f"correct['5'] = пароним 'надеть' (факт: {correct.get('5')!r})")
 words4 = sess.get('checkpoint_9_words', [])
 personal = {w['word'] for w in words4 if w['task'] == 4} & {'земляной', 'покров', 'сторонка'}
 check(len(personal) >= 2, f'в задании 4 персональные слова ученика: {sorted(personal)}')
@@ -111,6 +128,10 @@ r = c.post('/ege/checkpoint/9/', data=json.dumps({'answers': answers}),
 check(r.status_code == 200, f'POST -> {r.status_code}')
 res = r.json()
 check('result_url' in res, 'вернулся result_url')
+check(isinstance(res.get('results'), dict) and res['results']['5']['is_correct'],
+      'в ответе results для подсветки (задание 5 верно)')
+check(res['results']['8_А']['is_correct'], 'в ответах побуквенные результаты задания 8')
+check('9-1' in res['results'], 'в ответах построчные результаты задания 9')
 a = CheckpointAttempt.objects.first()
 check(a is not None and a.passed, 'попытка сохранена и passed=True')
 check(a.correct_count == 9, f'correct_count=9 (факт: {a.correct_count})')

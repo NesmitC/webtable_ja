@@ -10260,7 +10260,7 @@ CHECKPOINT_RECOMMEND = {
     '2': ('lessons_ege', 'Уроки 1-3: микротекст и его разбор'),
     '3': ('lessons_ege', 'Уроки 1-3: микротекст и его разбор'),
     '4': ('trainers_ege', 'Тренажёры: орфограммы корней, задание 4'),
-    '5': ('trainers_ege', 'Тренажёры: правописание корней, задание 5'),
+    '5': ('paponim_trening', 'Паронимы: словник и тренажёр, задание 5'),
     '6': ('trainers_ege', 'Тренажёры: задание 6'),
     '7': ('trainers_ege', 'Паронимы: словник и задание 7'),
     '8': ('trainers_ege', 'Грамматические основы: задание 8'),
@@ -10332,24 +10332,44 @@ def _build_checkpoint_task4(user, exclude):
     return choices, correct, words, letter
 
 
-def _build_checkpoint_task5(user, exclude):
-    """Задание 5: предложение со словом, написанным неверно."""
-    pool = _checkpoint_error_pool(user, exclude)
-    cand = [e for e in pool if e.incorrect_variant]
-    if not cand:
-        cand = [e for e in OrthogramExample.objects.filter(
-            is_active=True, incorrect_variant__isnull=False).exclude(incorrect_variant='')[:20]]
-    if not cand:
-        return None
+def _paponim_to_html(text):
+    import re as _re
+    return _re.sub(r'\*\*(.+?)\*\*', r'<u>\1</u>', text)
+
+
+def _build_checkpoint_task5(user, exclude_roots=()):
+    """Задание 5: паронимы — 1 предложение с ошибкой + 4 корректных,
+    как в тренажёре (тот же пул TaskPaponim, исключение одинаковых корней)."""
     import random
-    ex = random.choice(cand[:10])
-    sentence = f'Найдите слово с ошибкой и введите правильный вариант: «{ex.incorrect_variant}»'
-    return sentence, ex.text, ex
+    exclude_roots = {r for r in exclude_roots if r}
+    for quiz_only in (True, False):
+        base = TaskPaponim.objects.filter(is_active=True)
+        if quiz_only:
+            base = base.filter(is_for_quiz=True)
+        erroneous_qs = base.exclude(correct_word='')
+        if exclude_roots:
+            filtered = erroneous_qs.exclude(root__in=exclude_roots)
+            if filtered.exists():
+                erroneous_qs = filtered
+        erroneous = erroneous_qs.order_by('?').first()
+        if erroneous is None:
+            continue
+        correct_qs = base.filter(correct_word='')
+        if erroneous.root:
+            correct_qs = correct_qs.exclude(root=erroneous.root)
+        correct_list = list(correct_qs.order_by('?')[:4])
+        if len(correct_list) < 4:
+            continue
+        sentences = [erroneous] + correct_list
+        random.shuffle(sentences)
+        lines = [_paponim_to_html(x.text) for x in sentences]
+        return lines, erroneous.correct_word.lower().strip(), erroneous.root
+    return None
 
 
 @subscription_required('lessons')
 def checkpoint_test(request):
-    """Рубежный тест после урока 9 (открывает урок 10). 8 заданий, допуск 3 ошибки."""
+    """Рубежный тест после урока 9 (открывает урок 10). 9 заданий, допуск 3 ошибки."""
     if request.method == 'POST':
         return _checkpoint_check(request)
 
@@ -10366,11 +10386,13 @@ def checkpoint_test(request):
             'message': 'Рубежный тест временно недоступен.'})
 
     used = []
+    used_roots = []
     for a in CheckpointAttempt.objects.filter(user=request.user, checkpoint_code='cp9'):
         used += [w.get('word') for w in (a.words_data or [])]
+        used_roots += [w.get('root') for w in (a.words_data or []) if w.get('root')]
 
     t4 = _build_checkpoint_task4(request.user, used)
-    t5 = _build_checkpoint_task5(request.user, used)
+    t5 = _build_checkpoint_task5(request.user, used_roots)
     cp_words = []
     if t4:
         choices, correct, words, letter = t4
@@ -10381,12 +10403,12 @@ def checkpoint_test(request):
         cp_words += [{'task': 4, 'word': w[0], 'orthogram_id': w[1], 'is_target': w[2]}
                      for w in words]
     if t5:
-        sentence, answer, ex = t5
-        context['task5_text'] = 'В одном из слов допущена ошибка.'
-        context['task5_sentences'] = [sentence]
-        context['cp5_word'] = (ex.text, ex.orthogram_id)
-        cp_words.append({'task': 5, 'word': ex.text, 'orthogram_id': ex.orthogram_id,
-                         'is_target': True})
+        lines5, answer5, root5 = t5
+        context['task5_text'] = ('В одном из приведённых ниже предложений НЕВЕРНО '
+                                 'употреблено выделенное слово. Исправьте лексическую '
+                                 'ошибку, подобрав к выделенному слову пароним.')
+        context['task5_sentences'] = lines5
+        cp_words.append({'task': 5, 'word': answer5, 'root': root5, 'is_target': True})
 
     correct = request.session.get(f'{CHECKPOINT_SESSION}_correct', {})
     if t4:
@@ -10440,7 +10462,10 @@ def _checkpoint_check(request):
 
     ok8 = 0
     for letter in ('А', 'Б', 'В', 'Г', 'Д'):
-        if norm(user_answers.get(f'8_{letter}', '')) == norm(task8_matches.get(letter, '')):
+        letter_ok = (norm(user_answers.get(f'8_{letter}', ''))
+                     == norm(task8_matches.get(letter, '')))
+        results[f'8_{letter}'] = bool(task8_matches) and letter_ok
+        if letter_ok:
             ok8 += 1
     results['8'] = bool(task8_matches) and ok8 == 5
 
@@ -10466,7 +10491,7 @@ def _checkpoint_check(request):
     words_data = []
     for w in cp_words:
         words_data.append(dict(w))
-    for t in ('1', '2', '3', '4', '5', '6', '7', '8'):
+    for t in ('1', '2', '3', '4', '5', '6', '7', '8', '9'):
         words_data.append({'task': int(t), 'word': '', 'orthogram_id': '',
                            'correct': bool(results.get(t))})
 
@@ -10479,8 +10504,12 @@ def _checkpoint_check(request):
     )
     logger.info(f'Чекпоинт cp9: user={request.user.username} '
                 f'{correct_count}/8 passed={passed}')
-    return JsonResponse({'result_url': reverse('checkpoint_result',
-                                               args=[attempt.id])})
+    return JsonResponse({
+        'result_url': reverse('checkpoint_result', args=[attempt.id]),
+        'results': {k: {'is_correct': bool(v)} for k, v in results.items()},
+        'error_count': error_count,
+        'passed': passed,
+    })
 
 
 @subscription_required('lessons')
@@ -10488,7 +10517,7 @@ def checkpoint_result(request, attempt_id):
     attempt = get_object_or_404(CheckpointAttempt, id=attempt_id,
                                 user=request.user, checkpoint_code='cp9')
     recommend = []
-    for t in ('1', '2', '3', '4', '5', '6', '7', '8'):
+    for t in ('1', '2', '3', '4', '5', '6', '7', '8', '9'):
         res = (attempt.results_data or {}).get(t, {})
         if not res.get('correct'):
             url_name, label = CHECKPOINT_RECOMMEND[t]
