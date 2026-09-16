@@ -100,7 +100,16 @@
             </div>
 
             <!-- Центр: Прогресс успеваемости -->
-            <div class="card stat-card stat-grid__center">
+            <div class="card stat-card">
+<p class="stat-card__text">
+Рубежные тесты: сдано {{ cp_stats.passed }} · попыток с ошибками {{ cp_stats.failed }} ·
+лучший результат {{ cp_stats.best }} из 8.
+{% if cp_stats.passed_bool %}Урок 10 открыт.{% else %}Урок 10 откроется после
+рубежного теста по заданиям 1–8.{% endif %}
+</p>
+</div>
+
+<div class="card stat-card stat-grid__center">
                 <h3 class="section-title">Прогресс успеваемости</h3>
 
                 <div class="stat-card__summary">

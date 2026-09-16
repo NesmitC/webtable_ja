@@ -349,8 +349,20 @@
                     </div>
                 </div>
 
-                <!-- Урок 8: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
+                                <!-- Рубежный тест после урока 9: открывает урок 10 -->
+                <div class="lesson-card {% if cp9_passed %}lesson-card--active{% else %}lesson-card--locked{% endif %}">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 1–8</h3>
+                            <span class="lesson-card__status {% if cp9_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp9_passed %}Сдан: урок 10 открыт{% else %}Открывает урок 10{% endif %}</span>
+                        </span>
+                        <a class="lesson-card__chevron" href="{% url 'checkpoint_test' %}">→</a>
+                    </div>
+                </div>
+
+<!-- Урок 8: ЗАКРЫТ -->
+                {% if cp9_passed %}<div class="lesson-card lesson-card--active">{% else %}<div class="lesson-card lesson-card--locked">{% endif %}
                     <div class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--lock">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -360,7 +372,7 @@
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 10 (орфография, приставки)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp9_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp9_passed %}Открыт{% else %}Откроется после рубежного теста{% endif %}</span>
                         </span>
                     </div>
                 </div>

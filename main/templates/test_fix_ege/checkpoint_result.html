@@ -1,0 +1,71 @@
+{% comment %} main/templates/test_fix_ege/checkpoint_result.html
+Вердикт рубежного теста: счёт, разбор по заданиям, рекомендации-ссылки. {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результат рубежного теста | Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+</head>
+
+<body class="test_fix_ege">
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-diagnostics">
+        <h1 class="visually-hidden">Результат рубежного теста</h1>
+        <section class="container-diagnostics">
+            {% if attempt.passed %}
+            <h2 class="diagnostic-full-test__subtitle">Рубеж сдан: {{ attempt.correct_count }} из 8</h2>
+            <p class="practice-line diagnostic-full-test__paragraph">
+                Ошибок: {{ attempt.error_count }} при допуске {{ max_errors }}.
+                Урок 10 открыт — так держать.
+            </p>
+            <p class="diagnostic-full-test__lines">
+                <a class="btn au-form__submit" href="{% url 'lessons_ege' %}">Перейти к уроку 10</a>
+            </p>
+            {% else %}
+            <h2 class="diagnostic-full-test__subtitle">Пока не сдан: {{ attempt.correct_count }} из 8</h2>
+            <p class="practice-line diagnostic-full-test__paragraph">
+                Ошибок: {{ attempt.error_count }} при допуске {{ max_errors }}.
+                Это не приговор, а карта работы: ниже — что именно повторить.
+                Пересдать можно сразу: слова будут другие, а твои больные места останутся в подборке.
+            </p>
+            {% endif %}
+
+            <h3 class="diagnostic-full-test__subtitle">Разбор по заданиям</h3>
+            <div class="diagnostic-full-test__lines">
+                {% for t in '12345678' %}
+                {% with res=attempt.results_data %}
+                <div class="diagnostic-full-test__line">
+                    <span class="diagnostic-full-test__line-num">{{ t }}</span>
+                    <span class="practice-line diagnostic-full-test__line-text">
+                        {% for key, val in res.items %}{% if key == t %}{% if val.correct %}✓ верно{% else %}✗ ошибка{% endif %}{% endif %}{% endfor %}
+                    </span>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+
+            {% if recommend %}
+            <h3 class="diagnostic-full-test__subtitle">Что повторить перед пересдачей</h3>
+            <div class="diagnostic-full-test__lines">
+                {% for r in recommend %}
+                <div class="diagnostic-full-test__line">
+                    <span class="diagnostic-full-test__line-num">{{ r.task }}.</span>
+                    <a class="practice-line diagnostic-full-test__line-text" href="{{ r.url }}">{{ r.label }}</a>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="diagnostic-full-test__lines">
+                <a class="btn au-form__submit" href="{% url 'checkpoint_test' %}">Пересдать рубеж</a>
+            </p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

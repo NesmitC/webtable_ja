@@ -1,0 +1,154 @@
+{% comment %} main/templates/test_fix_ege/checkpoint_test.html
+Рубежный тест после урока 9 (открывает урок 10). 8 заданий, допуск 3 ошибки.
+Разметка и классы — один в один с диагностикой (test_fixdiagnostic_ege.html),
+новых стилей нет. Задания 4 и 5 собираются персонально из ошибок ученика,
+остальные — ограниченная цитата диагностического варианта. {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рубежный тест после урока 9 | Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+</head>
+
+<body class="test_fix_ege">
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-diagnostics">
+        <h1 class="visually-hidden">Рубежный тест после урока 9</h1>
+        <section class="container-diagnostics">
+            <h2 class="diagnostic-full-test__subtitle">Рубежный тест: задания 1–8</h2>
+            <p class="practice-line diagnostic-full-test__paragraph">
+                Чтобы открылся урок 10, допусти не более {{ max_errors }} ошибок из 8 заданий.
+                Задания собраны по твоим ошибкам: сначала то, что болело, потом новое.
+                Пересдавать можно сколько угодно раз — слова каждый раз меняются.
+            </p>
+            {% if cp_passed_already %}
+            <p class="practice-line diagnostic-full-test__paragraph">
+                Этот рубеж уже сдан — урок 10 открыт. Новая попытка необязательна,
+                но потренироваться можно.
+            </p>
+            {% endif %}
+            {% if message %}
+            <p class="practice-line diagnostic-full-test__paragraph">{{ message }}</p>
+            {% endif %}
+
+            <!-- Задания 1-3: текст (цитата диагностики) -->
+            {% if task13_paragraphs %}
+            <div class="text-content-diagnostic diagnostic-full-test__text">
+                <h3 class="diagnostic-full-test__subtitle">Прочитайте текст и выполните задания 1–3.</h3>
+                {% for para in task13_paragraphs %}<p class="practice-line">{{ para|safe }}</p>{% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Задания 1-3: вопросы -->
+            {% for q_num, q_data in task13_questions.items %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="{{ q_num }}">
+                <h4 class="diagnostic-full-test__title">{{ q_num }}. {{ q_data.text }}</h4>
+                {% if q_data.type == 'multiple_choice' and q_data.choices %}
+                <div class="diagnostic-full-test__options">
+                    {% for choice in q_data.choices %}
+                    <label class="diagnostic-full-test__option">
+                        <input type="checkbox" class="diagnostic-full-test__checkbox"
+                            name="answer_{{ q_num }}[]" value="{{ forloop.counter }}"
+                            data-question="{{ q_num }}">
+                        <span class="diagnostic-full-test__option-text">{{ forloop.counter }}) {{ choice }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% elif q_data.variants %}
+                <div class="diagnostic-full-test__lines">
+                    {% for variant in q_data.variants %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="practice-line diagnostic-full-test__line-text">{{ variant|safe }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="{{ q_num }}"
+                    placeholder="Введите ответ" autocomplete="off">
+            </div>
+            {% endfor %}
+
+            <!-- Задание 4: персональная подборка строк -->
+            {% if task4_choices %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="4">
+                <h4 class="diagnostic-full-test__title">4. {{ task4_text }}</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for choice in task4_choices %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="diagnostic-full-test__line-num">{{ forloop.counter }})</span>
+                        <span class="practice-line diagnostic-full-test__line-text">{{ choice }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="4"
+                    placeholder="Введите номера ответов" autocomplete="off">
+            </div>
+            {% endif %}
+
+            <!-- Задание 5: персональное слово с ошибкой -->
+            {% if task5_sentences %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="5">
+                <h4 class="diagnostic-full-test__title">5. {{ task5_text }}</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for sentence in task5_sentences %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="practice-line diagnostic-full-test__line-text">{{ sentence|safe }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="5"
+                    placeholder="Введите исправленное слово" autocomplete="off">
+            </div>
+            {% endif %}
+
+            <!-- Задание 6: цитата диагностики -->
+            {% if task6_instruction and task6_text %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="6">
+                <h4 class="diagnostic-full-test__title">6. {{ task6_instruction }}</h4>
+                <p class="practice-line diagnostic-full-test__paragraph">{{ task6_text }}</p>
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="6"
+                    placeholder="Введите ответ" autocomplete="off">
+            </div>
+            {% endif %}
+
+            <!-- Задание 7: цитата диагностики -->
+            {% if task7_instruction and task7_phrases %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="7">
+                <h4 class="diagnostic-full-test__title">7. {{ task7_instruction }}</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for phrase in task7_phrases %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="practice-line diagnostic-full-test__line-text">{{ phrase }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <input type="text" class="diagnostic-full-test__input input-text" data-question="7"
+                    placeholder="Введите исправленное слово" autocomplete="off">
+            </div>
+            {% endif %}
+
+            <!-- Задание 8: цитата диагностики -->
+            {% if task8_html %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="8">
+                <div class="diagnostic-full-test__custom-html">
+                    {{ task8_html|safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            <button id="check-checkpoint-btn" class="btn au-form__submit" type="button">
+                Проверить и завершить рубеж
+            </button>
+        </section>
+    </main>
+
+    <script src="{% static 'js/checkpoint.js' %}?v=20260916"></script>
+</body>
+</html>

@@ -38,7 +38,7 @@ from .models import (
     TRIAL_DAYS, Payment, PLAN_NAMES, PLAN_PRICES, TutorInvite, FREE_PLANNING_WORDS,
     OrthoepyAttempt, OrthoepyAttemptWord, OrthoepyWordStat,
     LessonView, PaponimView, ChatMessage, AiQueryLog,
-    Task9Attempt, Task9AttemptWord, Task9WordStat,
+    Task9Attempt, Task9AttemptWord, Task9WordStat, CheckpointAttempt,
 )
 from .models import (
     OgeTextAnalysisTask, OgeTextQuestion, OgeQuestionOption,
@@ -525,6 +525,14 @@ def statistic(request):
 
     # === Уроки ===
     lessons_viewed = LessonView.objects.filter(user=user).count()
+    cp9_qs = CheckpointAttempt.objects.filter(user=user, checkpoint_code='cp9')
+    cp9_passed = cp9_qs.filter(passed=True).exists()
+    cp_stats = {
+        'passed': cp9_qs.filter(passed=True).count(),
+        'failed': cp9_qs.filter(passed=False).count(),
+        'passed_bool': cp9_passed,
+        'best': max([a.correct_count for a in cp9_qs], default=0),
+    }
 
     # === Паронимы ===
     paponims_viewed = PaponimView.objects.filter(user=user).count()
@@ -583,7 +591,7 @@ def statistic(request):
         'diag_current': diag_current,
         'diag_final': diag_final,
         # Уроки и паронимы
-        'lessons_viewed': lessons_viewed,
+        'lessons_viewed': lessons_viewed,        'cp_stats': cp_stats,
         'paponims_viewed': paponims_viewed,
         # Сочинение
         'essay_score': essay_score,
@@ -838,7 +846,13 @@ def quizzes_ege(request):
 
 @subscription_required('lessons')
 def lessons_ege(request):
-    return render(request, 'lessons_ege.html')
+    cp9 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp9')
+    return render(request, 'lessons_ege.html', {
+        'cp9_passed': cp9.filter(passed=True).exists(),
+        'cp9_attempts': cp9.count(),
+        'cp9_best': max([a.correct_count for a in cp9], default=0),
+    })
 
 
 def diagnostic_result(request, attempt_id):
@@ -10234,3 +10248,236 @@ def download_reference_file(request, file_type):
         filename=file_info['filename'],
         content_type='application/pdf'
     )
+
+
+# ===== РУБЕЖНЫЕ ТЕСТЫ (ЧЕКПОИНТЫ) ===========================================
+CHECKPOINT_MAX_ERRORS = {'cp9': 3}
+CHECKPOINT_SESSION = 'checkpoint_9'
+CHECKPOINT_FIXTURE_CODE = 'test_fixdiagnostic_ege_2027'
+CHECKPOINT_RECOMMEND = {
+    '1': ('lessons_ege', 'Уроки 1-3: микротекст и его разбор'),
+    '2': ('lessons_ege', 'Уроки 1-3: микротекст и его разбор'),
+    '3': ('lessons_ege', 'Уроки 1-3: микротекст и его разбор'),
+    '4': ('trainers_ege', 'Тренажёры: орфограммы корней, задание 4'),
+    '5': ('trainers_ege', 'Тренажёры: правописание корней, задание 5'),
+    '6': ('trainers_ege', 'Тренажёры: задание 6'),
+    '7': ('trainers_ege', 'Паронимы: словник и задание 7'),
+    '8': ('trainers_ege', 'Грамматические основы: задание 8'),
+}
+
+
+def _checkpoint_error_pool(user, exclude=()):
+    """Персональный пул слов: ошибки планинга, затем незакрытые ошибки
+    задания 9, затем глобально частотные, затем случайные из БД."""
+    exclude = set(exclude)
+    pool = []
+    seen = set()
+
+    def add(ex):
+        if ex is None or not ex.is_active or ex.text in seen or ex.text in exclude:
+            return
+        seen.add(ex.text)
+        pool.append(ex)
+
+    uw = (UserWord.objects.filter(user=user, reference_word__isnull=False,
+                                  error_count__gt=0)
+          .select_related('reference_word').order_by('-error_count'))
+    for w in uw:
+        add(w.reference_word)
+
+    t9_words = list(Task9WordStat.objects.filter(user=user, in_correction=True)
+                    .values_list('word', flat=True))
+    if t9_words:
+        for ex in OrthogramExample.objects.filter(text__in=t9_words, is_active=True):
+            add(ex)
+
+    if len(pool) < 6:
+        for ex in OrthogramExample.objects.filter(is_active=True).order_by('-difficulty')[:40]:
+            add(ex)
+    return pool
+
+
+def _mask_to_gap(masked_word):
+    import re as _re
+    return _re.sub(r'\*\d+\*', '…', masked_word)
+
+
+def _build_checkpoint_task4(user, exclude):
+    """Задание 4: 5 строк слов, в 3 пропущена одна и та же буква."""
+    from collections import Counter
+    pool = _checkpoint_error_pool(user, exclude)
+    cnt = Counter()
+    for ex in pool:
+        letters = [c.strip().lower() for c in (ex.correct_letters or '').split(',')]
+        if len(letters) == 1 and letters[0]:
+            cnt[letters[0]] += 1
+    letter = cnt.most_common(1)[0][0] if cnt else 'а'
+    same = [e for e in pool if [c.strip().lower() for c in (e.correct_letters or '').split(',')] == [letter]]
+    other = [e for e in pool if e not in same]
+    import random
+    random.shuffle(same)
+    random.shuffle(other)
+    chosen_same = same[:3]
+    chosen_other = other[:2]
+    if len(chosen_same) < 3 or len(chosen_other) < 2:
+        return None
+    lines = [( _mask_to_gap(e.masked_word), True, e) for e in chosen_same]
+    lines += [(_mask_to_gap(e.masked_word), False, e) for e in chosen_other]
+    random.shuffle(lines)
+    choices = [ln[0] for ln in lines]
+    correct = [str(i + 1) for i, ln in enumerate(lines) if ln[1]]
+    words = [(ln[2].text, ln[2].orthogram_id, ln[1]) for ln in lines]
+    return choices, correct, words, letter
+
+
+def _build_checkpoint_task5(user, exclude):
+    """Задание 5: предложение со словом, написанным неверно."""
+    pool = _checkpoint_error_pool(user, exclude)
+    cand = [e for e in pool if e.incorrect_variant]
+    if not cand:
+        cand = [e for e in OrthogramExample.objects.filter(
+            is_active=True, incorrect_variant__isnull=False).exclude(incorrect_variant='')[:20]]
+    if not cand:
+        return None
+    import random
+    ex = random.choice(cand[:10])
+    sentence = f'Найдите слово с ошибкой и введите правильный вариант: «{ex.incorrect_variant}»'
+    return sentence, ex.text, ex
+
+
+@subscription_required('lessons')
+def checkpoint_test(request):
+    """Рубежный тест после урока 9 (открывает урок 10). 8 заданий, допуск 3 ошибки."""
+    if request.method == 'POST':
+        return _checkpoint_check(request)
+
+    context, test_data = _build_test_fix_context(request, CHECKPOINT_FIXTURE_CODE)
+    if context is not None:
+        moved = request.session.pop(f'{CHECKPOINT_FIXTURE_CODE}_correct', None)
+        if moved is not None:
+            request.session[f'{CHECKPOINT_SESSION}_correct'] = moved
+        moved8 = request.session.pop(f'{CHECKPOINT_FIXTURE_CODE}_task8_matches', None)
+        if moved8 is not None:
+            request.session[f'{CHECKPOINT_SESSION}_task8_matches'] = moved8
+    if context is None:
+        return render(request, 'test_fix_ege/checkpoint_test.html', {
+            'message': 'Рубежный тест временно недоступен.'})
+
+    used = []
+    for a in CheckpointAttempt.objects.filter(user=request.user, checkpoint_code='cp9'):
+        used += [w.get('word') for w in (a.words_data or [])]
+
+    t4 = _build_checkpoint_task4(request.user, used)
+    t5 = _build_checkpoint_task5(request.user, used)
+    cp_words = []
+    if t4:
+        choices, correct, words, letter = t4
+        context['task4_text'] = ('Укажите варианты ответов, в которых пропущена одна '
+                                 'и та же буква (номера строк без пробелов):')
+        context['task4_choices'] = choices
+        context['cp4_words'] = words
+        cp_words += [{'task': 4, 'word': w[0], 'orthogram_id': w[1], 'is_target': w[2]}
+                     for w in words]
+    if t5:
+        sentence, answer, ex = t5
+        context['task5_text'] = 'В одном из слов допущена ошибка.'
+        context['task5_sentences'] = [sentence]
+        context['cp5_word'] = (ex.text, ex.orthogram_id)
+        cp_words.append({'task': 5, 'word': ex.text, 'orthogram_id': ex.orthogram_id,
+                         'is_target': True})
+
+    correct = request.session.get(f'{CHECKPOINT_SESSION}_correct', {})
+    if t4:
+        correct['4'] = correct_list = t4[1]
+    if t5:
+        correct['5'] = t5[1]
+    request.session[f'{CHECKPOINT_SESSION}_correct'] = correct
+    request.session[f'{CHECKPOINT_SESSION}_words'] = cp_words
+    request.session.modified = True
+
+    context.update({
+        'cp_passed_already': CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp9', passed=True).exists(),
+        'max_errors': CHECKPOINT_MAX_ERRORS['cp9'],
+    })
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+def _checkpoint_check(request):
+    try:
+        data = json.loads(request.body)
+        user_answers = data.get('answers', {})
+    except Exception:
+        return JsonResponse({'error': 'Некорректные данные'}, status=400)
+
+    correct = request.session.get(f'{CHECKPOINT_SESSION}_correct', {})
+    task8_matches = request.session.get(f'{CHECKPOINT_SESSION}_task8_matches', {})
+    cp_words = request.session.get(f'{CHECKPOINT_SESSION}_words', [])
+    if not correct:
+        return JsonResponse({'error': 'Сессия устарела, обновите страницу'}, status=400)
+
+    def norm(v):
+        return str(v).strip().lower()
+
+    results = {}
+    for t in ('1', '2', '3', '5', '6', '7'):
+        ca = correct.get(t)
+        ua = user_answers.get(t, '')
+        if isinstance(ua, list):
+            want = {norm(x) for x in ca} if isinstance(ca, list) else {norm(ca)}
+            results[t] = {norm(x) for x in ua} == want
+        elif isinstance(ca, list):
+            results[t] = norm(ua) in {norm(x) for x in ca}
+        else:
+            results[t] = norm(ua) == norm(ca)
+
+    ca4 = correct.get('4', [])
+    ua4 = user_answers.get('4', '')
+    user_set = {x.strip() for x in str(ua4).replace(',', ' ').split() if x.strip()}
+    results['4'] = user_set == set(ca4)
+
+    ok8 = 0
+    for letter in ('А', 'Б', 'В', 'Г', 'Д'):
+        if norm(user_answers.get(f'8_{letter}', '')) == norm(task8_matches.get(letter, '')):
+            ok8 += 1
+    results['8'] = bool(task8_matches) and ok8 == 5
+
+    correct_count = sum(1 for v in results.values() if v)
+    error_count = 8 - correct_count
+    passed = error_count <= CHECKPOINT_MAX_ERRORS['cp9']
+
+    words_data = []
+    for w in cp_words:
+        words_data.append(dict(w))
+    for t in ('1', '2', '3', '4', '5', '6', '7', '8'):
+        words_data.append({'task': int(t), 'word': '', 'orthogram_id': '',
+                           'correct': bool(results.get(t))})
+
+    attempt = CheckpointAttempt.objects.create(
+        user=request.user, checkpoint_code='cp9',
+        correct_count=correct_count, error_count=error_count, passed=passed,
+        answers_data=user_answers,
+        results_data={k: {'correct': v} for k, v in results.items()},
+        words_data=words_data,
+    )
+    logger.info(f'Чекпоинт cp9: user={request.user.username} '
+                f'{correct_count}/8 passed={passed}')
+    return JsonResponse({'result_url': reverse('checkpoint_result',
+                                               args=[attempt.id])})
+
+
+@subscription_required('lessons')
+def checkpoint_result(request, attempt_id):
+    attempt = get_object_or_404(CheckpointAttempt, id=attempt_id,
+                                user=request.user, checkpoint_code='cp9')
+    recommend = []
+    for t in ('1', '2', '3', '4', '5', '6', '7', '8'):
+        res = (attempt.results_data or {}).get(t, {})
+        if not res.get('correct'):
+            url_name, label = CHECKPOINT_RECOMMEND[t]
+            recommend.append({'task': t, 'label': label, 'url': reverse(url_name)})
+    return render(request, 'test_fix_ege/checkpoint_result.html', {
+        'attempt': attempt,
+        'max_errors': CHECKPOINT_MAX_ERRORS['cp9'],
+        'recommend': recommend,
+    })

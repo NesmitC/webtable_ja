@@ -961,6 +961,34 @@ class Task9WordStat(models.Model):
     def __str__(self):
         return f'{self.user.username}: {self.word} [orth{self.orthogram_id}]'
 
+
+# ===== РУБЕЖНЫЕ ТЕСТЫ (чекпоинты между уроками) =============================
+class CheckpointAttempt(models.Model):
+    """Одна попытка рубежного теста (чекпоинта).
+
+    checkpoint_code: 'cp9' — чекпоинт после урока 9, открывает урок 10.
+    words_data: список слов попытки [{task, word, orthogram_id, correct}] —
+    источник персонализации следующих попыток (ротация) и рекомендаций.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='checkpoint_attempts')
+    checkpoint_code = models.CharField(max_length=20, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    correct_count = models.PositiveSmallIntegerField(default=0)
+    error_count = models.PositiveSmallIntegerField(default=0)
+    passed = models.BooleanField(default=False, db_index=True)
+    answers_data = models.JSONField(default=dict, blank=True)
+    results_data = models.JSONField(default=dict, blank=True)
+    words_data = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['user', 'checkpoint_code', '-created_at'])]
+
+    def __str__(self):
+        return (f'{self.user.username} {self.checkpoint_code}: '
+                f'{self.correct_count}/8, {"сдан" if self.passed else "не сдан"}')
+
 # ===== ЗАДАНИЕ 5 ==============================================================
 class TaskPaponim(models.Model):
     text = models.TextField(
