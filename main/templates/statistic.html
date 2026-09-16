@@ -103,10 +103,27 @@
             <div class="card stat-card">
 <p class="stat-card__text">
 Рубежные тесты: сдано {{ cp_stats.passed }} · попыток с ошибками {{ cp_stats.failed }} ·
-лучший результат {{ cp_stats.best }} из 8.
+лучший результат {{ cp_stats.best }} из 9.
 {% if cp_stats.passed_bool %}Урок 10 открыт.{% else %}Урок 10 откроется после
 рубежного теста по заданиям 1–8.{% endif %}
 </p>
+
+<details class="stat-card__details">
+<summary class="stat-card__text">История прохождений рубежей</summary>
+<table class="history-table">
+<tr><th>Дата</th><th>Результат</th><th>Ошибок</th><th>Статус</th></tr>
+{% for a in cp_attempts %}
+<tr>
+<td>{{ a.created_at|date:'d.m.Y H:i' }}</td>
+<td>{{ a.correct_count }} / 9</td>
+<td>{{ a.error_count }}</td>
+<td>{% if a.passed %}сдан{% else %}не сдан{% endif %}</td>
+</tr>
+{% empty %}
+<tr><td colspan="4">Попыток пока нет</td></tr>
+{% endfor %}
+</table>
+</details>
 </div>
 
 <div class="card stat-card stat-grid__center">

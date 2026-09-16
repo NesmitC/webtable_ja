@@ -78,6 +78,17 @@
                 answers['8_' + sel.dataset.errorLetter] = val;
             }
         });
+        // Задание 9: смайлики (как в диагностике)
+        document.querySelectorAll('.smiley-button').forEach(btn => {
+            const orthId = btn.dataset.orthId;
+            if (!orthId) return;
+            const icon = btn.querySelector('.smiley-icon');
+            let letter = icon ? icon.textContent.trim() : '😊';
+            if (letter === '😊') return;
+            if (letter === ',') letter = '!';
+            else if (letter === 'х' || letter === 'x') letter = '?';
+            answers[orthId] = letter;
+        });
         return answers;
     }
 

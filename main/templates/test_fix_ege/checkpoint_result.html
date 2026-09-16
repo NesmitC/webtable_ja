@@ -20,7 +20,7 @@
         <h1 class="visually-hidden">Результат рубежного теста</h1>
         <section class="container-diagnostics">
             {% if attempt.passed %}
-            <h2 class="diagnostic-full-test__subtitle">Рубеж сдан: {{ attempt.correct_count }} из 8</h2>
+            <h2 class="diagnostic-full-test__subtitle">Рубеж сдан: {{ attempt.correct_count }} из 9</h2>
             <p class="practice-line diagnostic-full-test__paragraph">
                 Ошибок: {{ attempt.error_count }} при допуске {{ max_errors }}.
                 Урок 10 открыт — так держать.
@@ -29,7 +29,7 @@
                 <a class="btn au-form__submit" href="{% url 'lessons_ege' %}">Перейти к уроку 10</a>
             </p>
             {% else %}
-            <h2 class="diagnostic-full-test__subtitle">Пока не сдан: {{ attempt.correct_count }} из 8</h2>
+            <h2 class="diagnostic-full-test__subtitle">Пока не сдан: {{ attempt.correct_count }} из 9</h2>
             <p class="practice-line diagnostic-full-test__paragraph">
                 Ошибок: {{ attempt.error_count }} при допуске {{ max_errors }}.
                 Это не приговор, а карта работы: ниже — что именно повторить.
@@ -39,7 +39,7 @@
 
             <h3 class="diagnostic-full-test__subtitle">Разбор по заданиям</h3>
             <div class="diagnostic-full-test__lines">
-                {% for t in '12345678' %}
+                {% for t in '123456789' %}
                 {% with res=attempt.results_data %}
                 <div class="diagnostic-full-test__line">
                     <span class="diagnostic-full-test__line-num">{{ t }}</span>

@@ -592,6 +592,7 @@ def statistic(request):
         'diag_final': diag_final,
         # Уроки и паронимы
         'lessons_viewed': lessons_viewed,        'cp_stats': cp_stats,
+        'cp_attempts': list(cp9_qs),
         'paponims_viewed': paponims_viewed,
         # Сочинение
         'essay_score': essay_score,
@@ -10263,6 +10264,7 @@ CHECKPOINT_RECOMMEND = {
     '6': ('trainers_ege', 'Тренажёры: задание 6'),
     '7': ('trainers_ege', 'Паронимы: словник и задание 7'),
     '8': ('trainers_ege', 'Грамматические основы: задание 8'),
+    '9': ('trainers_ege', 'Задание 9: корни и ударения, алфавитные блоки'),
 }
 
 
@@ -10442,8 +10444,23 @@ def _checkpoint_check(request):
             ok8 += 1
     results['8'] = bool(task8_matches) and ok8 == 5
 
-    correct_count = sum(1 for v in results.values() if v)
-    error_count = 8 - correct_count
+    # Задание 9: подответы вида '9-1', '9-2' (смайлики)
+    t9_keys = [k for k in correct if str(k).startswith('9-')]
+    err9 = 0
+    for k in t9_keys:
+        ok = norm(user_answers.get(k, '')) == norm(correct.get(k))
+        results[k] = ok
+        if not ok:
+            err9 += 1
+    results['9'] = bool(t9_keys) and err9 == 0
+
+    # Ошибки считаем как есть, без экзаменных баллов: задания 1-7 — по одной,
+    # задание 8 — по несобранным позициям соответствия, задание 9 — по строкам.
+    err_simple = sum(1 for t in ('1', '2', '3', '4', '5', '6', '7')
+                     if not results.get(t))
+    err8 = (5 - ok8) if task8_matches else (0 if results['8'] else 1)
+    error_count = err_simple + err8 + err9
+    correct_count = sum(1 for t in '123456789' if results.get(t))
     passed = error_count <= CHECKPOINT_MAX_ERRORS['cp9']
 
     words_data = []

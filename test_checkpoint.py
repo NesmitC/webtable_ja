@@ -80,10 +80,12 @@ print('1. GET страницы чекпоинта')
 r = c.get('/ege/checkpoint/9/')
 check(r.status_code == 200, f'GET /ege/checkpoint/9/ -> {r.status_code}')
 body = r.content.decode('utf-8')
-check('Рубежный тест: задания 1–8' in body, 'заголовок страницы на месте')
+check('Рубежный тест: задания 1–9' in body, 'заголовок страницы на месте')
 check('data-question="4"' in body, 'задание 4 отрендерено')
 check('data-question="5"' in body, 'задание 5 отрендерено')
 check('data-error-letter="А"' in body or 'task-eight-select' in body, 'задание 8 (соответствие) на месте')
+check('data-question-number="9"' in body, 'задание 9 (смайлики) на месте')
+check('Рубежный тест: задания 1–9' in body, 'подпись: задания 1–9')
 sess = c.session
 correct = sess.get('checkpoint_9_correct', {})
 check(bool(correct), 'correct-ответы лежат в сессии')
@@ -101,6 +103,9 @@ answers['4'] = ' '.join(correct.get('4', []))
 m8 = sess.get('checkpoint_9_task8_matches', {})
 for letter, val in m8.items():
     answers[f'8_{letter}'] = val
+for k, v in correct.items():
+    if str(k).startswith('9-'):
+        answers[k] = v
 r = c.post('/ege/checkpoint/9/', data=json.dumps({'answers': answers}),
            content_type='application/json')
 check(r.status_code == 200, f'POST -> {r.status_code}')
@@ -108,19 +113,54 @@ res = r.json()
 check('result_url' in res, 'вернулся result_url')
 a = CheckpointAttempt.objects.first()
 check(a is not None and a.passed, 'попытка сохранена и passed=True')
-check(a.correct_count == 8, f'correct_count=8 (факт: {a.correct_count})')
+check(a.correct_count == 9, f'correct_count=9 (факт: {a.correct_count})')
+check(a.error_count == 0, f'error_count=0 (факт: {a.error_count})')
 r = c.get(res['result_url'])
-check(r.status_code == 200 and 'Рубеж сдан' in r.content.decode('utf-8'),
-      'вердикт: сдан')
+vb = r.content.decode('utf-8')
+check(r.status_code == 200 and 'Рубеж сдан' in vb, 'вердикт: сдан')
+check('из 9' in vb, 'вердикт считает из 9 заданий')
 r = c.get('/ege/lessons/')
-check(b'lesson-card--active' in r.content and 'Рубежный тест: задания 1–8' in
+check(b'lesson-card--active' in r.content and 'Рубежный тест: задания 1–9' in
       r.content.decode('utf-8'), 'строка чекпоинта на странице уроков')
 lessons_body = r.content.decode('utf-8')
 i10 = lessons_body.find('Задание 10 (орфография, приставки)')
 seg = lessons_body[max(0, i10 - 1300):i10]
 check('lesson-card--active' in seg, 'карточка урока 10 стала активной после сдачи')
 
-print('3. Провал: 4 ошибки -> не сдан, рекомендации')
+print('3. Честный подсчёт: 2 ошибки в задании 8 -> 2 ошибки, рубеж сдан')
+u3 = User.objects.create_user(username='pupil3', email='p3@example.com',
+                              password='Zk9mQ2vLp7xR')
+prof3, _ = UserProfile.objects.get_or_create(user=u3)
+prof3.trial_until = timezone.now() + timedelta(days=5)
+prof3.save()
+c3 = Client()
+c3.force_login(u3)
+c3.get('/ege/checkpoint/9/')
+correct3 = c3.session.get('checkpoint_9_correct', {})
+answers3 = {}
+for t in ('1', '2', '3', '5', '6', '7'):
+    ca = correct3.get(t)
+    answers3[t] = ca[0] if isinstance(ca, list) else ca
+answers3['4'] = ' '.join(correct3.get('4', []))
+m83 = c3.session.get('checkpoint_9_task8_matches', {})
+wrong_done = 0
+for letter, val in m83.items():
+    if wrong_done < 2:
+        answers3[f'8_{letter}'] = '999'
+        wrong_done += 1
+    else:
+        answers3[f'8_{letter}'] = val
+for k, v in correct3.items():
+    if str(k).startswith('9-'):
+        answers3[k] = v
+r = c3.post('/ege/checkpoint/9/', data=json.dumps({'answers': answers3}),
+            content_type='application/json')
+a3 = CheckpointAttempt.objects.filter(user=u3).first()
+check(a3.error_count == 2, f'2 ошибки в задании 8 = 2 ошибки (факт: {a3.error_count})')
+check(a3.passed, 'при 2 ошибках рубеж сдан (допуск 3)')
+check(a3.correct_count == 8, f'заданий полностью верно: 8 (факт: {a3.correct_count})')
+
+print('4. Провал: 4 ошибки -> не сдан, рекомендации')
 u2 = User.objects.create_user(username='pupil2', email='p2@example.com',
                               password='Zk9mQ2vLp7xR')
 prof2, _ = UserProfile.objects.get_or_create(user=u2)
@@ -143,6 +183,9 @@ answers2['4'] = ' '.join(correct2.get('4', []))
 m82 = c2.session.get('checkpoint_9_task8_matches', {})
 for letter, val in m82.items():
     answers2[f'8_{letter}'] = val
+for k, v in correct2.items():
+    if str(k).startswith('9-'):
+        answers2[k] = v
 r = c2.post('/ege/checkpoint/9/', data=json.dumps({'answers': answers2}),
             content_type='application/json')
 res2 = r.json()
@@ -159,10 +202,12 @@ i10 = seg.find('Задание 10 (орфография, приставки)')
 check('lesson-card--locked' in seg[max(0, i10 - 1300):i10],
       'урок 10 остался закрытым после провала')
 
-print('4. Статистика: карточка рубежных тестов')
+print('5. Статистика: карточка рубежных тестов и таблица прохождений')
 r = c2.get('/statistic/')
 sb = r.content.decode('utf-8')
 check('Рубежные тесты: сдано' in sb, 'карточка на странице статистики')
+check('История прохождений рубежей' in sb, 'таблица прохождений (2 этап) на месте')
+check('не сдан' in sb, 'в таблице видна несданная попытка')
 
 print()
 if fails:

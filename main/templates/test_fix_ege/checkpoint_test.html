@@ -22,9 +22,9 @@
     <main class="page-container-diagnostics">
         <h1 class="visually-hidden">Рубежный тест после урока 9</h1>
         <section class="container-diagnostics">
-            <h2 class="diagnostic-full-test__subtitle">Рубежный тест: задания 1–8</h2>
+            <h2 class="diagnostic-full-test__subtitle">Рубежный тест: задания 1–9</h2>
             <p class="practice-line diagnostic-full-test__paragraph">
-                Чтобы открылся урок 10, допусти не более {{ max_errors }} ошибок из 8 заданий.
+                Чтобы открылся урок 10, допусти не более {{ max_errors }} ошибок из 9 заданий.
                 Задания собраны по твоим ошибкам: сначала то, что болело, потом новое.
                 Пересдавать можно сколько угодно раз — слова каждый раз меняются.
             </p>
@@ -143,12 +143,33 @@
             </div>
             {% endif %}
 
+            <!-- Задание 9: цитата диагностики (смайлики) -->
+            {% if task9_lines %}
+            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="9">
+                <h4 class="diagnostic-full-test__title">9. Выберите правильную букву, кликнув на смайлик:</h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in task9_lines %}
+                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             <button id="check-checkpoint-btn" class="btn au-form__submit" type="button">
                 Проверить и завершить рубеж
             </button>
         </section>
     </main>
 
-    <script src="{% static 'js/checkpoint.js' %}?v=20260916"></script>
+    <script src="{% static 'js/planning.js' %}?v=20260916"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const q9 = document.querySelector('[data-question-number="9"]');
+            if (q9 && typeof processPracticeContainer === 'function') {
+                await processPracticeContainer(q9);
+            }
+        });
+    </script>
+    <script src="{% static 'js/checkpoint.js' %}?v=20260917"></script>
 </body>
 </html>
