@@ -1,9 +1,10 @@
 {% comment %} main/templates/test_fix_ege/checkpoint_test.html
-Рубежный тест после урока 9 (открывает урок 10). 8 заданий, допуск 3 ошибки.
-Разметка и классы — один в один с диагностикой (test_fixdiagnostic_ege.html),
-новых стилей нет. Задания 4 и 5 собираются персонально из ошибок ученика,
-остальные — ограниченная цитата диагностического варианта. {% endcomment %}
+Рубежный тест после урока 9 (открывает урок 10). Задания 1–9, допуск 3 ошибки.
+Контент собирается из БД случайным образом — теми же генераторами и в той же
+разметке, что текущая/контрольная диагностика (diagnostic_snippet.html).
+Ошибки считаем по заданиям, баллы ЕГЭ не ставим. {% endcomment %}
 {% load static %}
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -24,9 +25,9 @@
         <section class="container-diagnostics">
             <h2 class="diagnostic-full-test__subtitle">Рубежный тест: задания 1–9</h2>
             <p class="practice-line diagnostic-full-test__paragraph">
-                Чтобы открылся урок 10, допусти не более {{ max_errors }} ошибок из 9 заданий.
-                Задания собраны по твоим ошибкам: сначала то, что болело, потом новое.
-                Пересдавать можно сколько угодно раз — слова каждый раз меняются.
+                Чтобы открылся урок 10, допусти не более {{ max_errors }} ошибок.
+                Неверное задание — одна ошибка, независимо от числа строк в нём.
+                Пересдавать можно сколько угодно раз: задания каждый раз собираются заново.
             </p>
             {% if cp_passed_already %}
             <p class="practice-line diagnostic-full-test__paragraph">
@@ -38,122 +39,152 @@
             <p class="practice-line diagnostic-full-test__paragraph">{{ message }}</p>
             {% endif %}
 
-            <!-- Задания 1-3: текст (цитата диагностики) -->
-            {% if task13_paragraphs %}
-            <div class="text-content-diagnostic diagnostic-full-test__text">
-                <h3 class="diagnostic-full-test__subtitle">Прочитайте текст и выполните задания 1–3.</h3>
-                {% for para in task13_paragraphs %}<p class="practice-line">{{ para|safe }}</p>{% endfor %}
-            </div>
-            {% endif %}
+            <div class="diagnostic-full-test">
 
-            <!-- Задания 1-3: вопросы -->
-            {% for q_num, q_data in task13_questions.items %}
-            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="{{ q_num }}">
-                <h4 class="diagnostic-full-test__title">{{ q_num }}. {{ q_data.text }}</h4>
-                {% if q_data.type == 'multiple_choice' and q_data.choices %}
-                <div class="diagnostic-full-test__options">
-                    {% for choice in q_data.choices %}
-                    <label class="diagnostic-full-test__option">
-                        <input type="checkbox" class="diagnostic-full-test__checkbox"
-                            name="answer_{{ q_num }}[]" value="{{ forloop.counter }}"
-                            data-question="{{ q_num }}">
-                        <span class="diagnostic-full-test__option-text">{{ forloop.counter }}) {{ choice }}</span>
-                    </label>
-                    {% endfor %}
+                <!-- Задания 1–3: микротекст из БД -->
+                {% if text_task_1_3 %}
+                <div class="text-content-diagnostic diagnostic-full-test__text">
+                    <h3 class="diagnostic-full-test__subtitle">Прочитайте текст и выполните задания 1–3.</h3>
+                    {{ text_task_1_3.text_content|bold_words|safe }}
                 </div>
-                {% elif q_data.variants %}
-                <div class="diagnostic-full-test__lines">
-                    {% for variant in q_data.variants %}
-                    <div class="diagnostic-full-test__line">
-                        <span class="practice-line diagnostic-full-test__line-text">{{ variant|safe }}</span>
+
+                {% for q in text_questions_1_3 %}
+                <div class="question-diagnostic diagnostic-full-test__question"
+                    data-question-number="{{ q.question_number }}" data-question-type="{{ q.question_type }}">
+                    <h4 class="diagnostic-full-test__title">{{ q.question_number }}. {{ q.question_text }}</h4>
+                    {% if q.question_type == 'missing_word' %}
+                    <input type="text" class="diagnostic-full-test__input input-text"
+                        name="answer_{{ q.question_number }}" data-question="{{ q.question_number }}"
+                        placeholder="Напишите ответ" aria-label="Ответ на задание {{ q.question_number }}"
+                        autocomplete="off">
+                    {% else %}
+                    <div class="diagnostic-full-test__options">
+                        {% for opt in q.options.all %}
+                        <label class="diagnostic-full-test__option">
+                            <input type="checkbox" class="diagnostic-full-test__checkbox"
+                                name="answer_{{ q.question_number }}[]" value="{{ opt.option_number }}"
+                                data-question="{{ q.question_number }}">
+                            <span class="diagnostic-full-test__option-text">
+                                {{ opt.option_number }}) {{ opt.option_text }}
+                            </span>
+                        </label>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <!-- Задание 4: орфоэпия -->
+                {% if orthoepy_variants %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="4">
+                    <h4 class="diagnostic-full-test__title">
+                        4. Укажите варианты ответов, в которых ВЕРНО выделена буква, обозначающая ударный
+                        гласный звук. Запишите номера ответов.
+                    </h4>
+                    <div class="diagnostic-full-test__options">
+                        {% for variant in orthoepy_variants %}
+                        <label class="diagnostic-full-test__option">
+                            <input type="checkbox" class="diagnostic-full-test__checkbox orthoepy-checkbox"
+                                name="answer_4[]" value="{{ variant }}" data-question="4">
+                            <span class="diagnostic-full-test__option-text variant-text">
+                                {{ forloop.counter }}) {{ variant }}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
                 {% endif %}
-                <input type="text" class="diagnostic-full-test__input input-text" data-question="{{ q_num }}"
-                    placeholder="Введите ответ" autocomplete="off">
-            </div>
-            {% endfor %}
 
-            <!-- Задание 4: персональная подборка строк -->
-            {% if task4_choices %}
-            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="4">
-                <h4 class="diagnostic-full-test__title">4. {{ task4_text }}</h4>
-                <div class="diagnostic-full-test__lines">
-                    {% for choice in task4_choices %}
-                    <div class="diagnostic-full-test__line">
-                        <span class="diagnostic-full-test__line-num">{{ forloop.counter }})</span>
-                        <span class="practice-line diagnostic-full-test__line-text">{{ choice }}</span>
+                <!-- Задание 5: паронимы -->
+                {% if paponim_sentences %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="5">
+                    <h4 class="diagnostic-full-test__title">
+                        5. В одном из приведённых ниже предложений НЕВЕРНО употреблено выделенное слово.
+                        Исправьте лексическую ошибку, подобрав к выделенному слову пароним.
+                        Запишите подобранное слово, соблюдая нормы современного русского литературного языка.
+                    </h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for sentence in paponim_sentences %}
+                        <div class="diagnostic-full-test__line">
+                            <span class="practice-line diagnostic-full-test__line-text">
+                                {{ sentence.text|safe }}
+                            </span>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                    <input type="text" class="diagnostic-full-test__input input-text" name="answer_5"
+                        data-question="5" placeholder="Напишите исправленное слово"
+                        aria-label="Ответ на задание 5" autocomplete="off">
                 </div>
-                <input type="text" class="diagnostic-full-test__input input-text" data-question="4"
-                    placeholder="Введите номера ответов" autocomplete="off">
-            </div>
-            {% endif %}
+                {% endif %}
 
-            <!-- Задание 5: персональное слово с ошибкой -->
-            {% if task5_sentences %}
-            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="5">
-                <h4 class="diagnostic-full-test__title">5. {{ task5_text }}</h4>
-                <div class="diagnostic-full-test__lines">
-                    {% for sentence in task5_sentences %}
-                    <div class="diagnostic-full-test__line">
-                        <span class="practice-line diagnostic-full-test__line-text">{{ sentence|safe }}</span>
+                <!-- Задание 6: лексика -->
+                {% if wordok %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="6">
+                    {% if wordok_task_type == 'exclude' %}
+                    <h4 class="diagnostic-full-test__title">
+                        6. Отредактируйте предложение: исправьте лексическую ошибку, исключив лишнее слово.
+                        Выпишите это слово.
+                    </h4>
+                    {% else %}
+                    <h4 class="diagnostic-full-test__title">
+                        6. Отредактируйте предложение: исправьте лексическую ошибку, заменив употреблённое
+                        неверно слово. Запишите подобранное слово.
+                    </h4>
+                    {% endif %}
+                    <p class="diagnostic-full-test__paragraph practice-line">{{ wordok.text|safe }}</p>
+                    <input type="text" class="diagnostic-full-test__input input-text" name="answer_6"
+                        data-question="6" placeholder="Введите слово" aria-label="Ответ на задание 6"
+                        autocomplete="off">
+                </div>
+                {% endif %}
+
+                <!-- Задание 7: грамматика -->
+                {% if task7_phrases %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="7">
+                    <h4 class="diagnostic-full-test__title">7. {{ task7_instruction }}</h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for phrase in task7_phrases %}
+                        <div class="diagnostic-full-test__line">
+                            <span class="practice-line diagnostic-full-test__line-text">{{ phrase }}</span>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                    <input type="text" class="diagnostic-full-test__input input-text" name="answer_7"
+                        data-question="7" placeholder="Напишите исправленное слово" autocomplete="off">
                 </div>
-                <input type="text" class="diagnostic-full-test__input input-text" data-question="5"
-                    placeholder="Напишите правильное слово" autocomplete="off">
-            </div>
-            {% endif %}
+                {% endif %}
 
-            <!-- Задание 6: цитата диагностики -->
-            {% if task6_instruction and task6_text %}
-            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="6">
-                <h4 class="diagnostic-full-test__title">6. {{ task6_instruction }}</h4>
-                <p class="practice-line diagnostic-full-test__paragraph">{{ task6_text }}</p>
-                <input type="text" class="diagnostic-full-test__input input-text" data-question="6"
-                    placeholder="Введите ответ" autocomplete="off">
-            </div>
-            {% endif %}
-
-            <!-- Задание 7: цитата диагностики -->
-            {% if task7_instruction and task7_phrases %}
-            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="7">
-                <h4 class="diagnostic-full-test__title">7. {{ task7_instruction }}</h4>
-                <div class="diagnostic-full-test__lines">
-                    {% for phrase in task7_phrases %}
-                    <div class="diagnostic-full-test__line">
-                        <span class="practice-line diagnostic-full-test__line-text">{{ phrase }}</span>
+                <!-- Задание 8: соответствие -->
+                {% if task8_html %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="8">
+                    <div class="diagnostic-full-test__custom-html">
+                        {{ task8_html|safe }}
                     </div>
-                    {% endfor %}
                 </div>
-                <input type="text" class="diagnostic-full-test__input input-text" data-question="7"
-                    placeholder="Введите исправленное слово" autocomplete="off">
-            </div>
-            {% endif %}
+                {% endif %}
 
-            <!-- Задание 8: цитата диагностики -->
-            {% if task8_html %}
-            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="8">
-                <div class="diagnostic-full-test__custom-html">
-                    {{ task8_html|safe }}
+                <!-- Задание 9: корни, смайлики -->
+                {% if task9_lines %}
+                <div class="question-diagnostic diagnostic-full-test__question" data-question-number="9">
+                    <h4 class="diagnostic-full-test__title">
+                        9. Выберите правильную букву, кликнув на смайлик.
+                    </h4>
+                    <div class="diagnostic-full-test__lines">
+                        {% for line in task9_lines %}
+                        <div class="diagnostic-full-test__line">
+                            <span class="diagnostic-full-test__line-num">{{ forloop.counter }})</span>
+                            <span class="practice-line diagnostic-full-test__line-text">
+                                {{ line.display_line|safe }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-            {% endif %}
+                {% endif %}
 
-            <!-- Задание 9: цитата диагностики (смайлики) -->
-            {% if task9_lines %}
-            <div class="question-diagnostic diagnostic-full-test__question" data-question-number="9">
-                <h4 class="diagnostic-full-test__title">9. Выберите правильную букву, кликнув на смайлик:</h4>
-                <div class="diagnostic-full-test__lines">
-                    {% for line in task9_lines %}
-                    <div class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</div>
-                    {% endfor %}
-                </div>
             </div>
-            {% endif %}
 
             <button id="check-checkpoint-btn" class="check-task-submit" type="button">
                 Проверить и сдать рубеж
@@ -161,7 +192,12 @@
         </section>
     </main>
 
-    <script src="{% static 'js/planning.js' %}?v=20260916"></script>
+    {% if task9_letter_groups %}
+    <script id="task9-letter-groups" type="application/json">{{ task9_letter_groups|safe }}</script>{% endif %}
+    {% if task9_subgroup_letters %}
+    <script id="task9-subgroup-letters" type="application/json">{{ task9_subgroup_letters|safe }}</script>{% endif %}
+
+    <script src="{% static 'js/planning.js' %}?v=20260917"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             const q9 = document.querySelector('[data-question-number="9"]');
@@ -170,6 +206,6 @@
             }
         });
     </script>
-    <script src="{% static 'js/checkpoint.js' %}?v=20260917"></script>
+    <script src="{% static 'js/checkpoint.js' %}?v=20260917b"></script>
 </body>
 </html>

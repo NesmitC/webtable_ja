@@ -103,7 +103,7 @@
             <div class="card stat-card">
 <p class="stat-card__text">
 Рубежные тесты: сдано {{ cp_stats.passed }} · попыток с ошибками {{ cp_stats.failed }} ·
-лучший результат {{ cp_stats.best }} из 9.
+лучший результат {{ cp_stats.best }} заданий.
 {% if cp_stats.passed_bool %}Урок 10 открыт.{% else %}Урок 10 откроется после
 рубежного теста по заданиям 1–8.{% endif %}
 </p>
@@ -115,7 +115,7 @@
 {% for a in cp_attempts %}
 <tr>
 <td>{{ a.created_at|date:'d.m.Y H:i' }}</td>
-<td>{{ a.correct_count }} / 9</td>
+<td>{{ a.correct_count }} / {{ a.total_tasks }}</td>
 <td>{{ a.error_count }}</td>
 <td>{% if a.passed %}сдан{% else %}не сдан{% endif %}</td>
 </tr>

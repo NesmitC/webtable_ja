@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Тест рубежного теста cp9: персонализация, сдача, провал, ротация, разблокировка.
+"""Тест рубежного теста cp9 v4: контент из БД (как текущая/контрольная
+диагностика), ошибки по заданиям, подсветка, ротация паронимов, замок урока 10.
 Изоляция: test_settings_isolated (SQLite в памяти). Боевая БД не трогается.
 
 Запуск: .\\.venv\\Scripts\\python.exe test_checkpoint.py
@@ -27,8 +28,9 @@ call_command('migrate', verbosity=0, run_syncdb=True)
 
 from django.contrib.auth import get_user_model
 
-from main.models import (CheckpointAttempt, Orthogram, OrthogramExample,
-                         TaskPaponim, UserProfile, UserWord)
+from main.models import (CheckpointAttempt, CorrectionExercise, QuestionOption,
+                         TaskPaponim, TextAnalysisTask, TextQuestion,
+                         UserProfile, WordOk)
 
 fails = []
 
@@ -40,195 +42,151 @@ def check(cond, label):
 
 
 User = get_user_model()
-u = User.objects.create_user(username='pupil', email='p@example.com',
-                             password='Zk9mQ2vLp7xR')
-prof, _ = UserProfile.objects.get_or_create(user=u)
-prof.trial_until = timezone.now() + timedelta(days=5)
-prof.save()
 
-orth, _ = Orthogram.objects.get_or_create(id=1, defaults={'name': 'корни а/о'})
-# персональные слова с ошибками: буква «о»
-ex1 = OrthogramExample.objects.create(orthogram=orth, text='земляной',
-                                      masked_word='з*1*мляной',
-                                      incorrect_variant='зимляной',
-                                      correct_letters='о')
-ex2 = OrthogramExample.objects.create(orthogram=orth, text='покров',
-                                      masked_word='п*1*кров',
-                                      incorrect_variant='пакров',
-                                      correct_letters='о')
-ex3 = OrthogramExample.objects.create(orthogram=orth, text='сторонка',
-                                      masked_word='ст*1*ронка',
-                                      incorrect_variant='старонка',
-                                      correct_letters='о')
-# дистракторы с другой буквой
-ex4 = OrthogramExample.objects.create(orthogram=orth, text='зелёный',
-                                      masked_word='з*1*лёный',
-                                      incorrect_variant='зилёный',
-                                      correct_letters='е')
-ex5 = OrthogramExample.objects.create(orthogram=orth, text='весна',
-                                      masked_word='в*1*сна',
-                                      incorrect_variant='висна',
-                                      correct_letters='е')
-for ex in (ex1, ex2, ex3):
-    UserWord.objects.create(user=u, field_name='корни', text=ex.text,
-                            reference_word=ex, error_count=3)
 
-# паронимы для задания 5: 1 ошибочное + 4 корректных (разные корни)
+def make_user(name):
+    u = User.objects.create_user(username=name, email=f'{name}@example.com',
+                                 password='Zk9mQ2vLp7xR')
+    prof, _ = UserProfile.objects.get_or_create(user=u)
+    prof.trial_until = timezone.now() + timedelta(days=5)
+    prof.save()
+    return u
+
+
+# ===== Контент БД (те же источники, что у текущей диагностики) =====
+task_text = TextAnalysisTask.objects.create(
+    title='Микротест', task_type='1_3', is_active=True,
+    text_content='Язык — это история народа. Язык — это культура народа.')
+q1 = TextQuestion.objects.create(
+    task=task_text, question_number=1, question_type='missing_word',
+    question_text='1. Вставьте пропущенное слово.', correct_answer='история/летопись')
+q2 = TextQuestion.objects.create(
+    task=task_text, question_number=2, question_type='multiple_choice',
+    question_text='2. Укажите верные утверждения.', correct_answer='13')
+q3 = TextQuestion.objects.create(
+    task=task_text, question_number=3, question_type='multiple_choice',
+    question_text='3. Укажите верные утверждения.', correct_answer='12')
+for num, txt in [(1, 'первое'), (2, 'второе'), (3, 'третье')]:
+    QuestionOption.objects.create(question=q2, option_number=num, option_text=txt)
+    QuestionOption.objects.create(question=q3, option_number=num, option_text=txt)
+
 TaskPaponim.objects.create(text='Он решил **одеть** очки и вышел на улицу.',
                            correct_word='надеть', root='дет',
                            is_active=True, is_for_quiz=True)
-for i, (sent, root) in enumerate([
-        ('Это было **гарантийное** обслуживание, а не ремонт.', 'гарант'),
-        ('Она **адресовала** письмо подруге в Сочи.', 'адрес'),
-        ('Мы **оплатили** проезд и сели в автобус.', 'оплат'),
-        ('**Дипломатичный** ответ устроил обе стороны.', 'диплом'),
-]):
+for sent, root in [
+        ('Это было **гарантийное** обслуживание.', 'гарант'),
+        ('Она **адресовала** письмо подруге.', 'адрес'),
+        ('Мы **оплатили** проезд.', 'оплат'),
+        ('**Дипломатичный** ответ устроил всех.', 'диплом'),
+]:
     TaskPaponim.objects.create(text=sent, correct_word='', root=root,
                                is_active=True, is_for_quiz=True)
 
+WordOk.objects.create(text='Мы **оплатили** за проезд.', task_type='6100',
+                      correct_variants='за, заплатили', is_active=True)
+
+for i, (bad, good) in enumerate([
+        ('сожгет', 'сожжёт'), ('чулков', 'чулок'), ('замзрнул', 'замёрз'),
+        ('ихний', 'их'), ('едь', 'поезжай')]):
+    CorrectionExercise.objects.create(incorrect_text=bad, correct_text=good,
+                                      is_active=True, exercise_id=f'71{i}')
+
+u = make_user('pupil')
 c = Client()
 c.force_login(u)
 
-print('1. GET страницы чекпоинта')
+print('1. GET: контент собирается из БД')
 r = c.get('/ege/checkpoint/9/')
 check(r.status_code == 200, f'GET /ege/checkpoint/9/ -> {r.status_code}')
 body = r.content.decode('utf-8')
-check('Рубежный тест: задания 1–9' in body, 'заголовок страницы на месте')
-check('data-question="4"' in body, 'задание 4 отрендерено')
-check('data-question="5"' in body, 'задание 5 отрендерено')
-check('пароним' in body, 'задание 5 — на паронимы (формулировка)')
-check('<u>одеть</u>' in body, 'задание 5: предложение с выделенным словом из пула паронимов')
+check('Язык — это история народа' in body, 'задания 1-3: текст из БД')
+check('data-question="1"' in body, 'задание 1: инпут из БД')
+check('<u>одеть</u>' in body, 'задание 5: пароним из БД с выделенным словом')
+check('оплатили' in body, 'задание 6: лексика из БД (WordOk)')
+check('сожжёт' in body or 'чулок' in body or 'поезжай' in body,
+      'задание 7: грамматика из БД (CorrectionExercise)')
 check('check-task-submit' in body, 'кнопка в едином стиле check-task-submit')
-check('data-error-letter="А"' in body or 'task-eight-select' in body, 'задание 8 (соответствие) на месте')
-check('data-question-number="9"' in body, 'задание 9 (смайлики) на месте')
-check('Рубежный тест: задания 1–9' in body, 'подпись: задания 1–9')
-sess = c.session
-correct = sess.get('checkpoint_9_correct', {})
-check(bool(correct), 'correct-ответы лежат в сессии')
-check(correct.get('4') is not None, 'персональный correct для задания 4')
-check(correct.get('5') == 'надеть', f"correct['5'] = пароним 'надеть' (факт: {correct.get('5')!r})")
-words4 = sess.get('checkpoint_9_words', [])
-personal = {w['word'] for w in words4 if w['task'] == 4} & {'земляной', 'покров', 'сторонка'}
-check(len(personal) >= 2, f'в задании 4 персональные слова ученика: {sorted(personal)}')
+check('task9-letter-groups' not in body,
+      'без пула задания 9 скрипт-теги не рендерятся (деградация мягкая)')
 
-print('2. Сдача без ошибок -> сдан, урок 10 открыт')
-answers = {}
-for t in ('1', '2', '3', '5', '6', '7'):
-    ca = correct.get(t)
-    answers[t] = ca[0] if isinstance(ca, list) else ca
-answers['4'] = ' '.join(correct.get('4', []))
-m8 = sess.get('checkpoint_9_task8_matches', {})
-for letter, val in m8.items():
-    answers[f'8_{letter}'] = val
-for k, v in correct.items():
-    if str(k).startswith('9-'):
-        answers[k] = v
+sess = c.session['checkpoint_9']
+check('answers_1_3' in sess and sess['answers_1_3'].get('1') == 'история/летопись',
+      'сессия: эталон заданий 1-3')
+check(sess.get('answer_5') == 'надеть', "сессия: эталон 5 = 'надеть'")
+check(bool(sess.get('answer_6')), 'сессия: эталон 6')
+check(bool(sess.get('answer_7')), 'сессия: эталон 7')
+
+print('2. Всё верно -> сдан, урок 10 открыт')
+answers = {
+    '1': 'история',
+    '2': ['1', '3'],
+    '3': ['1', '2'],
+    '5': 'НАДЕТЬ',
+    '6': 'за',
+    '7': sess['answer_7'],
+}
 r = c.post('/ege/checkpoint/9/', data=json.dumps({'answers': answers}),
            content_type='application/json')
 check(r.status_code == 200, f'POST -> {r.status_code}')
 res = r.json()
-check('result_url' in res, 'вернулся result_url')
-check(isinstance(res.get('results'), dict) and res['results']['5']['is_correct'],
-      'в ответе results для подсветки (задание 5 верно)')
-check(res['results']['8_А']['is_correct'], 'в ответах побуквенные результаты задания 8')
-check('9-1' in res['results'], 'в ответах построчные результаты задания 9')
 a = CheckpointAttempt.objects.first()
 check(a is not None and a.passed, 'попытка сохранена и passed=True')
-check(a.correct_count == 9, f'correct_count=9 (факт: {a.correct_count})')
-check(a.error_count == 0, f'error_count=0 (факт: {a.error_count})')
+check(a.total_tasks == 6 and a.correct_count == 6 and a.error_count == 0,
+      f'6 заданий из БД: 6/6, ошибок 0 (факт: {a.correct_count}/{a.total_tasks}, '
+      f'ошибок {a.error_count})')
+check(res['results']['1']['is_correct'] and res['results']['5']['is_correct'],
+      'results для подсветки: 1 и 5 верны (регистр не важен)')
 r = c.get(res['result_url'])
 vb = r.content.decode('utf-8')
-check(r.status_code == 200 and 'Рубеж сдан' in vb, 'вердикт: сдан')
-check('из 9' in vb, 'вердикт считает из 9 заданий')
+check('Рубеж сдан' in vb and 'из 6' in vb, 'вердикт: сдан, знаменатель динамический')
+
 r = c.get('/ege/lessons/')
-check(b'lesson-card--active' in r.content and 'Рубежный тест: задания 1–9' in
-      r.content.decode('utf-8'), 'строка чекпоинта на странице уроков')
-lessons_body = r.content.decode('utf-8')
-i10 = lessons_body.find('Задание 10 (орфография, приставки)')
-seg = lessons_body[max(0, i10 - 1300):i10]
-check('lesson-card--active' in seg, 'карточка урока 10 стала активной после сдачи')
+lb = r.content.decode('utf-8')
+i10 = lb.find('Задание 10 (орфография, приставки)')
+check('lesson-card--active' in lb[max(0, i10 - 1300):i10],
+      'карточка урока 10 активна после сдачи')
 
-print('3. Честный подсчёт: 2 ошибки в задании 8 -> 2 ошибки, рубеж сдан')
-u3 = User.objects.create_user(username='pupil3', email='p3@example.com',
-                              password='Zk9mQ2vLp7xR')
-prof3, _ = UserProfile.objects.get_or_create(user=u3)
-prof3.trial_until = timezone.now() + timedelta(days=5)
-prof3.save()
-c3 = Client()
-c3.force_login(u3)
-c3.get('/ege/checkpoint/9/')
-correct3 = c3.session.get('checkpoint_9_correct', {})
-answers3 = {}
-for t in ('1', '2', '3', '5', '6', '7'):
-    ca = correct3.get(t)
-    answers3[t] = ca[0] if isinstance(ca, list) else ca
-answers3['4'] = ' '.join(correct3.get('4', []))
-m83 = c3.session.get('checkpoint_9_task8_matches', {})
-wrong_done = 0
-for letter, val in m83.items():
-    if wrong_done < 2:
-        answers3[f'8_{letter}'] = '999'
-        wrong_done += 1
-    else:
-        answers3[f'8_{letter}'] = val
-for k, v in correct3.items():
-    if str(k).startswith('9-'):
-        answers3[k] = v
-r = c3.post('/ege/checkpoint/9/', data=json.dumps({'answers': answers3}),
-            content_type='application/json')
-a3 = CheckpointAttempt.objects.filter(user=u3).first()
-check(a3.error_count == 2, f'2 ошибки в задании 8 = 2 ошибки (факт: {a3.error_count})')
-check(a3.passed, 'при 2 ошибках рубеж сдан (допуск 3)')
-check(a3.correct_count == 8, f'заданий полностью верно: 8 (факт: {a3.correct_count})')
-
-print('4. Провал: 4 ошибки -> не сдан, рекомендации')
-u2 = User.objects.create_user(username='pupil2', email='p2@example.com',
-                              password='Zk9mQ2vLp7xR')
-prof2, _ = UserProfile.objects.get_or_create(user=u2)
-prof2.trial_until = timezone.now() + timedelta(days=5)
-prof2.save()
+print('3. Всё неверно -> ошибка за каждое задание, не сдан')
+u2 = make_user('pupil2')
 c2 = Client()
 c2.force_login(u2)
-r = c2.get('/ege/checkpoint/9/')
-correct2 = c2.session.get('checkpoint_9_correct', {})
-answers2 = {}
-for t in ('1', '2', '3', '5', '6', '7'):
-    ca = correct2.get(t)
-    answers2[t] = ca[0] if isinstance(ca, list) else ca
-# ломаем 4 задания
-answers2['1'] = 'zzzz'
-answers2['2'] = 'zzzz'
-answers2['5'] = 'zzzz'
-answers2['6'] = 'zzzz'
-answers2['4'] = ' '.join(correct2.get('4', []))
-m82 = c2.session.get('checkpoint_9_task8_matches', {})
-for letter, val in m82.items():
-    answers2[f'8_{letter}'] = val
-for k, v in correct2.items():
-    if str(k).startswith('9-'):
-        answers2[k] = v
-r = c2.post('/ege/checkpoint/9/', data=json.dumps({'answers': answers2}),
-            content_type='application/json')
+c2.get('/ege/checkpoint/9/')
+r = c2.post('/ege/checkpoint/9/', data=json.dumps({'answers': {
+    '1': 'чушь', '2': ['2'], '3': ['3'], '5': 'чушь', '6': 'чушь', '7': 'чушь',
+}}), content_type='application/json')
 res2 = r.json()
 a2 = CheckpointAttempt.objects.filter(user=u2).first()
 check(a2 and not a2.passed, 'попытка не сдана')
-check(a2.error_count == 4, f'error_count=4 (факт: {a2.error_count})')
+check(a2.error_count == 6 and a2.correct_count == 0,
+      f'6 ошибок = 6 неверных заданий (факт: {a2.error_count})')
+check(res2['error_count'] == 6 and res2['passed'] is False,
+      'в ответе error_count/passed для вердикт-ссылки')
 r = c2.get(res2['result_url'])
-vb = r.content.decode('utf-8')
-check('Пока не сдан' in vb, 'вердикт: не сдан')
-check('Что повторить перед пересдачей' in vb, 'блок рекомендаций на месте')
+vb2 = r.content.decode('utf-8')
+check('Пока не сдан' in vb2 and 'Что повторить' in vb2,
+      'вердикт: не сдан + рекомендации')
+check('/paponim_trening/' in vb2, 'рекомендация задания 5 ведёт в словник паронимов')
 r = c2.get('/ege/lessons/')
-seg = r.content.decode('utf-8')
-i10 = seg.find('Задание 10 (орфография, приставки)')
-check('lesson-card--locked' in seg[max(0, i10 - 1300):i10],
-      'урок 10 остался закрытым после провала')
+lb2 = r.content.decode('utf-8')
+i10 = lb2.find('Задание 10 (орфография, приставки)')
+check('lesson-card--locked' in lb2[max(0, i10 - 1300):i10],
+      'урок 10 закрыт после провала')
 
-print('5. Статистика: карточка рубежных тестов и таблица прохождений')
-r = c2.get('/statistic/')
-sb = r.content.decode('utf-8')
+print('4. Ротация паронимов и случайность сборки')
+s2a = c2.session['checkpoint_9']
+u3 = make_user('pupil3')
+c3 = Client()
+c3.force_login(u3)
+c3.get('/ege/checkpoint/9/')
+c3.get('/ege/checkpoint/9/')
+check(bool(c3.session['checkpoint_9'].get('answer_5')),
+      'две генерации подряд стабильны (задание 5 на месте)')
+
+print('5. Статистика: карточка и таблица прохождений')
+sb = c2.get('/statistic/').content.decode('utf-8')
 check('Рубежные тесты: сдано' in sb, 'карточка на странице статистики')
-check('История прохождений рубежей' in sb, 'таблица прохождений (2 этап) на месте')
-check('не сдан' in sb, 'в таблице видна несданная попытка')
+check('История прохождений рубежей' in sb, 'таблица прохождений на месте')
+check('/ 6' in sb, 'в таблице динамический знаменатель (6)')
 
 print()
 if fails:

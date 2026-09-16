@@ -976,6 +976,7 @@ class CheckpointAttempt(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     correct_count = models.PositiveSmallIntegerField(default=0)
     error_count = models.PositiveSmallIntegerField(default=0)
+    total_tasks = models.PositiveSmallIntegerField(default=9)
     passed = models.BooleanField(default=False, db_index=True)
     answers_data = models.JSONField(default=dict, blank=True)
     results_data = models.JSONField(default=dict, blank=True)

@@ -1,7 +1,8 @@
 /* main/static/js/checkpoint.js
-   Сбор ответов рубежного теста и отправка на свою страницу.
-   Логика сбора и санитайзер скопированы из test_fix_ege.js (стандарт ЕГЭ),
-   отличие одно: после проверки уходим на страницу вердикта result_url. */
+   Рубежный тест: сбор ответов и подсветка — ровно как в текущей/контрольной
+   диагностике (diagnostic.js): классы task-match-correct/incorrect для
+   инпутов, чекбоксов и селектов, correct/incorrect для букв под смайликами.
+   Ключи задания 8: '8_А'… (селекты размечены data-error-letter). */
 (function () {
     'use strict';
 
@@ -55,6 +56,7 @@
 
     function collectAnswers() {
         const answers = {};
+        // Текстовые поля и чекбоксы (задания 1-7)
         document.querySelectorAll('[data-question]').forEach(el => {
             const q = el.dataset.question;
             if (el.type === 'checkbox') {
@@ -62,70 +64,58 @@
                     if (!answers[q]) answers[q] = [];
                     answers[q].push(el.value);
                 }
-            } else if (el.tagName === 'SELECT') {
-                const val = (el.value || '').trim();
-                if (val !== '') answers[q] = val;
             } else {
-                const val = (el.value || '').trim();
-                if (val !== '') answers[q] = val;
+                answers[q] = (el.value || '').trim();
             }
         });
-        // Задание 8: селекты соответствия размечены data-error-letter
-        // (так же, как в диагностике), приводим к ключам 8_А…8_Д.
+        // Задание 8: селекты соответствия (data-error-letter -> '8_А')
         document.querySelectorAll('.task-eight-select').forEach(sel => {
-            const val = (sel.value || '').trim();
-            if (val !== '' && sel.dataset.errorLetter) {
-                answers['8_' + sel.dataset.errorLetter] = val;
-            }
+            const letter = sel.dataset.errorLetter;
+            if (!letter) return;
+            answers['8_' + letter] = (sel.value || '').trim();
         });
-        // Задание 9: смайлики (как в диагностике)
+        // Задание 9: смайлики (как в diagnostic.js)
         document.querySelectorAll('.smiley-button').forEach(btn => {
             const orthId = btn.dataset.orthId;
             if (!orthId) return;
             const icon = btn.querySelector('.smiley-icon');
-            let letter = icon ? icon.textContent.trim() : '😊';
-            if (letter === '😊') return;
-            if (letter === ',') letter = '!';
-            else if (letter === 'х' || letter === 'x') letter = '?';
-            answers[orthId] = letter;
+            let selectedLetter = icon ? icon.textContent : '😊';
+            if (selectedLetter === ',') selectedLetter = '!';
+            else if (selectedLetter === 'х') selectedLetter = '?';
+            answers[orthId] = selectedLetter;
         });
         return answers;
     }
 
     function applyResults(results) {
-        // Текстовые инпуты (1-7): зелёный/красный фон, как в диагностике
-        document.querySelectorAll('input[data-question]').forEach(input => {
-            const qKey = input.dataset.question;
-            const taskResult = results[qKey];
-            input.style.backgroundColor = '';
-            input.style.border = '';
-            if (taskResult && typeof taskResult.is_correct === 'boolean') {
-                if (taskResult.is_correct) {
-                    input.style.backgroundColor = '#d4edda';
-                    input.style.border = '1px solid #4CAF50';
-                } else {
-                    input.style.backgroundColor = '#f8d7da';
-                    input.style.border = '1px solid #f44336';
-                }
+        // Инпуты и чекбоксы (задания 1-7) — классы как в diagnostic.js
+        document.querySelectorAll('[data-question]').forEach(el => {
+            const q = el.dataset.question;
+            const taskResult = results[q];
+            if (!taskResult) return;
+            el.classList.remove('task-match-correct', 'task-match-incorrect');
+            const shouldHighlight = el.type === 'checkbox' ? el.checked : (el.value || '').trim() !== '';
+            if (shouldHighlight) {
+                el.classList.add(taskResult.is_correct ? 'task-match-correct' : 'task-match-incorrect');
             }
         });
-        // Задание 8: селекты соответствия
-        document.querySelectorAll('.task-eight-select').forEach(select => {
-            const letter = select.dataset.errorLetter;
+        // Задание 8: селекты
+        document.querySelectorAll('.task-eight-select').forEach(sel => {
+            const letter = sel.dataset.errorLetter;
             if (!letter) return;
             const taskResult = results['8_' + letter];
-            select.classList.remove('task-match-correct', 'task-match-incorrect');
-            select.style.backgroundColor = '';
-            select.style.borderColor = '';
-            if (taskResult && typeof taskResult.is_correct === 'boolean') {
+            sel.classList.remove('task-match-correct', 'task-match-incorrect');
+            sel.style.backgroundColor = '';
+            sel.style.borderColor = '';
+            if (taskResult) {
                 if (taskResult.is_correct) {
-                    select.classList.add('task-match-correct');
-                    select.style.backgroundColor = '#d4edda';
-                    select.style.borderColor = '#4CAF50';
+                    sel.classList.add('task-match-correct');
+                    sel.style.backgroundColor = '#d4edda';
+                    sel.style.borderColor = '#4CAF50';
                 } else {
-                    select.classList.add('task-match-incorrect');
-                    select.style.backgroundColor = '#f8d7da';
-                    select.style.borderColor = '#f44336';
+                    sel.classList.add('task-match-incorrect');
+                    sel.style.backgroundColor = '#f8d7da';
+                    sel.style.borderColor = '#f44336';
                 }
             }
         });
@@ -137,7 +127,7 @@
             if (!icon) return;
             const taskResult = results[orthId];
             if (taskResult) {
-                icon.classList.remove('correct', 'incorrect', 'selected');
+                icon.classList.remove('selected', 'correct', 'incorrect');
                 icon.classList.add(taskResult.is_correct ? 'correct' : 'incorrect');
             }
         });
@@ -181,16 +171,15 @@
                     console.error('Ошибка сервера:', errText);
                     alert('Не удалось проверить ответы. Обновите страницу и попробуйте снова.');
                     btn.disabled = false;
-                    btn.textContent = 'Проверить и завершить рубеж';
+                    btn.textContent = 'Проверить и сдать рубеж';
                     return;
                 }
                 const result = await res.json();
                 if (result.result_url) {
                     if (result.results) applyResults(result.results);
-                    document.querySelectorAll('input[data-question], .task-eight-select')
-                        .forEach(el => { el.disabled = true; });
-                    document.querySelectorAll('.smiley-button')
-                        .forEach(b => { b.style.pointerEvents = 'none'; });
+                    document.querySelectorAll('input[data-question]').forEach(el => { el.disabled = true; });
+                    document.querySelectorAll('.task-eight-select').forEach(el => { el.disabled = true; });
+                    document.querySelectorAll('.smiley-button').forEach(b => { b.style.pointerEvents = 'none'; });
                     showVerdictLink(result.result_url, result.passed, result.error_count);
                 } else {
                     alert(result.error || 'Неизвестная ошибка проверки.');
