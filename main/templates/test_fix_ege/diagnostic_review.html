@@ -296,8 +296,7 @@
                 placeholder="Что разобрать, на чём сделать акцент, домашнее задание...">{{ attempt.teacher_notes }}</textarea>
             <p class="sr-form-row">
                 <label>
-                    <input type="checkbox" name="mark_reviewed" {% if attempt.is_reviewed_by_teacher %}checked{% endif
-                        %}>
+                    <input type="checkbox" name="mark_reviewed" {% if attempt.is_reviewed_by_teacher %}checked{% endif %}>
                     Отметить как «разобрано на встрече» (ученик увидит ✅ в своей статистике)
                 </label>
             </p>
