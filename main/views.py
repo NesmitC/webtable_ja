@@ -39,6 +39,7 @@ from .models import (
     OrthoepyAttempt, OrthoepyAttemptWord, OrthoepyWordStat,
     LessonView, PaponimView, ChatMessage, AiQueryLog,
     Task9Attempt, Task9AttemptWord, Task9WordStat, CheckpointAttempt,
+    CallbackRequest,
 )
 from .models import (
     OgeTextAnalysisTask, OgeTextQuestion, OgeQuestionOption,
@@ -10555,3 +10556,37 @@ def checkpoint_result(request, attempt_id):
         'max_errors': CHECKPOINT_MAX_ERRORS['cp9'],
         'recommend': recommend,
     })
+
+
+def callback_request(request):
+    """Заявка на обратный звонок с результата диагностики (анонимы тоже)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Только POST'}, status=405)
+
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR'))
+    key = f'callback_attempts_{ip}'
+    if cache.get(key, 0) >= 3:
+        return JsonResponse({'error': 'Слишком много заявок. Мы уже получили вашу.'},
+                            status=429)
+
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Некорректные данные'}, status=400)
+
+    contact = str(data.get('contact', '')).strip()
+    name = str(data.get('name', '')).strip()[:100]
+    if not contact or len(contact) > 100:
+        return JsonResponse({'error': 'Укажите телефон или MAX для связи'}, status=400)
+
+    attempt = None
+    attempt_id = data.get('attempt_id')
+    if attempt_id:
+        attempt = DiagnosticAttempt.objects.filter(id=attempt_id).first()
+
+    CallbackRequest.objects.create(
+        name=name, contact=contact, attempt=attempt,
+        source=str(data.get('source', ''))[:50])
+    cache.set(key, cache.get(key, 0) + 1, timeout=3600)
+    logger.info(f'Callback request: {contact} (attempt={attempt_id})')
+    return JsonResponse({'status': 'ok'})

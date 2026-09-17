@@ -125,6 +125,7 @@ urlpatterns = [
     # Входящая диагностика ЕГЭ (фиксированный вариант из фикстуры)
     path('diagnostic/fix-ege/', views.diagnostic_fix_ege, name='diagnostic_fix_ege'),
     path('diagnostic/result/<uuid:attempt_id>/', views.diagnostic_result, name='diagnostic_result',),
+    path('api/callback-request/', views.callback_request, name='callback_request'),
     path('my/diagnostic/<uuid:attempt_id>/', views.student_review, name='student_review'),
 
     # Диагностики (универсальный маршрут)

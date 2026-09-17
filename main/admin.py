@@ -10,6 +10,7 @@ from .models import (CorrectAnswer, Orthogram, OrthogramExample, Punktum,
                      TaskGrammaticEightExample, TaskGrammaticTwoTwo, 
                      TaskGrammaticTwoTwoExample, TaskPaponim, WordOk,
                      DiagnosticAttempt, TutorInvite, LLMCache, BotLog,
+    CallbackRequest,
 )
 from django.contrib.admin.actions import delete_selected
 from django.db.models.functions import Cast
@@ -680,3 +681,11 @@ class BotLogAdmin(admin.ModelAdmin):
     search_fields = ('question', 'answer', 'username')
     readonly_fields = ('user', 'username', 'platform', 'question', 'answer',
                        'category', 'specialist', 'created_at')
+
+
+@admin.register(CallbackRequest)
+class CallbackRequestAdmin(admin.ModelAdmin):
+    list_display = ('contact', 'name', 'source', 'attempt', 'created_at', 'is_processed')
+    list_filter = ('is_processed', 'source')
+    search_fields = ('contact', 'name')
+    readonly_fields = ('contact', 'name', 'attempt', 'source', 'created_at')

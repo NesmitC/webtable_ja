@@ -42,10 +42,73 @@
                 <div class="cta-block">
                     <h3>Разберите ошибки с преподавателем</h3>
                     <p>Зарегистрируйтесь — результат сохранится и будет всегда доступен в разделе <b>Статистика</b>.</p>
+                    <p class="hint">После регистрации — <b>5 дней полного доступа</b> и персональный план
+                        по вашим слабым местам.</p>
                     <a href="{% url 'register' %}?code={{ attempt.access_code }}"
                         class="btn btn--primary au-form__submit">Зарегистрироваться</a>
                     <p class="hint">Код результата: <strong>{{ attempt.access_code }}</strong></p>
                 </div>
+
+                <div class="cta-block">
+                    <h3>Бесплатный разбор с преподавателем по телефону или в MAX</h3>
+                    <p>Оставьте контакт — преподаватель или его помощник сам позвонит либо напишет
+                        и договорится с вами о времени бесплатного разбора теста.</p>
+                    <form id="callbackForm" autocomplete="off">
+                        <input type="text" name="cb_name" class="au-field__input" placeholder="Как к вам обращаться" maxlength="100">
+                        <input type="text" name="cb_contact" class="au-field__input" placeholder="Телефон или ник в MAX" maxlength="100" required>
+                        <button type="submit" class="btn btn--primary au-form__submit" id="callbackBtn">Жду звонка</button>
+                    </form>
+                    <p id="callbackOk" class="hint" style="display:none;">Спасибо! Заявка принята — свяжемся в ближайшее время.</p>
+                    <p id="callbackErr" class="hint" style="display:none;color:#c0392b;"></p>
+                    <p class="hint">Или напишите преподавателю сами:
+                        <a href="https://max.ru/u/f9LHodD0cOLLZGzK_soBH-sgOd5E5fc2Wb8GlEeQBhrs99oKt84-KEzB1uQ" target="_blank" rel="noopener">MAX</a>
+                    </p>
+                </div>
+                <script>
+                    (function () {
+                        var form = document.getElementById('callbackForm');
+                        if (!form) return;
+                        function cookie(name) {
+                            var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+                            return m ? decodeURIComponent(m[1]) : '';
+                        }
+                        form.addEventListener('submit', async function (e) {
+                            e.preventDefault();
+                            var btn = document.getElementById('callbackBtn');
+                            var err = document.getElementById('callbackErr');
+                            err.style.display = 'none';
+                            btn.disabled = true;
+                            try {
+                                var res = await fetch('{% url "callback_request" %}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': cookie('csrftoken')
+                                    },
+                                    body: JSON.stringify({
+                                        name: form.cb_name.value.trim(),
+                                        contact: form.cb_contact.value.trim(),
+                                        attempt_id: '{{ attempt.id }}',
+                                        source: 'diag_result'
+                                    })
+                                });
+                                var data = await res.json();
+                                if (res.ok && data.status === 'ok') {
+                                    form.style.display = 'none';
+                                    document.getElementById('callbackOk').style.display = 'block';
+                                } else {
+                                    err.textContent = data.error || 'Не удалось отправить. Попробуйте ещё раз.';
+                                    err.style.display = 'block';
+                                    btn.disabled = false;
+                                }
+                            } catch (ex) {
+                                err.textContent = 'Ошибка сети. Попробуйте ещё раз.';
+                                err.style.display = 'block';
+                                btn.disabled = false;
+                            }
+                        });
+                    })();
+                </script>
                 {% else %}
                 <p>✅ Результат сохранён. История и разбор — в разделе <a href="{% url 'statistic' %}">Статистика</a>.
                 </p>

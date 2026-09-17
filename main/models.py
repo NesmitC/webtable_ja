@@ -988,7 +988,31 @@ class CheckpointAttempt(models.Model):
 
     def __str__(self):
         return (f'{self.user.username} {self.checkpoint_code}: '
-                f'{self.correct_count}/8, {"сдан" if self.passed else "не сдан"}')
+                f'{self.correct_count}/{self.total_tasks}, {"сдан" if self.passed else "не сдан"}')
+
+
+class CallbackRequest(models.Model):
+    """Заявка на обратный звонок: преподаватель сам связывается с учеником.
+    Оставляют анонимы после входящей диагностики."""
+    name = models.CharField(max_length=100, blank=True, verbose_name='Имя')
+    contact = models.CharField(max_length=100, verbose_name='Телефон или MAX')
+    attempt = models.ForeignKey(
+        'DiagnosticAttempt', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='callback_requests',
+        verbose_name='Диагностика')
+    source = models.CharField(max_length=50, blank=True, verbose_name='Откуда заявка')
+    is_processed = models.BooleanField(default=False, verbose_name='Обработана')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Заявка на звонок'
+        verbose_name_plural = 'Заявки на звонок'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        when = self.created_at.strftime('%d.%m %H:%M')
+        who = self.name or 'без имени'
+        return f'{self.contact} ({who}), {when}'
 
 # ===== ЗАДАНИЕ 5 ==============================================================
 class TaskPaponim(models.Model):

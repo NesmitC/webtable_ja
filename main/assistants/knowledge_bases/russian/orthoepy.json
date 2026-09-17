@@ -1322,13 +1322,13 @@
   {
     "id": 220,
     "word": "сняла",
-    "vowel_indices": [1, 4],
+    "vowel_indices": [2, 4],
     "correct_index": 4
   },
   {
     "id": 220,
     "word": "снята",
-    "vowel_indices": [1, 4],
+    "vowel_indices": [2, 4],
     "correct_index": 4
   },
   {
