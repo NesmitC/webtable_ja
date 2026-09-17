@@ -10558,6 +10558,15 @@ def checkpoint_result(request, attempt_id):
     })
 
 
+def _send_owner_notify_bg(subject: str, body: str) -> None:
+    """Уведомление владельцу в фоновом потоке; сбой уходит только в лог."""
+    try:
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL,
+                  [settings.OWNER_NOTIFY_EMAIL])
+    except Exception as e:  # noqa: BLE001
+        logger.error(f'Уведомление владельцу не отправлено: {e}')
+
+
 def callback_request(request):
     """Заявка на обратный звонок с результата диагностики (анонимы тоже)."""
     if request.method != 'POST':
@@ -10584,9 +10593,34 @@ def callback_request(request):
     if attempt_id:
         attempt = DiagnosticAttempt.objects.filter(id=attempt_id).first()
 
-    CallbackRequest.objects.create(
+    req = CallbackRequest.objects.create(
         name=name, contact=contact, attempt=attempt,
         source=str(data.get('source', ''))[:50])
     cache.set(key, cache.get(key, 0) + 1, timeout=3600)
     logger.info(f'Callback request: {contact} (attempt={attempt_id})')
+
+    # Уведомление владельцу — в фоновом потоке, чтобы SMTP не держал ответ
+    lines = [
+        f'Новая заявка на обратный звонок ({req.created_at:%d.%m.%Y %H:%M}).',
+        f'Контакт: {contact}',
+        f'Имя: {name or "-"}',
+        f'Источник: {req.source or "-"}',
+    ]
+    if attempt is not None:
+        review_url = request.build_absolute_uri(
+            reverse('diagnostic_review', args=[attempt.id]))
+        weak = ', '.join(map(str, attempt.weak_topics or [])) or '-'
+        lines += [
+            '',
+            f'Диагностика: балл {attempt.score}/{attempt.max_score}, '
+            f'код {attempt.access_code}',
+            f'Слабые задания: {weak}',
+            f'Разбор ответов: {review_url}',
+        ]
+    lines += ['', 'Заявка также в админке: «Заявки на звонок».']
+    threading.Thread(
+        target=_send_owner_notify_bg,
+        args=(f'Заявка на разбор: {contact}', '\n'.join(lines)),
+        daemon=True,
+    ).start()
     return JsonResponse({'status': 'ok'})
