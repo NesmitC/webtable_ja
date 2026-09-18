@@ -981,6 +981,16 @@ class CheckpointAttempt(models.Model):
     answers_data = models.JSONField(default=dict, blank=True)
     results_data = models.JSONField(default=dict, blank=True)
     words_data = models.JSONField(default=list, blank=True)
+    test_data = models.JSONField(
+        default=dict, blank=True,
+        verbose_name='Снимок варианта (что видел ученик)')
+    digest = models.TextField(
+        blank=True, verbose_name='Выжимка для разбора (кэш LLM)')
+    # Снимок варианта: тексты заданий и эталоны, которые видел ученик.
+    # Хранится навсегда, чтобы попытку можно было разобрать постфактум.
+    test_data = models.JSONField(default=dict, blank=True)
+    # Кэшированная LLM-выжимка для преподавателя (генерится один раз).
+    digest = models.TextField(blank=True, default='')
 
     class Meta:
         ordering = ['-created_at']

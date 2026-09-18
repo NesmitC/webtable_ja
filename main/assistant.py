@@ -55,25 +55,34 @@ class NeuroOrchestrator:
                         message = f"почему {last_guess}"
                         print(f"✅ Подтверждено: {last_guess}")
         
-        # Классифицируем интент (ресепшен: правила → Qwen)
-        intent = route(message)
-        # Продающий диалог: цель/возражение после вопроса о тарифах
-        if intent != MARKETING and conversation_history:
-            _last = conversation_history[-1]
-            if isinstance(_last, dict) and _last.get('intent') == MARKETING:
-                from main.assistants.marketing import continues_sales_dialog
-                if continues_sales_dialog(message):
-                    intent = MARKETING
-
-        # Новые категории обрабатываются напрямую, остальные — специалистами
-        if intent in (THEORY, ESSAY, SUPPORT, MOTIVATION, PLATFORM):
-            response = self._handle_direct(user, message, intent, simplify)
-            specialist_name = 'Direct'
+        # Хук рубежей: «объясни мои ошибки» → разбор последней попытки
+        cp_reply = None
+        if not isinstance(user, str) and getattr(user, 'is_authenticated', False):
+            cp_reply = self._try_checkpoint_reply(user, message)
+        if cp_reply:
+            response = cp_reply
+            specialist_name = 'Checkpoint'
+            intent = 'checkpoint'
         else:
-            specialist = self._select_specialist(intent)
-            context = self._build_context(user, intent)
-            response = specialist.handle(user, message, context, conversation_history)
-            specialist_name = specialist.__class__.__name__
+            # Классифицируем интент (ресепшен: правила → Qwen)
+            intent = route(message)
+            # Продающий диалог: цель/возражение после вопроса о тарифах
+            if intent != MARKETING and conversation_history:
+                _last = conversation_history[-1]
+                if isinstance(_last, dict) and _last.get('intent') == MARKETING:
+                    from main.assistants.marketing import continues_sales_dialog
+                    if continues_sales_dialog(message):
+                        intent = MARKETING
+
+            # Новые категории обрабатываются напрямую, остальные — специалистами
+            if intent in (THEORY, ESSAY, SUPPORT, MOTIVATION, PLATFORM):
+                response = self._handle_direct(user, message, intent, simplify)
+                specialist_name = 'Direct'
+            else:
+                specialist = self._select_specialist(intent)
+                context = self._build_context(user, intent)
+                response = specialist.handle(user, message, context, conversation_history)
+                specialist_name = specialist.__class__.__name__
 
         buttons = None
         if isinstance(response, dict):
@@ -292,6 +301,24 @@ class NeuroOrchestrator:
         }
         return mapping.get(intent, self.teacher)
     
+    def _try_checkpoint_reply(self, user, message):
+        """«Объясни мои ошибки» → выжимка последнего рубежа (факты + кэш LLM)."""
+        low = message.lower()
+        triggers = ('мои ошибки', 'разбор моих', 'мой рубеж', 'рубежный тест',
+                    'почему я ошиб', 'объясни мои ошиб')
+        if not any(t in low for t in triggers):
+            return None
+        from main.models import CheckpointAttempt
+        from main.views import ensure_checkpoint_digest
+        attempt = (CheckpointAttempt.objects.filter(user=user)
+                   .order_by('-created_at').first())
+        if attempt is None or not attempt.test_data:
+            return None
+        digest = ensure_checkpoint_digest(attempt)
+        return ('Вот разбор твоего последнего рубежного теста:\n\n' + digest +
+                '\n\nСлабые места тренируются в тренажёрах, а пересдать рубеж '
+                'можно в разделе «Уроки».')
+
     def _build_context(self, user, intent):
         """Собирает релевантный контекст из БД"""
         context = {

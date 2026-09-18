@@ -1,0 +1,37 @@
+{% comment %} main/templates/test_fix_ege/checkpoint_list.html
+Реестр попыток рубежных тестов для преподавателя. {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рубежные тесты: реестр попыток | Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+<body>
+    {% include 'includes/header.html' %}
+    <main class="page-container-diagnostics">
+        <section class="container-diagnostics">
+            <h2 class="diagnostic-full-test__subtitle">Рубежные тесты: последние 100 попыток</h2>
+            <table class="history-table">
+                <tr><th>Дата</th><th>Ученик</th><th>Результат</th><th>Ошибок</th><th>Статус</th><th></th></tr>
+                {% for a in attempts %}
+                <tr>
+                    <td>{{ a.created_at|date:'d.m.Y H:i' }}</td>
+                    <td>{{ a.user.username }}</td>
+                    <td>{{ a.correct_count }} / {{ a.total_tasks }}</td>
+                    <td>{{ a.error_count }}</td>
+                    <td>{% if a.passed %}сдан{% else %}не сдан{% endif %}</td>
+                    <td><a href="{% url 'checkpoint_review' a.id %}">разбор →</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">Попыток пока нет</td></tr>
+                {% endfor %}
+            </table>
+        </section>
+    </main>
+</body>
+</html>

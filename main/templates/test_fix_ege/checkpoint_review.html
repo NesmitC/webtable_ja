@@ -1,0 +1,72 @@
+{% comment %} main/templates/test_fix_ege/checkpoint_review.html
+Разбор попытки рубежного теста для преподавателя:
+сверху — выжимка (кэш LLM или фактический слепок), ниже — что видел ученик,
+эталон и его ответ по каждому заданию. {% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Разбор рубежа {{ attempt.id }} | Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+</head>
+<body>
+    {% include 'includes/header.html' %}
+    <main class="page-container-diagnostics">
+        <section class="container-diagnostics">
+            <h2 class="diagnostic-full-test__subtitle">
+                Разбор рубежа: {{ attempt.user.username }},
+                {{ attempt.created_at|date:'d.m.Y H:i' }}
+            </h2>
+            <p class="practice-line diagnostic-full-test__paragraph">
+                Результат: {{ attempt.correct_count }} / {{ attempt.total_tasks }} верно,
+                ошибок {{ attempt.error_count }} —
+                {% if attempt.passed %}сдан{% else %}не сдан{% endif %}.
+            </p>
+
+            {% if digest %}
+            <div class="text-content-diagnostic diagnostic-full-test__text">
+                <h3 class="diagnostic-full-test__subtitle">Выжимка методиста</h3>
+                <p class="practice-line">{{ digest|linebreaksbr }}</p>
+            </div>
+            {% endif %}
+
+            {% if not attempt.test_data %}
+            <p class="practice-line diagnostic-full-test__paragraph">
+                Снимок варианта для этой попытки не сохранён (попытка старше функции).
+                Ниже — только ответы ученика.
+            </p>
+            {% endif %}
+
+            {% for b in blocks %}
+            <div class="question-diagnostic diagnostic-full-test__question">
+                <h4 class="diagnostic-full-test__title">
+                    Задание {{ b.task }}:
+                    {% if b.ok is True %}✅ верно{% elif b.ok is False %}❌ ошибка{% else %}—{% endif %}
+                </h4>
+                <div class="diagnostic-full-test__lines">
+                    {% for line in b.shown %}
+                    <div class="diagnostic-full-test__line">
+                        <span class="practice-line diagnostic-full-test__line-text">{{ line|safe }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="practice-line diagnostic-full-test__paragraph">
+                    <b>Эталон:</b> {{ b.correct }}<br>
+                    <b>Ответ ученика:</b> {{ b.user|default:'—' }}
+                </p>
+            </div>
+            {% empty %}
+            <p class="practice-line diagnostic-full-test__paragraph">Блоков для показа нет.</p>
+            {% endfor %}
+
+            <p class="diagnostic-full-test__lines">
+                <a class="btn au-form__submit" href="{% url 'checkpoint_list' %}">← К реестру попыток</a>
+            </p>
+        </section>
+    </main>
+</body>
+</html>

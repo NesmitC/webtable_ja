@@ -10394,6 +10394,12 @@ def checkpoint_test(request):
         if task8_data and task8_data.get('html'):
             context['task8_html'] = task8_data['html']
             session_data['task8_correct'] = task8_data.get('correct_answers', {})
+            td8 = task8_data.get('test_data') or {}
+            session_data['task8_snapshot'] = {
+                'error_types': td8.get('error_type_names', {}),
+                'sentences': [x.get('text', '') for x in td8.get('sentences', [])],
+                'matches': task8_data.get('correct_answers', {}),
+            }
     except Exception as e:
         logger.error(f'Чекпоинт: задание 8 не сгенерировано: {e}')
 
@@ -10409,12 +10415,60 @@ def checkpoint_test(request):
             ]
             if flat_letters:
                 session_data['task9_correct'] = flat_letters
+                session_data['task9_snapshot'] = {
+                    'lines': [ln.get('display_line', '') for ln in task9_data['lines']],
+                    'expected': flat_letters,
+                }
             context['task9_letter_groups'] = json.dumps(
                 task9_data.get('letter_groups', {}))
             context['task9_subgroup_letters'] = json.dumps(
                 task9_data.get('subgroup_letters', {}))
     except Exception as e:
         logger.error(f'Чекпоинт: задание 9 не сгенерировано: {e}')
+
+    # Снимок варианта: что именно видел ученик (тексты + эталоны).
+    # Собирается только из контекста и сессии — без локальных переменных
+    # генераторов, чтобы сбой одного генератора не ронял всю страницу.
+    snapshot = {}
+    t13 = context.get('text_task_1_3')
+    q13 = context.get('text_questions_1_3')
+    if t13 is not None and q13:
+        snapshot['1_3'] = {
+            'text': [p.strip() for p in t13.text_content.split('\n') if p.strip()],
+            'questions': [{
+                'num': str(q.question_number),
+                'text': q.question_text,
+                'type': q.question_type,
+                'options': [o.option_text for o in q.options.all()],
+                'correct': q.correct_answer,
+            } for q in q13],
+        }
+    if context.get('orthoepy_variants'):
+        snapshot['4'] = {
+            'variants': context['orthoepy_variants'],
+            'correct': session_data.get('answer_4', []),
+        }
+    if context.get('paponim_sentences'):
+        snapshot['5'] = {
+            'sentences': [x['text'] for x in context['paponim_sentences']],
+            'correct': session_data.get('answer_5', ''),
+        }
+    if context.get('wordok') is not None:
+        snapshot['6'] = {
+            'text': context['wordok'].text,
+            'type': context.get('wordok_task_type', ''),
+            'correct': session_data.get('answer_6', ''),
+        }
+    if context.get('task7_phrases'):
+        snapshot['7'] = {
+            'phrases': context['task7_phrases'],
+            'correct': session_data.get('answer_7', ''),
+        }
+    if session_data.get('task8_snapshot'):
+        snapshot['8'] = session_data['task8_snapshot']
+    if session_data.get('task9_snapshot'):
+        snapshot['9'] = session_data['task9_snapshot']
+    session_data['snapshot'] = snapshot
 
     request.session[CHECKPOINT_SESSION] = session_data
     request.session.modified = True
@@ -10529,6 +10583,7 @@ def _checkpoint_check(request):
         answers_data=user_answers,
         results_data={k: {'correct': v} for k, v in results.items()},
         words_data=session.get('words', []),
+        test_data=session.get('snapshot', {}),
     )
     logger.info(f'Чекпоинт cp9: user={request.user.username} '
                 f'{correct_count}/{total_tasks} errors={error_count} '
@@ -10624,3 +10679,173 @@ def callback_request(request):
         daemon=True,
     ).start()
     return JsonResponse({'status': 'ok'})
+
+
+CHECKPOINT_DIGEST_SYSTEM = (
+    'Ты — методист платформы подготовки к ЕГЭ. Ниже факты одной попытки '
+    'рубежного теста: что было показано ученику, эталоны и его ответы. '
+    'Дай 3-5 строк: какие правила у ученика плавают и что тренировать в первую '
+    'очередь. Опирайся только на факты, без воды и общих слов.')
+
+
+def checkpoint_fact_digest(attempt):
+    """Фактический слепок попытки текстом: показанный контент + эталон + ответ."""
+    td = attempt.test_data or {}
+    ans = attempt.answers_data or {}
+    res = attempt.results_data or {}
+    out = []
+
+    def mark(t):
+        r = res.get(t)
+        if r is None:
+            return 'нет ответа'
+        return 'верно' if r.get('correct') else 'ОШИБКА'
+
+    t13 = td.get('1_3') or {}
+    if t13.get('text'):
+        out.append('Текст 1-3: ' + ' / '.join(t13['text'])[:300])
+    for q in t13.get('questions', []):
+        num = str(q.get('num'))
+        shown = q.get('text', '')
+        if q.get('options'):
+            shown += ' | варианты: ' + '; '.join(
+                f'{i}) {o}' for i, o in enumerate(q['options'], 1))
+        out.append(f'Задание {num} [{mark(num)}]: {shown} | эталон: '
+                   f'{q.get("correct", "")} | ответ: {ans.get(num, "")}')
+
+    t4 = td.get('4')
+    if t4:
+        out.append('Задание 4 [{}]: строки: {} | верные номера: {} | ответ: {}'.format(
+            mark('4'), '; '.join(t4.get('variants', [])),
+            ''.join(map(str, t4.get('correct', []))), ans.get('4', '')))
+
+    t5 = td.get('5')
+    if t5:
+        out.append('Задание 5 [{}]: предложения: {} | эталон: {} | ответ: {}'.format(
+            mark('5'), ' // '.join(t5.get('sentences', [])),
+            t5.get('correct', ''), ans.get('5', '')))
+
+    t6 = td.get('6')
+    if t6:
+        out.append('Задание 6 [{}]: {} | эталон: {} | ответ: {}'.format(
+            mark('6'), t6.get('text', ''), t6.get('correct', ''), ans.get('6', '')))
+
+    t7 = td.get('7')
+    if t7:
+        out.append('Задание 7 [{}]: фразы: {} | эталон: {} | ответ: {}'.format(
+            mark('7'), '; '.join(t7.get('phrases', [])),
+            t7.get('correct', ''), ans.get('7', '')))
+
+    t8 = td.get('8')
+    if t8:
+        pairs = ', '.join(f'{l}->{n}' for l, n in sorted((t8.get('matches') or {}).items()))
+        user8 = ', '.join(f'{l}:{ans.get("8_" + l, "-")}' for l in 'АБВГД')
+        sents = '; '.join(f'{i}) {x}' for i, x
+                          in enumerate(t8.get('sentences', []), 1))
+        out.append(f'Задание 8 [{mark("8")}]: предложения: {sents} | '
+                   f'эталон->номера: {pairs} | ответ: {user8}')
+
+    t9 = td.get('9')
+    if t9:
+        exp = t9.get('expected', [])
+        flat_user = [ans.get(f'9-{i}', '') for i in range(1, len(exp) + 1)]
+        out.append('Задание 9 [{}]: строки: {} | эталон по маскам: {} | ответ: {}'.format(
+            mark('9'), ' // '.join(t9.get('lines', [])),
+            ','.join(map(str, exp)), ','.join(map(str, flat_user))))
+
+    out.append(f'Итог: {attempt.correct_count}/{attempt.total_tasks} верно, '
+               f'ошибок {attempt.error_count}, '
+               f'{"сдан" if attempt.passed else "не сдан"}.')
+    return '\n'.join(out)
+
+
+def ensure_checkpoint_digest(attempt):
+    """LLM-выжимка с кэшем в поле попытки: генерится один раз."""
+    if attempt.digest:
+        return attempt.digest
+    fact = checkpoint_fact_digest(attempt)
+    try:
+        digest = cached_llm('checkpoint_digest', fact,
+                            CHECKPOINT_DIGEST_SYSTEM, max_tokens=500)
+    except Exception as e:  # noqa: BLE001
+        logger.error(f'Выжимка рубежа не сгенерирована: {e}')
+        digest = ''
+    if digest:
+        attempt.digest = digest
+        attempt.save(update_fields=['digest'])
+    return digest or fact
+
+
+def _checkpoint_review_blocks(attempt):
+    """Блоки «что видел / эталон / что ответил» для страницы разбора."""
+    td = attempt.test_data or {}
+    ans = attempt.answers_data or {}
+    res = attempt.results_data or {}
+    blocks = []
+
+    def st(t):
+        r = res.get(t)
+        return None if r is None else bool(r.get('correct'))
+
+    for q in (td.get('1_3') or {}).get('questions', []):
+        num = str(q.get('num'))
+        shown = [q.get('text', '')]
+        shown += [f'{i}) {o}' for i, o in enumerate(q.get('options', []), 1)]
+        blocks.append({'task': num, 'shown': shown,
+                       'correct': q.get('correct', ''),
+                       'user': ans.get(num, ''), 'ok': st(num)})
+    t4 = td.get('4')
+    if t4:
+        blocks.append({'task': '4', 'shown': t4.get('variants', []),
+                       'correct': ', '.join(map(str, t4.get('correct', []))),
+                       'user': str(ans.get('4', '')), 'ok': st('4')})
+    t5 = td.get('5')
+    if t5:
+        blocks.append({'task': '5', 'shown': t5.get('sentences', []),
+                       'correct': t5.get('correct', ''),
+                       'user': ans.get('5', ''), 'ok': st('5')})
+    t6 = td.get('6')
+    if t6:
+        blocks.append({'task': '6', 'shown': [t6.get('text', '')],
+                       'correct': t6.get('correct', ''),
+                       'user': ans.get('6', ''), 'ok': st('6')})
+    t7 = td.get('7')
+    if t7:
+        blocks.append({'task': '7', 'shown': t7.get('phrases', []),
+                       'correct': t7.get('correct', ''),
+                       'user': ans.get('7', ''), 'ok': st('7')})
+    t8 = td.get('8')
+    if t8:
+        shown = [f'{i}) {x}' for i, x in enumerate(t8.get('sentences', []), 1)]
+        shown += [f'{l}) {n}' for l, n in (t8.get('error_types') or {}).items()]
+        correct = ', '.join(f'{l}->{n}' for l, n in sorted((t8.get('matches') or {}).items()))
+        user = ', '.join(f'{l}:{ans.get("8_" + l, "-")}' for l in 'АБВГД')
+        blocks.append({'task': '8', 'shown': shown, 'correct': correct,
+                       'user': user, 'ok': st('8')})
+    t9 = td.get('9')
+    if t9:
+        exp = t9.get('expected', [])
+        user9 = [ans.get(f'9-{i}', '') for i in range(1, len(exp) + 1)]
+        blocks.append({'task': '9', 'shown': t9.get('lines', []),
+                       'correct': ', '.join(map(str, exp)),
+                       'user': ', '.join(map(str, user9)), 'ok': st('9')})
+    return blocks
+
+
+@teacher_required
+def checkpoint_list(request):
+    attempts = (CheckpointAttempt.objects.select_related('user')
+                .order_by('-created_at')[:100])
+    return render(request, 'test_fix_ege/checkpoint_list.html',
+                  {'attempts': attempts})
+
+
+@teacher_required
+def checkpoint_review(request, attempt_id):
+    attempt = get_object_or_404(CheckpointAttempt, id=attempt_id)
+    digest = ensure_checkpoint_digest(attempt)
+    return render(request, 'test_fix_ege/checkpoint_review.html', {
+        'attempt': attempt,
+        'digest': digest,
+        'blocks': _checkpoint_review_blocks(attempt),
+    })

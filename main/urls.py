@@ -147,6 +147,9 @@ urlpatterns = [
     # Аналитика для преподавателя / админа
     path('tutor/activate/', views.activate_tutor_code, name='activate_tutor_code'),
     path('staff/diagnostics/', views.diagnostic_list, name='diagnostic_list'),
+    path('staff/checkpoints/', views.checkpoint_list, name='checkpoint_list'),
+    path('staff/checkpoint/<int:attempt_id>/', views.checkpoint_review,
+         name='checkpoint_review'),
     path('staff/diagnostic/<uuid:attempt_id>/', views.diagnostic_review, name='diagnostic_review'),
 
 
