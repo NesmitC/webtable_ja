@@ -241,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const checkBtn = document.getElementById('check-fix-test-btn');
     if (checkBtn) {
         checkBtn.addEventListener('click', async () => {
+            checkBtn.disabled = true;
             const answers = {};
 
             document.querySelectorAll('[data-question]').forEach(el => {
@@ -573,6 +574,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             } catch (err) {
                 console.error('Ошибка проверки теста:', err);
+                checkBtn.disabled = false;
                 alert('Ошибка при проверке теста');
             }
         });

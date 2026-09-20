@@ -612,6 +612,9 @@ class DiagnosticAttempt(models.Model):
     max_score = models.IntegerField(default=50)
     answers_data = models.JSONField(default=dict)
     weak_topics = models.JSONField(default=list)
+    answers_hash = models.CharField(
+        max_length=64, blank=True, db_index=True,
+        verbose_name='Хэш ответов (защита от дублей)')
     
     is_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

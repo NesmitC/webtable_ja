@@ -24,6 +24,7 @@ from django.conf import settings
 import os
 import re
 import traceback
+import hashlib
 import json, secrets, datetime
 from pathlib import Path
 import logging
@@ -9142,8 +9143,8 @@ def check_test_fix_ege(request, test_code):
                 if is_correct:
                     correct_count += 1
             
-            # Вычитаем 5 баллов, которые были ошибочно начислены в цикле №1 за каждую подзадачу
-            total_score -= 5 
+            # Цикл №1 не начисляет баллы за подзадачи 8/22 (их нет в correct_answers
+            # фикстуры), поэтому вычитать нечего: сразу начисляем балл по критериям ЕГЭ.
             
             # Начисляем реальный балл по критериям ЕГЭ
             if correct_count == 5:
@@ -9254,6 +9255,30 @@ def check_test_fix_ege(request, test_code):
                 diagnostic_type = request.session.get('diagnostic_type', '')
                 max_primary = test_data.get('max_score', 50) if test_data else 50
 
+                # Защита от дублей: тот же браузер (сессия) + те же ответы
+                # в окне 15 минут -> возвращаем существующую попытку.
+                # Новая попытка не создаётся => сигнал не шлёт второе письмо.
+                ans_hash = hashlib.sha256(
+                    json.dumps(user_answers, sort_keys=True,
+                               ensure_ascii=False).encode('utf-8')).hexdigest()[:32]
+                recent = DiagnosticAttempt.objects.filter(
+                    session_key=request.session.session_key,
+                    test_code=test_code,
+                    answers_hash=ans_hash,
+                    created_at__gte=timezone.now() - timedelta(minutes=15),
+                ).first()
+                if recent is not None:
+                    logger.info(f'Диагностика: дубль подавлен, attempt={recent.id}')
+                    return JsonResponse({
+                        'results': results,
+                        'total_score': total_score,
+                        'max_score': max_score,
+                        'test_name': test_data.get('test_name', test_code) if test_data else test_code,
+                        'attempt_id': str(recent.id),
+                        'access_code': recent.access_code,
+                        'needs_registration': not request.user.is_authenticated,
+                    })
+
                 attempt = DiagnosticAttempt.objects.create(
                     user=request.user if request.user.is_authenticated else None,
                     session_key=request.session.session_key,
@@ -9265,6 +9290,7 @@ def check_test_fix_ege(request, test_code):
                     max_score=100,
                     answers_data={'results': results, 'user_answers': user_answers},
                     weak_topics=weak,
+                    answers_hash=ans_hash,
                     is_completed=True,
                 )
                 attempt_payload = {
