@@ -27,7 +27,11 @@ if not (HOST and USER and PWD):
     print('ОТМЕНА: в .env нет SSH_HOST/SSH_USER/SSH_PASSWORD')
     sys.exit(1)
 
-EXPECTED_HEAD = '3eff54d'
+import subprocess
+
+EXPECTED_HEAD = subprocess.run(
+    ['git', 'rev-parse', '--short', 'HEAD'], cwd='.',
+    capture_output=True, text=True).stdout.strip()
 ROOT = '/home/neurostat'
 
 cli = paramiko.SSHClient()
