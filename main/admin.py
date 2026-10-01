@@ -1,4 +1,6 @@
 # main/admin.py
+import logging
+
 from django.contrib import admin
 from django import forms
 from django.db import models
@@ -17,11 +19,12 @@ from django.db.models.functions import Cast
 from django.db.models import IntegerField
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import UserProfile
+from .models import UserProfile, PLAN_NAMES
 from datetime import timedelta
 from django.shortcuts import render, redirect
 from django.utils import timezone
 
+log = logging.getLogger(__name__)
 
 
 # Снимаем стандартную регистрацию User
@@ -100,8 +103,85 @@ def grant_premium(modeladmin, request, queryset):
     })
 
 
+# === Снятие платного доступа (тариф + триал) вручную ===
+class RevokePremiumForm(forms.Form):
+    reason = forms.CharField(
+        max_length=200,
+        label='Причина снятия',
+        help_text='Попадёт в журнал админки. Например: «не оплатил», '
+                  '«нарушил правила», «выдан по ошибке»',
+    )
+
+
+def _access_summary(profile):
+    """Что даёт полный доступ прямо сейчас — для страницы подтверждения."""
+    now = timezone.now()
+    parts = []
+    if getattr(profile, 'role', '') == 'tutor' and profile.tutor_active:
+        parts.append('роль репетитора — снятие тарифа доступ НЕ закроет')
+    if profile.trial_until and now < profile.trial_until:
+        parts.append('триал до '
+                     + timezone.localtime(profile.trial_until).strftime('%d.%m.%Y'))
+    if profile.plan != 'free' and profile.plan_until and now < profile.plan_until:
+        parts.append('тариф «%s» до %s' % (
+            PLAN_NAMES.get(profile.plan, profile.plan),
+            timezone.localtime(profile.plan_until).strftime('%d.%m.%Y')))
+    return '; '.join(parts) or 'нет активного платного доступа'
+
+
+@admin.action(description='⛔ Снять платный доступ (тариф и триал)')
+def revoke_premium(modeladmin, request, queryset):
+    profiles = list(queryset)
+    if 'apply' in request.POST:
+        form = RevokePremiumForm(request.POST)
+        if form.is_valid():
+            reason = form.cleaned_data['reason'].strip()
+            revoked, tutor_kept = [], []
+            for profile in profiles:
+                before = _access_summary(profile)
+                # Триал снимаем ВСЕГДА (решение владельца 01.10.2026): иначе
+                # активный триал продолжит давать уровень 3 при plan='free'.
+                profile.plan = 'free'
+                profile.plan_until = None
+                profile.trial_until = None
+                profile.save(update_fields=['plan', 'plan_until', 'trial_until'])
+                log.info('Plan revoked by %s: user=%s -> free (было: %s); причина: %s',
+                         request.user.username, profile.user.username, before, reason)
+                modeladmin.log_change(
+                    request, profile,
+                    'Снят платный доступ (было: %s). Причина: %s' % (before, reason))
+                if getattr(profile, 'role', '') == 'tutor' and profile.tutor_active:
+                    tutor_kept.append(profile.user.username)
+                else:
+                    revoked.append(profile.user.username)
+
+            if revoked:
+                modeladmin.message_user(
+                    request,
+                    'Доступ снят у %d: %s. Причина: %s'
+                    % (len(revoked), ', '.join(revoked), reason))
+            if tutor_kept:
+                modeladmin.message_user(
+                    request,
+                    'Внимание: у %s роль репетитора — полный доступ остался.'
+                    % ', '.join(tutor_kept), level='warning')
+            if not revoked and not tutor_kept:
+                modeladmin.message_user(request, 'Не выбран ни один профиль.',
+                                        level='warning')
+            return redirect(request.get_full_path())
+    else:
+        form = RevokePremiumForm()
+
+    return render(request, 'admin/revoke_premium_form.html', {
+        'form': form,
+        'profiles': profiles,
+        'summary': [(p, _access_summary(p)) for p in profiles],
+        'title': 'Снять платный доступ',
+    })
+
+
 class UserProfileAdmin(admin.ModelAdmin):
-    actions = [grant_premium]          # ← вот сюда
+    actions = [grant_premium, revoke_premium]
     list_display = ('user', 'registered_at', 'plan', 'plan_until', 'trial_until', 'role', 'tutor_active', 'email_confirmed')
     list_filter = ('plan',)
     search_fields = ('user__username', 'user__email')
@@ -591,42 +671,8 @@ class TutorInviteAdmin(admin.ModelAdmin):
     list_filter = ('is_active',)
 
 
-PREMIUM_PLAN = 'premium'   # код из PLAN_LEVEL / PLAN_PRICES
-
-
-class GrantPremiumForm(forms.Form):
-    days = forms.IntegerField(
-        min_value=1, initial=30,
-        label='На сколько дней выдать доступ',
-        help_text='30 — месяц · 270 — 9 месяцев · 365 — год',
-    )
-
-
-@admin.action(description='🎓 Выдать премиум-доступ')
-def grant_premium(modeladmin, request, queryset):
-    # Второй заход после заполнения формы — применяем
-    if 'apply' in request.POST:
-        form = GrantPremiumForm(request.POST)
-        if form.is_valid():
-            days = form.cleaned_data['days']
-            now = timezone.now()
-            for profile in queryset:
-                # продление от max(сейчас, текущее окончание): остаток не сгорает
-                base = profile.plan_until if (profile.plan_until and profile.plan_until > now) else now
-                profile.plan = PREMIUM_PLAN
-                profile.plan_until = base + timedelta(days=days)
-                profile.save(update_fields=['plan', 'plan_until'])
-            modeladmin.message_user(
-                request, f'Премиум выдан: {queryset.count()} на {days} дн.')
-            return redirect(request.get_full_path())
-    else:
-        form = GrantPremiumForm()
-
-    return render(request, 'admin/grant_premium_form.html', {
-        'form': form,
-        'profiles': queryset,
-        'title': 'Выдать премиум-доступ',
-    })
+# Дубль grant_premium / GrantPremiumForm удалён 01.10.2026:
+# рабочее определение — выше, рядом с UserProfileAdmin.
 
 
 # === Лог запросов к ИИ (аналитика качества ассистента) ===
