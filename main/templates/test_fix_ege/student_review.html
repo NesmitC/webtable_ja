@@ -325,8 +325,9 @@
                 Напишите мне (в тг или макс) или позвоните. И мы договоримся о занятии:
             </p>
             <p>
-                Telegram: <a href="https://t.me/sitesprofi">@sitesprofi</a> ·
-                Телефон: <a href="tel:+98765432109">+9-876-543-21-09</a>
+                Telegram: <a href="{{ CONTACTS.telegram }}" target="_blank" rel="noopener">{{ CONTACTS.telegram_handle }}</a> ·
+                ВКонтакте: <a href="{{ CONTACTS.vk }}" target="_blank" rel="noopener">{{ CONTACTS.vk_handle }}</a> ·
+                Телефон: <a href="tel:{{ CONTACTS.phone }}">{{ CONTACTS.phone_pretty }}</a>
             </p>
         </div>
         {% endif %}

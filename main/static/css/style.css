@@ -2798,3 +2798,71 @@ a.contacts-pop__value:hover {
 .quiz-trigger.locked::after {
     content: " 🔒";
 }
+
+/* ===== Ряд мессенджеров (контакты): includes/messengers.html ===== */
+.msngr-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.msngr-row__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;          /* удобная цель для пальца на телефоне */
+    padding: 8px 14px;
+    border: 1px solid var(--color-chess-desc);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all .2s;
+}
+
+.msngr-row__link:hover,
+.msngr-row__link:focus-visible {
+    background: rgba(24, 14, 5, .06);
+    border-color: var(--color-btn-primary);
+    transform: translateY(-1px);
+}
+
+.msngr-row__icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.msngr-row__label {
+    font-size: 13px;
+    line-height: 21px;
+    font-weight: 400;
+    letter-spacing: .13px;
+    color: var(--color-chess-desc);
+}
+
+.msngr-row__link:hover .msngr-row__label,
+.msngr-row__link:focus-visible .msngr-row__label {
+    color: var(--color-chess-title);
+}
+
+/* Компактный вариант (под формой обратной связи) */
+.msngr-row--compact {
+    gap: 8px;
+}
+
+.msngr-row--compact .msngr-row__link {
+    min-height: 38px;
+    padding: 5px 10px;
+}
+
+.msngr-row--compact .msngr-row__icon {
+    width: 18px;
+    height: 18px;
+}
+
+.msngr-row--compact .msngr-row__label {
+    font-size: 12px;
+    line-height: 18px;
+}

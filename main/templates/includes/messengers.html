@@ -1,0 +1,35 @@
+{% load static %}
+{% comment %}
+  Ряд контактов-мессенджеров: Telegram, ВКонтакте, MAX + кнопка звонка.
+  Ссылки, подписи и порядок — в main/context_processors.py (CONTACTS, MESSENGERS),
+  там же их и править. Каждая ссылка открывается в новой вкладке.
+
+  Необязательные параметры:
+    msngr_variant — модификатор стиля ('compact' — мельче);
+    msngr_exclude — ключ мессенджера, который не показывать ('max');
+    msngr_phone   — 'no', если кнопка звонка не нужна.
+
+  Пример: {% include 'includes/messengers.html' with msngr_exclude='max' %}
+{% endcomment %}
+<div class="msngr-row{% if msngr_variant %} msngr-row--{{ msngr_variant }}{% endif %}">
+    {% for m in MESSENGERS %}
+    {% if m.key != msngr_exclude %}
+    <a class="msngr-row__link" href="{{ m.url }}" target="_blank" rel="noopener"
+        title="Написать в {{ m.label }}{% if m.handle and m.handle != m.label %} ({{ m.handle }}){% endif %} — откроется в новой вкладке">
+        <img class="msngr-row__icon" src="{% static m.icon %}" alt="" width="20" height="20">
+        <span class="msngr-row__label">{{ m.label }}</span>
+    </a>
+    {% endif %}
+    {% endfor %}
+    {% if msngr_phone != 'no' %}
+    <a class="msngr-row__link" href="tel:{{ CONTACTS.phone }}"
+        title="Позвонить: {{ CONTACTS.phone_pretty }}">
+        <svg class="msngr-row__icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="#7A6A54" stroke-width="1.5" aria-hidden="true">
+            <path
+                d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+        </svg>
+        <span class="msngr-row__label">Позвонить</span>
+    </a>
+    {% endif %}
+</div>

@@ -143,10 +143,29 @@
                                 <div class="contacts-pop__row">
                                     <div class="contacts-pop__item">
                                         <span class="contacts-pop__label">MAX</span>
-                                        <span class="contacts-pop__value">https://max.ru/u/f9LHodD0cOLLVtiJEdDhpogsJ-Tzb_y5Djy4P7nrT7qyDJxAqwaoNHVjs5Y</span>
+                                        <a class="contacts-pop__value" href="{{ CONTACTS.max }}"
+                                            target="_blank" rel="noopener">Написать в MAX</a>
                                     </div>
                                     <button type="button" class="contacts-pop__copy"
-                                        data-copy="+79167143463">Копировать</button>
+                                        data-copy="{{ CONTACTS.max }}">Копировать</button>
+                                </div>
+                                <div class="contacts-pop__row">
+                                    <div class="contacts-pop__item">
+                                        <span class="contacts-pop__label">Telegram</span>
+                                        <a class="contacts-pop__value" href="{{ CONTACTS.telegram }}"
+                                            target="_blank" rel="noopener">{{ CONTACTS.telegram_handle }}</a>
+                                    </div>
+                                    <button type="button" class="contacts-pop__copy"
+                                        data-copy="{{ CONTACTS.telegram_handle }}">Копировать</button>
+                                </div>
+                                <div class="contacts-pop__row">
+                                    <div class="contacts-pop__item">
+                                        <span class="contacts-pop__label">ВКонтакте</span>
+                                        <a class="contacts-pop__value" href="{{ CONTACTS.vk }}"
+                                            target="_blank" rel="noopener">{{ CONTACTS.vk_handle }}</a>
+                                    </div>
+                                    <button type="button" class="contacts-pop__copy"
+                                        data-copy="{{ CONTACTS.vk }}">Копировать</button>
                                 </div>
                                 <p class="contacts-pop__note">Отвечает Александр лично</p>
                             </div>
@@ -159,23 +178,26 @@
             <div class="footer__col">
                 <h4 class="footer__col-title">Мы в соцсетях</h4>
                 <div class="footer__socials">
-                    <a href="https://t.me/sitesprofi" class="footer__social-link" target="_blank" rel="noopener">
+                    <a href="{{ CONTACTS.telegram }}" class="footer__social-link" target="_blank" rel="noopener"
+                        title="Telegram {{ CONTACTS.telegram_handle }} — откроется в новой вкладке">
                         <img src="/static/images/socia_telegram.svg" alt="" class="footer__social-icon">
                         <span>Telegram</span>
                     </a>
-                    <a href="https://max.ru/u/f9LHodD0cOLLVtiJEdDhpogsJ-Tzb_y5Djy4P7nrT7qyDJxAqwaoNHVjs5Y"
+                    <a href="{{ CONTACTS.max }}"
                         target="_blank"
                         rel="noopener"
                         class="footer__social-link js-contacts-open">
                             <img src="/static/images/socia_max.svg" alt="" class="footer__social-icon">
                             <span>Макс</span>
                     </a>
-                    <!-- <a href="#" class="footer__social-link">
+                    <a href="{{ CONTACTS.vk }}" class="footer__social-link" target="_blank" rel="noopener"
+                        title="ВКонтакте {{ CONTACTS.vk_handle }} — откроется в новой вкладке">
                         <img src="/static/images/socia_vk.svg" alt="" class="footer__social-icon">
                         <span>Вконтакте</span>
-                    </a> -->
+                    </a>
 
-                    <a href="tel:+79167143463" class="footer__social-link">
+                    <a href="tel:{{ CONTACTS.phone }}" class="footer__social-link"
+                        title="Позвонить: {{ CONTACTS.phone_pretty }}">
                         <svg class="footer__social-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="1.5">
                             <path

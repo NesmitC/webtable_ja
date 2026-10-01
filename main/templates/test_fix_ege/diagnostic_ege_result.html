@@ -47,6 +47,8 @@
                         style="display:block;width:100%;font-size:18px;padding:14px 16px;text-align:center;">
                         Написать преподавателю в MAX →</a>
                     <p class="hint">Отвечу лично: разберём твои ошибки и составим план подготовки.</p>
+                    <p class="hint">Или напишите в другой мессенджер — отвечу там же:</p>
+                    {% include 'includes/messengers.html' with msngr_exclude='max' %}
                 </div>
 
                 <div class="cta-block">
@@ -70,9 +72,8 @@
                     </form>
                     <p id="callbackOk" class="hint" style="display:none;">Спасибо! Заявка принята — свяжемся в ближайшее время.</p>
                     <p id="callbackErr" class="hint" style="display:none;color:#c0392b;"></p>
-                    <p class="hint">Или напишите преподавателю сами:
-                        <a href="https://max.ru/u/f9LHodD0cOLLVtiJEdDhpogsJ-Tzb_y5Djy4P7nrT7qyDJxAqwaoNHVjs5Y" target="_blank" rel="noopener">MAX</a>
-                    </p>
+                    <p class="hint">Или напишите преподавателю сами — ответит в любом мессенджере:</p>
+                    {% include 'includes/messengers.html' with msngr_variant='compact' msngr_phone='no' %}
                 </div>
                 <script>
                     (function () {
