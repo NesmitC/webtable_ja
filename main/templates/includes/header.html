@@ -169,14 +169,14 @@
                         <span class="mobile-menu__arrow">▼</span>
                     </button>
                     <ul class="mobile-menu__dropdown">
-                        <li><a href="#">Диагностики</a></li>
-                        <li><a href="#">Демо, досрок</a></li>
-                        <li><a href="#">Тренажеры, планинги</a></li>
-                        <li><a href="#">Квизы</a></li>
-                        <li><a href="#">Уроки</a></li>
+                        <li><a href="{% url 'diagnostics_ege' %}">Диагностики</a></li>
+                        <li><a href="{% url 'test_fixdemo_ege' 'demo-2026' %}">Демо, досрок</a></li>
+                        <li><a href="{% url 'trainers_ege' %}">Тренажеры, планинги</a></li>
+                        <li><a href="{% url 'quizzes_ege' %}">Квизы</a></li>
+                        <li><a href="{% url 'lessons_ege' %}">Уроки</a></li>
                     </ul>
                 </li>
-                <li class="mobile-menu__item"><a href="#pricing">Тарифы</a></li>
+                <li class="mobile-menu__item"><a href="/#pricing">Тарифы</a></li>
             </ul>
         </nav>
 
