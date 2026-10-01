@@ -68,6 +68,58 @@ def as_owner(cmd):
     return f"sudo -u {owner} bash -c {repr(cmd)}"
 
 
+# --- бэкапы: создание, локальная копия, ротация (одобрено 01.10.2026) ---
+import os as _os
+import glob as _glob
+
+LOCAL_BACKUPS = _os.path.normpath(
+    _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'backups'))
+SERVER_KEEP, LOCAL_KEEP = 2, 5   # на сервере 2 последних, локально 5
+
+
+def backup_and_sync():
+    """pg_dump на сервере -> скачать локально -> ротация с обеих сторон.
+    Возвращает путь к бэкапу на сервере или None."""
+    code, out, _ = run(su(
+        "BACKUP=/root/backup_$(date +%F_%H%M).sql; "
+        "sudo -u postgres pg_dump neurostat > $BACKUP && echo $BACKUP"))
+    if code != 0:
+        print('ОТМЕНА: бэкап не сделан')
+        return None
+    remote = out.strip().splitlines()[0].strip()
+    _os.makedirs(LOCAL_BACKUPS, exist_ok=True)
+    local = _os.path.join(LOCAL_BACKUPS, _os.path.basename(remote))
+    sftp = cli.open_sftp()
+    try:
+        sftp.get(remote, local)
+    finally:
+        sftp.close()
+    print(f'бэкап скачан локально: {local} '
+          f'({_os.path.getsize(local) // 1024} КБ)')
+    # ротация на сервере: держим SERVER_KEEP последних по времени
+    code, out, _ = run(su(
+        f"ls -1t /root/backup_*.sql | tail -n +{SERVER_KEEP + 1} | xargs -r rm -f; "
+        "ls -1t /root/backup_*.sql"))
+    print('на сервере остались бэкапы:')
+    print(out)
+    # локальная ротация: LOCAL_KEEP последних
+    olds = sorted(_glob.glob(_os.path.join(LOCAL_BACKUPS, 'backup_*.sql')),
+                  key=_os.path.getmtime, reverse=True)[LOCAL_KEEP:]
+    for p in olds:
+        _os.remove(p)
+        print('локально удалён старый бэкап:', _os.path.basename(p))
+    return remote
+
+
+if len(sys.argv) > 1 and sys.argv[1] == 'backup':
+    if backup_and_sync():
+        print('БЭКАП И СИНХРОНИЗАЦИЯ ЗАВЕРШЕНЫ')
+    else:
+        sys.exit(2)
+    cli.close()
+    sys.exit(0)
+
+
 if len(sys.argv) > 1 and sys.argv[1] == 'inspect':
     for f in ['main/settings.py', 'deploy/nginx.conf', 'deploy/gunicorn.service',
               '.gitignore', 'main/models.py', 'main/migrations/0001_initial.py']:
@@ -77,12 +129,8 @@ if len(sys.argv) > 1 and sys.argv[1] == 'inspect':
     sys.exit(0)
 
 
-# 1. бэкап живой БД ДО любых изменений
-code, out, _ = run(su(
-    f"sudo -u postgres pg_dump neurostat > /root/backup_$(date +%F_%H%M).sql "
-    f"&& ls -lh /root/backup_*.sql | tail -1"))
-if code != 0:
-    print('ОТМЕНА: бэкап не сделан')
+# 1. бэкап живой БД ДО любых изменений + локальная копия + ротация
+if not backup_and_sync():
     sys.exit(2)
 
 # 2. серверный git может отставать: fetch + страховочный stash ручных правок
