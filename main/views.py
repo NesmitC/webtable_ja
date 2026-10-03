@@ -5975,7 +5975,11 @@ def check_starting_diagnostic(request):
             letters = ['А', 'Б', 'В', 'Г', 'Д']
             for letter in letters:
                 key = f"8-{letter}"
-                user_answer = user_answers_dict.get(key, '-')
+                # JS шлёт ключи '8_А', старый формат чека — '8-А': принимаем оба
+                user_answer = user_answers_dict.get(key)
+                if user_answer in (None, ''):
+                    user_answer = user_answers_dict.get(f"8_{letter}")
+                user_answer = str(user_answer or '').strip() or '-'
                 correct_answer = task8_correct.get(letter, '')
                 
                 is_correct = (user_answer != '-' and 
@@ -6471,7 +6475,11 @@ def check_starting_diagnostic(request):
             letters = ['А', 'Б', 'В', 'Г', 'Д']
             for letter in letters:
                 key = f"22-{letter}"
-                user_answer = user_answers_dict.get(key, '-')
+                # JS шлёт ключи '22_А', старый формат чека — '22-А': принимаем оба
+                user_answer = user_answers_dict.get(key)
+                if user_answer in (None, ''):
+                    user_answer = user_answers_dict.get(f"22_{letter}")
+                user_answer = str(user_answer or '').strip() or '-'
                 correct_answer = task22_correct.get(letter, '')
                 
                 is_correct = (user_answer != '-' and 
@@ -9848,14 +9856,37 @@ def _reconstruct_lines(lines, user_answers, results, expected):
 
 
 def _match_rows(task_data, user_answers, results, num, text_field='text'):
-    """Строки таблицы соответствия (задания 8 и 22)."""
+    """Строки таблицы соответствия (задания 8 и 22).
+
+    Ключи ответов исторически писались в двух форматах: '8_А' (JS, разбор)
+    и '8-А' (чек). Ищем в обоих, а если пусто — берём user_answer из details
+    результата задания. Иначе колонка «Ответ» показывала прочерки при
+    фактически данных ответах.
+    """
     matches = task_data.get('correct_matches', {})
+    details = (results.get(str(num)) or {}).get('details') or {}
     rows = []
     for e in task_data.get('errors', task_data.get('examples', [])):
         letter = e.get('letter', '')
-        key = f'{num}_{letter}'
-        ua = _esc(str(user_answers.get(key, '')).strip())
-        corr = (results.get(key) or {}).get('is_correct')
+        ua = ''
+        for k in (f'{num}_{letter}', f'{num}-{letter}'):
+            v = str(user_answers.get(k, '') or '').strip()
+            if v:
+                ua = _esc(v)
+                break
+        corr = None
+        for k in (f'{num}_{letter}', f'{num}-{letter}'):
+            r = results.get(k)
+            if isinstance(r, dict) and 'is_correct' in r:
+                corr = r['is_correct']
+                break
+        det = details.get(f'{num}-{letter}') or details.get(f'{num}_{letter}') or {}
+        if not ua:
+            raw = str(det.get('user_answer', '') or '').strip()
+            if raw and raw != '-':
+                ua = _esc(raw)
+        if corr is None:
+            corr = det.get('is_correct')
         rows.append({
             'letter': letter,
             'name': _pyhtml.unescape(str(e.get('name') or e.get(text_field, ''))),
@@ -9934,6 +9965,12 @@ def compute_primary_secondary(answers_data):
     return primary, secondary
 
 
+def _strip_choice_nums(choices):
+    """Убирает нумерацию '1) ', встроенную в текст варианта: нумерацию
+    добавляет шаблон разбора, иначе номера удваиваются ('1) 1) ...')."""
+    return [_re.sub(r'^\s*\d+\s*\)\s*', '', str(c)) for c in (choices or [])]
+
+
 def build_student_work(fixture, answers_data):
     """Собирает реконструкцию работы ученика по фикстуре + его ответам."""
     tasks = fixture.get('tasks', {})
@@ -9969,7 +10006,7 @@ def build_student_work(fixture, answers_data):
         work.append({'kind': 'choices', 'num': '4',
                      'title': 'Задание 4. Ударения',
                      'instruction': t4.get('text', ''),
-                     'choices': t4.get('choices', []),
+                     'choices': _strip_choice_nums(t4.get('choices', [])),
                      'correct': t4.get('correct_answer', ''),
                      'user': ua('4'), 'is_correct': corr('4')})
 
@@ -10040,7 +10077,7 @@ def build_student_work(fixture, answers_data):
         qs = []
         for qn, qd in t23.get('questions', {}).items():
             qs.append({'num': qn, 'text': qd.get('text', ''),
-                       'choices': qd.get('choices', []),
+                       'choices': _strip_choice_nums(qd.get('choices', [])),
                        'correct': qd.get('correct_answer') or ca.get(qn),
                        'user': ua(qn), 'is_correct': corr(qn)})
         work.append({'kind': 'textblock', 'num': '23–26',

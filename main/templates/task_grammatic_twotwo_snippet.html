@@ -45,7 +45,7 @@
                 <div class="task-twotwo-input-item">
                     <label class="task-twotwo-input-label">{{ item.letter }})</label>
                     <select class="task-twotwo-select diagnostic-full-test__select"
-                        data-error-letter="{{ item.letter }}">
+                        data-error-letter="{{ item.letter }}" data-question="22_{{ item.letter }}">
                         <option value="">--</option>
                         {% for num, name in device_names_list %}
                         <option value="{{ num }}">{{ num }}</option>

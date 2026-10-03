@@ -41,7 +41,8 @@
                 {% for letter in "АБВГД" %}
                 <div class="task-eight-input-item">
                     <label class="task-eight-input-label">{{ letter }})</label>
-                    <select class="task-eight-select diagnostic-full-test__select" data-error-letter="{{ letter }}">
+                    <select class="task-eight-select diagnostic-full-test__select" data-error-letter="{{ letter }}"
+                        data-question="8_{{ letter }}">
                         <option value="">--</option>
                         {% for i in "123456789" %}
                         <option value="{{ i }}">{{ i }}</option>

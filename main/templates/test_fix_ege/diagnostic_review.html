@@ -79,7 +79,7 @@
             отвечал.</p>
 
         <h2 class="sr-section-title sr-section-title--lg">Работа ученика</h2>
-        <p class="sr-hint">Зелёным — верно, красным зачёркнутым — ошибка (рядом правильно), «_» — не отвечал.</p>
+        <p class="sr-hint">В колонке «Ответ»: зелёным — верно, красным — ошибка, прочерк — не отвечал. Рядом — правильный ответ.</p>
 
         {% for w in work %}
         <div class="sw-block">
@@ -114,7 +114,6 @@
                         <th>Что сопоставляем</th>
                         <th class="rv-col--answer">Ответ</th>
                         <th class="rv-col--correct">Правильно</th>
-                        <th class="rv-col--mark"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -122,19 +121,14 @@
                     <tr class="rv-row {% if r.touched and not r.is_correct %}rv-row--wrong{% endif %}">
                         <td><b>{{ r.letter }}</b></td>
                         <td>{{ r.name|safe }}</td>
-                        <td>{{ r.user }}</td>
-                        <td>{{ r.correct }}</td>
                         <td>
                             {% if r.touched %}
-                            {% if r.is_correct %}
-                            <span class="rv-ok">✓</span>
+                            <span class="sw-ans {% if r.is_correct %}sw-ans--ok{% else %}sw-ans--no{% endif %}">{{ r.user }}</span>
                             {% else %}
-                            <span class="rv-no">✗</span>
-                            {% endif %}
-                            {% else %}
-                            <span class="rv-dash">—</span>
+                            <span class="sw-ans sw-ans--no">—</span>
                             {% endif %}
                         </td>
+                        <td>{{ r.correct }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

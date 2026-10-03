@@ -82,7 +82,6 @@
                         <th>Что сопоставляем</th>
                         <th class="rv-col--answer">Ответ</th>
                         <th class="rv-col--correct">Правильно</th>
-                        <th class="rv-col--mark"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,23 +91,14 @@
                         <td>
                             {{ r.name|safe }}
                         </td>
-                        <td>{{ r.user }}</td>
-                        <td>
-                            {% if not r.is_correct %}
-                            {{ r.correct }}
-                            {% endif %}
-                        </td>
                         <td>
                             {% if r.touched %}
-                            {% if r.is_correct %}
-                            <span class="rv-ok">✓</span>
+                            <span class="sw-ans {% if r.is_correct %}sw-ans--ok{% else %}sw-ans--no{% endif %}">{{ r.user }}</span>
                             {% else %}
-                            <span class="rv-no">✗</span>
-                            {% endif %}
-                            {% else %}
-                            <span class="sw-none">—</span>
+                            <span class="sw-ans sw-ans--no">—</span>
                             {% endif %}
                         </td>
+                        <td>{{ r.correct }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
