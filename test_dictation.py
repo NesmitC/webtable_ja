@@ -63,9 +63,11 @@ check(not slots2, 'текст без пропусков -> 0 слотов')
 segs3, slots3 = parse_dictation('открытая ( скобка и ] лишняя')
 check(not slots3, 'несбалансированные скобки не ломают парсер')
 
-check(split_answers('и|х|,|ъ') == ['и', 'х', ',', 'ъ'], 'ключи через |')
+check(split_answers('и\nх\n,\nъ') == ['и', 'х', ',', 'ъ'], 'ключи построчно')
 check(split_answers('') == [], 'пустые ключи -> []')
-check(split_answers(' и | , ') == ['и', ','], 'токены стрипятся, запятая цела')
+check(split_answers(' и \n , \n') == ['и', ','], 'токены стрипятся, запятая цела')
+check(split_answers('е\n|\nо') == ['е', '|', 'о'],
+      'токен | (раздельно) не ломает парсер ключей')
 
 # ===== 2. Настоящий текст «Осень» =====
 print('2. Диктант «Осень» (реальный текст)')
@@ -97,7 +99,7 @@ check(all(len(s['options']) >= 2 for s in slots), 'у всех слотов ми
 # шаблон ключей для заполнения владельцем
 print()
 print('   === ШАБЛОН КЛЮЧЕЙ (заполни токены и вставь в поле «Ключи ответов») ===')
-print('   ' + '|'.join('?' for _ in slots))
+print('   (по одному токену в строке, см. split_answers)')
 print('   порядок слотов:')
 for s in slots:
     print(f"   {s['index']:>2}: {' / '.join(s['options'])}")
@@ -105,7 +107,7 @@ print()
 
 # ===== 3. Модель и ключи =====
 print('3. Модель: валидация ключей')
-t = DictationTask(title='Мини', grade=7, text='К(а,о)т [х ,] спит.', answers='о|,')
+t = DictationTask(title='Мини', grade=7, text='К(а,о)т [х ,] спит.', answers='о\n,')
 t.full_clean()
 check(t.slot_count == 2, f'slot_count=2 (факт {t.slot_count})')
 bad = DictationTask(title='Бэд', grade=7, text='К(а,о)т [х ,] спит.', answers='о')
@@ -138,7 +140,7 @@ check(r3.status_code == 503, f'проверка без ключей -> 503 (фа
 valid_first = []
 for s in slots:
     valid_first.append(s['options'][0])
-task.answers = '|'.join(valid_first)
+task.answers = '\n'.join(valid_first)
 task.save()
 r4 = c.post(f'/dictations/{task.pk}/check/',
             data=json.dumps({'answers': {'0': valid_first[0],

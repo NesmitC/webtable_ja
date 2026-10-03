@@ -1952,8 +1952,9 @@ class DictationTask(models.Model):
                   '(х = знака нет, пустой вариант = запятая).')
     answers = models.TextField(
         'Ключи ответов', blank=True,
-        help_text='Правильный токен для каждого слота по порядку через | . '
-                  'Пример: и|х|,|ъ|/|тьс. Пусто = проверка недоступна.')
+        help_text='Правильный токен для каждого слота по порядку, ПО ОДНОМУ '
+                  'В СТРОКУ. Пример: и / х / , / ъ (каждый с новой строки). '
+                  'Пусто = проверка недоступна.')
     source = models.CharField('Источник/автор', max_length=200, blank=True)
     is_active = models.BooleanField('Активен', default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1981,4 +1982,4 @@ class DictationTask(models.Model):
             from django.core.exceptions import ValidationError
             raise ValidationError(
                 f'Ключей {len(tokens)}, а слотов в тексте {len(slots)} — '
-                'должно быть поровну (токены через |).')
+                'должно быть поровну (по одному токену в строке).')

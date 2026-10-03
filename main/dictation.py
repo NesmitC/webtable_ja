@@ -127,7 +127,11 @@ def parse_dictation(text):
 
 
 def split_answers(answers):
-    """Ключи через '|'. Пустая строка -> []. Токены только strip'ятся."""
-    if not answers or not answers.strip():
+    """Ключи: по одному токену в строке. Пустые строки игнорируются.
+
+    Не '|' — потому что '|' сам является ответом ('раздельно', соглашение
+    диагностики: / = слитно, | = раздельно, - = дефис).
+    """
+    if not answers:
         return []
-    return [t.strip() for t in answers.split('|')]
+    return [t.strip() for t in answers.splitlines() if t.strip() != '']
