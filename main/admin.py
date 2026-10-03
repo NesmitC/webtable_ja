@@ -13,6 +13,7 @@ from .models import (CorrectAnswer, Orthogram, OrthogramExample, Punktum,
                      TaskGrammaticTwoTwoExample, TaskPaponim, WordOk,
                      DiagnosticAttempt, TutorInvite, LLMCache, BotLog,
     CallbackRequest,
+    DictationTask,
 )
 from django.contrib.admin.actions import delete_selected
 from django.db.models.functions import Cast
@@ -677,6 +678,23 @@ class TutorInviteAdmin(admin.ModelAdmin):
 
 # === Лог запросов к ИИ (аналитика качества ассистента) ===
 from .models import AiQueryLog
+
+
+
+@admin.register(DictationTask)
+class DictationTaskAdmin(admin.ModelAdmin):
+    list_display = ('title', 'grade', 'slot_count', 'is_active', 'created_at')
+    list_filter = ('grade', 'is_active')
+    search_fields = ('title', 'text', 'source')
+    fields = ('title', 'grade', 'source', 'text', 'answers', 'is_active')
+
+    @admin.display(description='Слотов')
+    def slot_count(self, obj):
+        try:
+            return obj.slot_count
+        except Exception:
+            return '?'
+
 
 @admin.register(AiQueryLog)
 class AiQueryLogAdmin(admin.ModelAdmin):

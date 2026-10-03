@@ -1937,3 +1937,48 @@ class BotLog(models.Model):
     def __str__(self):
         return f'{self.created_at:%d.%m %H:%M} [{self.platform}] {self.question[:40]}'
 
+
+class DictationTask(models.Model):
+    """Онлайн-диктант с самопроверкой (бесплатный лидмагнит).
+
+    Формат текста — см. main/dictation.py: (а,о) — выбор буквы,
+    [х ,] — выбор знака (пустой вариант = запятая).
+    """
+    title = models.CharField('Заголовок', max_length=200)
+    grade = models.PositiveSmallIntegerField('Класс', default=7)
+    text = models.TextField(
+        'Текст диктанта',
+        help_text='Пропуски: (а,о) — буквы через запятую; [х ,] — знаки '
+                  '(х = знака нет, пустой вариант = запятая).')
+    answers = models.TextField(
+        'Ключи ответов', blank=True,
+        help_text='Правильный токен для каждого слота по порядку через | . '
+                  'Пример: и|х|,|ъ|/|тьс. Пусто = проверка недоступна.')
+    source = models.CharField('Источник/автор', max_length=200, blank=True)
+    is_active = models.BooleanField('Активен', default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Диктант'
+        verbose_name_plural = 'Диктанты'
+        ordering = ['grade', 'title']
+
+    def __str__(self):
+        return f'{self.title} ({self.grade} класс)'
+
+    @property
+    def slot_count(self):
+        from .dictation import parse_dictation
+        return len(parse_dictation(self.text)[1])
+
+    def clean(self):
+        from .dictation import parse_dictation, split_answers
+        if not self.answers.strip():
+            return
+        _segments, slots = parse_dictation(self.text)
+        tokens = split_answers(self.answers)
+        if len(tokens) != len(slots):
+            from django.core.exceptions import ValidationError
+            raise ValidationError(
+                f'Ключей {len(tokens)}, а слотов в тексте {len(slots)} — '
+                'должно быть поровну (токены через |).')

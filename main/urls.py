@@ -168,6 +168,10 @@ urlpatterns = [
     
     # Фавиконка: браузер сам запрашивает /favicon.ico на каждой странице —
     # перенаправляем на наш SVG в статике (работает во всех шаблонах сразу)
+    # Онлайн-диктанты (бесплатно, без логина)
+    path('dictations/', views.dictations_list, name='dictations'),
+    path('dictations/<int:pk>/', views.dictation_detail, name='dictation_detail'),
+    path('dictations/<int:pk>/check/', views.dictation_check, name='dictation_check'),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.svg', permanent=True)),
     # Политика обработки персональных данных
     path('privacy/', views.privacy, name='privacy'),

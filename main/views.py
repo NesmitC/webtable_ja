@@ -10915,3 +10915,64 @@ def checkpoint_review(request, attempt_id):
         'digest': digest,
         'blocks': _checkpoint_review_blocks(attempt),
     })
+
+
+# ============================================================================
+# ОНЛАЙН-ДИКТАНТЫ (бесплатный лидмагнит; формат пропуска — main/dictation.py)
+# ============================================================================
+def dictations_list(request):
+    """Список активных диктантов по классам. Доступ без логина."""
+    from .models import DictationTask
+    tasks = DictationTask.objects.filter(is_active=True).order_by('grade', 'title')
+    by_grade = {}
+    for t in tasks:
+        by_grade.setdefault(t.grade, []).append(t)
+    return render(request, 'dictations_list.html', {'by_grade': by_grade})
+
+
+def dictation_detail(request, pk):
+    """Текст диктанта со слотами-выпадашками. Доступ без логина."""
+    from .models import DictationTask
+    from .dictation import parse_dictation, split_answers
+    task = get_object_or_404(DictationTask, pk=pk, is_active=True)
+    segments, slots = parse_dictation(task.text)
+    ready = len(split_answers(task.answers)) == len(slots) and slots
+    return render(request, 'dictation_detail.html', {
+        'task': task, 'segments': segments, 'slot_count': len(slots),
+        'ready': bool(ready),
+    })
+
+
+def dictation_check(request, pk):
+    """Проверка: {answers: {'0': 'и', ...}} -> per-slot ok + счёт."""
+    from .models import DictationTask
+    from .dictation import parse_dictation, split_answers
+    task = get_object_or_404(DictationTask, pk=pk, is_active=True)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Только POST'}, status=405)
+    _segments, slots = parse_dictation(task.text)
+    tokens = split_answers(task.answers)
+    if not slots or len(tokens) != len(slots):
+        return JsonResponse({'error': 'Ключи ещё не настроены'}, status=503)
+    try:
+        data = json.loads(request.body or '{}')
+    except json.JSONDecodeError:
+        data = {}
+    user_answers = data.get('answers') or {}
+    results, ok_count, answered = {}, 0, 0
+    for s in slots:
+        idx = str(s['index'])
+        chosen = str(user_answers.get(idx, '')).strip()
+        correct = tokens[s['index']]
+        if chosen:
+            answered += 1
+            is_ok = (chosen == correct)
+            if is_ok:
+                ok_count += 1
+            results[idx] = {'ok': is_ok, 'correct': correct}
+        else:
+            results[idx] = {'ok': False, 'correct': correct, 'skipped': True}
+    return JsonResponse({
+        'results': results,
+        'score': {'ok': ok_count, 'answered': answered, 'total': len(slots)},
+    })

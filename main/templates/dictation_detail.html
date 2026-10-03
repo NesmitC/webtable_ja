@@ -1,0 +1,240 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    {% include 'includes/metrika.html' %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ task.title }} — диктант {{ task.grade }} класс — Нейростат</title>
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <style>
+        .dct-page {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 24px 16px 56px;
+        }
+
+        .dct-head {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .dct-head img {
+            width: 150px;
+        }
+
+        .dct-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 14px 0 4px;
+        }
+
+        .dct-sub {
+            font-size: 13px;
+            color: #8c7b6b;
+        }
+
+        .dct-text {
+            background: #fff;
+            border: 1px solid #e5ddd2;
+            border-radius: 12px;
+            padding: 22px 24px;
+            font-size: 17px;
+            line-height: 2.1;
+            white-space: pre-wrap;
+            margin: 16px 0;
+        }
+
+        .dct-slot {
+            display: inline-block;
+            margin: 0 2px;
+        }
+
+        .dct-select {
+            font: inherit;
+            min-width: 52px;
+            padding: 1px 6px;
+            border: 1.5px solid #c9b8a3;
+            border-radius: 8px;
+            background: #fffdf9;
+            color: #3d2f22;
+            cursor: pointer;
+        }
+
+        .dct-slot.dct-ok .dct-select {
+            background: #d9f2e0;
+            border-color: #1d7a3f;
+            color: #1d7a3f;
+            font-weight: 700;
+        }
+
+        .dct-slot.dct-no .dct-select {
+            background: #fbe0dd;
+            border-color: #b3261e;
+            color: #b3261e;
+            font-weight: 700;
+        }
+
+        .dct-correct {
+            color: #1d7a3f;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .dct-actions {
+            text-align: center;
+            margin: 18px 0 8px;
+        }
+
+        .dct-check-btn {
+            display: inline-block;
+            background: #a5673f;
+            color: #fff;
+            border: 0;
+            border-radius: 10px;
+            padding: 12px 34px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .dct-check-btn:disabled {
+            opacity: .6;
+            cursor: default;
+        }
+
+        .dct-score {
+            text-align: center;
+            font-size: 17px;
+            margin: 10px 0 0;
+            display: none;
+        }
+
+        .dct-hint {
+            text-align: center;
+            color: #8c7b6b;
+            font-size: 13px;
+        }
+
+        .dct-cta {
+            background: #f6efe6;
+            border: 1px solid #e5ddd2;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-top: 26px;
+            text-align: center;
+        }
+
+        .dct-cta a {
+            display: inline-block;
+            margin-top: 8px;
+            background: #a5673f;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body style="background: var(--color-chess-bg-light, #faf6f0);">
+    <div class="dct-page">
+        <div class="dct-head">
+            <a href="{% url 'index' %}" style="text-decoration:none;">
+                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ">
+            </a>
+            <h1 class="dct-title">{{ task.title }}</h1>
+            <div class="dct-sub">{{ task.grade }} класс · {{ task.source|default:"онлайн-диктант" }}</div>
+        </div>
+
+        <p class="dct-hint">Вставь пропущенные буквы и знаки — выбирай из списка.
+            Затем нажми «Проверить».</p>
+
+        <div class="dct-text" id="dctText">{% for seg in segments %}{% if seg.type == 'text' %}{{ seg.text }}{% else %}<span class="dct-slot" data-index="{{ seg.index }}"><select class="dct-select" aria-label="слот {{ seg.index }}">
+                    <option value="">😐</option>
+                    {% for o in seg.options %}<option value="{{ o }}">{{ o }}</option>{% endfor %}
+                </select></span>{% endif %}{% endfor %}</div>
+
+        <div class="dct-actions">
+            {% if ready %}
+            <button class="dct-check-btn" id="dctCheck">Проверить</button>
+            {% else %}
+            <p class="dct-hint">⚙️ Ключи к этому диктанту ещё не загружены — проверка появится совсем скоро.</p>
+            {% endif %}
+        </div>
+        <p class="dct-score" id="dctScore"></p>
+
+        <div class="dct-cta">
+            <p style="margin:0;">Хочешь узнать свой уровень по ЕГЭ? Бесплатная диагностика —
+                20 минут, и платформа покажет твои слабые задания.</p>
+            <a href="{% url 'diagnostic_fix_ege' %}">Пройти диагностику →</a>
+        </div>
+        <p style="text-align:center; margin-top:16px;">
+            <a href="{% url 'dictations' %}" style="color:#8c7b6b; font-size:13px;">← все диктанты</a>
+        </p>
+    </div>
+
+    {% if ready %}
+    <script>
+        (function () {
+            var btn = document.getElementById('dctCheck');
+            var score = document.getElementById('dctScore');
+            if (!btn) return;
+            function cookie(name) {
+                var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+                return m ? decodeURIComponent(m[1]) : '';
+            }
+            btn.addEventListener('click', async function () {
+                btn.disabled = true;
+                var answers = {};
+                document.querySelectorAll('.dct-slot').forEach(function (slot) {
+                    var sel = slot.querySelector('select');
+                    answers[slot.dataset.index] = sel.value;
+                });
+                try {
+                    var res = await fetch('{% url "dictation_check" task.pk %}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': cookie('csrftoken') },
+                        body: JSON.stringify({ answers: answers })
+                    });
+                    var data = await res.json();
+                    if (!res.ok || data.error) {
+                        score.textContent = data.error || 'Не удалось проверить. Попробуй ещё раз.';
+                        score.style.display = 'block';
+                        btn.disabled = false;
+                        return;
+                    }
+                    document.querySelectorAll('.dct-slot').forEach(function (slot) {
+                        var idx = slot.dataset.index;
+                        var r = data.results[idx];
+                        var old = slot.querySelector('.dct-correct');
+                        if (old) old.remove();
+                        slot.classList.remove('dct-ok', 'dct-no');
+                        if (!r) return;
+                        slot.classList.add(r.ok ? 'dct-ok' : 'dct-no');
+                        if (!r.ok && r.correct) {
+                            var hint = document.createElement('span');
+                            hint.className = 'dct-correct';
+                            hint.textContent = r.correct;
+                            slot.after(hint);
+                        }
+                    });
+                    var s = data.score;
+                    score.textContent = 'Верно ' + s.ok + ' из ' + s.total +
+                        (s.answered < s.total ? ' (не отвечено: ' + (s.total - s.answered) + ')' : '');
+                    score.style.display = 'block';
+                } catch (e) {
+                    score.textContent = 'Ошибка сети. Попробуй ещё раз.';
+                    score.style.display = 'block';
+                }
+                btn.disabled = false;
+            });
+        })();
+    </script>
+    {% endif %}
+</body>
+
+</html>
