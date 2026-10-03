@@ -9835,11 +9835,14 @@ def _reconstruct_lines(lines, user_answers, results, expected):
         ua = _esc(str(user_answers.get(key, '')).strip())
         corr = (results.get(key) or {}).get('is_correct')
         exp = _esc(str(expected_map.get(key, '')))
-        if ua:
+        # 😐 — незаполненный смайлик (старые попытки собирали его как ответ)
+        if ua and ua != '\U0001F610':
             cls = 'sw-ok' if corr else 'sw-no'
             hint = '' if corr else f'&nbsp;<span class="sw-exp">({exp})</span>'
             return f'<span class="{cls}">{ua}</span>{hint}'
-        return f'<span class="sw-exp">({exp})</span>'
+        # Ответа не было: красный прочерк (как в таблицах 8/22) + эталон рядом
+        return (f'<span class="sw-ans sw-ans--no">\u2014</span>'
+                f'&nbsp;<span class="sw-exp">({exp})</span>')
 
     rendered = []
     for ln in lines:

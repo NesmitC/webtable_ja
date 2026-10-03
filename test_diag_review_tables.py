@@ -163,7 +163,28 @@ check('sw-ans--ok">2</span>' in h2 and 'sw-ans--no">8</span>' in h2,
       'у ученика ответы тоже красятся')
 check(h2.count('1) 1)') == 0, 'у ученика двойной нумерации нет')
 
-print('6. Регресс: чужой ученик не видит разбор (403/404)')
+print('6. Задание 21 фикс-диагностики: покраска цифр и «ответа не было»')
+import json as _json
+import io as _io
+fixture21 = _json.load(_io.open(os.path.join(settings.BASE_DIR, 'main', 'fixtures',
+                              'test_fixdiagnostic_ege_2027.json'), encoding='utf-8'))
+ca21 = fixture21['correct_answers']
+exp21 = fixture21['tasks']['21']['expected']
+ua21 = {'21-1': '18', '21-2': '99', '21-4': exp21[3], '21-5': '\U0001F610'}
+res21 = {k: {'is_correct': str(v).lower() == str(ca21[k]).lower()}
+         for k, v in ua21.items()}
+work21 = build_student_work(fixture21, {'user_answers': ua21, 'results': res21})
+t21 = [w for w in work21 if w.get('kind') == 'lines' and w.get('num') == '21'][0]
+txt21 = ' '.join(t21['rendered_lines'])
+check('<span class="sw-ok">18</span>' in txt21, 'верная цифра 18 зелёным')
+check('<span class="sw-no">99</span>' in txt21, 'неверная цифра 99 красным')
+check('sw-ans--no">—</span>&nbsp;<span class="sw-exp">(9.2)</span>' in txt21,
+      'без ответа (21-3): красный прочерк + эталон (9.2) рядом')
+check('sw-ans--no">—</span>&nbsp;<span class="sw-exp">(16)</span>' in txt21,
+      'старый 😐 как ответ (21-5): тоже «ответа не было»')
+check('\U0001F610' not in txt21, 'смайлик-заглушка в разбор не попадает')
+
+print('7. Регресс: чужой ученик не видит разбор (403/404)')
 other = User.objects.create_user('other2', 'other2@example.com', 'Zk9mQ2vLp7xR')
 co = Client()
 co.force_login(other)
