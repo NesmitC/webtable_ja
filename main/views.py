@@ -10937,9 +10937,23 @@ def dictation_detail(request, pk):
     task = get_object_or_404(DictationTask, pk=pk, is_active=True)
     segments, slots = parse_dictation(task.text)
     ready = len(split_answers(task.answers)) == len(slots) and slots
+    # абзацы: переводы строк в текстовых сегментах -> отдельные practice-line
+    paragraphs, cur = [], []
+    for seg in segments:
+        if seg['type'] == 'text' and '\n' in seg['text']:
+            for j, part in enumerate(seg['text'].split('\n')):
+                if j:
+                    paragraphs.append(cur)
+                    cur = []
+                if part:
+                    cur.append({'type': 'text', 'text': part})
+        else:
+            cur.append(seg)
+    paragraphs.append(cur)
+    paragraphs = [p for p in paragraphs if p]
     return render(request, 'dictation_detail.html', {
-        'task': task, 'segments': segments, 'slot_count': len(slots),
-        'ready': bool(ready),
+        'task': task, 'segments': segments, 'paragraphs': paragraphs,
+        'slot_count': len(slots), 'ready': bool(ready),
     })
 
 

@@ -127,8 +127,12 @@ check('Осень' in r.content.decode('utf-8'), 'диктант виден в �
 r2 = c.get(f'/dictations/{task.pk}/')
 html = r2.content.decode('utf-8')
 check(r2.status_code == 200, 'страница диктанта анониму 200')
-check(html.count('dct-select') >= len(slots),
-      f'селектов на странице >= {len(slots)} (факт {html.count("dct-select")})')
+check(html.count('smiley-button') == len(slots),
+      f'смайлов-слотов ровно {len(slots)} (факт {html.count("smiley-button")})')
+check('dct-select' not in html and '<select' not in html, 'select-ов больше нет')
+check('Пройти диагностику' not in html and 'узнать свой уровень' not in html.lower(),
+      'на странице диктанта нет ЕГЭ-плашки-CTA')
+check('practice-line' in html, 'текст разбит на practice-line как в диагностике')
 check('ещё не загружены' in html, 'без ключей показывается заглушка, не проверка')
 r3 = c.post(f'/dictations/{task.pk}/check/',
             data=json.dumps({'answers': {'0': 'х'}}),
