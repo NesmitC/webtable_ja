@@ -49,6 +49,12 @@
             font-size: 18px;
             font-weight: 600;
         }
+
+        .dct-card__sub {
+            font-size: 14px;
+            color: #8c7b6b;
+            margin-top: 4px;
+        }
     </style>
 </head>
 
@@ -62,6 +68,9 @@
             {% for t in tasks %}
             <a class="dct-card" href="{% url 'dictation_detail' t.pk %}">
                 <div class="dct-card__title">{{ t.title }}</div>
+                {% if t.source %}
+                <div class="dct-card__sub">{{ t.source }}</div>
+                {% endif %}
             </a>
             {% endfor %}
             {% empty %}

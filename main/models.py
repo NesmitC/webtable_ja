@@ -1955,7 +1955,10 @@ class DictationTask(models.Model):
         help_text='Правильный токен для каждого слота по порядку, ПО ОДНОМУ '
                   'В СТРОКУ. Пример: и / х / , / ъ (каждый с новой строки). '
                   'Пусто = проверка недоступна.')
-    source = models.CharField('Источник/автор', max_length=200, blank=True)
+    source = models.CharField(
+        'Тип работы (подзаголовок)', max_length=200, blank=True,
+        help_text='Вторая строка в карточке списка, например: «Контрольный диктант '
+                  '(повторение изученного в 5-6 кл.)». Пусто — подзаголовка нет.')
     is_active = models.BooleanField('Активен', default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

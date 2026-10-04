@@ -119,12 +119,16 @@ except ValidationError as e:
 
 # ===== 4. Страницы и проверка (аноним — бесплатно) =====
 print('4. Вьюхи (аноним)')
-task = DictationTask.objects.create(title='Осень', grade=7, text=OSEN, answers='')
+task = DictationTask.objects.create(
+    title='Осень', grade=7, text=OSEN, answers='',
+    source='Контрольный диктант (повторение изученного в 5-6 кл.)')
 c = Client()
 r = c.get('/dictations/')
 lst = r.content.decode('utf-8')
 check(r.status_code == 200, f'список диктантов анониму 200 (факт {r.status_code})')
 check('Осень' in lst, 'диктант виден в списке')
+check('Контрольный диктант (повторение изученного в 5-6 кл.)' in lst,
+      'подзаголовок-тип работы виден в карточке')
 check('class="header"' in lst or 'header__' in lst, 'в списке есть шапка сайта')
 check('class="footer"' in lst or 'footer__' in lst, 'в списке есть футер')
 check('А ещё' not in lst, 'в списке нет ЕГЭ-CTA «А ещё — бесплатно»')
