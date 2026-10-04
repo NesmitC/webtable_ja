@@ -6,6 +6,8 @@
 
     var checkBtn = document.getElementById('dctCheck');
     var scoreEl = document.getElementById('dctScore');
+    var gradeEl = document.getElementById('dctGrade');
+    var gradeMarksEl = document.getElementById('dctGradeMarks');
 
     function setupSmiley(btn) {
         var icon = btn.querySelector('.smiley-icon');
@@ -84,7 +86,14 @@
                 scoreEl.textContent = 'Верно ' + s.ok + ' из ' + s.total +
                     (s.answered < s.total ? ' · не отвечено: ' + (s.total - s.answered) : '');
                 scoreEl.style.display = 'block';
-                scoreEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            if (gradeEl && data.grade) {
+                function fmt(g) {
+                    return (g && g.mark) ? g.mark : '—';
+                }
+                gradeMarksEl.textContent = fmt(data.grade.ortho) + ' / ' + fmt(data.grade.puncto);
+                gradeEl.style.display = 'block';
+                gradeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         } catch (e) {
             if (scoreEl) {

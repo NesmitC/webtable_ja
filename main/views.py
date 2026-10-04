@@ -10973,20 +10973,35 @@ def dictation_check(request, pk):
     except json.JSONDecodeError:
         data = {}
     user_answers = data.get('answers') or {}
+    from .dictation import grade_for_percent
     results, ok_count, answered = {}, 0, 0
+    stat = {'ortho': [0, 0], 'puncto': [0, 0]}  # [верно, всего]
     for s in slots:
         idx = str(s['index'])
         chosen = str(user_answers.get(idx, '')).strip()
         correct = tokens[s['index']]
+        kind = s.get('kind', 'ortho')
+        stat[kind][1] += 1
         if chosen:
             answered += 1
             is_ok = (chosen == correct)
             if is_ok:
                 ok_count += 1
+                stat[kind][0] += 1
             results[idx] = {'ok': is_ok, 'correct': correct}
         else:
             results[idx] = {'ok': False, 'correct': correct, 'skipped': True}
+
+    def _mark(kind):
+        correct, total = stat[kind]
+        if total == 0:
+            return {'correct': 0, 'total': 0, 'percent': None, 'mark': None}
+        percent = correct / total * 100
+        return {'correct': correct, 'total': total,
+                'percent': round(percent, 1), 'mark': grade_for_percent(percent)}
+
     return JsonResponse({
         'results': results,
         'score': {'ok': ok_count, 'answered': answered, 'total': len(slots)},
+        'grade': {'ortho': _mark('ortho'), 'puncto': _mark('puncto')},
     })

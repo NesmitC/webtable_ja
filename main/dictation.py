@@ -9,8 +9,9 @@
                внутри разбирается слот (е,и), скобки остаются текстом.
 
 parse_dictation(text) -> (segments, slots)
-  segments: [{'type':'text','text':...} | {'type':'slot','index':i,'options':[...]}]
-  slots:    [{'index':i,'options':[...]}] — по порядку появления.
+  segments: [{'type':'text','text':...} | {'type':'slot','index':i,'options':[...],'kind':...}]
+  slots:    [{'index':i,'options':[...],'kind':'ortho'|'puncto'}] — по порядку.
+            'ortho' — круглые скобки (буквы), 'puncto' — квадратные (знаки).
 
 split_answers('и|х|,|ъ') -> ['и','х',',','ъ'] — ключи через '|'.
 """
@@ -66,11 +67,12 @@ def parse_dictation(text):
             segments.append({'type': 'text', 'text': ''.join(plain)})
             plain.clear()
 
-    def add_slot(options):
+    def add_slot(options, kind):
         flush()
         idx = len(slots)
-        slots.append({'index': idx, 'options': options})
-        segments.append({'type': 'slot', 'index': idx, 'options': options})
+        slots.append({'index': idx, 'options': options, 'kind': kind})
+        segments.append({'type': 'slot', 'index': idx, 'options': options,
+                         'kind': kind})
 
     i, n = 0, len(text or '')
     while i < n:
@@ -86,7 +88,7 @@ def parse_dictation(text):
             raw = content.split(',') if ',' in content else content.split()
             options = _dedupe([(o.strip() or ',') for o in raw])
             if options:
-                add_slot(options)
+                add_slot(options, 'puncto')
             else:
                 plain.append(text[i:close + 1])
             i = close + 1
@@ -102,7 +104,7 @@ def parse_dictation(text):
             top = _split_top_level(content)
             options = [o.strip() for o in top]
             if len(top) > 1 and all(o != '' for o in options):
-                add_slot(_dedupe(options))
+                add_slot(_dedupe(options), 'ortho')
                 i = close + 1
                 continue
             # группировка: скобки — текст, содержимое разбираем вложенно
@@ -113,7 +115,7 @@ def parse_dictation(text):
                 if sg['type'] == 'text':
                     segments.append(sg)
                 else:
-                    add_slot(sg['options'])
+                    add_slot(sg['options'], sg['kind'])
             plain.append(')')
             flush()
             i = close + 1
@@ -124,6 +126,18 @@ def parse_dictation(text):
 
     flush()
     return segments, slots
+
+
+def grade_for_percent(percent):
+    """Школьная шкала: >=90% -> 5, 75-89 -> 4, 33-74 -> 3, 0-32 -> 2.
+    Процент точный (не округляем до целых: 89.9% — это ещё 4)."""
+    if percent >= 90:
+        return 5
+    if percent >= 75:
+        return 4
+    if percent >= 33:
+        return 3
+    return 2
 
 
 def split_answers(answers):

@@ -26,7 +26,7 @@ assert settings.DATABASES['default']['NAME'] == ':memory:'
 setup_test_environment()
 call_command('migrate', verbosity=0, run_syncdb=True)
 
-from main.dictation import parse_dictation, split_answers
+from main.dictation import grade_for_percent, parse_dictation, split_answers
 from main.models import DictationTask
 
 fails = []
@@ -168,6 +168,60 @@ c7.force_login(u)
 r5 = c7.get('/planning/7/')
 check(r5.status_code == 200, f'планинг 7 открылся (факт {r5.status_code})')
 check('/dictations/' in r5.content.decode('utf-8'), 'ссылка «Диктанты онлайн» на месте')
+
+print('8. Оценивание: шкала и двойная оценка (орф. / пункт.)')
+check(grade_for_percent(100) == 5 and grade_for_percent(90) == 5, 'шкала: 90–100% -> 5')
+check(grade_for_percent(89.9) == 4 and grade_for_percent(75) == 4, 'шкала: 75–89% -> 4')
+check(grade_for_percent(74.9) == 3 and grade_for_percent(33) == 3, 'шкала: 33–74% -> 3')
+check(grade_for_percent(32.9) == 2 and grade_for_percent(0) == 2, 'шкала: 0–32% -> 2')
+
+kinds = {s['kind'] for s in slots}
+check(kinds == {'ortho', 'puncto'}, f'слоты размечены по типам (факт {kinds})')
+n_ortho = sum(1 for s in slots if s['kind'] == 'ortho')
+n_puncto = len(slots) - n_ortho
+# (/ ,| ,-) в круглых скобках = слитно/раздельно/дефис — это ОРФОГРАММЫ
+# (школьная традиция), пунктограммы — только квадратные: [х ,], [: -], [« (]
+check(n_ortho == 97 and n_puncto == 21,
+      f'Осень: 97 орфограмм, 21 пунктограмма (факт {n_ortho}/{n_puncto})')
+
+# все верно -> 5 / 5 (ключи сохранены как valid_first, значит верный ответ — он)
+tokens = valid_first
+all_correct = {str(s['index']): valid_first[s['index']] for s in slots}
+r = c.post(f'/dictations/{task.pk}/check/',
+           data=json.dumps({'answers': all_correct}),
+           content_type='application/json')
+g = json.loads(r.content)['grade']
+check(g['ortho']['mark'] == 5 and g['puncto']['mark'] == 5, 'все верно -> 5 / 5')
+check(g['ortho']['total'] == 97 and g['puncto']['total'] == 21,
+      'проценты считаются по своему типу слотов')
+
+# всё неверно -> 2 / 2
+bad_ans = {str(s['index']): (s['options'][-1] if s['options'][-1] != tokens[s['index']]
+                             else s['options'][0]) for s in slots}
+r = c.post(f'/dictations/{task.pk}/check/',
+           data=json.dumps({'answers': bad_ans}), content_type='application/json')
+g = json.loads(r.content)['grade']
+check(g['ortho']['mark'] == 2 and g['puncto']['mark'] == 2, 'всё неверно -> 2 / 2')
+
+# пустой ответ -> 2 / 2 (неотвеченное = ошибка, школьное правило)
+r = c.post(f'/dictations/{task.pk}/check/',
+           data=json.dumps({'answers': {}}), content_type='application/json')
+g = json.loads(r.content)['grade']
+check(g['ortho']['mark'] == 2 and g['puncto']['mark'] == 2, 'пустой ответ -> 2 / 2')
+
+# диктант без пунктограмм: puncto -> None (в UI прочерк)
+t2 = DictationTask(title='Только буквы', grade=7, text='К(а,о)т спит.', answers='о')
+t2.save()
+r = c.post(f'/dictations/{t2.pk}/check/',
+           data=json.dumps({'answers': {'0': 'о'}}), content_type='application/json')
+g = json.loads(r.content)['grade']
+check(g['ortho']['mark'] == 5 and g['puncto']['mark'] is None,
+      'нет пунктограмм -> оценка puncto = None (UI покажет прочерк)')
+
+# на странице есть блок оценки
+html_g = c.get(f'/dictations/{task.pk}/').content.decode('utf-8')
+check('dctGrade' in html_g and 'Оценка за диктант (орф. / пункт.)' in html_g,
+      'на странице есть строка «Оценка за диктант (орф. / пункт.)»')
 
 print()
 if fails:
