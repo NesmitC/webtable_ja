@@ -12,6 +12,18 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
     <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <style>
+        /* Косметика диктанта: текст идёт сплошняком — без верхнего/нижнего
+           паддинга карточки и без зазоров между абзацами. */
+        .dictation-text.diagnostic-full-test__text {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .dictation-text .practice-line {
+            margin: 0;
+        }
+    </style>
 </head>
 
 <body class="test_fix_ege">
@@ -29,13 +41,9 @@
 
             <h2 class="diagnostic-full-test__subtitle">{{ task.title }}</h2>
             <h3 class="diagnostic-full-test__subtitle" style="font-size:16px; font-weight:400; color:#8c7b6b;">
-                Нажимай на смайлик и выбирай пропущенную букву или знак. Затем — «Проверить».</h3>
+                Нажимай на смайлик и выбирай пропущенную букву или знак. В пунктограммах «х» — отсутствие знаков.</h3>
 
-            <div class="text-content-diagnostic diagnostic-full-test__text">
-                {% for para in paragraphs %}
-                <div class="practice-line">{% for seg in para %}{% if seg.type == 'text' %}{{ seg.text }}{% else %}<span class="smiley-button" data-slot="{{ seg.index }}"><span class="smiley-icon">😊</span><ul class="smiley-options">{% for o in seg.options %}<li data-letter="{{ o }}">{{ o }}</li>{% endfor %}</ul></span>{% endif %}{% endfor %}</div>
-                {% endfor %}
-            </div>
+            <div class="text-content-diagnostic diagnostic-full-test__text dictation-text">{% for para in paragraphs %}<div class="practice-line">{% for seg in para %}{% if seg.type == 'text' %}{{ seg.text }}{% else %}<span class="smiley-button" data-slot="{{ seg.index }}"><span class="smiley-icon">😊</span><ul class="smiley-options">{% for o in seg.options %}<li data-letter="{{ o }}">{{ o }}</li>{% endfor %}</ul></span>{% endif %}{% endfor %}</div>{% endfor %}</div>
 
             {% if ready %}
             <div style="text-align:center; margin: 18px 0 6px;">
