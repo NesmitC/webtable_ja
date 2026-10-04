@@ -13,15 +13,17 @@
     <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
     <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
     <style>
-        /* Косметика диктанта: текст идёт сплошняком — без верхнего/нижнего
-           паддинга карточки и без зазоров между абзацами. */
+        /* Косметика диктанта: текст сплошняком (без зазоров между
+           абзацами), но с умеренными полями сверху/снизу и чуть более
+           просторной межстрочной для читаемости. */
         .dictation-text.diagnostic-full-test__text {
-            padding-top: 0;
-            padding-bottom: 0;
+            padding-top: 12px;
+            padding-bottom: 12px;
         }
 
         .dictation-text .practice-line {
             margin: 0;
+            line-height: 1.9;
         }
     </style>
 </head>
