@@ -140,13 +140,10 @@ check('dct-select' not in html and '<select' not in html, 'select-ов боль�
 check('Пройти диагностику' not in html and 'узнать свой уровень' not in html.lower(),
       'на странице диктанта нет ЕГЭ-плашки-CTA')
 check('practice-line' in html, 'текст разбит на practice-line как в диагностике')
-check('text-indent: 30px' in html and 'text-indent: 20px' in html,
-      'красная строка: 30px десктоп / 20px мобайл')
-check('dct-word' in html and 'white-space: nowrap' in html,
-      'слова сгруппированы в dct-word (nowrap) — не рвутся переносом')
-check('class="footer"' in html or 'footer__' in html, 'на странице диктанта есть футер')
-# переносимые пробелы остались: между dct-word есть обычный текст-пробелы
-check(html.count('dct-word') >= 60, f'слов-групп достаточно (факт {html.count("dct-word")})')
+check('dct-word' not in html, 'группировка слов откатана — текст единый')
+check('text-indent' not in html, 'вид полностью откатан к единому тексту без красной строки')
+check(html.count('smiley-button') == len(slots),
+      'смайлы в потоке текста, слотов не потерялось')
 check('ещё не загружены' in html, 'без ключей показывается заглушка, не проверка')
 r3 = c.post(f'/dictations/{task.pk}/check/',
             data=json.dumps({'answers': {'0': 'х'}}),

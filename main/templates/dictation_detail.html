@@ -24,18 +24,6 @@
         .dictation-text .practice-line {
             margin: 0;
             line-height: 1.9;
-            text-indent: 30px;
-        }
-
-        /* слово+слоты не разрывается переносом строки */
-        .dct-word {
-            white-space: nowrap;
-        }
-
-        @media (max-width: 768px) {
-            .dictation-text .practice-line {
-                text-indent: 20px;
-            }
         }
     </style>
 </head>
@@ -57,7 +45,7 @@
             <h3 class="diagnostic-full-test__subtitle" style="font-size:16px; font-weight:400; color:#8c7b6b;">
                 Нажимай на смайлик и выбирай пропущенную букву или знак. В пунктограммах «х» — отсутствие знаков.</h3>
 
-            <div class="text-content-diagnostic diagnostic-full-test__text dictation-text">{% for para in paragraphs %}<div class="practice-line">{% for run in para %}{% if run == ' ' %} {% else %}<span class="dct-word">{% for seg in run %}{% if seg.type == 'text' %}{{ seg.text }}{% else %}<span class="smiley-button" data-slot="{{ seg.index }}"><span class="smiley-icon">😊</span><ul class="smiley-options">{% for o in seg.options %}<li data-letter="{{ o }}">{{ o }}</li>{% endfor %}</ul></span>{% endif %}{% endfor %}</span>{% endif %}{% endfor %}</div>{% endfor %}</div>
+            <div class="text-content-diagnostic diagnostic-full-test__text dictation-text">{% for para in paragraphs %}<div class="practice-line">{% for seg in para %}{% if seg.type == 'text' %}{{ seg.text }}{% else %}<span class="smiley-button" data-slot="{{ seg.index }}"><span class="smiley-icon">😊</span><ul class="smiley-options">{% for o in seg.options %}<li data-letter="{{ o }}">{{ o }}</li>{% endfor %}</ul></span>{% endif %}{% endfor %}</div>{% endfor %}</div>
 
             {% if ready %}
             <div style="text-align:center; margin: 18px 0 6px;">
@@ -79,8 +67,6 @@
             </p>
         </section>
     </main>
-
-    {% include 'includes/footer.html' %}
 
     <script src="{% static 'js/dictation.js' %}"></script>
 </body>
