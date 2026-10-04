@@ -122,8 +122,15 @@ print('4. Вьюхи (аноним)')
 task = DictationTask.objects.create(title='Осень', grade=7, text=OSEN, answers='')
 c = Client()
 r = c.get('/dictations/')
+lst = r.content.decode('utf-8')
 check(r.status_code == 200, f'список диктантов анониму 200 (факт {r.status_code})')
-check('Осень' in r.content.decode('utf-8'), 'диктант виден в списке')
+check('Осень' in lst, 'диктант виден в списке')
+check('class="header"' in lst or 'header__' in lst, 'в списке есть шапка сайта')
+check('class="footer"' in lst or 'footer__' in lst, 'в списке есть футер')
+check('А ещё' not in lst, 'в списке нет ЕГЭ-CTA «А ещё — бесплатно»')
+check('к планингам' not in lst, 'в списке нет ссылки «к планингам»')
+check('слотов в тексте' not in lst, 'в карточках нет мета-строки про слоты')
+check('Читаешь текст' not in lst, 'из тела списка убран подзаголовок-описание')
 r2 = c.get(f'/dictations/{task.pk}/')
 html = r2.content.decode('utf-8')
 check(r2.status_code == 200, 'страница диктанта анониму 200')
@@ -133,6 +140,13 @@ check('dct-select' not in html and '<select' not in html, 'select-ов боль�
 check('Пройти диагностику' not in html and 'узнать свой уровень' not in html.lower(),
       'на странице диктанта нет ЕГЭ-плашки-CTA')
 check('practice-line' in html, 'текст разбит на practice-line как в диагностике')
+check('text-indent: 30px' in html and 'text-indent: 20px' in html,
+      'красная строка: 30px десктоп / 20px мобайл')
+check('dct-word' in html and 'white-space: nowrap' in html,
+      'слова сгруппированы в dct-word (nowrap) — не рвутся переносом')
+check('class="footer"' in html or 'footer__' in html, 'на странице диктанта есть футер')
+# переносимые пробелы остались: между dct-word есть обычный текст-пробелы
+check(html.count('dct-word') >= 60, f'слов-групп достаточно (факт {html.count("dct-word")})')
 check('ещё не загружены' in html, 'без ключей показывается заглушка, не проверка')
 r3 = c.post(f'/dictations/{task.pk}/check/',
             data=json.dumps({'answers': {'0': 'х'}}),

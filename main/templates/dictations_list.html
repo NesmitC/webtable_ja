@@ -5,17 +5,18 @@
     {% include 'includes/metrika.html' %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диктанты онлайн — Нейростат</title>
+    <title>Диктанты онлайн с самопроверкой | Нейростат</title>
     <meta name="description"
         content="Бесплатные онлайн-диктанты с самопроверкой: выбери букву и знак, сразу видно правильные ответы.">
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
     <style>
         .dct-list {
             max-width: 640px;
             margin: 0 auto;
-            padding: 24px 16px 48px;
+            padding: 24px 0 48px;
         }
 
         .dct-list__grade {
@@ -47,54 +48,31 @@
         .dct-card__title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .dct-card__meta {
-            font-size: 13px;
-            color: #8c7b6b;
         }
     </style>
 </head>
 
-<body style="background: var(--color-chess-bg-light, #faf6f0);">
-    <div class="dct-list">
-        <div style="text-align:center; margin-top: 8px;">
-            <a href="{% url 'index' %}" style="text-decoration:none;">
-                <img src="{% static 'images/logo_neurostat.png' %}" alt="НЕЙРОСТАТ"
-                    style="width: 160px;">
+<body>
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-trainers">
+        <div class="dct-list">
+            {% for grade, tasks in by_grade.items %}
+            <div class="dct-list__grade">{{ grade }} класс</div>
+            {% for t in tasks %}
+            <a class="dct-card" href="{% url 'dictation_detail' t.pk %}">
+                <div class="dct-card__title">{{ t.title }}</div>
             </a>
+            {% endfor %}
+            {% empty %}
+            <p style="text-align:center; color:#8c7b6b; margin-top: 40px;">
+                Диктанты скоро появятся 📝
+            </p>
+            {% endfor %}
         </div>
-        <h1 style="text-align:center; font-size: 26px; margin: 18px 0 6px;">Диктанты онлайн</h1>
-        <p style="text-align:center; color:#8c7b6b; font-size:14px; margin-bottom: 8px;">
-            Читаешь текст, выбираешь пропущенные буквы и знаки — после проверки
-            сразу видишь правильные ответы. Бесплатно, без регистрации.
-        </p>
+    </main>
 
-        {% for grade, tasks in by_grade.items %}
-        <div class="dct-list__grade">{{ grade }} класс</div>
-        {% for t in tasks %}
-        <a class="dct-card" href="{% url 'dictation_detail' t.pk %}">
-            <div class="dct-card__title">{{ t.title }}</div>
-            <div class="dct-card__meta">
-                {{ t.source|default:"онлайн-диктант" }} · слотов в тексте: {{ t.slot_count }}
-            </div>
-        </a>
-        {% endfor %}
-        {% empty %}
-        <p style="text-align:center; color:#8c7b6b; margin-top: 40px;">
-            Диктанты скоро появятся 📝
-        </p>
-        {% endfor %}
-
-        <p style="text-align:center; margin-top: 36px;">
-            <a href="{% url 'diagnostic_fix_ege' %}" class="btn btn--primary"
-                style="display:inline-block; padding: 12px 22px;">А ещё — бесплатная диагностика ЕГЭ</a>
-        </p>
-        <p style="text-align:center; margin-top: 14px;">
-            <a href="{% url 'planning_7kl' %}" style="color:#8c7b6b; font-size:13px;">← к планингам 7 класса</a>
-        </p>
-    </div>
+    {% include 'includes/footer.html' %}
 </body>
 
 </html>

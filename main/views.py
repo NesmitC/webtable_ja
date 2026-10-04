@@ -10930,6 +10930,29 @@ def dictations_list(request):
     return render(request, 'dictations_list.html', {'by_grade': by_grade})
 
 
+def _dictation_runs(para):
+    """Сегменты абзаца -> группы слов: текст+слоты между пробелами.
+    Группа рендерится в <span class="dct-word"> (white-space:nowrap), чтобы
+    слово со смайлами внутри не рвалось переносом строки."""
+    runs, cur = [], []
+    for seg in para:
+        if seg['type'] == 'slot':
+            cur.append(seg)
+            continue
+        parts = seg['text'].split(' ')
+        for j, part in enumerate(parts):
+            if j:                      # пробел: слово закрыто
+                if cur:
+                    runs.append(cur)
+                    cur = []
+                runs.append(' ')
+            if part:
+                cur.append({'type': 'text', 'text': part})
+    if cur:
+        runs.append(cur)
+    return runs
+
+
 def dictation_detail(request, pk):
     """Текст диктанта со слотами-выпадашками. Доступ без логина."""
     from .models import DictationTask
@@ -10950,7 +10973,7 @@ def dictation_detail(request, pk):
         else:
             cur.append(seg)
     paragraphs.append(cur)
-    paragraphs = [p for p in paragraphs if p]
+    paragraphs = [_dictation_runs(p) for p in paragraphs if p]
     return render(request, 'dictation_detail.html', {
         'task': task, 'segments': segments, 'paragraphs': paragraphs,
         'slot_count': len(slots), 'ready': bool(ready),
