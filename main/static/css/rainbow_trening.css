@@ -1,0 +1,425 @@
+/* Тренажёр «Радуга» — склонение числительных (страница /sklonenie-chislitelnyh/).
+   Все правила скоупятся .rb-training / .rb-*, чтобы цветовые классы
+   (.pink, .done, .mistake и т.п.) не конфликтовали с CSS сайта. */
+
+/* Site's body is a flex column, and main has margin: auto (centering) —
+   in a flex column this disables stretching, and the width gets calculated
+   as fit-content, which won't shrink below the table's min-content.
+   Explicitly force 100% width. */
+main.page-container-trainers {
+    min-width: 0;
+    width: 100%;
+}
+
+/* H1 в стиле breadcrumb-заголовка страницы тренажёров (diag-badge-wrap) */
+h1.diag-badge-wrap {
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+/* Защита от site-стилей .block-task p (display:flex + зелёный маркер ::before):
+   подсказка тренажёра — обычный текст. */
+.block-task p.rb-hint {
+    display: block;
+    margin: 12px 0 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #8c7b6b;
+}
+
+.block-task p.rb-hint::before {
+    content: none;
+}
+
+/* ============ Управление тренажёра ============ */
+
+.rb-training .training-controls {
+    margin: 14px 0;
+}
+
+.rb-training .training-controls__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.rb-training #training-number {
+    min-width: 110px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #3c2c91;
+    background: #fff;
+    border: 1px solid #e5ddd2;
+    border-radius: 10px;
+    padding: 6px 14px;
+}
+
+.rb-training #training-reload {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid #e5ddd2;
+    background: #fff;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.rb-training #training-reload:hover {
+    border-color: #a5673f;
+    background: #faf6ef;
+}
+
+.rb-training #training-input {
+    flex: 1;
+    min-width: 170px;
+    max-width: 260px;
+    padding: 8px 12px;
+    border: 1px solid #e5ddd2;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+.rb-training #training-input:focus {
+    outline: none;
+    border-color: #a5673f;
+}
+
+.rb-training .training-generate {
+    padding: 7px 12px;
+    border: 1px solid #e5ddd2;
+    border-radius: 18px;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.rb-training .training-generate:hover {
+    border-color: #a5673f;
+    background: #faf6ef;
+}
+
+/* ============ Таблица-радуга ============ */
+
+.rb-training .training-sheet {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 2px solid #727278;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.rb-training .training-sheet table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.rb-training .training-sheet td {
+    border: 2px solid #c0b7e0;
+    text-align: center;
+    height: 64px;
+    padding: 2px;
+    white-space: nowrap;
+}
+
+.rb-training .training-sheet td.case-desc {
+    width: 5%;
+    min-width: 58px;
+    border: none;
+    background: transparent;
+}
+
+.rb-training .training-sheet td.case-desc > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 6px 0;
+}
+
+.rb-training .case-letter {
+    font-size: 34px;
+    font-weight: 700;
+    color: #3c2c91;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.rb-training .case-questions {
+    font-size: 10px;
+    color: #6b6478;
+}
+
+.rb-training .training-sheet td:not(.case-desc) {
+    width: 0;
+    min-width: 58px;
+    font-size: 15px;
+}
+
+.rb-training .training-sheet td:not(.case-desc) * {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.rb-training .training-sheet tr:first-child td {
+    border-top: none;
+}
+
+.rb-training .training-sheet tr:last-child td {
+    border-bottom: none;
+}
+
+.rb-training .training-sheet tr td:last-child {
+    border-right: none;
+}
+
+.rb-training .training-sheet tr td:first-child {
+    border-left: none;
+}
+
+/* Цвета «радуги» — только внутри тренажёра */
+.rb-training .pink         { background: #f8a7bf; }
+.rb-training .yellow       { background: #f0f6a5; }
+.rb-training .green        { background: #c0e7c0; }
+.rb-training .purple       { background: #b4acdc; }
+.rb-training .violet       { background: #dea5d7; }
+.rb-training .violet-light { background: #f0a5d7; }
+.rb-training .pink-dark    { background: #f8a8b1; }
+.rb-training .green-light  { background: #d5eda8; }
+.rb-training .orange       { background: #d2c281; }
+.rb-training .blue         { background: #a3abdb; }
+.rb-training .brown        { background: #e0baae; }
+
+/* Поле ввода окончания */
+.rb-training .suf-check {
+    width: 36px;
+    padding: 4px 2px;
+    border: 1px solid #b9b3cf;
+    border-radius: 6px;
+    background: #fffdf5;
+    font-size: 15px;
+    text-align: center;
+}
+
+.rb-training .suf-check:focus {
+    outline: none;
+    border-color: #3c2c91;
+}
+
+.rb-training .suf-check.done {
+    color: #00a000;
+    font-weight: 700;
+    border-color: #00a000;
+}
+
+.rb-training .suf-check.mistake {
+    color: #d00000;
+    font-weight: 700;
+    border-color: #d00000;
+}
+
+.rb-training .suf-check.empty-input {
+    border: 2px dotted #ee0000;
+}
+
+.rb-hint {
+    font-size: 13px;
+    color: #8c7b6b;
+    margin-top: 10px;
+}
+
+@media (max-width: 860px) {
+    /* Хлебный заголовок: перенос по строкам, чтобы не вылезал за экран */
+    h1.diag-badge-wrap {
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+
+    h1.diag-badge-wrap .diag-badge-label {
+        white-space: normal;
+    }
+
+    /* Управление: число + сброс + поле в строку, «Проверить» — крупная кнопка */
+    .rb-training #training-number {
+        min-width: 84px;
+        font-size: 19px;
+        padding: 5px 10px;
+    }
+
+    .rb-training #training-reload {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+    }
+
+    .rb-training #training-input {
+        flex: 1 1 140px;
+        min-width: 0;
+        max-width: none;
+        font-size: 16px; /* iOS не зумит поле при фокусе */
+    }
+
+    .rb-training .check-task-submit {
+        flex: 1 1 100%;
+        width: auto;
+        margin: 4px 0 0;
+    }
+
+    .rb-training .training-generate {
+        padding: 8px 13px;
+        font-size: 13px; /* зона нажатия не меньше ~36px */
+    }
+
+    /* Пустые колонки скрываем, только когда число введено:
+       иначе при пустой таблице остаётся белая карточка вместо радуги */
+    .rb-training .training-sheet:has(td:not(.case-desc):not(:empty)) td:empty:not(.case-desc) {
+        display: none;
+    }
+
+    /* В пустом состоянии карточку заполняет сетка радужных ячеек */
+    .rb-training .training-sheet td:empty:not(.case-desc) {
+        min-width: 30px;
+    }
+
+    .rb-training .training-sheet table {
+        min-width: 0;
+    }
+
+    /* Основа и поле окончания — в одну строку (как на десктопе) */
+    .rb-training .training-sheet td:not(.case-desc) {
+        min-width: 0;
+        height: 58px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .rb-training .training-sheet td:not(.case-desc) .suf-check {
+        width: 32px;
+    }
+
+    .rb-training .training-sheet td.case-desc {
+        min-width: 40px;
+    }
+
+    .rb-training .case-letter {
+        font-size: 26px;
+    }
+
+    .rb-training .case-questions {
+        font-size: 9px;
+    }
+
+    .rb-training .suf-check {
+        font-size: 14px;
+    }
+}
+
+/* ============ Памятки под тренажёром ============ */
+
+.rb-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 22px;
+}
+
+.rb-card {
+    min-width: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(138, 137, 137, .35);
+    padding: 14px 16px 16px;
+}
+
+.rb-card h3 {
+    font-family: 'Cormorant', serif;
+    font-weight: 700;
+    font-size: 19px;
+    margin-bottom: 10px;
+}
+
+.rb-mini {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.rb-mini th,
+.rb-mini td {
+    border: 1px solid #e5ddd2;
+    padding: 7px 9px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.rb-mini th {
+    background: #faf6ef;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.rb-mini .rb-case {
+    width: 70px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.rb-mini .rb-c-iv { background: #f8a7bf; }
+.rb-mini .rb-c-oblique { background: #c0e7c0; }
+
+/* Формы в памятках — курсивом, как в школьной таблице */
+.rb-mini.rb-italic td:not(.rb-case) {
+    font-style: italic;
+}
+
+.rb-end {
+    background: #f8a7bf;
+    border-radius: 4px;
+    padding: 0 2px;
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* Пустая рамка = нулевое окончание (сорок[], сто[]) */
+.rb-end--zero {
+    display: inline-block;
+    width: 12px;
+    height: 1.05em;
+    background: transparent;
+    border: 1.5px solid #f8a7bf;
+    vertical-align: text-bottom;
+}
+
+.rb-example {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 6px 0;
+}
+
+.rb-wrong {
+    color: #c0392b;
+    text-decoration: line-through;
+}
+
+.rb-right {
+    color: #1e8f3c;
+    font-weight: 600;
+}
+
+@media (max-width: 860px) {
+    .rb-cards {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

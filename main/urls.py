@@ -172,6 +172,7 @@ urlpatterns = [
     path('dictations/', views.dictations_list, name='dictations'),
     path('dictations/<int:pk>/', views.dictation_detail, name='dictation_detail'),
     path('dictations/<int:pk>/check/', views.dictation_check, name='dictation_check'),
+    path('sklonenie-chislitelnyh/', views.sklonenie_chislitelnyh, name='sklonenie_chislitelnyh'),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.svg', permanent=True)),
     # Политика обработки персональных данных
     path('privacy/', views.privacy, name='privacy'),

@@ -1,0 +1,254 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    {% include 'includes/metrika.html' %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Склонение числительных онлайн: тренажёр и таблица по падежам | Нейростат</title>
+    <meta name="description"
+        content="Склонение числительных по падежам онлайн: тренажёр с проверкой для любого числа от 1 до 999 999, памятки «сто, сорок, девяносто», «полтораста» и лайфхак с нотами. 6 класс и ЕГЭ, задание 7.">
+    <link rel="canonical" href="https://neurostat.ru/sklonenie-chislitelnyh/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Нейростат">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:title" content="Склонение числительных онлайн: тренажёр и таблица по падежам">
+    <meta property="og:description"
+        content="Просклоняйте любое число от 1 до 999 999 и впишите окончания — сразу видно ошибки. Памятки и лайфхаки: сто/сорок/девяносто, полтораста, склонение сотен. Бесплатно, без регистрации.">
+    <meta property="og:url" content="https://neurostat.ru/sklonenie-chislitelnyh/">
+    <meta property="og:image" content="https://neurostat.ru/static/images/logo_neurostat.png">
+
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/rainbow_trening.css' %}?v=9">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebApplication",
+                "@id": "https://neurostat.ru/sklonenie-chislitelnyh/#app",
+                "name": "Тренажёр по склонению числительных",
+                "url": "https://neurostat.ru/sklonenie-chislitelnyh/",
+                "applicationCategory": "EducationalApplication",
+                "operatingSystem": "Web",
+                "inLanguage": "ru",
+                "isAccessibleForFree": true,
+                "teaches": "Склонение количественных числительных по падежам русского языка",
+                "educationalLevel": "6 класс, ЕГЭ по русскому языку (задание 7)",
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "Нейростат",
+                    "url": "https://neurostat.ru"
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "@id": "https://neurostat.ru/sklonenie-chislitelnyh/#breadcrumb",
+                "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://neurostat.ru/" },
+                    { "@type": "ListItem", "position": 2, "name": "Тренажёры ЕГЭ", "item": "https://neurostat.ru/ege/trainers/" },
+                    { "@type": "ListItem", "position": 3, "name": "Склонение числительных", "item": "https://neurostat.ru/sklonenie-chislitelnyh/" }
+                ]
+            }
+        ]
+    }
+    </script>
+</head>
+
+<body>
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-trainers">
+
+        <h1 class="diag-badge-wrap">
+            <span class="hero__badge">ЕГЭ · Русский язык · 2027</span>
+            <span class="diag-badge-sep" aria-hidden="true"></span>
+            <span class="diag-badge-label">Склонение числительных по падежам</span>
+        </h1>
+
+        <!-- ==================== ТРЕНАЖЁР ==================== -->
+        <section class="block-task rb-training" id="trenazher">
+            <h2 class="title-planing">Тренажёр: просклоняйте любое число онлайн</h2>
+
+            <div class="training-controls">
+                <div class="training-controls__row">
+                    <span id="training-number"></span>
+                    <button id="training-reload" title="Очистить">↺</button>
+                    <input id="training-input" inputmode="numeric" autocomplete="off"
+                        placeholder="Введите число от 1 до 999 999">
+                    <button id="training-check" class="check-task-submit">Проверить</button>
+                </div>
+                <div class="training-controls__row">
+                    <button class="training-generate" data-min="1" data-max="20">1–20</button>
+                    <button class="training-generate" data-min="21" data-max="39">21–39</button>
+                    <button class="training-generate" data-min="40" data-max="49">40–49</button>
+                    <button class="training-generate" data-min="50" data-max="89">50–89</button>
+                    <button class="training-generate" data-min="90" data-max="99">90–99</button>
+                    <button class="training-generate" data-min="100" data-max="199">100–199</button>
+                    <button class="training-generate" data-min="200" data-max="999">200–999</button>
+                    <button class="training-generate" data-min="1000" data-max="999999">1000–999 999</button>
+                </div>
+            </div>
+
+            <div class="training-sheet">
+                <table>
+                    <tr id="row-nominative">
+                        <td class="case-desc">
+                            <div><span class="case-letter">и</span><span class="case-questions">кто? что?</span></div>
+                        </td>
+                        <td class="pink"></td><td class="yellow"></td><td class="green"></td>
+                        <td class="purple"></td><td class="violet"></td><td class="violet-light"></td>
+                        <td class="pink-dark"></td><td class="green-light"></td><td class="orange"></td>
+                        <td class="blue"></td><td class="brown"></td>
+                    </tr>
+                    <tr id="row-genitive">
+                        <td class="case-desc">
+                            <div><span class="case-letter">р</span><span class="case-questions">кого? чего?</span></div>
+                        </td>
+                        <td class="pink"></td><td class="yellow"></td><td class="green"></td>
+                        <td class="purple"></td><td class="violet"></td><td class="violet-light"></td>
+                        <td class="pink-dark"></td><td class="green-light"></td><td class="orange"></td>
+                        <td class="blue"></td><td class="brown"></td>
+                    </tr>
+                    <tr id="row-dative">
+                        <td class="case-desc">
+                            <div><span class="case-letter">д</span><span class="case-questions">кому? чему?</span></div>
+                        </td>
+                        <td class="pink"></td><td class="yellow"></td><td class="green"></td>
+                        <td class="purple"></td><td class="violet"></td><td class="violet-light"></td>
+                        <td class="pink-dark"></td><td class="green-light"></td><td class="orange"></td>
+                        <td class="blue"></td><td class="brown"></td>
+                    </tr>
+                    <tr id="row-accusative">
+                        <td class="case-desc">
+                            <div><span class="case-letter">в</span><span class="case-questions">кого? что?</span></div>
+                        </td>
+                        <td class="pink"></td><td class="yellow"></td><td class="green"></td>
+                        <td class="purple"></td><td class="violet"></td><td class="violet-light"></td>
+                        <td class="pink-dark"></td><td class="green-light"></td><td class="orange"></td>
+                        <td class="blue"></td><td class="brown"></td>
+                    </tr>
+                    <tr id="row-instrumental">
+                        <td class="case-desc">
+                            <div><span class="case-letter">т</span><span class="case-questions">кем? чем?</span></div>
+                        </td>
+                        <td class="pink"></td><td class="yellow"></td><td class="green"></td>
+                        <td class="purple"></td><td class="violet"></td><td class="violet-light"></td>
+                        <td class="pink-dark"></td><td class="green-light"></td><td class="orange"></td>
+                        <td class="blue"></td><td class="brown"></td>
+                    </tr>
+                    <tr id="row-prepositional">
+                        <td class="case-desc">
+                            <div><span class="case-letter">п</span><span class="case-questions">о ком? о чём?</span></div>
+                        </td>
+                        <td class="pink"></td><td class="yellow"></td><td class="green"></td>
+                        <td class="purple"></td><td class="violet"></td><td class="violet-light"></td>
+                        <td class="pink-dark"></td><td class="green-light"></td><td class="orange"></td>
+                        <td class="blue"></td><td class="brown"></td>
+                    </tr>
+                </table>
+            </div>
+
+            <p class="rb-hint">
+                Нажмите на диапазон или введите своё число — он появится в таблице словами.
+                Впишите окончания в белых окошках (именительный и винительный показаны целиком — это образец)
+                и нажмите «Проверить». Ошибочные окончания исправятся автоматически.
+            </p>
+        </section>
+
+        <!-- ==================== Памятки ==================== -->
+        <section class="rb-cards">
+            <div class="rb-card">
+                <h3>«Сто», «сорок», «девяносто» — только две формы</h3>
+                <table class="rb-mini rb-italic">
+                    <tr>
+                        <td class="rb-case rb-c-iv">и.&nbsp;п.</td>
+                        <td>ст<span class="rb-end">о</span>, сорок<span class="rb-end rb-end--zero"></span>, девяност<span class="rb-end">о</span></td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-oblique">р.&nbsp;п.</td>
+                        <td>ст<span class="rb-end">а</span>, сорок<span class="rb-end">а</span>, девяност<span class="rb-end">а</span></td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-oblique">д.&nbsp;п.</td>
+                        <td>ст<span class="rb-end">а</span>, сорок<span class="rb-end">а</span>, девяност<span class="rb-end">а</span></td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-iv">в.&nbsp;п.</td>
+                        <td>ст<span class="rb-end">о</span>, сорок<span class="rb-end rb-end--zero"></span>, девяност<span class="rb-end">о</span></td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-oblique">т.&nbsp;п.</td>
+                        <td>ст<span class="rb-end">а</span>, сорок<span class="rb-end">а</span>, девяност<span class="rb-end">а</span></td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-oblique">п.&nbsp;п.</td>
+                        <td>о ст<span class="rb-end">а</span>, сорок<span class="rb-end">а</span>, девяност<span class="rb-end">а</span></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="rb-card">
+                <h3>«Полтораста» (150) — только две формы</h3>
+                <table class="rb-mini rb-italic">
+                    <tr>
+                        <td class="rb-case rb-c-iv">и.&nbsp;п.</td>
+                        <td>полтораста мячиков</td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-oblique">р.&nbsp;п.</td>
+                        <td>пол<span class="rb-end">у</span>тораста мячиков</td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-oblique">д.&nbsp;п.</td>
+                        <td>пол<span class="rb-end">у</span>тораста мячикам</td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-iv">в.&nbsp;п.</td>
+                        <td>полтораста мячиков</td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-oblique">т.&nbsp;п.</td>
+                        <td>пол<span class="rb-end">у</span>тораста мячиками</td>
+                    </tr>
+                    <tr>
+                        <td class="rb-case rb-c-oblique">п.&nbsp;п.</td>
+                        <td>пол<span class="rb-end">у</span>тораста мячиках</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="rb-card">
+                <h3>Лайфхак: сотни склоняются как «ноты»</h3>
+                <table class="rb-mini rb-italic">
+                    <tr><th>п.</th><th>считалка</th><th>сотни</th></tr>
+                    <tr><td class="rb-case rb-c-iv">и.&nbsp;п.</td><td>четыр<span class="rb-end">е</span> нот<span class="rb-end">ы</span></td><td>четыр<span class="rb-end">е</span>ст<span class="rb-end">а</span></td></tr>
+                    <tr><td class="rb-case rb-c-oblique">р.&nbsp;п.</td><td>четыр<span class="rb-end">ёх</span> н<span class="rb-end">от</span></td><td>четыр<span class="rb-end">ёх</span>с<span class="rb-end">от</span></td></tr>
+                    <tr><td class="rb-case rb-c-oblique">д.&nbsp;п.</td><td>четыр<span class="rb-end">ём</span> нот<span class="rb-end">ам</span></td><td>четыр<span class="rb-end">ём</span>ст<span class="rb-end">ам</span></td></tr>
+                    <tr><td class="rb-case rb-c-iv">в.&nbsp;п.</td><td>четыр<span class="rb-end">е</span> нот<span class="rb-end">ы</span></td><td>четыр<span class="rb-end">е</span>ст<span class="rb-end">а</span></td></tr>
+                    <tr><td class="rb-case rb-c-oblique">т.&nbsp;п.</td><td>четырь<span class="rb-end">мя</span> нот<span class="rb-end">ами</span></td><td>четырь<span class="rb-end">мя</span>ст<span class="rb-end">ами</span></td></tr>
+                    <tr><td class="rb-case rb-c-oblique">п.&nbsp;п.</td><td>о четыр<span class="rb-end">ёх</span> нот<span class="rb-end">ах</span></td><td>о четыр<span class="rb-end">ёх</span>ст<span class="rb-end">ах</span></td></tr>
+                </table>
+            </div>
+
+            <div class="rb-card">
+                <h3>Порядковые: склоняется только последнее слово</h3>
+                <p class="rb-example"><span class="rb-wrong">в двух тысячи шестом году</span></p>
+                <p class="rb-example"><span class="rb-right">в две тысячи шестом году</span></p>
+                <p class="rb-example"><span class="rb-right">к сорок пятому году, о триста шестидесятом дне</span></p>
+            </div>
+        </section>
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+
+    <script type="module" src="{% static 'js/rainbow_trening.js' %}?v=1"></script>
+</body>
+
+</html>

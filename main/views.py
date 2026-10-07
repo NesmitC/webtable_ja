@@ -1,4 +1,5 @@
 # main/views.py
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.cache import cache
 from django.contrib.auth import login, logout
@@ -11005,3 +11006,12 @@ def dictation_check(request, pk):
         'score': {'ok': ok_count, 'answered': answered, 'total': len(slots)},
         'grade': {'ortho': _mark('ortho'), 'puncto': _mark('puncto')},
     })
+
+
+# ============================================================================
+# ТРЕНАЖЁР «РАДУГА»: Склонение числительных (SEO-страница, доступ без логина)
+# ============================================================================
+@xframe_options_sameorigin  # встраивание разрешено только с того же домена
+def sklonenie_chislitelnyh(request):
+    """Тренажёр + памятки по склонению числительных. Анонимно — страница индексируется."""
+    return render(request, 'sklonenie_chislitelnyh.html')
