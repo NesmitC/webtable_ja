@@ -10707,6 +10707,10 @@ def callback_request(request):
 
     contact = str(data.get('contact', '')).strip()
     name = str(data.get('name', '')).strip()[:100]
+    comment = str(data.get('comment', '')).strip()[:1000]
+    if str(data.get('hp', '')).strip():
+        # honeypot: заполненное скрытое поле — это бот, делаем вид, что приняли
+        return JsonResponse({'status': 'ok'})
     if not contact or len(contact) > 100:
         return JsonResponse({'error': 'Укажите телефон или MAX для связи'}, status=400)
 
@@ -10717,7 +10721,7 @@ def callback_request(request):
 
     req = CallbackRequest.objects.create(
         name=name, contact=contact, attempt=attempt,
-        source=str(data.get('source', ''))[:50])
+        comment=comment, source=str(data.get('source', ''))[:50])
     cache.set(key, cache.get(key, 0) + 1, timeout=3600)
     logger.info(f'Callback request: {contact} (attempt={attempt_id})')
 
@@ -10728,6 +10732,8 @@ def callback_request(request):
         f'Имя: {name or "-"}',
         f'Источник: {req.source or "-"}',
     ]
+    if comment:
+        lines.append(f'Комментарий: {comment}')
     if attempt is not None:
         review_url = request.build_absolute_uri(
             reverse('diagnostic_review', args=[attempt.id]))

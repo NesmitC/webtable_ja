@@ -1014,6 +1014,9 @@ class CallbackRequest(models.Model):
         on_delete=models.SET_NULL, related_name='callback_requests',
         verbose_name='Диагностика')
     source = models.CharField(max_length=50, blank=True, verbose_name='Откуда заявка')
+    comment = models.TextField(
+        blank=True, verbose_name='Комментарий',
+        help_text='Класс, сроки, цель — что ученик сообщил о себе')
     is_processed = models.BooleanField(default=False, verbose_name='Обработана')
     created_at = models.DateTimeField(auto_now_add=True)
 

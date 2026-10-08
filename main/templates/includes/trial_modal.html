@@ -1,0 +1,202 @@
+{% comment %}
+  Модальное окно записи на бесплатное пробное занятие (index).
+  Открывается кликом по [data-trial-open] или глубинной ссылкой #zapis.
+  Заявка уходит через /api/callback-request/ (письмо владельцу + админка),
+  источник — trial_modal. Контакты слева: телефон (tel: — на мобильном
+  открывает звонилку) и почта (mailto:). Мессенджеры — общий include.
+{% endcomment %}
+<div class="trial-modal" id="trialModal" hidden role="dialog" aria-modal="true"
+    aria-label="Запись на бесплатное пробное занятие">
+    <div class="trial-modal__backdrop" data-trial-close></div>
+
+    <div class="trial-modal__box">
+        <button class="trial-modal__close" type="button" data-trial-close aria-label="Закрыть окно">×</button>
+
+        <div class="trial-modal__grid">
+
+            <div class="trial-modal__pitch">
+                <h3 class="trial-modal__title">Пробное занятие —<br>бесплатно</h3>
+                <p class="trial-modal__text">Оставьте заявку или напишите в мессенджер — отвечу
+                    в ближайшее время.</p>
+
+                <a class="trial-modal__contact" href="tel:{{ CONTACTS.phone }}">
+                    <span class="trial-modal__contact-ico" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path
+                                d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.5 19.5 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                        </svg>
+                    </span>
+                    <span class="trial-modal__contact-body">
+                        <strong>{{ CONTACTS.phone_pretty }}</strong>
+                        <em>телефон</em>
+                    </span>
+                </a>
+
+                <a class="trial-modal__contact" href="mailto:{{ CONTACTS.email }}">
+                    <span class="trial-modal__contact-ico" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <rect x="2" y="4" width="20" height="16" rx="2" />
+                            <path d="m22 7-10 6L2 7" />
+                        </svg>
+                    </span>
+                    <span class="trial-modal__contact-body">
+                        <strong>{{ CONTACTS.email }}</strong>
+                        <em>почта</em>
+                    </span>
+                </a>
+            </div>
+
+            <form class="trial-modal__form" id="trialForm" autocomplete="off">
+                <div class="trial-modal__row">
+                    <label class="tm-field">
+                        <span class="tm-field__label">Имя</span>
+                        <input type="text" name="tm_name" class="tm-field__input"
+                            placeholder="Как к вам обращаться" maxlength="100">
+                    </label>
+                    <label class="tm-field">
+                        <span class="tm-field__label">Телефон</span>
+                        <input type="tel" name="tm_contact" class="tm-field__input"
+                            placeholder="+7 (___) ___-__-__" maxlength="100" required>
+                    </label>
+                </div>
+
+                <label class="tm-field">
+                    <span class="tm-field__label">Комментарий <em>— необязательно</em></span>
+                    <textarea name="tm_comment" class="tm-field__input tm-field__input--area" rows="3"
+                        maxlength="1000"
+                        placeholder="Класс, сроки, цель — всё, что поможет подобрать программу"></textarea>
+                </label>
+
+                {% comment %} honeypot: скрытое поле для ботов, людям не видно {% endcomment %}
+                <div class="tm-hp" aria-hidden="true">
+                    <input type="text" name="tm_hp" tabindex="-1" autocomplete="off">
+                </div>
+
+                <label class="tm-consent">
+                    <input type="checkbox" name="tm_consent" required>
+                    <span>Даю <a href="/privacy/" target="_blank" rel="noopener">согласие на обработку персональных
+                            данных</a> и принимаю <a href="/privacy/" target="_blank" rel="noopener">политику
+                            конфиденциальности</a>.</span>
+                </label>
+
+                <div class="trial-modal__actions">
+                    <button type="submit" class="btn btn--primary trial-modal__submit" id="trialBtn">Отправить
+                        заявку →</button>
+                    <p class="trial-modal__alt">или сразу в мессенджер:</p>
+                    {% comment %} ВК исключён: профиль не оформлен, пишем в TG (ученики) и MAX (родители) {% endcomment %}
+                    {% include 'includes/messengers.html' with msngr_variant='compact' msngr_phone='no' msngr_exclude='vk' %}
+                </div>
+
+                <p class="trial-modal__ok" id="trialOk" hidden>Спасибо! Заявка принята — свяжусь с вами
+                    в ближайшее время.</p>
+                <p class="trial-modal__err" id="trialErr" hidden></p>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var modal = document.getElementById('trialModal');
+        if (!modal) return;
+
+        function openModal() {
+            modal.hidden = false;
+            document.body.style.overflow = 'hidden';
+            var first = modal.querySelector('input[name="tm_name"]');
+            if (first) first.focus();
+        }
+        function closeModal() {
+            modal.hidden = true;
+            document.body.style.overflow = '';
+        }
+
+        Array.prototype.forEach.call(document.querySelectorAll('[data-trial-open]'), function (el) {
+            el.addEventListener('click', function (e) {
+                e.preventDefault();
+                openModal();
+            });
+        });
+        Array.prototype.forEach.call(modal.querySelectorAll('[data-trial-close]'), function (el) {
+            el.addEventListener('click', closeModal);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !modal.hidden) closeModal();
+        });
+
+        // глубинная ссылка: /#zapis открывает окно сразу (пригодится ботам и рекламе)
+        if (location.hash === '#zapis') openModal();
+
+        // Маска телефона: плюс не теряется, «9...» и «8...» сами становятся «+7 ...».
+        // Ник в MAX (буквы) не трогаем — поле принимает и его.
+        var phone = form.querySelector('input[name="tm_contact"]');
+        phone.addEventListener('input', function () {
+            var raw = phone.value;
+            if (/[a-zA-Zа-яА-Я@_.]/.test(raw)) return;
+            var d = raw.replace(/\D/g, '');
+            if (!d) { phone.value = ''; return; }
+            if (d[0] === '8') d = '7' + d.slice(1);
+            if (d[0] === '9') d = '7' + d;
+            if (d[0] !== '7') { phone.value = raw; return; }
+            d = d.slice(0, 11);
+            var out = '+7';
+            if (d.length > 1) out += ' (' + d.slice(1, 4);
+            if (d.length >= 4) out += ')';
+            if (d.length > 4) out += ' ' + d.slice(4, 7);
+            if (d.length > 7) out += '-' + d.slice(7, 9);
+            if (d.length > 9) out += '-' + d.slice(9, 11);
+            phone.value = out;
+        });
+
+        function cookie(name) {
+            var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+            return m ? decodeURIComponent(m[1]) : '';
+        }
+
+        var form = document.getElementById('trialForm');
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            var btn = document.getElementById('trialBtn');
+            var err = document.getElementById('trialErr');
+            err.hidden = true;
+            btn.disabled = true;
+            btn.textContent = 'Отправляю…';
+            try {
+                var res = await fetch('{% url "callback_request" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': cookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        name: form.tm_name.value.trim(),
+                        contact: form.tm_contact.value.trim(),
+                        comment: form.tm_comment.value.trim(),
+                        hp: form.tm_hp.value.trim(),
+                        source: 'trial_modal'
+                    })
+                });
+                var data = await res.json();
+                if (res.ok && data.status === 'ok') {
+                    Array.prototype.forEach.call(form.children, function (el) {
+                        if (el.id !== 'trialOk') el.style.display = 'none';
+                    });
+                    document.getElementById('trialOk').hidden = false;
+                } else {
+                    err.textContent = data.error || 'Не удалось отправить. Попробуйте ещё раз.';
+                    err.hidden = false;
+                    btn.disabled = false;
+                    btn.textContent = 'Отправить заявку →';
+                }
+            } catch (ex) {
+                err.textContent = 'Ошибка сети. Попробуйте ещё раз.';
+                err.hidden = false;
+                btn.disabled = false;
+                btn.textContent = 'Отправить заявку →';
+            }
+        });
+    })();
+</script>

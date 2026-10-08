@@ -291,19 +291,10 @@
                                     ИИ-ассистентом мы ведём каждого ученика к цели ежедневно</p>
                             </div>
 
-                            <!-- CTA и форма -->
+                            <!-- CTA -->
                             <div class="hero__card-cta">
-                                <a href="{% url 'diagnostic_fix_ege' %}" class="btn btn--primary hero__card-btn">Пройти
-                                    диагностику ЕГЭ →</a>
-
-                                <label class="hero__card-consent">
-                                    <input type="checkbox" class="hero__card-check">
-                                    <span class="hero__card-consent-text">Нажимая кнопку, я принимаю <a href="/privacy/"
-                                            target="_blank" rel="noopener"
-                                            style="color:inherit;text-decoration:underline;">Политику
-                                            конфиденциальности</a> и даю согласие на обработку персональных данных
-                                        (ФЗ-152).</span>
-                                </label>
+                                <a href="#trial-lesson" data-trial-open class="btn btn--primary hero__card-btn">Записаться на
+                                    бесплатное занятие →</a>
                             </div>
 
                             <!-- Блок доверия и примечания -->
@@ -599,8 +590,7 @@
                                 <li>Создатель НЕЙРОСТАТ</li>
                             </ul>
 
-                            <a href="{% url 'diagnostic_fix_ege' %}" class="teacher-bio__cta">Пройти диагностику ЕГЭ
-                                →</a>
+                            <a href="#trial-lesson" data-trial-open class="teacher-bio__cta">Записаться на бесплатное занятие →</a>
                         </div>
 
                     </div>
@@ -843,8 +833,9 @@
                             <h3 class="trial-banner__title">Начните бесплатно</h3>
 
                             <p class="trial-banner__text">
-                                Пройдите диагностику, получите персональный план и <strong>5 дней полного
-                                    доступа</strong> ко всем функциям платформы. Без карты. Без обязательств.
+                                Запишитесь на бесплатное занятие: разберём уровень по всем заданиям, составим
+                                персональный план и откроем <strong>5 дней полного доступа</strong> ко всем
+                                функциям платформы. Без карты. Без обязательств.
                             </p>
 
                             <p class="trial-banner__note">
@@ -853,7 +844,7 @@
                             </p>
                         </div>
 
-                        <a href="{% url 'diagnostic_fix_ege' %}" class="teacher-bio__cta">Пройти диагностику ЕГЭ →</a>
+                        <a href="#trial-lesson" data-trial-open class="teacher-bio__cta">Записаться на бесплатное занятие →</a>
 
                     </div>
                 </div>
@@ -1065,7 +1056,7 @@
                 </div>
             </section>
 
-            <section class="final-cta" id="final-cta">
+            <section class="final-cta" id="trial-lesson">
                 <h2 class="visually-hidden">Как исправить ошибки в русском и сдать ЕГЭ на 85+</h2>
                 <div class="container">
                     <div class="cta-block">
@@ -1078,7 +1069,8 @@
                             результату. Разбор
                             ошибок — на бесплатном пробном занятии.</p>
 
-                        <a href="{% url 'diagnostic_fix_ege' %}" class="teacher-bio__cta">Пройти диагностику ЕГЭ →</a>
+                        <a href="#trial-lesson" data-trial-open class="teacher-bio__cta">Записаться на бесплатное
+                            занятие →</a>
 
                         <p class="cta-block__micro">847 учеников уже повысили балл · В полёт с Нейростатом!</p>
 
@@ -1095,11 +1087,12 @@
     </div>
     <!-- Mobile Sticky Bar — только для мобильных -->
     <div class="mobile-sticky-bar">
-        <a href="#final-cta" class="mobile-sticky-bar__button">
-            Пройти диагностику — бесплатно
+        <a href="#trial-lesson" data-trial-open class="mobile-sticky-bar__button">
+            Записаться на бесплатное занятие
         </a>
     </div>
     {% include 'includes/video_modal.html' %}
+    {% include 'includes/trial_modal.html' %}
     <script src="/static/js/main.js"></script>
 </body>
 
