@@ -126,6 +126,9 @@ check('#zapis' in html, 'глубинная ссылка #zapis открывае
 check('в ближайшее время' in html, 'обещание «отвечу в ближайшее время»')
 check('в течение часа' not in html, 'старой формулировки «в течение часа» нет')
 check('replace(/\\D/g' in html, 'маска телефона в JS модалки')
+check("goal('TRIAL_MODAL_OPEN')" in html, 'цель Метрики: открытие окна')
+check("goal('TRIAL_FORM_START')" in html, 'цель Метрики: начало заполнения')
+check("goal('TRIAL_FORM_SUBMIT')" in html, 'цель Метрики: успешная отправка')
 
 # ===== 6. Мобильная sticky-кнопка =====
 print('6. Мобильная кнопка')

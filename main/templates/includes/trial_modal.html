@@ -103,11 +103,20 @@
         var modal = document.getElementById('trialModal');
         if (!modal) return;
 
+        var METRIKA_ID = 112180656;
+        function goal(name) {
+            try {
+                if (typeof ym === 'function') ym(METRIKA_ID, 'reachGoal', name);
+            } catch (e) { /* adblock — не влияем на работу окна */ }
+        }
+        var sentOpen = false, sentStart = false;
+
         function openModal() {
             modal.hidden = false;
             document.body.style.overflow = 'hidden';
             var first = modal.querySelector('input[name="tm_name"]');
             if (first) first.focus();
+            if (!sentOpen) { sentOpen = true; goal('TRIAL_MODAL_OPEN'); }
         }
         function closeModal() {
             modal.hidden = true;
@@ -157,6 +166,16 @@
         }
 
         var form = document.getElementById('trialForm');
+
+        // Заинтересованность: первый ввод в любое поле формы — один раз за показ окна
+        Array.prototype.forEach.call(
+            form.querySelectorAll('input[name="tm_name"], input[name="tm_contact"], textarea[name="tm_comment"]'),
+            function (el) {
+                el.addEventListener('input', function () {
+                    if (!sentStart) { sentStart = true; goal('TRIAL_FORM_START'); }
+                });
+            });
+
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
             var btn = document.getElementById('trialBtn');
@@ -181,6 +200,7 @@
                 });
                 var data = await res.json();
                 if (res.ok && data.status === 'ok') {
+                    goal('TRIAL_FORM_SUBMIT');
                     Array.prototype.forEach.call(form.children, function (el) {
                         if (el.id !== 'trialOk') el.style.display = 'none';
                     });
