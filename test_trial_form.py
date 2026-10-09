@@ -137,6 +137,22 @@ seg = html[i:i + 400] if i != -1 else ''
 check('#trial-lesson' in seg, 'sticky-кнопка ведёт на #trial-lesson')
 check('Записаться' in seg, 'sticky-кнопка переименована')
 
+# ===== 7. «Радуга» (sklonenie-chislitelnyh): цель анонимного посетителя =====
+print('7. «Радуга»: RADUGA_ANON_VISIT')
+r = Client().get('/sklonenie-chislitelnyh/')
+check(r.status_code == 200, f'GET /sklonenie-chislitelnyh/ -> {r.status_code}')
+html_r = r.content.decode('utf-8')
+check('RADUGA_ANON_VISIT' in html_r, 'анонимный визитёр видит цель')
+check('mc.yandex.ru/metrika/tag.js' in html_r, 'счётчик Метрики на странице есть')
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
+u = User.objects.create_user(username='raduga_pupil', password='Xk4mZ9pQ2wL7')
+c2 = Client()
+check(c2.login(username='raduga_pupil', password='Xk4mZ9pQ2wL7'), 'логин ученика')
+html_r2 = c2.get('/sklonenie-chislitelnyh/').content.decode('utf-8')
+check('RADUGA_ANON_VISIT' not in html_r2, 'залогиненный ученик цель НЕ видит')
+
 print()
 if fails:
     print(f'❌ ПРОВАЛЕНО: {len(fails)}')

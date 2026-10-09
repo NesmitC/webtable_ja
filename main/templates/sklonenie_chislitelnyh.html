@@ -249,6 +249,13 @@
     {% include 'includes/footer.html' %}
 
     <script type="module" src="{% static 'js/rainbow_trening.js' %}?v=1"></script>
+
+    {% comment %} Цель для Метрики: зашёл НЕ залогиненный — значит, внешний
+    посетитель (органика/реклама). Свои ученики (~17) авторизованы и не
+    считаются. В кабинете Метрики — простая цель JS-событие RADUGA_ANON_VISIT. {% endcomment %}
+    {% if not user.is_authenticated %}
+        {% include 'includes/metrika_goal.html' with goal_name='RADUGA_ANON_VISIT' %}
+    {% endif %}
 </body>
 
 </html>
