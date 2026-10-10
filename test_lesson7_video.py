@@ -68,14 +68,27 @@ check(html.count(EMBED) == 1,
       f'embed-ссылка встречается ровно один раз (факт {html.count(EMBED)})')
 check(PUBLIC not in html, 'публичная ссылка (не embed) в разметку не попала')
 
+print('1b. Вставка в карточку «Задание 8»')
+EMBED8 = 'https://kinescope.io/embed/s14FPceWSWgqWP63g38D3w'
+i8 = html.find('Задание 8 (грамматические нормы)')
+check(i8 > 0, 'карточка «Задание 8» на странице')
+seg8 = html[i8:i8 + 1200]
+btn8 = re.search(r'<a href="#" class="lesson-card__video-btn"([^>]*)>', seg8)
+check(btn8 is not None, 'кнопка «Смотреть видео» в карточке найдена')
+if btn8:
+    check('data-video-src="%s"' % EMBED8 in btn8.group(1),
+          f'у кнопки карточки задания 8 стоит embed-ссылка: {btn8.group(1).strip()[:80]}')
+check(html.count(EMBED8) == 1,
+      f'embed-ссылка задания 8 встречается ровно один раз (факт {html.count(EMBED8)})')
+
 print('2. Остальные карточки не задеты')
 srcs = re.findall(r'class="lesson-card__video-btn" data-video-src="([^"]+)"', html)
-check(len(srcs) == 6, f'карточек с видео стало 6 (факт {len(srcs)})')
-check(sum(1 for s in srcs if 'kinescope.io/embed/' in s) == 3,
-      'из них три Kinescope (уроки 2, 5/задание 7, 7)')
+check(len(srcs) == 7, f'карточек с видео стало 7 (факт {len(srcs)})')
+check(sum(1 for s in srcs if 'kinescope.io/embed/' in s) == 4,
+      'из них четыре Kinescope (уроки 2, 5/задание 7, 6/задание 8, 7)')
 check(sum(1 for s in srcs if 'rutube.ru/play/embed/' in s) == 3, 'три Rutube на месте')
 empty = html.count('<a href="#" class="lesson-card__video-btn">')
-check(empty == 1, f'пустых кнопок осталась одна (урок 6): факт {empty}')
+check(empty == 0, f'пустых кнопок не осталось (урок 6 закрыт): факт {empty}')
 
 print('3. Модальный плеер')
 check('id="videoModal"' in html and 'id="videoModalFrame"' in html, 'модалка на странице')
