@@ -172,6 +172,9 @@ urlpatterns = [
     path('dictations/', views.dictations_list, name='dictations'),
     path('dictations/<int:pk>/', views.dictation_detail, name='dictation_detail'),
     path('dictations/<int:pk>/check/', views.dictation_check, name='dictation_check'),
+    # SEO-разделы задания 9: анонимные индексируемые страницы с тренажёрами
+    path('ege/zadanie-9/', views.task9_hub, name='task9_hub'),
+    path('ege/zadanie-9/<slug:section>/', views.task9_section, name='task9_section'),
     path('sklonenie-chislitelnyh/', views.sklonenie_chislitelnyh, name='sklonenie_chislitelnyh'),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.svg', permanent=True)),
     # Политика обработки персональных данных

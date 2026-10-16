@@ -30,6 +30,8 @@ import json, secrets, datetime
 from pathlib import Path
 import logging
 import threading
+from .task9_config import (SECTIONS as TASK9_SECTIONS, HUB as TASK9_HUB,
+                           CHERED_GROUP_TITLES)
 from .forms import CustomUserCreationForm, ProfileForm, CustomAuthenticationForm
 from .models import (
     UserExample, UserProfile, OrthogramExample, Orthogram, 
@@ -63,6 +65,7 @@ from django.contrib.auth.views import redirect_to_login
 import requests as _requests
 from main import bot_core
 from django.http import FileResponse, Http404
+from zoneinfo import ZoneInfo
 
 
 
@@ -2221,9 +2224,13 @@ def generate_punktum_exercise_multi(request):
 
 # ========================================================
 
-@login_required
 def generate_alphabetical_exercise(request):
-    """Алфавитная навигация ФИПИ для ЕГЭ (только 10-11 классы)"""
+    """Алфавитная навигация ФИПИ для ЕГЭ (только 10-11 классы).
+
+    mode='seo' — вызов с открытых SEO-страниц задания 9: без летописи и
+    отчёта, с часовым лимитом генераций. Без mode — прежний режим
+    тренажёров (только для залогиненных).
+    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Только POST'}, status=405)
     
@@ -2231,6 +2238,15 @@ def generate_alphabetical_exercise(request):
         data = json.loads(request.body)
         orthogram_id = data.get('orthogram_id')
         range_code = data.get('range')
+        seo = data.get('mode') == 'seo'
+
+        if not seo and not request.user.is_authenticated:
+            return JsonResponse({'error': 'Требуется вход'}, status=403)
+        if seo and _task9_seo_rate_limited(request, 'gen', 20):
+            return JsonResponse(
+                {'error': 'Слишком много упражнений подряд. Сделайте паузу '
+                          'или запишитесь на бесплатное занятие — там '
+                          'тренажёров больше.'}, status=429)
 
         if not orthogram_id or not range_code:
             return JsonResponse({'error': 'Отсутствуют обязательные параметры'}, status=400)
@@ -2342,6 +2358,7 @@ def generate_alphabetical_exercise(request):
             'correct_letters': correct_letters,
             'orthogram_id': orthogram_id,
             'range_code': range_code,
+            'seo': seo,
         }
 
         # === ШАГ 6: Название упражнения ===
@@ -2366,7 +2383,7 @@ def generate_alphabetical_exercise(request):
             'word_count': len(words),
             'orthogram_id': orthogram_id,
             'range_code': range_code,
-            'report': _task9_report(request.user, orthogram_id, range_code),
+            'report': _task9_response_report(request, seo, orthogram_id, range_code),
         })
     
     except json.JSONDecodeError:
@@ -2496,15 +2513,34 @@ def generate_task9_exercise(request):
         return JsonResponse({'error': 'Внутренняя ошибка сервера'}, status=500)
 
 
-@login_required
 def generate_chered_exercise(request):
-    """Задание 9 ЕГЭ: Чередующиеся гласные (орфограммы 12,13,24,26,27,271,272,273,274,275)"""
+    """Задание 9 ЕГЭ: Чередующиеся гласные (орфограммы 12,13,24,26,27,271,272,273,274,275).
+
+    mode='seo' — вызов с открытой SEO-страницы: без летописи и отчёта,
+    с часовым лимитом. Без mode — прежний режим тренажёров (только вход).
+    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Только POST'}, status=405)
     
     try:
+        data = json.loads(request.body) if request.body else {}
+        seo = data.get('mode') == 'seo'
+
+        if not seo and not request.user.is_authenticated:
+            return JsonResponse({'error': 'Требуется вход'}, status=403)
+        if seo and _task9_seo_rate_limited(request, 'gen', 20):
+            return JsonResponse(
+                {'error': 'Слишком много упражнений подряд. Сделайте паузу '
+                          'или запишитесь на бесплатное занятие — там '
+                          'тренажёров больше.'}, status=429)
+
         # Конфигурация
         ORTH_IDS = [12, 13, 24, 26, 27, 271, 272, 273, 274, 275]
+        # Групповые упражнения («лаг / лож», «раст / рос», ...): и пул,
+        # и заголовок задаются одной записью в CHERED_GROUP_TITLES
+        group_cfg = CHERED_GROUP_TITLES.get((data.get('range') or '').upper())
+        if group_cfg:
+            ORTH_IDS = group_cfg['orth_ids']
         TOTAL_NEEDED = 16
         WORDS_PER_ORTH = 2  # по 2 слова из каждой орфограммы
         
@@ -2590,6 +2626,7 @@ def generate_chered_exercise(request):
             'correct_words': formatted_items,
             'orthogram_id': 'CHERED',
             'range_code': 'CHERED',
+            'seo': seo,
         }
         
         # 5. Рендерим
@@ -2599,13 +2636,23 @@ def generate_chered_exercise(request):
             'exercise_title': 'Чередующиеся гласные',
             'show_next_button': False,
         })
+
+        if group_cfg:
+            html = (
+                '<div class="task9-exercise-title">'
+                f'<span class="title-planing">{group_cfg["title"]}</span>'
+                f'<a class="orthoepy-dictionary-link" '
+                f'href="{reverse(group_cfg["url_name"])}">'
+                f'{group_cfg["link_label"]} <span class="arrow">→</span></a>'
+                '</div>'
+            ) + html
         
         return JsonResponse({
             'html': html,
             'word_count': len(formatted_items),
             'orthogram_id': 'CHERED',
             'range_code': 'CHERED',
-            'report': _task9_report(request.user, 'CHERED', 'CHERED'),
+            'report': _task9_response_report(request, seo, 'CHERED', 'CHERED'),
         })
         
     except Exception as e:
@@ -2632,7 +2679,7 @@ def _task9_attempts_data(user, orthogram_id: str, range_code: str) -> list:
         user=user, orthogram_id=orthogram_id, range_code=range_code,
     ).order_by('-created_at')[:20]
     return [{
-        'date': a.created_at.strftime('%d.%m.%Y %H:%M'),
+        'date': timezone.localtime(a.created_at, ZoneInfo('Europe/Moscow')).strftime('%d.%m.%Y %H:%M'),
         'chosen': a.chosen_count,
         'correct': a.correct_count,
     } for a in attempts]
@@ -2646,8 +2693,12 @@ def _task9_report(user, orthogram_id: str, range_code: str) -> dict:
     }
 
 
-@login_required
 def check_alphabetical_exercise(request):
+    """Проверка упражнения задания 9 (диапазоны и чередования).
+
+    Для упражнения с флагом seo (открытые SEO-страницы) летопись и отчёт
+    не пишутся — там нужна только подсветка результата.
+    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Только POST'}, status=405)
     
@@ -2658,6 +2709,14 @@ def check_alphabetical_exercise(request):
         # Получаем правильные буквы из сессии
         exercise_data = request.session.get('current_exercise', {})
         correct_letters = exercise_data.get('correct_letters', [])
+        seo = bool(exercise_data.get('seo'))
+
+        if not seo and not request.user.is_authenticated:
+            return JsonResponse({'error': 'Требуется вход'}, status=403)
+        if seo and _task9_seo_rate_limited(request, 'check', 40):
+            return JsonResponse(
+                {'error': 'Слишком много проверок подряд. Сделайте паузу.'},
+                status=429)
         
         if not correct_letters:
             return JsonResponse({'error': 'Нет данных для проверки'}, status=400)
@@ -2692,8 +2751,9 @@ def check_alphabetical_exercise(request):
         correct_words = exercise_data.get('correct_words', [])
         resolved = []
 
-        if orthogram_id and range_code:
+        if orthogram_id and range_code and request.user.is_authenticated:
             now = timezone.now()
+            now_msk = timezone.localtime(now, ZoneInfo('Europe/Moscow'))
             with transaction.atomic():
                 attempt = Task9Attempt.objects.create(
                     user=request.user,
@@ -2734,8 +2794,13 @@ def check_alphabetical_exercise(request):
                         stat.errors += 1
                         if not stat.in_correction:
                             stat.in_correction = True
-                            stat.correction_since = now.date()
+                            stat.correction_since = now_msk.date()
                     stat.save()
+
+        if (seo and not request.user.is_authenticated
+                and orthogram_id and range_code):
+            resolved = _task9_session_update(
+                request, correct_words, selected_letters, correct_letters, results)
 
         return JsonResponse({
             'results': results,
@@ -2745,8 +2810,7 @@ def check_alphabetical_exercise(request):
             'orthogram_id': orthogram_id,
             'range_code': range_code,
             'resolved': resolved,
-            'report': (_task9_report(request.user, orthogram_id, range_code)
-                       if orthogram_id and range_code else None),
+            'report': _task9_response_report(request, seo, orthogram_id, range_code),
         })
         
     except Exception as e:
@@ -4771,7 +4835,7 @@ def _orthoepy_correction_data(user):
 def _orthoepy_attempts_data(user):
     attempts = OrthoepyAttempt.objects.filter(user=user).order_by('-created_at')[:20]
     return [{
-        'date': a.created_at.strftime('%d.%m.%Y %H:%M'),
+        'date': timezone.localtime(a.created_at, ZoneInfo('Europe/Moscow')).strftime('%d.%m.%Y %H:%M'),
         'chosen': a.chosen_count,
         'correct': a.correct_count,
     } for a in attempts]
@@ -11021,3 +11085,98 @@ def dictation_check(request, pk):
 def sklonenie_chislitelnyh(request):
     """Тренажёр + памятки по склонению числительных. Анонимно — страница индексируется."""
     return render(request, 'sklonenie_chislitelnyh.html')
+
+
+# ============================================================
+# SEO-разделы задания 9 (анонимные, индексируемые)
+# ============================================================
+
+def _task9_seo_rate_limited(request, action: str, limit: int) -> bool:
+    """Скользящий часовой лимит генераций/проверок открытых тренажёров.
+
+    Без лимита анонимный трафик с органики может молотить генератор
+    упражнений бесконечно: каждый вызов — запрос к БД с order_by('?').
+    """
+    ident = request.session.session_key or request.META.get('REMOTE_ADDR', 'anon')
+    key = f'task9_seo_{action}_{ident}'
+    try:
+        count = cache.incr(key)
+    except ValueError:
+        cache.set(key, 1, 3600)
+        count = 1
+    return count > limit
+
+
+def _task9_session_update(request, words, selected, correct_letters, results) -> list:
+    """Попытка анонима на открытой странице: блоки ошибок и история — в сессию.
+
+    В БД анониму писать некуда (нет пользователя), но ученик без входа должен
+    видеть ту же «Работу над ошибками», что и залогиненный. Зарегистрируется —
+    история начнёт копиться в летописи и станет доступна боту.
+    """
+    now = timezone.localtime(timezone.now(), ZoneInfo('Europe/Moscow'))
+    day = now.strftime('%d.%m.%Y')
+    corr = request.session.get('task9_seo_correction', {})
+    attempts = request.session.get('task9_seo_attempts', [])
+    resolved = []
+    for i, ok in enumerate(results):
+        word = words[i] if i < len(words) else f'#{i}'
+        if not ok:
+            entry = corr.get(word)
+            if entry is None:
+                entry = {'word': word, 'correction_since': day}
+                corr[word] = entry
+            entry['chosen_letter'] = selected[i] if i < len(selected) else None
+            entry['correct_letter'] = (
+                correct_letters[i] if i < len(correct_letters) else None)
+        else:
+            entry = corr.pop(word, None)
+            if entry is not None:
+                resolved.append(
+                    {'word': word, 'correct_letter': entry.get('correct_letter')})
+    attempts.insert(0, {
+        'date': now.strftime('%d.%m.%Y %H:%M'),
+        'chosen': len(results),
+        'correct': sum(1 for ok in results if ok),
+    })
+    del attempts[20:]
+    request.session['task9_seo_correction'] = corr
+    request.session['task9_seo_attempts'] = attempts
+    request.session.modified = True
+    return resolved
+
+
+def _task9_response_report(request, seo: bool, orthogram_id: str, range_code: str):
+    """Отчёт для страницы упражнения: залогиненным — летопись из БД, анонимам — сессия."""
+    if not (orthogram_id and range_code):
+        return None
+    if request.user.is_authenticated:
+        return _task9_report(request.user, orthogram_id, range_code)
+    if seo:
+        return {
+            'correction': list(
+                request.session.get('task9_seo_correction', {}).values()),
+            'attempts': request.session.get('task9_seo_attempts', []),
+        }
+    return None
+
+
+def task9_hub(request):
+    """Хаб «Задание 9»: три вида корней и ссылки на разделы. Индексируется."""
+    return render(request, 'task9/hub.html', {
+        'hub': TASK9_HUB,
+        'sections': TASK9_SECTIONS,
+    })
+
+
+def task9_section(request, section: str):
+    """Раздел задания 9 с тренажёром. Индексируется, доступен анонимно."""
+    cfg = TASK9_SECTIONS.get(section)
+    if cfg is None:
+        raise Http404('Раздел задания 9 не найден')
+    return render(request, 'task9/section.html', {
+        'cfg': cfg,
+        'slug': section,
+        'hub': TASK9_HUB,
+        'sections': TASK9_SECTIONS,
+    })

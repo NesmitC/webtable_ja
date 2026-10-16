@@ -1965,6 +1965,20 @@ a.diag-tab {
     transform: translateX(3px);
 }
 
+/* Три ссылки-пилюли на разделы задания 9: одна строка под упражнением */
+.task9-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.task9-nav .orthoepy-dictionary-link {
+    margin: 0;
+}
+
 .text-analysis-exercise .options {
     display: flex;
     flex-direction: column;

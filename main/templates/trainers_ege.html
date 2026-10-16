@@ -58,7 +58,7 @@
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
-    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261016">
 </head>
 
 <body>
@@ -140,31 +140,6 @@
         <!-- КОНТЕЙНЕР, КУДА JS РЕНДЕРИТ ЗАДАНИЯ — НЕ ТРОГАТЬ -->
         <section class="block-answer"></section>
 
-        <section class="block-answer-still">
-            <div class="answer-still-num">
-                <h2 class="title-planing">Задание 9. По навигатору ФИПИ</h2>
-                <article>
-                    <div>
-                        <h3 class="sub-title-planing">Проверяемые ударением гласные</h3>
-                        <button class="check-task-still">А-О</button>
-                        <button class="check-task-still">П-С</button>
-                        <button class="check-task-still">Т-Я</button>
-                    </div>
-                    <div>
-                        <h3 class="sub-title-planing">Непроверяемые ударением гласные</h3>
-                        <button class="check-task-still">А-Д</button>
-                        <button class="check-task-still">Е-К</button>
-                        <button class="check-task-still">Л-Р</button>
-                        <button class="check-task-still">С-Я</button>
-                    </div>
-                    <div>
-                        <h3 class="sub-title-planing">Чередующиеся гласные</h3>
-                        <button class="check-task-still" data-range="CHERED">а / о, е / и</button>
-                    </div>
-                </article>
-                <section class="block-answer-still-content"></section>
-            </div>
-        </section>
 
         <article id="task4" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
             <h2 class="title-table-container">Задание 4 (орфоэпия)</h2>
@@ -2128,7 +2103,8 @@
 
     <!-- Порядок скриптов НЕ МЕНЯЛСЯ: сначала основной обработчик, потом модули -->
     <script src="/static/js/main.js"></script>
-    <script src="{% static 'js/planning.js' %}?v=20260914"></script>
+    <script src="{% static 'js/task9_report.js' %}?v=1"></script>
+    <script src="{% static 'js/planning.js' %}?v=20261016"></script>
     <script src="{% static 'js/planning_eight.js' %}"></script>
     <script src="{% static 'js/planning_twotwo.js' %}"></script>
     <script src="{% static 'js/correctionModule.js' %}"></script>

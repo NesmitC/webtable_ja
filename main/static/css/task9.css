@@ -1,0 +1,230 @@
+/* main/static/css/task9.css — оформление SEO-страниц задания 9 и карточек-ссылок */
+
+.task9-lead {
+    max-width: 760px;
+    margin: 0 auto 28px;
+    font-size: 17px;
+    line-height: 1.55;
+    color: #4a3f30;
+}
+
+/* Карточки-ссылки на разделы (хаб и страница тренажёров) */
+.task9-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 0 auto 32px;
+    max-width: 980px;
+}
+
+.task9-card {
+    display: block;
+    padding: 18px 20px;
+    background: #faf6ee;
+    border: 1px solid #d9c9a8;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.task9-card:hover {
+    box-shadow: 0 4px 14px rgba(90, 70, 40, .15);
+    transform: translateY(-2px);
+}
+
+.task9-card h2,
+.task9-card h3 {
+    margin: 0 0 8px;
+    font-size: 17px;
+    line-height: 1.35;
+}
+
+.task9-card p {
+    margin: 0 0 10px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #6b5b45;
+}
+
+.task9-card-ranges,
+.task9-card span {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: #8a6d3b;
+}
+
+/* Кнопки диапазонов на страницах разделов */
+.task9-ranges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+/* Теория, исключения, мнемоники */
+.task9-theory {
+    max-width: 860px;
+    margin: 0 auto 26px;
+}
+
+.task9-list {
+    margin: 0;
+    padding-left: 22px;
+    line-height: 1.6;
+}
+
+.task9-list li {
+    margin-bottom: 6px;
+}
+
+/* Вопросы и ответы */
+.task9-faq {
+    max-width: 860px;
+    margin: 0 auto 30px;
+}
+
+.task9-faq-item {
+    border-bottom: 1px solid #e4d8c2;
+    padding: 10px 0;
+}
+
+.task9-faq-item summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.task9-faq-item p {
+    margin: 8px 0 4px;
+    line-height: 1.55;
+}
+
+/* Призыв */
+
+.task9-cta {
+    max-width: 640px;
+    margin: 0 auto 40px;
+    padding: 22px 24px;
+    text-align: center;
+    background: #faf6ee;
+    border: 1px solid #d9c9a8;
+    border-radius: 12px;
+}
+
+.task9-cta p {
+    margin: 0 0 14px;
+    font-size: 16px;
+}
+
+/* .btn--primary в шапке имеет width:132px и nowrap — здесь кнопка длиннее */
+.task9-cta .btn {
+    width: auto;
+    min-width: 280px;
+    max-width: 100%;
+    white-space: normal;
+}
+
+/* Строка результата проверки на SEO-страницах */
+.task9-result {
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.task9-result.is-error {
+    color: #b0432f;
+    font-weight: 400;
+}
+
+/* Карточка тренажёра над упражнением: та же ширина, что у .article-practice
+   (900px) — блоки на странице выровнены по одному краю */
+main.page-container-trainers.task9-page .block-task {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Навигация на страницах разделов: две пилюли группой по центру блока 900px.
+   Правило дублирует .task9-nav из planning_style.css намеренно: тот файл
+   подключён без версии и сидит в кэше браузеров — раскладку держит task9.css */
+main.page-container-trainers.task9-page .task9-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    max-width: 900px;
+    margin: 14px auto 0;
+}
+
+main.page-container-trainers.task9-page .task9-nav .orthoepy-dictionary-link {
+    margin: 0;
+}
+
+/* Отчёт («Работа над ошибками», «История прохождений») — по ширине карточки
+   упражнения, а не во весь контейнер */
+main.page-container-trainers.task9-page .task9-seo-content .block-correction,
+main.page-container-trainers.task9-page .task9-seo-content .block-history {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Динамический заголовок над упражнением: по левому краю, как «Тренажёр:
+   выберите корни»; текст правила + пилюля «См. правило» в одну строку */
+main.page-container-trainers.task9-page .task9-exercise-title {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    max-width: 900px;
+    margin: 0 auto 14px;
+}
+
+main.page-container-trainers.task9-page .task9-exercise-title .title-planing {
+    margin: 0;
+}
+
+main.page-container-trainers.task9-page .task9-exercise-title .orthoepy-dictionary-link {
+    margin: 0;
+}
+
+/* Слово с пропуском: перенос только по границам слов, не внутри них */
+.task9-word {
+    white-space: nowrap;
+}
+
+/* Опции выбора буквы: span-аналоги .smiley-options li из planning_style
+   (li/ul внутри <p> ломают парсинг — см. комментарий в task9.js) */
+.task9-seo-content .smiley-options > span {
+    display: block;
+    padding: 5px 12px;
+    font-size: 16px;
+    line-height: 1.4;
+    color: #333;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.task9-seo-content .smiley-options > span:hover {
+    background-color: #f0f0f0;
+    color: #000;
+}
+
+/* body is a flex column: without an explicit width, main is sized as
+   fit-content and cannot shrink below the min-content of the exercise line
+   (same lesson as the "Rainbow" trainer). Force full width, scoped. */
+main.page-container-trainers.task9-page {
+    min-width: 0;
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .task9-cards {
+        grid-template-columns: 1fr;
+    }
+}
