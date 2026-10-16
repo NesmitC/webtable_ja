@@ -116,6 +116,9 @@
 
         <!-- Outside .block-task: site style .block-task p (display:flex + marker)
              would split the exercise line into non-wrapping columns. -->
+        <!-- Скрытое поле с CSRF-токеном: нужно для POST из task9.js анонимом
+             (рендер {{ csrf_token }} ставит cookie csrftoken на ответе) -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
         <section class="block-answer-still-content task9-seo-content"
             data-endpoint="{{ cfg.endpoint }}"
             data-orthogram="{{ cfg.orthogram_id }}"></section>
