@@ -31,7 +31,7 @@ from pathlib import Path
 import logging
 import threading
 from .task9_config import (SECTIONS as TASK9_SECTIONS, HUB as TASK9_HUB,
-                           CHERED_GROUP_TITLES)
+                           CHERED_GROUP_TITLES, TASK10_PRE_PRI)
 from .forms import CustomUserCreationForm, ProfileForm, CustomAuthenticationForm
 from .models import (
     UserExample, UserProfile, OrthogramExample, Orthogram, 
@@ -2800,7 +2800,8 @@ def check_alphabetical_exercise(request):
         if (seo and not request.user.is_authenticated
                 and orthogram_id and range_code):
             resolved = _task9_session_update(
-                request, correct_words, selected_letters, correct_letters, results)
+                request, correct_words, selected_letters, correct_letters, results,
+                key_prefix=_seo_key_prefix(orthogram_id))
 
         return JsonResponse({
             'results': results,
@@ -11091,14 +11092,15 @@ def sklonenie_chislitelnyh(request):
 # SEO-разделы задания 9 (анонимные, индексируемые)
 # ============================================================
 
-def _task9_seo_rate_limited(request, action: str, limit: int) -> bool:
+def _task9_seo_rate_limited(request, action: str, limit: int,
+                            bucket: str = 'task9') -> bool:
     """Скользящий часовой лимит генераций/проверок открытых тренажёров.
 
     Без лимита анонимный трафик с органики может молотить генератор
     упражнений бесконечно: каждый вызов — запрос к БД с order_by('?').
     """
     ident = request.session.session_key or request.META.get('REMOTE_ADDR', 'anon')
-    key = f'task9_seo_{action}_{ident}'
+    key = f'{bucket}_seo_{action}_{ident}'
     try:
         count = cache.incr(key)
     except ValueError:
@@ -11107,7 +11109,14 @@ def _task9_seo_rate_limited(request, action: str, limit: int) -> bool:
     return count > limit
 
 
-def _task9_session_update(request, words, selected, correct_letters, results) -> list:
+def _seo_key_prefix(orthogram_id: str) -> str:
+    """Сессионный отчёт раздельно по тренажёрам: приставки ПРЕ-/ПРИ- не
+    смешиваются с историей корней задания 9."""
+    return 'task10_seo' if orthogram_id == '29' else 'task9_seo'
+
+
+def _task9_session_update(request, words, selected, correct_letters, results,
+                          key_prefix: str = 'task9_seo') -> list:
     """Попытка анонима на открытой странице: блоки ошибок и история — в сессию.
 
     В БД анониму писать некуда (нет пользователя), но ученик без входа должен
@@ -11116,8 +11125,8 @@ def _task9_session_update(request, words, selected, correct_letters, results) ->
     """
     now = timezone.localtime(timezone.now(), ZoneInfo('Europe/Moscow'))
     day = now.strftime('%d.%m.%Y')
-    corr = request.session.get('task9_seo_correction', {})
-    attempts = request.session.get('task9_seo_attempts', [])
+    corr = request.session.get(f'{key_prefix}_correction', {})
+    attempts = request.session.get(f'{key_prefix}_attempts', [])
     resolved = []
     for i, ok in enumerate(results):
         word = words[i] if i < len(words) else f'#{i}'
@@ -11140,8 +11149,8 @@ def _task9_session_update(request, words, selected, correct_letters, results) ->
         'correct': sum(1 for ok in results if ok),
     })
     del attempts[20:]
-    request.session['task9_seo_correction'] = corr
-    request.session['task9_seo_attempts'] = attempts
+    request.session[f'{key_prefix}_correction'] = corr
+    request.session[f'{key_prefix}_attempts'] = attempts
     request.session.modified = True
     return resolved
 
@@ -11152,11 +11161,12 @@ def _task9_response_report(request, seo: bool, orthogram_id: str, range_code: st
         return None
     if request.user.is_authenticated:
         return _task9_report(request.user, orthogram_id, range_code)
+    key_prefix = _seo_key_prefix(orthogram_id)
     if seo:
         return {
             'correction': list(
-                request.session.get('task9_seo_correction', {}).values()),
-            'attempts': request.session.get('task9_seo_attempts', []),
+                request.session.get(f'{key_prefix}_correction', {}).values()),
+            'attempts': request.session.get(f'{key_prefix}_attempts', []),
         }
     return None
 
@@ -11179,4 +11189,37 @@ def task9_section(request, section: str):
         'slug': section,
         'hub': TASK9_HUB,
         'sections': TASK9_SECTIONS,
+    })
+
+
+def task10_pre_pri(request):
+    """Страница «Правописание приставок ПРЕ- и ПРИ-»: ВСЕ слова орфограммы 29,
+    перемешанные при каждом заходе (без алфавитных группировок). Упражнение
+    рендерится на сервере, чтобы слова попадали в индекс. Проверка и
+    отчёт — тот же механизм, что у корней задания 9.
+    """
+    pool = list(OrthogramExample.objects.filter(
+        orthogram_id='29', is_active=True, grades__contains='11'))
+    words = pool[:]
+    random.shuffle(words)
+    masked = [w.masked_word for w in words]
+    request.session['current_exercise'] = {
+        'correct_letters': [extract_correct_letter(w.text, w.masked_word)
+                            for w in words],
+        'correct_words': masked,
+        'orthogram_id': '29',
+        'range_code': 'PREPRI',
+        'seo': True,
+    }
+    snippet = render_to_string('exercise_snippet.html', {
+        'words_text': ', '.join(masked),
+        'exercise_id': 'pre_pri_ege',
+        'exercise_title': 'Приставки ПРЕ- и ПРИ-',
+        'show_next_button': False,
+    })
+    return render(request, 'task10/pre_pri.html', {
+        'meta': TASK10_PRE_PRI,
+        'snippet': snippet,
+        'initial_report': _task9_response_report(
+            request, True, '29', 'PREPRI') or {},
     })

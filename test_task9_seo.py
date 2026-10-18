@@ -62,6 +62,14 @@ def seed_examples() -> None:
             text=text, defaults={
                 'orthogram_id': '275', 'masked_word': masked,
                 'grades': '6,10,11', 'is_active': True})
+    Orthogram.objects.get_or_create(
+        id='29', defaults={'name': 'Гласные в приставках ПРЕ-/ПРИ-', 'letters': 'е,и'})
+    for text, masked in [('преподавать', 'пр*29*подавать'),
+                         ('пришкольный', 'пр*29*школьный')]:
+        OrthogramExample.objects.get_or_create(
+            text=text, defaults={
+                'orthogram_id': '29', 'masked_word': masked,
+                'grades': '6,10,11', 'is_active': True})
 
 
 class Task9SeoPagesTest(TestCase):
@@ -297,3 +305,43 @@ class Task9TrainersPageLinksTest(TestCase):
         self.assertIn('insertTask9Nav', planning)
         self.assertIn('orthoepy-dictionary-link', planning)
         self.assertNotIn('task9-nav-title', planning)
+        self.assertIn('insertTask10Nav', planning)
+        # Регресс: taskNumber из маппинга — строка, сравнение с числом убивало пилюлю
+        self.assertIn("taskNumber === '10'", planning)
+
+
+class Task10PrePriTest(TestCase):
+    """Страница приставок ПРЕ-/ПРИ-: серверный рендер, проверка, свой отчёт."""
+
+    @classmethod
+    def setUpTestData(cls):
+        seed_examples()
+
+    def test_page_anonymous(self):
+        resp = self.client.get('/ege/zadanie-10/')
+        self.assertEqual(resp.status_code, 200)
+        body = resp.content.decode('utf-8')
+        self.assertIn('href="https://neurostat.ru/ege/zadanie-10/"', body)
+        self.assertIn('Правописание приставок ПРЕ- и ПРИ-', body)
+        # упражнение отрендерено на сервере: ВСЕ слова индексируются
+        self.assertIn('practice-line', body)
+        self.assertIn('пр*29*подавать', body)
+        self.assertIn('пр*29*школьный', body)
+        self.assertIn('task10-initial-report', body)
+        self.assertIn('csrfmiddlewaretoken', body)
+
+    def test_check_writes_own_session_report(self):
+        self.client.get('/ege/zadanie-10/')
+        resp = self.client.post(
+            '/api/check-alphabetical-exercise/',
+            data=json.dumps({'selected_letters': ['о', 'о']}),
+            content_type='application/json',
+        )
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn('report', data)
+        self.assertEqual(len(data['report']['attempts']), 1)
+        sess = self.client.session
+        # история приставок не смешивается с историей корней
+        self.assertIn('task10_seo_attempts', sess)
+        self.assertNotIn('task9_seo_attempts', sess)

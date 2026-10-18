@@ -230,4 +230,18 @@
                 box.textContent = 'Ошибка проверки. Попробуйте ещё раз.';
             });
     });
+    // === Серверный рендер упражнения (страница приставок): смайлики и
+    // отчёт сразу после загрузки, без клика по диапазону ===
+    if (container.querySelector('.practice-line')) {
+        processContainer(container);
+        var initialNode = document.getElementById('task10-initial-report');
+        if (initialNode) {
+            try {
+                var initial = JSON.parse(initialNode.textContent);
+                if (initial && typeof initial.attempts !== 'undefined') {
+                    Task9Report.renderInto(container, initial, []);
+                }
+            } catch (e) { /* отчёт не критичен для тренажёра */ }
+        }
+    }
 })();

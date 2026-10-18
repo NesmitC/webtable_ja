@@ -1,0 +1,67 @@
+{% load static %}<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    {% include 'includes/metrika.html' %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ meta.meta_title }} | Нейростат</title>
+    <meta name="description" content="{{ meta.meta_description }}">
+    <link rel="canonical" href="https://neurostat.ru/ege/zadanie-10/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Нейростат">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:title" content="{{ meta.meta_title }}">
+    <meta property="og:description" content="{{ meta.meta_description }}">
+    <meta property="og:url" content="https://neurostat.ru/ege/zadanie-10/">
+    <meta property="og:image" content="https://neurostat.ru/static/images/logo_neurostat.png">
+
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261016">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/task9.css' %}?v=12">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "@id": "https://neurostat.ru/ege/zadanie-10/#breadcrumb",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://neurostat.ru/" },
+            { "@type": "ListItem", "position": 2, "name": "ЕГЭ", "item": "https://neurostat.ru/ege/" },
+            { "@type": "ListItem", "position": 3, "name": "{{ meta.h1 }}", "item": "https://neurostat.ru/ege/zadanie-10/" }
+        ]
+    }
+    </script>
+</head>
+
+<body>
+    {% include 'includes/header.html' %}
+
+    <main class="page-container-trainers task9-page">
+
+        <h1 class="diag-badge-wrap">
+            <span class="hero__badge">ЕГЭ · Русский язык · 2027</span>
+            <span class="diag-badge-sep" aria-hidden="true"></span>
+            <span class="diag-badge-label">{{ meta.h1 }}</span>
+        </h1>
+
+        <!-- Скрытое поле с CSRF-токеном: нужно для POST из task9.js анонимом
+             (рендер {{ csrf_token }} ставит cookie csrftoken на ответе) -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <!-- Упражнение рендерится на сервере: слова попадают в индекс,
+             новый случайный набор — при каждом заходе -->
+        <section class="block-answer-still-content task9-seo-content"
+            data-endpoint="prefix" data-orthogram="29">{{ snippet|safe }}</section>
+        {{ initial_report|json_script:"task10-initial-report" }}
+
+    </main>
+
+    {% include 'includes/footer.html' %}
+    <script src="{% static 'js/task9_report.js' %}?v=1"></script>
+    <script src="{% static 'js/task9.js' %}?v=9"></script>
+</body>
+
+</html>

@@ -59,7 +59,7 @@
 - **`assistants/knowledge_bases/russian/`** — база знаний: `.md`-методички, словники ФИПИ, `orthoepy.json`, `hot_words.py`. Считать **read-only** без явной задачи.
 
 ### `deploy/` — конфиги Nginx и Gunicorn
-Не трогать без явной задачи по деплою. Прод: `/srv/webtable`, статика через `alias /srv/webtable/staticfiles/`, сервис `gunicorn-webtable.service`.
+Не трогать без явной задачи по деплою. Прод: `/home/neurostat` (репозиторий и приложение), статика через `alias /home/neurostat/staticfiles/`, media — `/home/neurostat/media/`, systemd-сервис **`gunicorn.service`** (unix-sock `/run/gunicorn/gunicorn.sock`, fallback-порт 127.0.0.1:8000), конфиг nginx — `/etc/nginx/sites-enabled/neurostat`. `/srv/webtable` и `gunicorn-webtable` — устаревшие имена, их нет на сервере.
 
 ### Файлы данных (`*.json`, `*.dump`)
 Считать read-only. Для изменения данных — Django management commands (`loaddata`/`dumpdata`), не прямое редактирование.
@@ -110,16 +110,31 @@ python manage.py shell -c "..."                 # быстрый запрос к
 
 Логи: `bot.log`, `vk_bot.log`, `django_error.log`, PostgreSQL — `C:\Program Files\PostgreSQL\15\data\log\`.
 
+Тесты без прав создания БД (локальная роль `myuser` не имеет CREATEDB):
+```powershell
+python manage.py test <модуль> --settings=settings_test_sqlite   # sqlite in-memory
+```
+
 ## 🚀 Деплой (git-based, Ubuntu)
 
+Канонический путь — с Windows одной командой (`deploy/deploy.py`, paramiko; креды `SSH_HOST/SSH_USER/SSH_PASSWORD` из `.env`; ключи Windows-ssh на сервере не настроены):
+
+```powershell
+.\.venv\Scripts\python.exe deploy\deploy.py
+```
+
+⚠️ Скрипт плоский: запуск = полный деплой (git pull, бэкап БД, миграции, collectstatic, graceful `systemctl kill -s HUP gunicorn`). Опции `--dry-run` нет — выполнять только с явного разрешения владельца.
+
+Ручные команды на сервере (для отладки):
+
 ```bash
-cd /srv/webtable
+cd /home/neurostat
 git pull
 .venv/bin/python manage.py showmigrations main | grep '\[ \]'   # есть ли неприменённые
 .venv/bin/python manage.py collectstatic --noinput
 .venv/bin/python manage.py check
-sudo systemctl restart gunicorn-webtable
-journalctl -u gunicorn-webtable -e --no-pager | tail -40
+sudo systemctl kill -s HUP gunicorn    # graceful-перезапуск (или restart)
+journalctl -u gunicorn -e --no-pager | tail -40
 ```
 
 ⚠️ Перед деплоем проверять, что ключи `DB_USER`, `DB_NAME`, `DB_HOST`, `DB_PORT` в серверном `.env` соответствуют реальным ролям PostgreSQL на сервере.

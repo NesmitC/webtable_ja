@@ -175,6 +175,7 @@ urlpatterns = [
     # SEO-разделы задания 9: анонимные индексируемые страницы с тренажёрами
     path('ege/zadanie-9/', views.task9_hub, name='task9_hub'),
     path('ege/zadanie-9/<slug:section>/', views.task9_section, name='task9_section'),
+    path('ege/zadanie-10/', views.task10_pre_pri, name='task10_pre_pri'),
     path('sklonenie-chislitelnyh/', views.sklonenie_chislitelnyh, name='sklonenie_chislitelnyh'),
     path('favicon.ico', RedirectView.as_view(url='/static/favicon.svg', permanent=True)),
     # Политика обработки персональных данных

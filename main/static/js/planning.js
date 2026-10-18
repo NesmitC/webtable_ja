@@ -1500,6 +1500,10 @@ document.addEventListener('click', async (e) => {
 
         answerSection.innerHTML = htmlWithHeader;
 
+        if (taskNumber === '10') {
+            insertTask10Nav(answerSection);
+        }
+
         // === ВСТАВЛЯЕМ КАРТИНКУ ДЛЯ ЗАДАНИЯ 15 (Н/НН) ===
         if (orthogramIds === '1500') {
             const article = answerSection.querySelector('.article-practice');
@@ -2001,5 +2005,17 @@ function insertTask9Nav(container) {
         '<a class="orthoepy-dictionary-link" href="/ege/zadanie-9/proveryaemye-glasnye/">Проверяемые ударением гласные <span class="arrow">→</span></a>' +
         '<a class="orthoepy-dictionary-link" href="/ege/zadanie-9/neproveryaemye-glasnye/">Непроверяемые ударением гласные <span class="arrow">→</span></a>' +
         '<a class="orthoepy-dictionary-link" href="/ege/zadanie-9/chereduyushchiesya-glasnye/">Чередующиеся гласные <span class="arrow">→</span></a>';
+    container.appendChild(nav);
+}
+
+// === Переход к тренажёру приставок ПРЕ- и ПРИ- (после задания 10) ===
+function insertTask10Nav(container) {
+    if (!container || container.querySelector('#task10-nav')) return;
+    const nav = document.createElement('div');
+    nav.id = 'task10-nav';
+    nav.className = 'task9-nav';
+    nav.innerHTML =
+        '<a class="orthoepy-dictionary-link" href="/ege/zadanie-10/">' +
+        'ПРЕ- и ПРИ- <span class="arrow">→</span></a>';
     container.appendChild(nav);
 }
