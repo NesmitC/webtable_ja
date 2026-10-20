@@ -52,6 +52,26 @@ class CustomUserCreationForm(UserCreationForm):
         if 'password2' in self.fields:
             del self.fields['password2']
 
+        # Email — идентификатор входа (см. CustomAuthenticationForm), без него
+        # аккаунт нерабочий: ни войти, ни активировать.
+        self.fields['email'].required = True
+
+    def clean_email(self):
+        """Один адрес электронной почты — один аккаунт.
+
+        User.email не уникален на уровне БД (в проде уже есть дубли), а
+        UserCreationForm email не проверяет вовсе — поэтому проверяем здесь.
+        Без учёта регистра и включая неактивированные аккаунты: иначе повторная
+        отправка формы создаёт второй аккаунт на тот же адрес.
+        """
+        email = (self.cleaned_data.get('email') or '').strip().lower()
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise ValidationError(
+                'Пользователь с таким адресом электронной почты уже '
+                'зарегистрирован. Войдите с этим адресом или укажите другой.'
+            )
+        return email
+
     def clean(self):
         # Вызываем стандартные проверки Django (они должны сработать первыми)
         cleaned_data = super().clean()
