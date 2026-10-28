@@ -7,7 +7,7 @@ from pathlib import Path
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from main.models import Orthogram, OrthogramExample, Task9Attempt
+from main.models import Orthogram, OrthogramExample, Task9Attempt, Task9WordStat
 
 ROOT = Path(__file__).resolve().parent
 
@@ -345,3 +345,77 @@ class Task10PrePriTest(TestCase):
         # история приставок не смешивается с историей корней
         self.assertIn('task10_seo_attempts', sess)
         self.assertNotIn('task9_seo_attempts', sess)
+
+
+class RecheckNoRewriteTest(TestCase):
+    """Повторная проверка того же набора: подсветка есть, запись в статистику нет.
+
+    Сценарий владельца: проверил с ошибками, тут же дописал верные буквы и
+    нажал «Проверить» снова — блок ошибок обязан остаться, попытка в истории
+    обязана остаться одна.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        seed_examples()
+
+    def _check(self, letters):
+        return self.client.post(
+            '/api/check-alphabetical-exercise/',
+            data=json.dumps({'selected_letters': letters}),
+            content_type='application/json',
+        )
+
+    def test_anonymous_recheck_keeps_correction(self):
+        self.client.get('/ege/zadanie-10/')
+        corr = self.client.session['current_exercise']['correct_letters']
+        wrong = ['а' if c != 'а' else 'о' for c in corr]
+        first = self._check(wrong).json()
+        self.assertEqual(first['correct_count'], 0)
+        self.assertTrue(first['report']['correction'])
+        # Дописали верные буквы и проверили снова
+        second = self._check(corr).json()
+        self.assertTrue(second['all_correct'])
+        # Блок ошибок зафиксирован первой проверкой и не обнулился
+        self.assertTrue(second['report']['correction'])
+        sess = self.client.session
+        self.assertEqual(len(sess['task10_seo_attempts']), 1)
+        self.assertTrue(sess['current_exercise']['checked'])
+
+    def test_logged_recheck_keeps_chronicle(self):
+        user = User.objects.create_user('recheck_pupil', 'recheck@x.ru', 'pass12345')
+        self.client.force_login(user)
+        self.client.post(
+            '/api/generate-alphabetical-exercise/',
+            data=json.dumps({'orthogram_id': '1', 'range': 'A-O'}),
+            content_type='application/json',
+        )
+        corr = self.client.session['current_exercise']['correct_letters']
+        # заведомо неверные буквы: любая другая из набора а/о
+        wrong = ['а' if c != 'а' else 'о' for c in corr]
+        self._check(wrong)
+        attempts = Task9Attempt.objects.filter(user=user).count()
+        in_corr = Task9WordStat.objects.filter(user=user, in_correction=True).count()
+        self.assertGreater(attempts, 0)
+        self.assertGreater(in_corr, 0)
+        second = self._check(corr).json()
+        self.assertTrue(second['all_correct'])
+        # Ни новой попытки, ни снятия слов с коррекции
+        self.assertEqual(Task9Attempt.objects.filter(user=user).count(), attempts)
+        self.assertEqual(
+            Task9WordStat.objects.filter(user=user, in_correction=True).count(),
+            in_corr)
+
+    def test_new_exercise_resets_flag(self):
+        self.client.get('/ege/zadanie-10/')
+        corr = self.client.session['current_exercise']['correct_letters']
+        self._check(['о'] * len(corr))
+        self.assertTrue(self.client.session['current_exercise']['checked'])
+        # Новый набор слов сбрасывает метку: проверка снова пишет статистику
+        self.client.get('/ege/zadanie-10/')
+        self.assertFalse(self.client.session['current_exercise'].get('checked'))
+        resp = self._check(corr)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(self.client.session['current_exercise']['checked'])
+        # вторая попытка в истории — уже от нового набора, а не повтор старой
+        self.assertEqual(len(self.client.session['task10_seo_attempts']), 2)

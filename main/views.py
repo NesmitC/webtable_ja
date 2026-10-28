@@ -2751,6 +2751,23 @@ def check_alphabetical_exercise(request):
         correct_words = exercise_data.get('correct_words', [])
         resolved = []
 
+        if exercise_data.get('checked'):
+            # Повторная проверка того же упражнения: подсветка результата
+            # без записи в статистику. Иначе ученик дописывает буквы в уже
+            # проверенном наборе, обнуляет блок ошибок и не отвечает слово
+            # заново в новом упражнении.
+            return JsonResponse({
+                'results': results,
+                'correct_count': correct_count,
+                'total_count': total_count,
+                'all_correct': all_correct,
+                'orthogram_id': orthogram_id,
+                'range_code': range_code,
+                'resolved': resolved,
+                'report': _task9_response_report(
+                    request, seo, orthogram_id, range_code),
+            })
+
         if orthogram_id and range_code and request.user.is_authenticated:
             now = timezone.now()
             now_msk = timezone.localtime(now, ZoneInfo('Europe/Moscow'))
@@ -2802,6 +2819,12 @@ def check_alphabetical_exercise(request):
             resolved = _task9_session_update(
                 request, correct_words, selected_letters, correct_letters, results,
                 key_prefix=_seo_key_prefix(orthogram_id))
+
+        # Упражнение проверено: следующие проверки того же набора — только
+        # подсветка; статистика и блок ошибок фиксируются первой проверкой.
+        exercise_data['checked'] = True
+        request.session['current_exercise'] = exercise_data
+        request.session.modified = True
 
         return JsonResponse({
             'results': results,
