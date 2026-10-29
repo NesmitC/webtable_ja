@@ -103,6 +103,18 @@ class TeacherRussian:
             if db_entry and db_entry.explanation:
                 print(f"  ✅ БД: найдено")
                 return self._format_from_db(db_entry)
+
+            # Слово может храниться в БД как ошибочный вариант
+            # («полисадник» → палисадник): отвечаем из БД, а не отправляем
+            # ученика к ЛЛМ с предупреждением «слова нет в базе».
+            wrong_entry = OrthogramExample.objects.filter(
+                incorrect_variant__iexact=word,
+                is_active=True,
+                is_user_added=False,
+            ).exclude(explanation='').select_related('orthogram').first()
+            if wrong_entry:
+                print(f"  ✅ БД: найден ошибочный вариант")
+                return self._format_spelling_correction(wrong_entry)
         
         # 🔹 4. ПРИОРИТЕТ 2: pymorphy3 — ТОЛЬКО для вопросов о части речи
         if word and MORPH and self._is_pos_question(message):
@@ -156,6 +168,46 @@ class TeacherRussian:
             answer += f"\n\n📚 Орфограмма №{example.orthogram_id}: {example.orthogram.name}"
         
         return answer.strip()
+    
+    # Орфограмма → номер задания ЕГЭ (зеркало ORTHOGRAM_TO_TASK_NUMBER
+    # из planning.js: подсказка планинга должна вести в то же задание).
+    ORTH_TO_TASK = {
+        '1': 9, '2': 9, '12': 9, '13': 9, '14': 9, '15': 9, '24': 9,
+        '26': 9, '27': 9, '271': 9, '272': 9, '273': 9, '274': 9, '275': 9,
+        '10': 10, '11': 10, '28': 10, '29': 10, '6': 10,
+        '31': 11, '33': 11, '34': 11, '35': 11, '37': 11, '39': 11,
+        '48': 11, '481': 11, '482': 11, '483': 11, '484': 11, '60': 11,
+        '61': 11, '485': 11,
+        '25': 12, '49': 12, '50': 12, '51': 12, '511': 12, '512': 12,
+        '513': 12,
+        '21': 13, '32': 13, '36': 13, '46': 13, '54': 13, '56': 13,
+        '57': 13, '58': 13, '581': 13, '582': 13,
+        '1400': 14, '1500': 15,
+    }
+    
+    def _format_spelling_correction(self, example) -> str:
+        """Ученик написал ошибочный вариант: верная форма и этимология из БД,
+        плюс подсказка планинга с заданием и орфограммой."""
+        letter = ''
+        for right, wrong in zip(example.text or '', example.incorrect_variant or ''):
+            if right != wrong:
+                letter = right
+                break
+        first = f"Правильное написание — {example.text}"
+        if letter:
+            first += f" (через {letter.upper()})"
+        first += ", и именно этот вариант нужно запомнить!"
+        lines = [first]
+        if example.explanation:
+            lines.append(f"Этимология слова: {example.explanation}")
+        where = f"орфограмма {example.orthogram_id}"
+        task = self.ORTH_TO_TASK.get(str(example.orthogram_id))
+        if task:
+            where = f"задание {task}, {where}"
+        lines.append(
+            f"Добавь слово {example.text} в планинг — {where} — "
+            "и тогда оно попадет в квизы и слово дня.")
+        return "\n".join(lines)
     
     # ========================================================================
     # 🔹 Форматирование из pymorphy3 (с пометкой)
