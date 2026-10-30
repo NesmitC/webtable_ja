@@ -855,10 +855,20 @@ def quizzes_ege(request):
 def lessons_ege(request):
     cp9 = CheckpointAttempt.objects.filter(
         user=request.user, checkpoint_code='cp9')
+    cp91 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp91')
+    cp92 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp92')
     return render(request, 'lessons_ege.html', {
         'cp9_passed': cp9.filter(passed=True).exists(),
         'cp9_attempts': cp9.count(),
         'cp9_best': max([a.correct_count for a in cp9], default=0),
+        'cp91_passed': cp91.filter(passed=True).exists(),
+        'cp91_attempts': cp91.count(),
+        'cp91_best': max([a.correct_count for a in cp91], default=0),
+        'cp92_passed': cp92.filter(passed=True).exists(),
+        'cp92_attempts': cp92.count(),
+        'cp92_best': max([a.correct_count for a in cp92], default=0),
     })
 
 
@@ -6763,16 +6773,18 @@ def generate_task8_for_diagnostic():
 
 
 # ======= Задание 9 =================================================
-def generate_task9_lines():
+def generate_task9_lines(config=None):
     """
     Генерирует 5 строк для задания 9 с группировкой букв.
+    config — свой список групп (рубеж 4–9.1: только орфограмма 1);
+    None — стандартные пять групп.
     Возвращает: dict с 'lines', 'letter_groups', 'subgroup_letters'
     """
     from random import randint, sample, shuffle, choice
     import re
     
-    # === НОВАЯ СТРУКТУРА: 5 чётких групп ===
-    letter_groups_config = [
+    # === НОВАЯ СТРУКТУРА: 5 чётких групп (или конфиг рубежа) ===
+    letter_groups_config = config if config is not None else [
         {
             'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
             'orth_ids': ['1_11', '2_11'],
@@ -6800,8 +6812,9 @@ def generate_task9_lines():
         }
     ]
 
-    # === Шаг 1: Выбираем, сколько строк будет uniform (2–4) ===
-    uniform_count = randint(2, 4)
+    # === Шаг 1: Выбираем, сколько строк будет uniform (2–4, но не больше
+    # числа строк: у рубежа 4–9.1 строк три) ===
+    uniform_count = randint(2, min(4, len(letter_groups_config)))
     line_indices = list(range(len(letter_groups_config)))
     uniform_indices = set(sample(line_indices, uniform_count))
 
@@ -6913,7 +6926,7 @@ def generate_task9_lines():
 
     # ← ИСПРАВЛЕНО: возвращаем dict с метаданными
     return {
-        'lines': lines[:5],
+        'lines': lines if config is not None else lines[:5],
         'letter_groups': letter_groups_map,
         'subgroup_letters': subgroup_letters_map
     }
@@ -10411,7 +10424,57 @@ def download_reference_file(request, file_type):
 # Контент собирается из БД случайным образом — теми же генераторами, что
 # текущая/контрольная диагностика (generate_starting_diagnostic).
 # Ошибки считаем по заданиям: неверное задание = 1 ошибка, баллы ЕГЭ не ставим.
-CHECKPOINT_MAX_ERRORS = {'cp9': 3}
+CHECKPOINT_MAX_ERRORS = {'cp9': 3, 'cp91': 2, 'cp92': 2}
+CHECKPOINT_META = {
+    'cp9': {'session_key': 'checkpoint_9',
+            'heading': 'Рубежный тест: задания 1–9',
+            'unlock_lesson': '10',
+            'tasks': ['1', '2', '3', '4', '5', '6', '7', '8', '9']},
+    'cp91': {'session_key': 'checkpoint_91',
+             'heading': 'Рубежный тест: задания 4–9.1',
+             'unlock_lesson': '9.2',
+             'tasks': ['4', '5', '6', '7', '8', '9']},
+    'cp92': {'session_key': 'checkpoint_92',
+             'heading': 'Рубежный тест: задания 4–9.1, 9.2',
+             'unlock_lesson': '9.3',
+             'tasks': ['4', '5', '6', '7', '8', '9', '92']},
+}
+
+# Подписи строк разбора и ссылки рекомендаций для рубежей с 9.1/9.2
+CHECKPOINT_TASK_ROWS = {
+    'cp9': {'9': '9'},
+    'cp91': {'9': '9.1'},
+    'cp92': {'9': '9.1', '92': '9.2'},
+}
+CHECKPOINT_TASK_LINKS = {
+    'cp91': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
+                   'Задание 9.1: проверяемые ударением гласные')},
+    'cp92': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
+                   'Задание 9.1: проверяемые ударением гласные'),
+             '92': ('9.2', 'task9_section', ['neproveryaemye-glasnye'],
+                    'Задание 9.2: непроверяемые ударением гласные')},
+}
+
+
+def _task_rows(code: str):
+    """(ключ результата, подпись строки) для таблицы разбора вердикта."""
+    labels = CHECKPOINT_TASK_ROWS.get(code, {})
+    return [(t, labels.get(t, t)) for t in CHECKPOINT_META[code]['tasks']]
+
+
+def _task9_config(code: str):
+    """Группы строк задания 9 для рубежа: cp91 — только орфограмма 1 (9.1)."""
+    if code == 'cp91':
+        group = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+                 'orth_ids': ['1'], 'name': 'group1'}
+        return [group, dict(group), dict(group)]
+    if code == 'cp92':
+        g1 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+              'orth_ids': ['1'], 'name': 'group1'}
+        g2 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+              'orth_ids': ['2'], 'name': 'group2'}
+        return [dict(g1), dict(g1), dict(g1), dict(g2), dict(g2), dict(g2)]
+    return None
 CHECKPOINT_SESSION = 'checkpoint_9'
 CHECKPOINT_RECOMMEND = {
     '1': ('lessons_ege', 'Уроки 1-3: микротекст и его разбор'),
@@ -10456,28 +10519,26 @@ def _build_checkpoint_task5(exclude_roots=()):
     return lines, erroneous.correct_word.lower().strip(), erroneous.root
 
 
-@subscription_required('lessons')
-def checkpoint_test(request):
-    """Рубежный тест после урока 9 (открывает урок 10).
-    Задания 1-9, допуск 3 ошибки; контент — из БД, как в текущей диагностике."""
-    if request.method == 'POST':
-        return _checkpoint_check(request)
-
+def _checkpoint_build(request, code: str):
+    """Собирает контекст и сессию рубежа (code: cp9 | cp91).
+    Контент — из БД теми же генераторами, что текущая диагностика."""
+    meta = CHECKPOINT_META[code]
     context = {}
-    session_data = {}
+    session_data = {'code': code}
 
-    # === Задания 1-3: микротекст из БД ===
-    try:
-        text_task_1_3, text_questions_1_3 = get_text_analysis_questions('1_3')
-        if text_task_1_3:
-            context['text_task_1_3'] = text_task_1_3
-            context['text_questions_1_3'] = text_questions_1_3
-            session_data['answers_1_3'] = {
-                str(q.question_number): q.correct_answer
-                for q in text_questions_1_3
-            }
-    except Exception as e:
-        logger.error(f'Чекпоинт: задания 1-3 не сгенерированы: {e}')
+    # === Задания 1-3: микротекст из БД (только полный рубеж) ===
+    if '1' in meta['tasks']:
+        try:
+            text_task_1_3, text_questions_1_3 = get_text_analysis_questions('1_3')
+            if text_task_1_3:
+                context['text_task_1_3'] = text_task_1_3
+                context['text_questions_1_3'] = text_questions_1_3
+                session_data['answers_1_3'] = {
+                    str(q.question_number): q.correct_answer
+                    for q in text_questions_1_3
+                }
+        except Exception as e:
+            logger.error(f'Чекпоинт: задания 1-3 не сгенерированы: {e}')
 
     # === Задание 4: орфоэпия ===
     try:
@@ -10495,7 +10556,7 @@ def checkpoint_test(request):
     try:
         used_roots = []
         for a in CheckpointAttempt.objects.filter(
-                user=request.user, checkpoint_code='cp9'):
+                user=request.user, checkpoint_code=code):
             used_roots += [w.get('root') for w in (a.words_data or [])
                            if w.get('root')]
         t5 = _build_checkpoint_task5(used_roots)
@@ -10560,7 +10621,7 @@ def checkpoint_test(request):
 
     # === Задание 9: корни, смайлики ===
     try:
-        task9_data = generate_task9_lines()
+        task9_data = generate_task9_lines(config=_task9_config(code))
         if task9_data.get('lines'):
             context['task9_lines'] = task9_data['lines']
             flat_letters = [
@@ -10570,6 +10631,14 @@ def checkpoint_test(request):
             ]
             if flat_letters:
                 session_data['task9_correct'] = flat_letters
+                # К какому подзаданию (9.1/9.2) относится каждая буква —
+                # по маскам строк: проверка разводит результаты 9 и 92
+                session_data['task9_orths'] = [
+                    str(ln['examples'][0].orthogram_id)
+                    for ln in task9_data['lines']
+                    if ln.get('examples')
+                    for _ in ln.get('expected_letters', [])
+                ]
                 session_data['task9_snapshot'] = {
                     'lines': [ln.get('display_line', '') for ln in task9_data['lines']],
                     'expected': flat_letters,
@@ -10625,27 +10694,68 @@ def checkpoint_test(request):
         snapshot['9'] = session_data['task9_snapshot']
     session_data['snapshot'] = snapshot
 
-    request.session[CHECKPOINT_SESSION] = session_data
-    request.session.modified = True
-
     context.update({
         'cp_passed_already': CheckpointAttempt.objects.filter(
-            user=request.user, checkpoint_code='cp9', passed=True).exists(),
-        'max_errors': CHECKPOINT_MAX_ERRORS['cp9'],
+            user=request.user, checkpoint_code=code, passed=True).exists(),
+        'max_errors': CHECKPOINT_MAX_ERRORS[code],
+        'cp_heading': meta['heading'],
+        'cp_unlock_lesson': meta['unlock_lesson'],
+        'cp_tasks': meta['tasks'],
+        'cp_task_rows': _task_rows(code),
+        'cp_code': code,
     })
+    return context, session_data
+
+
+@subscription_required('lessons')
+def checkpoint_test(request):
+    """Рубежный тест после урока 9 (открывает урок 10).
+    Задания 1-9, допуск 3 ошибки; контент — из БД, как в текущей диагностике."""
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp9')
+    context, session_data = _checkpoint_build(request, 'cp9')
+    request.session[CHECKPOINT_META['cp9']['session_key']] = session_data
+    request.session.modified = True
     return render(request, 'test_fix_ege/checkpoint_test.html', context)
 
 
-def _checkpoint_check(request):
+@subscription_required('lessons')
+def checkpoint_test_92(request):
+    """Рубеж после урока 9.2 (открывает 9.3): задания 4–9.1 и 9.2.
+    Доступен после сдачи рубежа 4–9.1: цепочка уроков не перепрыгивается."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp91', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp92')
+    context, session_data = _checkpoint_build(request, 'cp92')
+    request.session[CHECKPOINT_META['cp92']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_91(request):
+    """Рубежный тест после урока 9.1 (открывает урок 9.2): задания 4–9.1."""
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp91')
+    context, session_data = _checkpoint_build(request, 'cp91')
+    request.session[CHECKPOINT_META['cp91']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+def _checkpoint_check(request, code: str):
     """Проверка рубежа: та же логика сравнения, что в check_starting_diagnostic,
     но вместо баллов ЕГЭ считаем ошибки по заданиям."""
+    meta = CHECKPOINT_META[code]
     try:
         data = json.loads(request.body)
         user_answers = data.get('answers', {})
     except Exception:
         return JsonResponse({'error': 'Некорректные данные'}, status=400)
 
-    session = request.session.get(CHECKPOINT_SESSION)
+    session = request.session.get(meta['session_key'])
     if not session:
         return JsonResponse({'error': 'Сессия устарела, обновите страницу'},
                             status=400)
@@ -10723,16 +10833,23 @@ def _checkpoint_check(request):
             if not is_correct:
                 err9 += 1
         results['9'] = err9 == 0
+        orths = session.get('task9_orths', [])
+        if '92' in meta['tasks'] and len(orths) == len(expected_letters):
+            # Блок содержит 9.1 и 9.2: считаем их отдельными заданиями
+            results['9'] = all(
+                results[f'9-{i}'] for i, o in enumerate(orths, 1) if o == '1')
+            results['92'] = all(
+                results[f'9-{i}'] for i, o in enumerate(orths, 1) if o == '2')
 
     # === Итог: неверное задание = 1 ошибка ===
-    scored_tasks = [t for t in '123456789' if t in results]
+    scored_tasks = [t for t in meta['tasks'] if t in results]
     error_count = sum(1 for t in scored_tasks if not results[t])
     total_tasks = len(scored_tasks)
     correct_count = total_tasks - error_count
-    passed = total_tasks > 0 and error_count <= CHECKPOINT_MAX_ERRORS['cp9']
+    passed = total_tasks > 0 and error_count <= CHECKPOINT_MAX_ERRORS[code]
 
     attempt = CheckpointAttempt.objects.create(
-        user=request.user, checkpoint_code='cp9',
+        user=request.user, checkpoint_code=code,
         correct_count=correct_count, error_count=error_count, passed=passed,
         total_tasks=total_tasks,
         answers_data=user_answers,
@@ -10740,7 +10857,7 @@ def _checkpoint_check(request):
         words_data=session.get('words', []),
         test_data=session.get('snapshot', {}),
     )
-    logger.info(f'Чекпоинт cp9: user={request.user.username} '
+    logger.info(f'Чекпоинт {code}: user={request.user.username} '
                 f'{correct_count}/{total_tasks} errors={error_count} '
                 f'passed={passed}')
     return JsonResponse({
@@ -10754,17 +10871,26 @@ def _checkpoint_check(request):
 @subscription_required('lessons')
 def checkpoint_result(request, attempt_id):
     attempt = get_object_or_404(CheckpointAttempt, id=attempt_id,
-                                user=request.user, checkpoint_code='cp9')
+                                user=request.user)
+    meta = CHECKPOINT_META.get(attempt.checkpoint_code, CHECKPOINT_META['cp9'])
     recommend = []
-    for t in ('1', '2', '3', '4', '5', '6', '7', '8', '9'):
+    overrides = CHECKPOINT_TASK_LINKS.get(attempt.checkpoint_code, {})
+    for t in meta['tasks']:
         res = (attempt.results_data or {}).get(t)
         if res is not None and not res.get('correct'):
+            if t in overrides:
+                disp, url_name, args, label = overrides[t]
+                recommend.append({'task': disp, 'label': label,
+                                  'url': reverse(url_name, args=args)})
+                continue
             url_name, label = CHECKPOINT_RECOMMEND[t]
             recommend.append({'task': t, 'label': label, 'url': reverse(url_name)})
     return render(request, 'test_fix_ege/checkpoint_result.html', {
         'attempt': attempt,
-        'max_errors': CHECKPOINT_MAX_ERRORS['cp9'],
+        'max_errors': CHECKPOINT_MAX_ERRORS[attempt.checkpoint_code],
         'recommend': recommend,
+        'cp_unlock_lesson': meta['unlock_lesson'],
+        'cp_task_rows': _task_rows(attempt.checkpoint_code),
     })
 
 

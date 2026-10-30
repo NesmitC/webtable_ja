@@ -30,6 +30,11 @@
         var btn = e.target.closest('[data-video-src]');
         if (btn) {
             e.preventDefault();
+            // Закрытый урок: плеер не открываем, даже если тело карточки видно
+            if (btn.closest('.lesson-card--locked')) {
+                showToast('Урок откроется позже 🎬');
+                return;
+            }
             var src = btn.getAttribute('data-video-src');
             if (src) open(src);
             else showToast('Видео к этому уроку скоро появится 🎬');

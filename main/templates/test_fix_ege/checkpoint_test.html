@@ -10,7 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Рубежный тест после урока 9 | Нейростат</title>
+    <title>{{ cp_heading }} | Нейростат</title>
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
@@ -21,17 +21,17 @@
     {% include 'includes/header.html' %}
 
     <main class="page-container-diagnostics">
-        <h1 class="visually-hidden">Рубежный тест после урока 9</h1>
+        <h1 class="visually-hidden">{{ cp_heading }}</h1>
         <section class="container-diagnostics">
-            <h2 class="diagnostic-full-test__subtitle">Рубежный тест: задания 1–9</h2>
+            <h2 class="diagnostic-full-test__subtitle">{{ cp_heading }}</h2>
             <p class="practice-line diagnostic-full-test__paragraph">
-                Чтобы открылся урок 10, допусти не более {{ max_errors }} ошибок.
+                Чтобы открылся урок {{ cp_unlock_lesson }}, допусти не более {{ max_errors }} ошибок.
                 Неверное задание — одна ошибка, независимо от числа строк в нём.
                 Пересдавать можно сколько угодно раз: задания каждый раз собираются заново.
             </p>
             {% if cp_passed_already %}
             <p class="practice-line diagnostic-full-test__paragraph">
-                Этот рубеж уже сдан — урок 10 открыт. Новая попытка необязательна,
+                Этот рубеж уже сдан — урок {{ cp_unlock_lesson }} открыт. Новая попытка необязательна,
                 но потренироваться можно.
             </p>
             {% endif %}
@@ -169,7 +169,7 @@
                 {% if task9_lines %}
                 <div class="question-diagnostic diagnostic-full-test__question" data-question-number="9">
                     <h4 class="diagnostic-full-test__title">
-                        9. Выберите правильную букву, кликнув на смайлик.
+                        {% if cp_code == 'cp91' %}9.1{% elif cp_code == 'cp92' %}9.1–9.2{% else %}9{% endif %}. Выберите правильную букву, кликнув на смайлик.
                     </h4>
                     <div class="diagnostic-full-test__lines">
                         {% for line in task9_lines %}

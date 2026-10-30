@@ -81,11 +81,32 @@ if btn8:
 check(html.count(EMBED8) == 1,
       f'embed-ссылка задания 8 встречается ровно один раз (факт {html.count(EMBED8)})')
 
+print('1c. Видео задания 9.2 в закрытой карточке')
+EMBED92 = 'https://kinescope.io/embed/uZPtpteL2UtAeuoHM9e7jp'
+i92 = html.find('Задание 9.2 (корни: гласные, НЕПРОВЕРЯЕМЫЕ ударениями)')
+check(i92 > 0, 'карточка «Задание 9.2» на странице')
+seg92 = html[i92:i92 + 1500]
+btn92 = re.search(r'<a href="#" class="lesson-card__video-btn"([^>]*)>', seg92)
+check(btn92 is not None, 'кнопка «Смотреть видео» в карточке 9.2 найдена')
+if btn92:
+    check('data-video-src="%s"' % EMBED92 in btn92.group(1),
+          f'у кнопки 9.2 стоит embed-ссылка: {btn92.group(1).strip()[:80]}')
+check(html.count(EMBED92) == 1,
+      f'embed-ссылка 9.2 встречается ровно один раз (факт {html.count(EMBED92)})')
+pre92 = html[max(0, i92 - 1200):i92]
+check('lesson-card--locked' in pre92, 'карточка 9.2 по-прежнему закрыта (замок на месте)')
+css = open('main/static/css/planning_style.css', encoding='utf-8').read()
+check('.lesson-card--locked .lesson-card__body' in css,
+      'CSS прячет тело закрытой карточки (видео недоступно до разблокировки)')
+js = open('main/static/js/lessons_video.js', encoding='utf-8').read()
+check('.lesson-card--locked' in js,
+      'JS-предохранитель: плеер закрытого урока не открывается')
+
 print('2. Остальные карточки не задеты')
 srcs = re.findall(r'class="lesson-card__video-btn" data-video-src="([^"]+)"', html)
-check(len(srcs) == 7, f'карточек с видео стало 7 (факт {len(srcs)})')
-check(sum(1 for s in srcs if 'kinescope.io/embed/' in s) == 4,
-      'из них четыре Kinescope (уроки 2, 5/задание 7, 6/задание 8, 7)')
+check(len(srcs) == 8, f'карточек с видео стало 8 (факт {len(srcs)})')
+check(sum(1 for s in srcs if 'kinescope.io/embed/' in s) == 5,
+      'из них пять Kinescope (уроки 2, 5/задание 7, 6/задание 8, 7, 9.2)')
 check(sum(1 for s in srcs if 'rutube.ru/play/embed/' in s) == 3, 'три Rutube на месте')
 empty = html.count('<a href="#" class="lesson-card__video-btn">')
 check(empty == 0, f'пустых кнопок не осталось (урок 6 закрыт): факт {empty}')

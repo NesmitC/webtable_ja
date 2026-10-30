@@ -1289,6 +1289,11 @@
     background: var(--color-bg);
 }
 
+/* Закрытый урок: тело карточки (видео, материалы) скрыто до разблокировки */
+.lesson-card--locked .lesson-card__body {
+    display: none;
+}
+
 .lesson-card__header {
     display: flex;
     align-items: center;
