@@ -764,8 +764,8 @@ class OrthoepyWord(models.Model):
         return [int(g.strip()) for g in self.grades.split(',') if g.strip().isdigit()]
 
     @staticmethod
-    def generate_test(num_options=5, correct_min=2, correct_max=4, 
-                     user_grade=None, test_type='main'):
+    def generate_test(num_options=5, correct_min=2, correct_max=4,
+                     user_grade=None, test_type='main', prefer_ids=None):
         """
         Генерирует тест по орфоэпии с накопительной системой.
         
@@ -837,7 +837,14 @@ class OrthoepyWord(models.Model):
         # Выбор уникальных лемм (чтобы не было пар типа "баловать/балУют" в одном тесте)
         selected_correct = []
         used_lemmas = set()
-        random.shuffle(correct_words)
+        if prefer_ids:
+            # Персонализация: слова с ошибками ученика идут первыми
+            # (порядок внутри сторон уже перемешан shuffle выше)
+            prefer_set = set(prefer_ids)
+            correct_words.sort(key=lambda w: 0 if w.id in prefer_set else 1)
+            incorrect_words.sort(key=lambda w: 0 if w.id in prefer_set else 1)
+        else:
+            random.shuffle(correct_words)
         for word in correct_words:
             if len(selected_correct) >= num_correct:
                 break
@@ -846,7 +853,8 @@ class OrthoepyWord(models.Model):
                 used_lemmas.add(word.lemma)
         
         selected_incorrect = []
-        random.shuffle(incorrect_words)
+        if not prefer_ids:
+            random.shuffle(incorrect_words)
         for word in incorrect_words:
             if len(selected_incorrect) >= num_incorrect:
                 break

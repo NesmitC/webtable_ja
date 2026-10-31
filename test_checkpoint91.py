@@ -89,7 +89,11 @@ Orthogram.objects.create(id=1, name='Проверяемая безударная
                          letters='а,о,е,и,я,у,ю')
 for text, masked in [('вода', 'в*1*да'), ('гора', 'г*1*ра'), ('трава', 'тр*1*ва'),
                      ('воды', 'в*1*ды'), ('горы', 'г*1*ры'), ('травы', 'тр*1*вы'),
-                     ('водой', 'в*1*дой'), ('горой', 'г*1*рой')]:
+                     ('водой', 'в*1*дой'), ('горой', 'г*1*рой'),
+                     ('река', 'р*1*ка'), ('реки', 'р*1*ки'),
+                     ('земля', 'з*1*мля'), ('земли', 'з*1*мли'),
+                     ('сосна', 'с*1*сна'), ('сосны', 'с*1*сны'),
+                     ('зима', 'з*1*ма'), ('зимы', 'з*1*мы')]:
     OrthogramExample.objects.create(text=text, masked_word=masked,
                                     orthogram_id=1, grades='10,11',
                                     is_active=True)
@@ -110,8 +114,8 @@ check('не более 2 ошибок' in body, 'допуск 2 ошибки д�
 sess = c.session['checkpoint_91']
 check('answers_1_3' not in sess, 'сессия: эталонов 1-3 нет')
 check(bool(sess.get('answer_5')), 'сессия: эталон 5')
-check(len(sess.get('task9_correct', [])) == 9,
-      f'сессия: 9 букв задания 9.1 (3 строки по 3) факт {len(sess.get("task9_correct", []))}')
+check(len(sess.get('task9_correct', [])) == 15,
+      f'сессия: 15 букв задания 9.1 (5 строк по 3) факт {len(sess.get("task9_correct", []))}')
 check('task9_correct' not in c.session.get('checkpoint_9', {}),
       'сессия старого рубежа не тронута')
 
@@ -153,8 +157,8 @@ c2.force_login(u2)
 c2.get('/ege/checkpoint/9-1/')
 r2 = c2.post('/ege/checkpoint/9-1/', data=json.dumps({'answers': {
     '4': ['чушь'], '5': 'чушь', '6': 'чушь', '7': 'чушь',
-    '9-1': 'я', '9-2': 'я', '9-3': 'я', '9-4': 'я', '9-5': 'я',
-    '9-6': 'я', '9-7': 'я', '9-8': 'я', '9-9': 'я',
+    **{f'9-{i}': 'я' for i in range(
+        1, len(c2.session['checkpoint_91']['task9_correct']) + 1)},
 }}), content_type='application/json')
 a2 = CheckpointAttempt.objects.filter(user=u2, checkpoint_code='cp91').first()
 check(a2 and not a2.passed, 'попытка не сдана')

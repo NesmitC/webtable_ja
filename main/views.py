@@ -6773,7 +6773,7 @@ def generate_task8_for_diagnostic():
 
 
 # ======= Задание 9 =================================================
-def generate_task9_lines(config=None):
+def generate_task9_lines(config=None, prefer_words=None):
     """
     Генерирует 5 строк для задания 9 с группировкой букв.
     config — свой список групп (рубеж 4–9.1: только орфограмма 1);
@@ -6818,6 +6818,20 @@ def generate_task9_lines(config=None):
     line_indices = list(range(len(letter_groups_config)))
     uniform_indices = set(sample(line_indices, uniform_count))
 
+    prefer_set = set(prefer_words or ())
+    used_prefer = set()   # слово с ошибкой не повторяется в следующих строках
+
+    def _live(pool):
+        """Пул без уже использованных слов с ошибками ученика."""
+        return ([p for p in pool
+                 if not (p[0].masked_word in prefer_set
+                         and p[0].masked_word in used_prefer)]
+                or pool)
+
+    def _prefer_head(pool, n=3):
+        """Первые n примеров: сначала неиспользованные слова с ошибками."""
+        return _live(pool)[:n]
+
     lines = []
     flat_index = 1
     letter_groups_map = {}      # Для скрипта в шаблоне: {"9-1": "group1", ...}
@@ -6853,6 +6867,13 @@ def generate_task9_lines(config=None):
         if len(valid_examples) < 3:
             continue
 
+        if prefer_set:
+            # Порядок из БД случайный (order_by('?')): устойчивая сортировка
+            # ставит слова с ошибками ученика вперёд, не ломая случайность
+            shuffle(valid_examples)
+            valid_examples.sort(
+                key=lambda p: 0 if p[0].masked_word in prefer_set else 1)
+
         # Решаем: делать ли строку с одинаковыми буквами?
         make_uniform = i in uniform_indices
         
@@ -6868,9 +6889,14 @@ def generate_task9_lines(config=None):
             selected_examples = []
             
             for letter, ex_list in examples_by_letter.items():
-                if len(ex_list) >= 3:
+                live = ([ex for ex in ex_list
+                         if not (ex.masked_word in prefer_set
+                                 and ex.masked_word in used_prefer)]
+                        if prefer_set else ex_list)
+                if len(live) >= 3:
                     selected_letter = letter
-                    selected_examples = sample(ex_list, 3)
+                    selected_examples = (live[:3] if prefer_set
+                                         else sample(ex_list, 3))
                     break
             
             if selected_letter:
@@ -6878,8 +6904,9 @@ def generate_task9_lines(config=None):
                 letters = [selected_letter] * 3
                 is_uniform = True
             else:
-                # Fallback: любые 3 примера
-                selected = sample(valid_examples, 3)
+                # Fallback: любые 3 примера (приоритет — слова с ошибками)
+                selected = (_prefer_head(valid_examples)
+                            if prefer_set else sample(valid_examples, 3))
                 examples, letters = zip(*selected)
                 is_uniform = False
         else:
@@ -6887,7 +6914,9 @@ def generate_task9_lines(config=None):
             attempts = 0
             selected = []
             while attempts < 10:
-                selected = sample(valid_examples, 3)
+                selected = (_prefer_head(valid_examples)
+                            if (prefer_set and attempts == 0)
+                            else sample(_live(valid_examples), 3))
                 letters_in_line = [letter for _, letter in selected]
                 if len(set(letters_in_line)) >= 2:
                     break
@@ -6898,6 +6927,11 @@ def generate_task9_lines(config=None):
             
             examples, letters = zip(*selected)
             is_uniform = False
+
+        if prefer_set:
+            for ex in examples:
+                if ex.masked_word in prefer_set:
+                    used_prefer.add(ex.masked_word)
 
         # Формируем строку с масками *9-1*, *9-2* и т.д.
         parts = []
@@ -10467,13 +10501,13 @@ def _task9_config(code: str):
     if code == 'cp91':
         group = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
                  'orth_ids': ['1'], 'name': 'group1'}
-        return [group, dict(group), dict(group)]
+        return [dict(group) for _ in range(5)]
     if code == 'cp92':
         g1 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
               'orth_ids': ['1'], 'name': 'group1'}
         g2 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
               'orth_ids': ['2'], 'name': 'group2'}
-        return [dict(g1), dict(g1), dict(g1), dict(g2), dict(g2), dict(g2)]
+        return [dict(g1) for _ in range(5)] + [dict(g2) for _ in range(5)]
     return None
 CHECKPOINT_SESSION = 'checkpoint_9'
 CHECKPOINT_RECOMMEND = {
@@ -10519,6 +10553,19 @@ def _build_checkpoint_task5(exclude_roots=()):
     return lines, erroneous.correct_word.lower().strip(), erroneous.root
 
 
+def _checkpoint_prefer_ids(user):
+    """Слова с ошибками ученика: id орфоэпии и маски слов орфограммы 1 (9.1).
+    Источник — накопительная статистика тренажёров; нет ошибок — пустые
+    множества, генераторы работают как раньше (случайно)."""
+    orthoepy = set(OrthoepyWordStat.objects.filter(user=user)
+                   .filter(Q(errors__gt=0) | Q(in_correction=True))
+                   .values_list('word_id', flat=True))
+    words9 = set(Task9WordStat.objects.filter(user=user, orthogram_id='1')
+                 .filter(Q(errors__gt=0) | Q(in_correction=True))
+                 .values_list('word', flat=True))
+    return orthoepy, words9
+
+
 def _checkpoint_build(request, code: str):
     """Собирает контекст и сессию рубежа (code: cp9 | cp91).
     Контент — из БД теми же генераторами, что текущая диагностика."""
@@ -10540,11 +10587,14 @@ def _checkpoint_build(request, code: str):
         except Exception as e:
             logger.error(f'Чекпоинт: задания 1-3 не сгенерированы: {e}')
 
+    prefer_orthoepy, prefer_words9 = _checkpoint_prefer_ids(request.user)
+
     # === Задание 4: орфоэпия ===
     try:
         test_data = OrthoepyWord.generate_test(
             num_options=5, correct_min=2, correct_max=4,
-            user_grade=None, test_type='main')
+            user_grade=None, test_type='main',
+            prefer_ids=prefer_orthoepy)
         if test_data and test_data.get('variants'):
             context['orthoepy_variants'] = test_data['variants']
             session_data['answer_4'] = test_data['correct_answers']
@@ -10621,7 +10671,8 @@ def _checkpoint_build(request, code: str):
 
     # === Задание 9: корни, смайлики ===
     try:
-        task9_data = generate_task9_lines(config=_task9_config(code))
+        task9_data = generate_task9_lines(config=_task9_config(code),
+                                          prefer_words=prefer_words9)
         if task9_data.get('lines'):
             context['task9_lines'] = task9_data['lines']
             flat_letters = [
