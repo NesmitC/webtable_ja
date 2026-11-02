@@ -4132,3 +4132,44 @@ input[type="checkbox"]:checked.task-match-incorrect {
     color: #b7a893;
     transition: all .2s;
 }
+
+
+/* ===== Переходы из блоков задания 9 в планинги 5-6 кл ===== */
+.planning-jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.planning-jump-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    background: var(--color-how-it-works-bg);
+    color: var(--color-btn-primary);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 1;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.planning-jump-link span {
+    transition: transform .2s ease;
+}
+
+.planning-jump-link:hover {
+    background: #ffffff;
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, .15);
+    transform: translateY(-1px);
+}
+
+.planning-jump-link:hover span {
+    transform: translateX(3px);
+}

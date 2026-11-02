@@ -58,7 +58,7 @@
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
-    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261016">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261102">
 </head>
 
 <body>
@@ -349,6 +349,9 @@
                         placeholder="Напишите примеры"></textarea><br>
                 </div>
             </section>
+            <div class="planning-jump">
+                <a class="planning-jump-link" href="{% url 'planning_5kl' %}">Упражнения на орф. 12-14 в планинге 5&nbsp;кл. <span aria-hidden="true">→</span></a>
+            </div>
         </article>
 
         <article class="article-table-container">
@@ -435,6 +438,10 @@
                         placeholder="Напишите примеры"></textarea><br>
                 </div>
             </section>
+            <div class="planning-jump">
+                <a class="planning-jump-link" href="{% url 'planning_5kl' %}">Упражнения на орф. 15, 24 в планинге 5&nbsp;кл. <span aria-hidden="true">→</span></a>
+                <a class="planning-jump-link" href="{% url 'planning_6kl' %}">Упражнения на орф. 26, 27, 27.1 в планинге 6&nbsp;кл. <span aria-hidden="true">→</span></a>
+            </div>
         </article>
 
         <article class="article-table-container">
@@ -514,6 +521,9 @@
                         placeholder="Напишите примеры"></textarea><br>
                 </div>
             </section>
+            <div class="planning-jump">
+                <a class="planning-jump-link" href="{% url 'planning_6kl' %}">Упражнения на орф. 27.2-27.5 в планинге 6&nbsp;кл. <span aria-hidden="true">→</span></a>
+            </div>
         </article>
 
         <article id="task10" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
@@ -552,7 +562,8 @@
                 <div class="item item-8">
                     <p class="text-orf">Если слово, к которому добавлена приставка <span class="bold">на
                             согласный</span>, начинается с И, то на <span class="bold">И меняется на Ы</span> (кроме
-                        слов с приставками СВЕРХ-, МЕЖ- и иноязычными СУПЕР-, ТРАНС-, ДЕЗ-, ПАН-, ПОСТ-, КОНТР-)</p>
+                        слов с приставками СВЕРХ-, МЕЖ- и иноязычными СУПЕР-, ТРАНС-, ДЕЗ-, ПАН-, ПОСТ-, КОНТР-;
+                        <br><span class="bold">взимать</span>)</p>
                 </div>
                 <div class="item item-9">
                     <p class="text-orf">Определить значение приставки. <span class="bold">ПРИ</span> пишется, когда
@@ -597,6 +608,10 @@
                         placeholder="Напишите примеры"></textarea><br>
                 </div>
             </section>
+            <div class="planning-jump">
+                <a class="planning-jump-link" href="{% url 'planning_5kl' %}">Упражнения на орф. 6, 10, 11 в планинге 5&nbsp;кл. <span aria-hidden="true">→</span></a>
+                <a class="planning-jump-link" href="{% url 'planning_6kl' %}">Упражнения на орф. 28, 29 в планинге 6&nbsp;кл. <span aria-hidden="true">→</span></a>
+            </div>
         </article>
 
         <article id="task11" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
