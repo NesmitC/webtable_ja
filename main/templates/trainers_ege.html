@@ -526,6 +526,47 @@
             </div>
         </article>
 
+        <!-- Корни: орфограммы 14–15 (контент из планинга 5 кл.), 2 колонки на всю ширину -->
+        <article class="article-table-container">
+            <h3 class="subtitle-table-container">Корни. Орфограммы:</h3>
+            <section class="table-container-onetwo">
+                <div class="item item-1">
+                    <h3 class="title-orf"><span class="circle">14</span></h3>
+                    <p class="subtitle-orf">Ё-О после шипящих в <span class="text-orf-effects">корне</span> слова</p>
+                </div>
+                <div class="item item-2">
+                    <h3 class="title-orf"><span class="circle">15</span></h3>
+                    <p class="subtitle-orf">И-Ы после Ц</p>
+                </div>
+                <div class="item item-6">
+                    <p class="text-orf">Под ударением пишется <span class="bold">Ё</span> (кроме некоторых
+                        слов-исключений: шов, шорох, крыжовник, капюшон, цоколь, чопорный, шомпол и др.)</p>
+                </div>
+                <div class="item item-7">
+                    <p class="text-orf">В <span class="text-orf-effects">корне</span> после Ц и словах на <span
+                            class="bold">-ЦИЯ</span> пишется <span class="text-orf-effects">И</span>, в <span
+                            class="bold">суффиксе</span> и <span class="bold">окончании</span> – <span
+                            class="text-orf-effects">Ы</span> (кроме некоторых слов-исключений: цыган, цыпочки,
+                        цыпленок, цыкнуть)</p>
+                </div>
+                <div class="item item-11"><img class="item-png" src="{% static 'images/14.png' %}" alt="орфограмма 14"
+                        loading="lazy"></div>
+                <div class="item item-12"><img class="item-png" src="{% static 'images/15.png' %}" alt="орфограмма 15"
+                        loading="lazy"></div>
+                <div class="item item-16">
+                    <textarea id="item-text-14_tr" class="input-text" name="user-input-orf-14_tr" rows="3"
+                        maxlength="500" placeholder="Напишите примеры"></textarea>
+                </div>
+                <div class="item item-17">
+                    <textarea id="item-text-15_tr" class="input-text" name="user-input-orf-15_tr" rows="3"
+                        maxlength="500" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+            <div class="planning-jump">
+                <a class="planning-jump-link" href="{% url 'planning_5kl' %}">Упражнения на орф. 14, 15 в планинге 5&nbsp;кл. <span aria-hidden="true">→</span></a>
+            </div>
+        </article>
+
         <article id="task10" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
             <h2 class="title-table-container">ЗАДАНИЕ 10</h2>
             <h3 class="subtitle-table-container">Приставки. Орфограммы:</h3>
