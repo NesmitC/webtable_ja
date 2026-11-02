@@ -52,7 +52,7 @@
             </div>
 
             {% if recommend %}
-            <h3 class="diagnostic-full-test__subtitle">Что повторить перед пересдачей</h3>
+            <h3 class="diagnostic-full-test__subtitle">{% if attempt.checkpoint_code == 'cp9' %}Что повторить{% else %}Что повторить перед пересдачей{% endif %}</h3>
             <div class="diagnostic-full-test__lines">
                 {% for r in recommend %}
                 <div class="diagnostic-full-test__line">
@@ -61,9 +61,15 @@
                 </div>
                 {% endfor %}
             </div>
+            {% if attempt.checkpoint_code != 'cp9' %}
             <p class="diagnostic-full-test__lines">
-                <a class="btn au-form__submit" href="{% url 'checkpoint_test' %}">Пересдать рубеж</a>
+                {% if attempt.checkpoint_code == 'cp92' %}
+                <a class="btn au-form__submit" href="{% url 'checkpoint_test_92' %}">Пересдать рубеж</a>
+                {% else %}
+                <a class="btn au-form__submit" href="{% url 'checkpoint_test_91' %}">Пересдать рубеж</a>
+                {% endif %}
             </p>
+            {% endif %}
             {% endif %}
         </section>
     </main>

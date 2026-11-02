@@ -10760,14 +10760,9 @@ def _checkpoint_build(request, code: str):
 
 @subscription_required('lessons')
 def checkpoint_test(request):
-    """Рубежный тест после урока 9 (открывает урок 10).
-    Задания 1-9, допуск 3 ошибки; контент — из БД, как в текущей диагностике."""
-    if request.method == 'POST':
-        return _checkpoint_check(request, 'cp9')
-    context, session_data = _checkpoint_build(request, 'cp9')
-    request.session[CHECKPOINT_META['cp9']['session_key']] = session_data
-    request.session.modified = True
-    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+    """Рубеж 1–9 скрыт по решению владельца (2026-11-02): урок 10 открыт без него.
+    Маршрут оставлен редиректом, чтобы старые ссылки и закладки не вели в тупик."""
+    return redirect('lessons_ege')
 
 
 @subscription_required('lessons')

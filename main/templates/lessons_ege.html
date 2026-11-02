@@ -389,22 +389,11 @@
                     </div>
                 </div>
 
-                                <!-- Рубежный тест после урока 9: открывает урок 10.
-                     Сам рубеж всегда открыт и кликабелен: это ключ, а не дверь. -->
-                <a href="{% url 'checkpoint_test' %}" class="lesson-card lesson-card--active"
-                    style="display:block;text-decoration:none;color:inherit;">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
-                        <span class="lesson-card__info">
-                            <h3 class="lesson-card__title">Рубежный тест: задания 1–9</h3>
-                            <span class="lesson-card__status lesson-card__status--open">{% if cp9_passed %}Сдан: урок 10 открыт · можно пересдать{% else %}Пройти рубеж — откроет урок 10{% endif %}</span>
-                        </span>
-                        <span class="lesson-card__chevron">→</span>
-                    </div>
-                </a>
+                <!-- Рубежный тест 1–9 скрыт по решению владельца (2026-11-02):
+                     урок 10 открыт без него, маршрут редиректит на страницу уроков. -->
 
-<!-- Урок 8: ЗАКРЫТ -->
-                {% if cp9_passed %}<div class="lesson-card lesson-card--active">{% else %}<div class="lesson-card lesson-card--locked">{% endif %}
+<!-- Урок 10: открыт без рубежа 1–9 (рубеж скрыт 2026-11-02) -->
+                <div class="lesson-card lesson-card--active">
                     <div class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--lock">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -414,7 +403,7 @@
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 10 (орфография, приставки)</h3>
-                            <span class="lesson-card__status {% if cp9_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp9_passed %}Открыт{% else %}Откроется после рубежного теста{% endif %}</span>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
                         </span>
                     </div>
                 </div>
