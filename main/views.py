@@ -1061,6 +1061,50 @@ def account_activated(request):
     })
 
 
+def _confirm_success(request, user):
+    """Активирует (если ещё нет), логинит и уводит на страницу-цель.
+    Первый и все повторные клики по ссылке дают один результат."""
+    if not user.is_active:
+        user.is_active = True
+        user.save()
+
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    changed = False
+    if not profile.email_confirmed:
+        profile.email_confirmed = True
+        changed = True
+    if not profile.trial_until:
+        profile.trial_until = timezone.now() + timedelta(days=TRIAL_DAYS)
+        changed = True
+    if changed:
+        profile.save()
+
+    # 🔹 МИГРАЦИЯ АНОНИМНЫХ ПОПЫТОК
+    session_key = request.session.session_key
+    if session_key:
+        migrated = DiagnosticAttempt.objects.filter(
+            session_key=session_key,
+            user__isnull=True
+        ).update(user=user)
+        if migrated:
+            logger.info(f"Мигрировано диагностик: {migrated} → {user.username}")
+
+    login(request, user)
+
+    last_attempt = DiagnosticAttempt.objects.filter(user=user).order_by('-created_at').first()
+    # Куда вести лида после страницы-цели. Храним в сессии, а не в
+    # query-параметре: ссылка активации приходит из письма, дописывать
+    # к ней next= нельзя.
+    request.session['post_activate_next'] = (
+        reverse('student_review', args=[last_attempt.id]) if last_attempt
+        else reverse('index')
+    )
+    # PRG на страницу-цель: её URL и reachGoal фиксируют завершение
+    # активации. Прежний редирект на '/' был неотличим от обычного
+    # визита, поэтому Метрика не видела эту конверсию.
+    return redirect('account_activated')
+
+
 def confirm_email(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
@@ -1069,43 +1113,19 @@ def confirm_email(request, uidb64, token):
         user = None
 
     if user and default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
-        
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        profile.email_confirmed = True
-        profile.save()
+        return _confirm_success(request, user)
 
-        if not profile.trial_until:
-            profile.trial_until = timezone.now() + timedelta(days=TRIAL_DAYS)
-            profile.save()
+    # Идемпотентность ссылки: первый клик мог сделать бот предпросмотра
+    # мессенджера (Telegram/WhatsApp) или второе устройство — аккаунт уже
+    # активен и почта подтверждена. Не гоняем лида в тупик «недействительна»:
+    # логиним и ведём на ту же страницу-цель. Мусорный токен для
+    # неподтверждённого аккаунта по-прежнему даёт страницу ошибки.
+    if (user and user.is_active
+            and UserProfile.objects.filter(user=user, email_confirmed=True).exists()):
+        logger.info(f'confirm_email: ссылка использована повторно — '
+                    f'тихий вход user={user.id}')
+        return _confirm_success(request, user)
 
-        
-        # 🔹 МИГРАЦИЯ АНОНИМНЫХ ПОПЫТОК
-        session_key = request.session.session_key
-        if session_key:
-            migrated = DiagnosticAttempt.objects.filter(
-                session_key=session_key, 
-                user__isnull=True
-            ).update(user=user)
-            if migrated:
-                logger.info(f"Мигрировано диагностик: {migrated} → {user.username}")
-        
-        login(request, user)
-
-        last_attempt = DiagnosticAttempt.objects.filter(user=user).order_by('-created_at').first()
-        # Куда вести лида после страницы-цели. Храним в сессии, а не в
-        # query-параметре: ссылка активации приходит из письма, дописывать
-        # к ней next= нельзя.
-        request.session['post_activate_next'] = (
-            reverse('student_review', args=[last_attempt.id]) if last_attempt
-            else reverse('index')
-        )
-        # PRG на страницу-цель: её URL и reachGoal фиксируют завершение
-        # активации. Прежний редирект на '/' был неотличим от обычного
-        # визита, поэтому Метрика не видела эту конверсию.
-        return redirect('account_activated')
-    
     return render(request, 'registration/invalid_link.html')
 
 
