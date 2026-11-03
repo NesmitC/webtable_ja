@@ -25,13 +25,13 @@
         <section class="container-diagnostics">
             <h2 class="diagnostic-full-test__subtitle">{{ cp_heading }}</h2>
             <p class="practice-line diagnostic-full-test__paragraph">
-                Чтобы открылся урок {{ cp_unlock_lesson }}, допусти не более {{ max_errors }} ошибок.
+                {% if cp_unlock_lesson %}Чтобы открылся урок {{ cp_unlock_lesson }}, допусти не более {{ max_errors }} ошибок.{% else %}Это финальный рубеж задания 9: допусти не более {{ max_errors }} ошибок.{% endif %}
                 Неверное задание — одна ошибка, независимо от числа строк в нём.
                 Пересдавать можно сколько угодно раз: задания каждый раз собираются заново.
             </p>
             {% if cp_passed_already %}
             <p class="practice-line diagnostic-full-test__paragraph">
-                Этот рубеж уже сдан — урок {{ cp_unlock_lesson }} открыт. Новая попытка необязательна,
+                {% if cp_unlock_lesson %}Этот рубеж уже сдан — урок {{ cp_unlock_lesson }} открыт.{% else %}Этот рубеж уже сдан.{% endif %} Новая попытка необязательна,
                 но потренироваться можно.
             </p>
             {% endif %}

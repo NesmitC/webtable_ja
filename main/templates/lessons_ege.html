@@ -384,16 +384,78 @@
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 9.3 (корни: гласные ЧЕРЕДУЮЩИЕСЯ)</h3>
-                            <span class="lesson-card__status {% if cp92_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp92_passed %}Открыт · видео скоро{% else %}Откроется после рубежного теста 4–9.1, 9.2{% endif %}</span>
+                            <span class="lesson-card__status {% if cp92_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp92_passed %}Открыт{% else %}Откроется после рубежного теста 4–9.1, 9.2{% endif %}</span>
                         </span>
                     </div>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/qASZrA5QRCLWoyu3DuVnhp">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                    </div>
                 </div>
+
+                <!-- Рубеж после урока 9.3: открывает урок 9.4 -->
+                {% if cp92_passed %}
+                <a href="{% url 'checkpoint_test_93' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 4–9.1, 9.2, 9.3</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp93_passed %}Сдан: урок 9.4 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 9.4{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                <!-- Урок 9.4: закрыт до сдачи рубежа 4–9.1, 9.2, 9.3 -->
+                {% if cp93_passed %}<div class="lesson-card lesson-card--active">{% else %}<div class="lesson-card lesson-card--locked">{% endif %}
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--lock">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9-1.1-1V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                            </svg>
+                        </span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Задание 9.4 (корни: Ё-О после шипящих, И-Ы после Ц)</h3>
+                            <span class="lesson-card__status {% if cp93_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp93_passed %}Открыт{% else %}Откроется после рубежного теста 4–9.1, 9.2, 9.3{% endif %}</span>
+                        </span>
+                    </div>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/osLWDdyKH4yYp41TaVJHuE">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Рубеж после урока 9.4: финальный по заданию 9 -->
+                {% if cp93_passed %}
+                <a href="{% url 'checkpoint_test_94' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 4–9.1, 9.2, 9.3, 9.4</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp94_passed %}Сдан: курс задания 9 завершён · можно пересдать{% else %}Пройти рубеж — завершит курс задания 9{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
 
                 <!-- Рубежный тест 1–9 скрыт по решению владельца (2026-11-02):
                      урок 10 открыт без него, маршрут редиректит на страницу уроков. -->
 
-<!-- Урок 10: открыт без рубежа 1–9 (рубеж скрыт 2026-11-02) -->
-                <div class="lesson-card lesson-card--active">
+<!-- Урок 10: открыт после финального рубежа задания 9 (cp94) -->
+                {% if cp94_passed %}<div class="lesson-card lesson-card--active">{% else %}<div class="lesson-card lesson-card--locked">{% endif %}
                     <div class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--lock">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -403,13 +465,28 @@
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 10 (орфография, приставки)</h3>
-                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
+                            <span class="lesson-card__status {% if cp94_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp94_passed %}Открыт{% else %}Откроется после рубежного теста 4–9.1, 9.2, 9.3, 9.4{% endif %}</span>
                         </span>
                     </div>
                 </div>
 
-                <!-- Урок 9: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
+                <!-- Рубеж после урока 10: открывает урок 11 -->
+                {% if cp94_passed %}
+                <a href="{% url 'checkpoint_test_10' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 4–10</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp10_passed %}Сдан: урок 11 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 11{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                <!-- Карточка урока 11 (коммент исторически «Урок 9») -->
+                {% if cp10_passed %}<div class="lesson-card lesson-card--active">{% else %}<div class="lesson-card lesson-card--locked">{% endif %}
                     <div class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--lock">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -419,7 +496,7 @@
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 11 (орфография, суффиксы)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp10_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp10_passed %}Открыт{% else %}Откроется после рубежного теста 4–10{% endif %}</span>
                         </span>
                     </div>
                 </div>

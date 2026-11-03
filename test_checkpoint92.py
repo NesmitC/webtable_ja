@@ -160,7 +160,12 @@ lb = c.get('/ege/lessons/').content.decode('utf-8')
 i93 = lb.find('Задание 9.3 (корни: гласные ЧЕРЕДУЮЩИЕСЯ)')
 check('lesson-card--active' in lb[max(0, i93 - 900):i93],
       'карточка 9.3 активна после сдачи')
-check('Открыт · видео скоро' in lb, 'статус 9.3: открыт, видео скоро')
+i93 = lb.find('Задание 9.3 (корни: гласные ЧЕРЕДУЮЩИЕСЯ)')
+seg93 = lb[i93:i93 + 900]
+check('lesson-card__status lesson-card__status--open">Открыт<' in seg93,
+      'статус 9.3: открыт (видео приехало, «скоро» убрано)')
+check('kinescope.io/embed/qASZrA5QRCLWoyu3DuVnhp' in seg93,
+      'видео 9.3 в карточке')
 check('Сдан: урок 9.3 открыт' in lb, 'статус карточки рубежа: сдан')
 
 print('4. Провал: 9.3 закрыт, рекомендации по 9.1 и 9.2')

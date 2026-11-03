@@ -23,10 +23,10 @@
             <h2 class="diagnostic-full-test__subtitle">Рубеж сдан: {{ attempt.correct_count }} из {{ attempt.total_tasks }}</h2>
             <p class="practice-line diagnostic-full-test__paragraph">
                 Ошибок: {{ attempt.error_count }} при допуске {{ max_errors }}.
-                Урок {{ cp_unlock_lesson }} открыт — так держать.
+                {% if cp_unlock_lesson %}Урок {{ cp_unlock_lesson }} открыт — так держать.{% else %}Курс задания 9 завершён — так держать.{% endif %}
             </p>
             <p class="diagnostic-full-test__lines">
-                <a class="btn au-form__submit" href="{% url 'lessons_ege' %}">Перейти к уроку {{ cp_unlock_lesson }}</a>
+                <a class="btn au-form__submit" href="{% url 'lessons_ege' %}">{% if cp_unlock_lesson %}Перейти к уроку {{ cp_unlock_lesson }}{% else %}К урокам задания 9{% endif %}</a>
             </p>
             {% else %}
             <h2 class="diagnostic-full-test__subtitle">Пока не сдан: {{ attempt.correct_count }} из {{ attempt.total_tasks }}</h2>

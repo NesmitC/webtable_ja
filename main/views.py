@@ -859,6 +859,12 @@ def lessons_ege(request):
         user=request.user, checkpoint_code='cp91')
     cp92 = CheckpointAttempt.objects.filter(
         user=request.user, checkpoint_code='cp92')
+    cp93 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp93')
+    cp94 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp94')
+    cp10 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp10')
     return render(request, 'lessons_ege.html', {
         'cp9_passed': cp9.filter(passed=True).exists(),
         'cp9_attempts': cp9.count(),
@@ -869,6 +875,15 @@ def lessons_ege(request):
         'cp92_passed': cp92.filter(passed=True).exists(),
         'cp92_attempts': cp92.count(),
         'cp92_best': max([a.correct_count for a in cp92], default=0),
+        'cp93_passed': cp93.filter(passed=True).exists(),
+        'cp93_attempts': cp93.count(),
+        'cp93_best': max([a.correct_count for a in cp93], default=0),
+        'cp94_passed': cp94.filter(passed=True).exists(),
+        'cp94_attempts': cp94.count(),
+        'cp94_best': max([a.correct_count for a in cp94], default=0),
+        'cp10_passed': cp10.filter(passed=True).exists(),
+        'cp10_attempts': cp10.count(),
+        'cp10_best': max([a.correct_count for a in cp10], default=0),
     })
 
 
@@ -10478,7 +10493,16 @@ def download_reference_file(request, file_type):
 # Контент собирается из БД случайным образом — теми же генераторами, что
 # текущая/контрольная диагностика (generate_starting_diagnostic).
 # Ошибки считаем по заданиям: неверное задание = 1 ошибка, баллы ЕГЭ не ставим.
-CHECKPOINT_MAX_ERRORS = {'cp9': 3, 'cp91': 2, 'cp92': 2}
+CHECKPOINT_MAX_ERRORS = {'cp9': 3, 'cp91': 2, 'cp92': 2, 'cp93': 2, 'cp94': 2,
+                         'cp10': 2}
+# Орфограмма буквы строки задания 9 -> подзадание (9.1/9.2/9.3/9.4)
+CHECKPOINT_ORTH_SUBTASK = {
+    '1': '9', '2': '92',
+    '12': '93', '13': '93', '24': '93', '26': '93', '27': '93',
+    '271': '93', '272': '93', '273': '93', '274': '93', '275': '93',
+    '14': '94', '15': '94',
+    '10': '10', '11': '10', '28': '10', '29': '10', '6': '10',
+}
 CHECKPOINT_META = {
     'cp9': {'session_key': 'checkpoint_9',
             'heading': 'Рубежный тест: задания 1–9',
@@ -10492,6 +10516,18 @@ CHECKPOINT_META = {
              'heading': 'Рубежный тест: задания 4–9.1, 9.2',
              'unlock_lesson': '9.3',
              'tasks': ['4', '5', '6', '7', '8', '9', '92']},
+    'cp93': {'session_key': 'checkpoint_93',
+             'heading': 'Рубежный тест: задания 4–9.1, 9.2, 9.3',
+             'unlock_lesson': '9.4',
+             'tasks': ['4', '5', '6', '7', '8', '9', '92', '93']},
+    'cp94': {'session_key': 'checkpoint_94',
+             'heading': 'Рубежный тест: задания 4–9.1, 9.2, 9.3, 9.4',
+             'unlock_lesson': '10',
+             'tasks': ['4', '5', '6', '7', '8', '9', '92', '93', '94']},
+    'cp10': {'session_key': 'checkpoint_10',
+             'heading': 'Рубежный тест: задания 4–10',
+             'unlock_lesson': '11',
+             'tasks': ['4', '5', '6', '7', '8', '9', '92', '93', '94', '10']},
 }
 
 # Подписи строк разбора и ссылки рекомендаций для рубежей с 9.1/9.2
@@ -10499,6 +10535,9 @@ CHECKPOINT_TASK_ROWS = {
     'cp9': {'9': '9'},
     'cp91': {'9': '9.1'},
     'cp92': {'9': '9.1', '92': '9.2'},
+    'cp93': {'9': '9.1', '92': '9.2', '93': '9.3'},
+    'cp94': {'9': '9.1', '92': '9.2', '93': '9.3', '94': '9.4'},
+    'cp10': {'9': '9.1', '92': '9.2', '93': '9.3', '94': '9.4', '10': '10'},
 }
 CHECKPOINT_TASK_LINKS = {
     'cp91': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
@@ -10507,6 +10546,30 @@ CHECKPOINT_TASK_LINKS = {
                    'Задание 9.1: проверяемые ударением гласные'),
              '92': ('9.2', 'task9_section', ['neproveryaemye-glasnye'],
                     'Задание 9.2: непроверяемые ударением гласные')},
+    'cp93': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
+                   'Задание 9.1: проверяемые ударением гласные'),
+             '92': ('9.2', 'task9_section', ['neproveryaemye-glasnye'],
+                    'Задание 9.2: непроверяемые ударением гласные'),
+             '93': ('9.3', 'task9_section', ['chereduyushchiesya-glasnye'],
+                    'Задание 9.3: чередующиеся гласные')},
+    'cp94': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
+                   'Задание 9.1: проверяемые ударением гласные'),
+             '92': ('9.2', 'task9_section', ['neproveryaemye-glasnye'],
+                    'Задание 9.2: непроверяемые ударением гласные'),
+             '93': ('9.3', 'task9_section', ['chereduyushchiesya-glasnye'],
+                    'Задание 9.3: чередующиеся гласные'),
+             '94': ('9.4', 'trainers_ege', [],
+                    'Задание 9.4: корни 14-15 (Ё-О после шипящих, И-Ы после Ц)')},
+    'cp10': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
+                   'Задание 9.1: проверяемые ударением гласные'),
+             '92': ('9.2', 'task9_section', ['neproveryaemye-glasnye'],
+                    'Задание 9.2: непроверяемые ударением гласные'),
+             '93': ('9.3', 'task9_section', ['chereduyushchiesya-glasnye'],
+                    'Задание 9.3: чередующиеся гласные'),
+             '94': ('9.4', 'trainers_ege', [],
+                    'Задание 9.4: корни 14-15 (Ё-О после шипящих, И-Ы после Ц)'),
+             '10': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-')},
 }
 
 
@@ -10528,6 +10591,43 @@ def _task9_config(code: str):
         g2 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
               'orth_ids': ['2'], 'name': 'group2'}
         return [dict(g1) for _ in range(5)] + [dict(g2) for _ in range(5)]
+    if code == 'cp93':
+        g1 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+              'orth_ids': ['1'], 'name': 'group1'}
+        g2 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+              'orth_ids': ['2'], 'name': 'group2'}
+        g3 = {'letters': ('о', 'а', 'е', 'и', 'я'),
+              'orth_ids': ['12', '13', '24', '26', '27', '271', '272',
+                           '273', '274', '275'], 'name': 'group3'}
+        return ([dict(g1) for _ in range(5)] + [dict(g2) for _ in range(5)]
+                + [dict(g3) for _ in range(5)])
+    if code == 'cp94':
+        g1 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+              'orth_ids': ['1'], 'name': 'group1'}
+        g2 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+              'orth_ids': ['2'], 'name': 'group2'}
+        g3 = {'letters': ('о', 'а', 'е', 'и', 'я'),
+              'orth_ids': ['12', '13', '24', '26', '27', '271', '272',
+                           '273', '274', '275'], 'name': 'group3'}
+        g4 = {'letters': ('ё', 'о', 'и', 'ы'),
+              'orth_ids': ['14', '15'], 'name': 'group4'}
+        return ([dict(g1) for _ in range(5)] + [dict(g2) for _ in range(5)]
+                + [dict(g3) for _ in range(5)] + [dict(g4) for _ in range(5)])
+    if code == 'cp10':
+        g1 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+              'orth_ids': ['1'], 'name': 'group1'}
+        g2 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
+              'orth_ids': ['2'], 'name': 'group2'}
+        g3 = {'letters': ('о', 'а', 'е', 'и', 'я'),
+              'orth_ids': ['12', '13', '24', '26', '27', '271', '272',
+                           '273', '274', '275'], 'name': 'group3'}
+        g4 = {'letters': ('ё', 'о', 'и', 'ы'),
+              'orth_ids': ['14', '15'], 'name': 'group4'}
+        g5 = {'letters': ('з', 'с', 'ы', 'и', 'е', 'ъ', 'ь'),
+              'orth_ids': ['10', '11', '28', '29', '6'], 'name': 'group5'}
+        return ([dict(g1) for _ in range(5)] + [dict(g2) for _ in range(5)]
+                + [dict(g3) for _ in range(5)] + [dict(g4) for _ in range(5)]
+                + [dict(g5) for _ in range(5)])
     return None
 CHECKPOINT_SESSION = 'checkpoint_9'
 CHECKPOINT_RECOMMEND = {
@@ -10786,6 +10886,51 @@ def checkpoint_test(request):
 
 
 @subscription_required('lessons')
+def checkpoint_test_93(request):
+    """Рубеж после урока 9.3 (открывает 9.4): задания 4–9.1, 9.2, 9.3.
+    Доступен после сдачи рубежа 4–9.1, 9.2: цепочка не перепрыгивается."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp92', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp93')
+    context, session_data = _checkpoint_build(request, 'cp93')
+    request.session[CHECKPOINT_META['cp93']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_10(request):
+    """Рубеж после урока 10 (открывает 11): задания 4–10, строки 9.1-9.4 +
+    приставки. Доступен после сдачи рубежа 4–9.1, 9.2, 9.3, 9.4."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp94', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp10')
+    context, session_data = _checkpoint_build(request, 'cp10')
+    request.session[CHECKPOINT_META['cp10']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_94(request):
+    """Финальный рубеж задания 9 (после урока 9.4): 4–9.1, 9.2, 9.3, 9.4.
+    Доступен после сдачи рубежа 4–9.1, 9.2, 9.3."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp93', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp94')
+    context, session_data = _checkpoint_build(request, 'cp94')
+    request.session[CHECKPOINT_META['cp94']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
 def checkpoint_test_92(request):
     """Рубеж после урока 9.2 (открывает 9.3): задания 4–9.1 и 9.2.
     Доступен после сдачи рубежа 4–9.1: цепочка уроков не перепрыгивается."""
@@ -10901,11 +11046,13 @@ def _checkpoint_check(request, code: str):
         results['9'] = err9 == 0
         orths = session.get('task9_orths', [])
         if '92' in meta['tasks'] and len(orths) == len(expected_letters):
-            # Блок содержит 9.1 и 9.2: считаем их отдельными заданиями
-            results['9'] = all(
-                results[f'9-{i}'] for i, o in enumerate(orths, 1) if o == '1')
-            results['92'] = all(
-                results[f'9-{i}'] for i, o in enumerate(orths, 1) if o == '2')
+            # Строки блока относятся к разным подзаданиям (9.1-9.4):
+            # каждое считаем отдельным заданием по орфограмме букв строки
+            for sub in ('9', '92', '93', '94', '10'):
+                if sub in meta['tasks']:
+                    results[sub] = all(
+                        results[f'9-{i}'] for i, o in enumerate(orths, 1)
+                        if CHECKPOINT_ORTH_SUBTASK.get(o) == sub)
 
     # === Итог: неверное задание = 1 ошибка ===
     scored_tasks = [t for t in meta['tasks'] if t in results]

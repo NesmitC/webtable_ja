@@ -71,8 +71,9 @@ lb = c.get('/ege/lessons/').content.decode('utf-8')
 check('Рубежный тест: задания 1–9' not in lb, 'карточки рубежа 1–9 нет')
 check('href="/ege/checkpoint/9/"' not in lb, 'ссылки на скрытый рубеж нет')
 i10 = lb.find('Задание 10 (орфография, приставки)')
-check(i10 != -1 and 'lesson-card--active' in lb[max(0, i10 - 1300):i10],
-      'карточка урока 10 активна у пользователя без сдачи')
+j10 = lb.rfind('<div class="lesson-card lesson-card--', 0, i10)
+check(i10 != -1 and 'lesson-card--locked' in lb[j10:i10],
+      'урок 10 закрыт без сдачи финального рубежа задания 9 (cp94)')
 check('Откроется после рубежного теста</span>' not in lb,
       'статуса «откроется после рубежа» без суффикса (cp9) нет')
 
