@@ -54,23 +54,26 @@ def user_can_use_bot(profile) -> bool:
 
 
 def get_profile_by_platform(platform: str, platform_id):
-    """Ищет профиль по id мессенджера. platform: 'vk' | 'max'."""
+    """Ищет профиль по id мессенджера. platform: 'vk' | 'max' | 'telegram'."""
     if not platform_id:
         return None
     if platform == 'vk':
         return UserProfile.objects.filter(vk_id=platform_id).select_related('user').first()
     if platform == 'max':
         return UserProfile.objects.filter(max_id=platform_id).select_related('user').first()
+    if platform == 'telegram':
+        return UserProfile.objects.filter(telegram_id=platform_id).select_related('user').first()
     return None
 
 
 def iter_bot_eligible_profiles():
-    """Все профили, которым можно слать «Слово дня» (есть доступ и привязан VK или MAX)."""
+    """Все профили, которым можно слать «Слово дня» (есть доступ и привязан
+    хотя бы один мессенджер: VK, MAX или Telegram)."""
     qs = UserProfile.objects.select_related('user')
     for profile in qs:
         if not user_can_use_bot(profile):
             continue
-        if profile.vk_id or profile.max_id:
+        if profile.vk_id or profile.max_id or profile.telegram_id:
             yield profile
 
 
@@ -521,7 +524,7 @@ def format_daily_message(quiz: dict, name: str = '') -> str:
 def link_by_code(code: str, platform: str, platform_id) -> dict:
     """
     Привязывает профиль к аккаунту мессенджера по одноразовому коду.
-    platform: 'vk' | 'max'. Код генерируется на сайте в ЛК.
+    platform: 'vk' | 'max' | 'telegram'. Код генерируется на сайте в ЛК.
     """
     code = (code or '').strip().upper()
     if not code or not platform_id:
@@ -542,6 +545,9 @@ def link_by_code(code: str, platform: str, platform_id) -> dict:
     elif platform == 'max':
         UserProfile.objects.filter(max_id=platform_id).exclude(id=profile.id).update(max_id=None)
         profile.max_id = platform_id
+    elif platform == 'telegram':
+        UserProfile.objects.filter(telegram_id=platform_id).exclude(id=profile.id).update(telegram_id=None)
+        profile.telegram_id = platform_id
     else:
         return {'success': False, 'message': '❌ Неизвестная платформа'}
 

@@ -46,6 +46,28 @@ def _send_max(chat_id, text, buttons, token):
                   json=body, timeout=15, verify=verify)
 
 
+def _send_tg(tg_id, text, buttons, token):
+    """Telegram sendMessage + inline-клавиатура. Лимит callback_data 64 байта:
+    если payload длиннее — шлём без клавиатуры, чем падаем."""
+    body = {'chat_id': tg_id, 'text': text}
+    if buttons:
+        rows, ok = [], True
+        for row in buttons:
+            trow = []
+            for b in row:
+                cd = b['payload']
+                if len(cd.encode('utf-8')) > 64:
+                    ok = False
+                    break
+                trow.append({'text': b['label'][:64], 'callback_data': cd})
+            rows.append(trow)
+        if ok:
+            body['reply_markup'] = {'inline_keyboard': rows}
+    requests.post(f'https://api.telegram.org/bot{token}/sendMessage',
+                  json=body, timeout=15)
+
+
+
 class Command(BaseCommand):
     help = 'Проактивная рекомендация каждому привязанному ученику (1 раз в день)'
 
@@ -58,12 +80,13 @@ class Command(BaseCommand):
             except Exception as e:
                 logger.error(f'VK init error: {e}')
         max_token = os.getenv('MAX_BOT_TOKEN')
+        tg_token = os.getenv('TELEGRAM_BOT_TOKEN')
 
         sent = skipped_no_tip = skipped_sent = 0
 
         for profile in bot_core.iter_bot_eligible_profiles():
             try:
-                if not (profile.vk_id or profile.max_chat_id):
+                if not (profile.vk_id or profile.max_chat_id or profile.telegram_id):
                     continue
                 if bot_core.proactive_sent_today(profile.user):
                     skipped_sent += 1
@@ -87,6 +110,11 @@ class Command(BaseCommand):
                         _send_max(profile.max_chat_id, text, buttons, max_token)
                     except Exception as e:
                         logger.error(f'MAX send error user={profile.user_id}: {e}')
+                if tg_token and profile.telegram_id:
+                    try:
+                        _send_tg(profile.telegram_id, text, buttons, tg_token)
+                    except Exception as e:
+                        logger.error(f'TG send error user={profile.user_id}: {e}')
 
                 bot_core.log_proactive(profile.user, 'push', rec['text'])
                 sent += 1
