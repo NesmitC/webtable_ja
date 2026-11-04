@@ -236,6 +236,24 @@ async function getLettersForOrthogram(orthId) {
     }
 
     if (orthId.startsWith('9-')) {
+        // Приоритет — фактические группы страницы из JSON шаблона:
+        // у рубежей cp91-cp10 состав строк отличается от дефолтных пяти
+        // групп, и хардкод по номеру строки давал чужие буквы (ё/о, и/ы).
+        try {
+            const groupsElem = document.getElementById('task9-letter-groups');
+            const lettersElem = document.getElementById('task9-subgroup-letters');
+            if (groupsElem && lettersElem) {
+                const groupsMap = JSON.parse(groupsElem.textContent);
+                const subgroupLetters = JSON.parse(lettersElem.textContent);
+                const subgroupKey = groupsMap[orthId];
+                if (subgroupKey && subgroupLetters[subgroupKey]) {
+                    lettersCache.set(orthId, subgroupLetters[subgroupKey]);
+                    return subgroupLetters[subgroupKey];
+                }
+            }
+        } catch (e) {
+            console.warn('Ошибка при получении подгруппы для 9:', e);
+        }
         const index = parseInt(orthId.split('-')[1]) - 1;
         const groupIndex = Math.floor(index / 3);
         const groups = [
@@ -251,33 +269,6 @@ async function getLettersForOrthogram(orthId) {
     }
 
     if (orthId === '1' || orthId === '2') {
-        const letters = ['а', 'о', 'е', 'и', 'я', 'у', 'ю'];
-        lettersCache.set(orthId, letters);
-        return letters;
-    }
-
-    // ЗАДАНИЕ 9
-    if (orthId.startsWith('9-')) {
-        // Пытаемся получить данные из скрипта в шаблоне
-        try {
-            const groupsElem = document.getElementById('task9-letter-groups');
-            const lettersElem = document.getElementById('task9-subgroup-letters');
-
-            if (groupsElem && lettersElem) {
-                const groups = JSON.parse(groupsElem.textContent);
-                const subgroupLetters = JSON.parse(lettersElem.textContent);
-                const subgroupKey = groups[orthId];
-
-                if (subgroupKey && subgroupLetters[subgroupKey]) {
-                    lettersCache.set(orthId, subgroupLetters[subgroupKey]);
-                    return subgroupLetters[subgroupKey];
-                }
-            }
-        } catch (e) {
-            console.warn("Ошибка при получении подгруппы для 9:", e);
-        }
-
-        // Fallback: возвращаем стандартный набор букв
         const letters = ['а', 'о', 'е', 'и', 'я', 'у', 'ю'];
         lettersCache.set(orthId, letters);
         return letters;
