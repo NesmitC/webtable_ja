@@ -1,0 +1,10 @@
+[Unit]
+Description=Neurostat: ежедневный пуш «Слова дня» в 16:00 МСК
+
+[Timer]
+# Явный часовой пояс: не зависим от TZ сервера
+OnCalendar=*-*-* 16:00:00 Europe/Moscow
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

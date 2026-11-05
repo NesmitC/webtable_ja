@@ -3361,6 +3361,79 @@ def site_daily_answer(request):
     return JsonResponse(result)
 
 
+# === WEB PUSH (PWA): «Слово дня» на телефон ===
+
+def service_worker_js(request):
+    """Отдаёт /sw.js с корня домена: scope Service Worker'а обязан быть '/',
+    а из /static/ он управлял бы только статикой."""
+    from django.contrib.staticfiles import finders
+    path = finders.find('js/sw.js')
+    if not path:
+        return HttpResponse('sw.js not found', status=404)
+    with open(path, 'rb') as f:
+        resp = HttpResponse(f.read(), content_type='application/javascript')
+    resp['Service-Worker-Allowed'] = '/'
+    resp['Cache-Control'] = 'no-cache'   # браузер должен видеть обновления воркера
+    return resp
+
+
+def push_config(request):
+    """Публичный конфиг пуша: включён ли и VAPID-ключ для subscribe."""
+    from .push import push_enabled
+    enabled = push_enabled()
+    return JsonResponse({
+        'enabled': enabled,
+        'vapid_public_key': settings.VAPID_PUBLIC_KEY if enabled else '',
+    })
+
+
+@login_required
+def push_subscribe(request):
+    """Сохраняет подписку браузера (результат PushManager.subscribe)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'bad json'}, status=400)
+    endpoint = (data.get('endpoint') or '').strip()
+    keys = data.get('keys') or {}
+    p256dh = (keys.get('p256dh') or '').strip()
+    auth = (keys.get('auth') or '').strip()
+    if not (endpoint.startswith('https://') and p256dh and auth):
+        return JsonResponse({'error': 'bad subscription'}, status=400)
+    from .models import PushSubscription
+    from .push import detect_platform
+    ua = request.META.get('HTTP_USER_AGENT', '')[:500]
+    # endpoint unique: переподписка с другого аккаунта переносит устройство
+    PushSubscription.objects.update_or_create(
+        endpoint=endpoint,
+        defaults={'user': request.user, 'p256dh': p256dh, 'auth': auth,
+                  'platform': detect_platform(ua), 'user_agent': ua,
+                  'active': True},
+    )
+    return JsonResponse({'status': 'ok'})
+
+
+@login_required
+def push_unsubscribe(request):
+    """Отключает пуш: конкретную подписку или все подписки пользователя."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    from .models import PushSubscription
+    endpoint = ''
+    try:
+        data = json.loads(request.body)
+        endpoint = (data.get('endpoint') or '').strip()
+    except json.JSONDecodeError:
+        pass
+    qs = PushSubscription.objects.filter(user=request.user)
+    if endpoint:
+        qs = qs.filter(endpoint=endpoint)
+    qs.update(active=False)
+    return JsonResponse({'status': 'ok'})
+
+
 # === СТАТИСТИКА для ЛК ===
 @login_required
 def get_user_quiz_stats_site(request):

@@ -13,3 +13,6 @@ python-dotenv>=1.0.0
 
 # VK Bot
 vk-api>=11.9.0
+
+# Web Push (PWA): «Слово дня» на телефон
+pywebpush>=2.0.1

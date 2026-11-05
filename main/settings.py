@@ -214,3 +214,9 @@ MAX_BOT_LINK = 'https://max.ru/id450400800854_bot'
 BOT_NAME = 'Алекс'
 
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# --- Web Push (PWA): «Слово дня» на телефон ---
+# Ключи генерируются командой: python manage.py generate_vapid_keys (дописывает в .env)
+VAPID_PUBLIC_KEY = config('VAPID_PUBLIC_KEY', default='')
+VAPID_PRIVATE_KEY = config('VAPID_PRIVATE_KEY', default='')
+VAPID_CLAIMS_EMAIL = config('VAPID_CLAIMS_EMAIL', default='mailto:a_timof@mail.ru')

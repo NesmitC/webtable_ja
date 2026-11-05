@@ -1,0 +1,16 @@
+{% comment %} PWA: манифест, иконки iOS, регистрация Service Worker.
+Подключается в <head> ключевых страниц (index, profile, quizzes_ege).
+Пути абсолютные /static/...: include не зависит от {% load static %} страницы. {% endcomment %}
+<link rel="manifest" href="/static/manifest.json">
+<link rel="apple-touch-icon" href="/static/images/pwa/apple-touch-icon.png">
+<meta name="theme-color" content="#9C5A1D">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Нейростат">
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+    }
+</script>

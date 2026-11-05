@@ -1997,3 +1997,27 @@ class DictationTask(models.Model):
             raise ValidationError(
                 f'Ключей {len(tokens)}, а слотов в тексте {len(slots)} — '
                 'должно быть поровну (по одному токену в строке).')
+
+
+class PushSubscription(models.Model):
+    """Web Push (PWA)-подписка: адрес доставки «Слова дня» на телефон.
+
+    endpoint и ключи выдаёт браузер (PushManager.subscribe) под наши
+    VAPID-ключи. У одного пользователя может быть несколько устройств.
+    """
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='push_subscriptions')
+    endpoint = models.TextField(unique=True)
+    p256dh = models.TextField()
+    auth = models.TextField()
+    platform = models.CharField(max_length=20, blank=True, default='')  # ios/android/desktop/other
+    user_agent = models.TextField(blank=True, default='')
+    active = models.BooleanField(default=True)
+    last_sent_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.CharField(max_length=200, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        state = 'вкл' if self.active else 'выкл'
+        return f'{self.user.username} {self.platform or "?"} {state}'

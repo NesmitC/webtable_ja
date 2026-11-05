@@ -168,6 +168,14 @@ if head != EXPECTED_HEAD:
 code, _, _ = run(f"test -x {ROOT}/.venv/bin/python", quiet=True)
 PY = f'{ROOT}/.venv/bin/python' if code == 0 else 'python3'
 
+# 5b. зависимости Python (pywebpush и др.): идемпотентная установка
+#     до миграций; при ошибке gunicorn НЕ перезагружаем
+code, out, err = run(as_owner(f"cd {ROOT} && {PY} -m pip install -q -r requirements.txt"),
+                     timeout=600)
+if code != 0:
+    print('ОТМЕНА: pip install -r requirements.txt упал')
+    sys.exit(9)
+
 # 6. миграции (аддитивные, данных не трогают)
 code, out, _ = run(as_owner(f"cd {ROOT} && {PY} manage.py migrate main"), timeout=300)
 if code != 0:

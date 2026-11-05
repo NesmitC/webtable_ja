@@ -5,6 +5,7 @@
 
 <head>
     {% include 'includes/metrika.html' %}
+    {% include 'includes/pwa.html' %}
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,7 +61,7 @@
             <!-- === ПРАВАЯ КОЛОНКА: СЛОВО ДНЯ === -->
             {% if subscription.kind == 'paid' or subscription.kind == 'trial' %}
             <aside class="quizzes-col-side">
-                <section class="card card-daily-word">
+                <section class="card card-daily-word" id="daily-word">
                     <h3 class="daily-word__title">Слово дня</h3>
                     <div id="daily-word-clock" class="daily-word__clock"></div>
                     <div id="daily-word-container" class="daily-word__body">Загрузка...</div>

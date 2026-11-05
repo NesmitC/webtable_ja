@@ -1,0 +1,11 @@
+[Unit]
+Description=Neurostat: push-рассылка «Слова дня» (Web Push/PWA)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/home/neurostat
+Environment="PATH=/home/neurostat/.venv/bin"
+ExecStart=/home/neurostat/.venv/bin/python manage.py send_daily_push

@@ -93,6 +93,12 @@ urlpatterns = [
     path('api/site-daily-word/', views.site_daily_word, name='site_daily_word'),
     path('api/site-daily-answer/', views.site_daily_answer, name='site_daily_answer'),
 
+    # === Web Push (PWA): «Слово дня» на телефон ===
+    path('sw.js', views.service_worker_js, name='service_worker_js'),
+    path('api/push/config/', views.push_config, name='push_config'),
+    path('api/push/subscribe/', views.push_subscribe, name='push_subscribe'),
+    path('api/push/unsubscribe/', views.push_unsubscribe, name='push_unsubscribe'),
+
     # === API для САЙТА (требуют авторизации) ===
     path('api/get-quiz/', views.get_quiz, name='get_quiz'),
     path('api/get-quiz-orthoepy-pair/', views.get_quiz_orthoepy_pair, name='get_quiz_orthoepy_pair'),
