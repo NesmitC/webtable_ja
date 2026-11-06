@@ -211,6 +211,10 @@ i11 = lb.find('Задание 11 (орфография, суффиксы)')
 j11 = lb.rfind('<div class="lesson-card lesson-card--', 0, i11)
 check('lesson-card--active' in lb[j11:i11],
       'карточка урока 11 активна после cp10')
+i10 = lb.find('Задание 10 (орфография, приставки)')
+j10 = lb.find('<!-- Рубеж после урока 10', i10)
+check('data-video-src="https://kinescope.io/embed/5nKhuyz3bjaEZy7EKcsaqK"'
+      in lb[i10:j10], 'кнопка видео урока 10 на месте')
 
 print('4. Ошибка только в приставках: подзадание 10 отдельно')
 u2 = make_user('pupil2')
