@@ -70,6 +70,8 @@ urlpatterns = [
     path('api/check-alphabetical-exercise/', views.check_alphabetical_exercise, name='check_alphabetical_exercise'),
     path('api/generate-task9-exercise/', views.generate_task9_exercise, name='generate_task9_exercise'),
     path('api/generate-chered-exercise/', views.generate_chered_exercise, name='generate_chered_exercise'),
+    path('api/generate-suffiksy-exercise/', views.generate_suffiksy_exercise,
+         name='generate_suffiksy_exercise'),
     path('orthoepy_trening/', views.orthoepy_trening, name='orthoepy_trening'),
     path('api/save-example/', views.save_example, name='save_example'),
     path('api/load-examples/', views.load_examples, name='load_examples'),
@@ -190,6 +192,8 @@ urlpatterns = [
     path('dictations/<int:pk>/check/', views.dictation_check, name='dictation_check'),
     # SEO-разделы задания 9: анонимные индексируемые страницы с тренажёрами
     path('ege/zadanie-9/', views.task9_hub, name='task9_hub'),
+    path('ege/zadanie-11/suffiksy/', views.task9_suffiksy,
+         name='task9_suffiksy'),
     path('ege/zadanie-9/<slug:section>/', views.task9_section, name='task9_section'),
     path('ege/zadanie-10/', views.task10_pre_pri, name='task10_pre_pri'),
     path('sklonenie-chislitelnyh/', views.sklonenie_chislitelnyh, name='sklonenie_chislitelnyh'),

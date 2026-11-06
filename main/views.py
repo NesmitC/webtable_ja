@@ -2751,6 +2751,96 @@ def _task9_report(user, orthogram_id: str, range_code: str) -> dict:
     }
 
 
+def generate_suffiksy_exercise(request):
+    """Тренажёр правописания суффиксов (орф. 48.1-48.5): строки из
+    OrthogramExample одной орфограммы. Механика общая с чередованиями:
+    тот же сниппет со смайлами, та же проверка check_alphabetical_exercise,
+    статистика пишется на реальную орфограмму (481-484, 611). Анонимам на
+    SEO-странице генерация доступна, как у чередований: часовой лимит,
+    отчёт и работа над ошибками - из сессии."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        mode = data.get('mode', 'seo')
+        seo = mode == 'seo'
+        range_code = str(data.get('range', '')).strip()
+
+        if not seo and not request.user.is_authenticated:
+            return JsonResponse({'error': 'Требуется вход'}, status=403)
+        if seo and _task9_seo_rate_limited(request, 'gen', 20):
+            return JsonResponse(
+                {'error': 'Слишком много упражнений подряд. Сделайте паузу '
+                          'или запишитесь на бесплатное занятие - там '
+                          'тренажёров больше.'}, status=429)
+
+        orth = Orthogram.objects.filter(id=range_code).first()
+        if not orth:
+            return JsonResponse({'error': 'Орфограмма не найдена'}, status=400)
+        letters = [l.strip() for l in (orth.letters or '').split(',')
+                   if l.strip()]
+        if not letters:
+            return JsonResponse({'error': 'У орфограммы не заданы буквы'},
+                                status=400)
+
+        pool = list(OrthogramExample.objects.filter(
+            orthogram_id=range_code, is_active=True))
+        if len(pool) < 3:
+            return JsonResponse({'error': 'Материала пока мало - '
+                                          'загляните позже'}, status=400)
+
+        random.shuffle(pool)
+        items = []
+        correct_letters = []
+        for ex in pool[:16]:
+            # id внутри маски в БД иногда не совпадает с орфограммой примера -
+            # нормализуем, как у чередований: смайлик открывается буквами упражнения
+            masked = re.sub(r'\*[^*]+\*', f'*{range_code}*', ex.masked_word.strip())
+            letter = extract_correct_letter(ex.text, masked)
+            if not letter:
+                continue
+            items.append({'word': ex.text, 'masked_word': masked,
+                          'example_id': ex.id})
+            correct_letters.append(letter)
+        if len(items) < 3:
+            return JsonResponse({'error': 'Материала пока мало - '
+                                          'загляните позже'}, status=400)
+
+        formatted_items = [item['masked_word'] for item in items]
+
+        request.session['current_exercise'] = {
+            'exercise_id': 'suffiksy_ege',
+            'example_ids': [i['example_id'] for i in items],
+            'correct_letters': correct_letters,
+            'orthogram_ids': [range_code] * len(items),
+            'correct_words': formatted_items,
+            'orthogram_id': range_code,
+            'range_code': 'SUFFIKSY',
+            'seo': seo,
+        }
+        request.session.modified = True
+
+        html = render_to_string('exercise_snippet.html', {
+            'words_text': ', '.join(formatted_items),
+            'exercise_id': 'suffiksy_ege',
+            'exercise_title': orth.name,
+            'show_next_button': False,
+        })
+        return JsonResponse({
+            'html': html,
+            'word_count': len(items),
+            'orthogram_id': range_code,
+            'range_code': 'SUFFIKSY',
+            'report': _task9_response_report(request, seo, range_code,
+                                             'SUFFIKSY'),
+        })
+    except Exception as e:
+        logger.error(f'Ошибка генерации суффиксного упражнения: {e}')
+        return JsonResponse({'error': 'Ошибка генерации упражнения'},
+                            status=500)
+
+
 def check_alphabetical_exercise(request):
     """Проверка упражнения задания 9 (диапазоны и чередования).
 
@@ -11620,22 +11710,38 @@ def _task9_response_report(request, seo: bool, orthogram_id: str, range_code: st
 
 def task9_hub(request):
     """Хаб «Задание 9»: три вида корней и ссылки на разделы. Индексируется."""
+    sections = {k: v for k, v in TASK9_SECTIONS.items()
+                if v.get('task_num', 9) == 9}
     return render(request, 'task9/hub.html', {
         'hub': TASK9_HUB,
-        'sections': TASK9_SECTIONS,
+        'sections': sections,
     })
 
 
 def task9_section(request, section: str):
     """Раздел задания 9 с тренажёром. Индексируется, доступен анонимно."""
+    if section == 'suffiksy':
+        # Суффиксы - задание 11: старый адрес живёт как редирект
+        return redirect('task9_suffiksy')
+    return _task9_section_render(request, section)
+
+
+def task9_suffiksy(request):
+    """Правописание суффиксов: страница задания 11 (тот же механизм секций)."""
+    return _task9_section_render(request, 'suffiksy')
+
+
+def _task9_section_render(request, section: str):
     cfg = TASK9_SECTIONS.get(section)
     if cfg is None:
-        raise Http404('Раздел задания 9 не найден')
+        raise Http404('Раздел не найден')
+    task_num = cfg.get('task_num', 9)
     return render(request, 'task9/section.html', {
         'cfg': cfg,
         'slug': section,
         'hub': TASK9_HUB,
         'sections': TASK9_SECTIONS,
+        'canonical_url': f'https://neurostat.ru/ege/zadanie-{task_num}/{section}/',
     })
 
 

@@ -7,14 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ cfg.meta_title }} | Нейростат</title>
     <meta name="description" content="{{ cfg.meta_description }}">
-    <link rel="canonical" href="https://neurostat.ru/ege/zadanie-9/{{ slug }}/">
+    <link rel="canonical" href="{{ canonical_url }}">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Нейростат">
     <meta property="og:locale" content="ru_RU">
     <meta property="og:title" content="{{ cfg.meta_title }}">
     <meta property="og:description" content="{{ cfg.meta_description }}">
-    <meta property="og:url" content="https://neurostat.ru/ege/zadanie-9/{{ slug }}/">
+    <meta property="og:url" content="{{ canonical_url }}">
     <meta property="og:image" content="https://neurostat.ru/static/images/logo_neurostat.png">
 
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
@@ -31,8 +31,8 @@
         "itemListElement": [
             { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://neurostat.ru/" },
             { "@type": "ListItem", "position": 2, "name": "ЕГЭ", "item": "https://neurostat.ru/ege/" },
-            { "@type": "ListItem", "position": 3, "name": "Задание 9", "item": "https://neurostat.ru/ege/zadanie-9/" },
-            { "@type": "ListItem", "position": 4, "name": "{{ cfg.h1 }}", "item": "https://neurostat.ru/ege/zadanie-9/{{ slug }}/" }
+            { "@type": "ListItem", "position": 3, "name": "Задание {{ cfg.task_num|default:9 }}", "item": "https://neurostat.ru/ege/zadanie-{{ cfg.task_num|default:9 }}/" },
+            { "@type": "ListItem", "position": 4, "name": "{{ cfg.h1 }}", "item": "{{ canonical_url }}" }
         ]
     }
     </script>
@@ -106,13 +106,15 @@
         </section>
 
         <!-- Соседние разделы: пилюли под блоком диапазонов -->
+        {% if not cfg.hide_other_nav %}
         <div class="task9-nav">
             {% for other_slug, other_cfg in sections.items %}
             {% if other_slug != slug %}
-            <a class="orthoepy-dictionary-link" href="{% url 'task9_section' other_slug %}">{{ other_cfg.nav_label }} <span class="arrow">→</span></a>
+            <a class="orthoepy-dictionary-link" href="{% if other_slug == 'suffiksy' %}{% url 'task9_suffiksy' %}{% else %}{% url 'task9_section' other_slug %}{% endif %}">{{ other_cfg.nav_label }} <span class="arrow">→</span></a>
             {% endif %}
             {% endfor %}
         </div>
+        {% endif %}
 
         <!-- Outside .block-task: site style .block-task p (display:flex + marker)
              would split the exercise line into non-wrapping columns. -->
@@ -139,7 +141,7 @@
 
     {% include 'includes/footer.html' %}
     <script src="{% static 'js/task9_report.js' %}?v=1"></script>
-    <script src="{% static 'js/task9.js' %}?v=9"></script>
+    <script src="{% static 'js/task9.js' %}?v=10"></script>
 </body>
 
 </html>
