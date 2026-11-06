@@ -1169,6 +1169,26 @@ class CorrectionExercise(models.Model):
     def __str__(self):
         return f"{self.incorrect_text} → {self.correct_text}"
 
+    @staticmethod
+    def extract_correct_word(incorrect_text: str, correct_text: str) -> str:
+        """Слово, которое ученик должен записать по формату ЕГЭ: единственный
+        токен, отличающий исправленное словосочетание от ошибочного.
+        Пустая строка — если однозначно выделить нельзя (разное число токенов
+        или отличий больше одного): тогда вызывающий берёт fallback."""
+        inc = (incorrect_text or '').split()
+        cor = (correct_text or '').split()
+        if len(inc) != len(cor) or not inc:
+            return ''
+        diff = [c for i, c in zip(inc, cor) if i != c]
+        return diff[0].lower() if len(diff) == 1 else ''
+
+    @property
+    def correct_word(self) -> str:
+        """Эталон ответа: исправленное слово; explanation и вся фраза — fallback."""
+        word = self.extract_correct_word(self.incorrect_text, self.correct_text)
+        if word:
+            return word
+        return (self.explanation or self.correct_text).lower().strip()
 
     @staticmethod
     def generate_correction_test(num_options=5, wrong_count=1, user_grade=None):

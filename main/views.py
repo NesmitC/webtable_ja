@@ -377,6 +377,19 @@ def validate_orthogram_ids(ids):
             continue
     return result
 
+def _correction_reference(incorrect: str, correct: str,
+                        explanation: str = '') -> str:
+    """Эталон задания 7: исправленное СЛОВО (формат ЕГЭ — правится только
+    выделенное слово). Выводится из пары фраз; explanation и вся фраза —
+    fallback для строк БД, где слово выделить не удалось."""
+    word = CorrectionExercise.extract_correct_word(incorrect, correct)
+    if word:
+        return word
+    if explanation:
+        return explanation.lower().strip()
+    return correct.lower().strip()
+
+
 def _normalize_text(text):
     """
     Унифицированная нормализация текста для сравнения ответов.
@@ -5250,8 +5263,9 @@ def generate_correction_test_view(request):
     ).first()
     
     # Сохраняем explanation вместо correct_answer
-    explanation = wrong_item.explanation.lower().strip() if wrong_item else ''
-    correct_for_check = explanation or test_data['correct_answer'].lower().strip()
+    correct_for_check = _correction_reference(
+        test_data['incorrect_word'], test_data['correct_answer'],
+        wrong_item.explanation if wrong_item else '')
     
     request.session['correction_test'] = {
         'correct_answer': correct_for_check,  # ← теперь здесь explanation
@@ -5794,10 +5808,9 @@ def generate_starting_diagnostic(request):
                     correct_text=test_data['correct_answer']
                 ).first()
                 
-                if wrong_item and wrong_item.explanation:
-                    session_data['answer_7'] = wrong_item.explanation.lower().strip()
-                else:
-                    session_data['answer_7'] = test_data['correct_answer'].lower().strip()
+                session_data['answer_7'] = _correction_reference(
+                    test_data['incorrect_word'], test_data['correct_answer'],
+                    wrong_item.explanation if wrong_item else '')
                     
                 logger.info(f"✅ Задание 7: {len(test_data['words'])} вариантов")
             else:
@@ -10840,10 +10853,9 @@ def _checkpoint_build(request, code: str):
             wrong_item = CorrectionExercise.objects.filter(
                 incorrect_text=test_data['incorrect_word'],
                 correct_text=test_data['correct_answer']).first()
-            if wrong_item and wrong_item.explanation:
-                session_data['answer_7'] = wrong_item.explanation.lower().strip()
-            else:
-                session_data['answer_7'] = test_data['correct_answer'].lower().strip()
+            session_data['answer_7'] = _correction_reference(
+                test_data['incorrect_word'], test_data['correct_answer'],
+                wrong_item.explanation if wrong_item else '')
     except Exception as e:
         logger.error(f'Чекпоинт: задание 7 не сгенерировано: {e}')
 
