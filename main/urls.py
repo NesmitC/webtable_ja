@@ -1,5 +1,5 @@
 # main/urls.py
-from django.urls import path
+from django.urls import path, reverse_lazy
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 from . import views
@@ -15,6 +15,22 @@ urlpatterns = [
 
     # === Аутентификация ===
     path('accounts/login/', views.EmailLoginView.as_view(), name='login'),
+    # Сброс пароля: 4 экрана штатной механики Django
+    path('accounts/password/reset/', views.RateLimitedPasswordResetView.as_view(),
+         name='password_reset'),
+    path('accounts/password/reset/done/',
+         auth_views.PasswordResetDoneView.as_view(
+             template_name='registration/password_reset_done.html'),
+         name='password_reset_done'),
+    path('accounts/password/reset/confirm/<uidb64>/<token>/',
+         auth_views.PasswordResetConfirmView.as_view(
+             template_name='registration/password_reset_confirm.html',
+             success_url=reverse_lazy('password_reset_complete')),
+         name='password_reset_confirm'),
+    path('accounts/password/reset/complete/',
+         auth_views.PasswordResetCompleteView.as_view(
+             template_name='registration/password_reset_complete.html'),
+         name='password_reset_complete'),
     path('accounts/logout/', views.custom_logout, name='logout'),
     path('accounts/register/', views.register, name='register'),
     # Страницы-цели Яндекс.Метрики. Отдельные URL нужны потому, что успешный

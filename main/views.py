@@ -14,7 +14,8 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
-from django.contrib.auth.views import LoginView as DjangoLoginView
+from django.contrib.auth.views import (LoginView as DjangoLoginView,
+                                       PasswordResetView)
 from django.db import transaction, models
 from django.db.models import Count, Avg
 from django.contrib.auth.decorators import login_required
@@ -833,6 +834,32 @@ def _stat_recommendations(user, profile):
     recs.sort(key=lambda r: r['priority'])
     return recs[:5]
 
+
+class RateLimitedPasswordResetView(PasswordResetView):
+    """Забыли пароль: письмо со ссылкой на новый.
+
+    Почта не выдаёт существование аккаунта (стандартная форма шлёт письмо
+    только если пользователь есть, а страница всегда одна), часовой лимит
+    по IP не даёт спамить SMTP чужими адресами.
+    """
+    template_name = 'registration/password_reset_form.html'
+    email_template_name = 'registration/password_reset_email.html'
+    subject_template_name = 'registration/password_reset_subject.txt'
+    success_url = reverse_lazy('password_reset_done')
+
+    def form_valid(self, form):
+        ident = self.request.META.get('REMOTE_ADDR', 'anon')
+        key = f'pwreset_{ident}'
+        try:
+            count = cache.incr(key)
+        except ValueError:
+            cache.set(key, 1, 3600)
+            count = 1
+        if count > 5:
+            form.add_error(None, 'Слишком много запросов сброса подряд. '
+                                   'Попробуйте через час.')
+            return self.form_invalid(form)
+        return super().form_valid(form)
 
 def custom_logout(request):
     logout(request)
