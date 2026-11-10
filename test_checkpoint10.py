@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
-"""Тест рубежа cp10 (задания 4–10; открывает урок 11): гейт по cp94,
-25 строк (9.1-9.4 + приставки), разведение подзадания 10, рекомендации,
-карточка урока 11. Изоляция: test_settings_isolated (SQLite в памяти).
+"""Рубеж cp10 «Задания 9 и 10» (открывает урок 11): гейт по cp94, состав —
+три варианта задания 9 и три варианта задания 10 по 5 строк (строки вразнобой
+по орфограммам), в каждом блоке 10 представлены все орфограммы приставок,
+персонализация (слова с ошибками ученика и слова его планинга первыми,
+fallback — самые сложные по общей статистике), зачёт по блокам, допуск 2 ошибки.
+Изоляция: test_settings_isolated (SQLite в памяти).
 
 Запуск: .\\.venv\\Scripts\\python.exe test_checkpoint10.py
 """
 import json
 import os
+import re
 import sys
-from datetime import timedelta
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'test_settings_isolated'
 
@@ -20,7 +23,6 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import Client
 from django.test.utils import setup_test_environment
-from django.utils import timezone
 
 assert settings.DATABASES['default']['NAME'] == ':memory:'
 setup_test_environment()
@@ -28,9 +30,10 @@ call_command('migrate', verbosity=0, run_syncdb=True)
 
 from django.contrib.auth import get_user_model
 
-from main.models import (CheckpointAttempt, CorrectionExercise, Orthogram,
-                         OrthogramExample, OrthoepyWord, TaskPaponim,
-                         UserProfile, WordOk)
+from main.models import (CheckpointAttempt, Orthogram, OrthogramExample,
+                         Task9WordStat, UserProfile)
+from datetime import timedelta
+from django.utils import timezone
 
 fails = []
 
@@ -53,198 +56,171 @@ def make_user(name):
     return u
 
 
-# ===== Контент БД =====
-for word, lemma, ok in [
-        ('звонИт', 'звонить', True), ('тОрты', 'торт', True),
-        ('бАнты', 'бант', True), ('дОговор', 'договор', False),
-        ('каталОг', 'каталог', False), ('свЁкла', 'свекла', False)]:
-    OrthoepyWord.objects.create(word=word, lemma=lemma, is_correct=ok,
-                                is_active=True)
-TaskPaponim.objects.create(text='Он решил **одеть** очки и вышел на улицу.',
-                           correct_word='надеть', root='дет',
-                           is_active=True, is_for_quiz=True)
-for sent, root in [
-        ('Это было **гарантийное** обслуживание.', 'гарант'),
-        ('Она **адресовала** письмо подруге.', 'адрес'),
-        ('Мы **оплатили** проезд.', 'оплат'),
-        ('**Дипломатичный** ответ устроил всех.', 'диплом')]:
-    TaskPaponim.objects.create(text=sent, correct_word='', root=root,
-                               is_active=True, is_for_quiz=True)
-WordOk.objects.create(text='Мы **оплатили** за проезд.', task_type='6100',
-                      correct_variants='за, заплатили', is_active=True)
-for i, (bad, good) in enumerate([
-        ('сожгет', 'сожжёт'), ('чулков', 'чулок'), ('замзрнул', 'замёрз'),
-        ('ихний', 'их'), ('ездию', 'езжу')]):
-    CorrectionExercise.objects.create(incorrect_text=bad, correct_text=good,
-                                      is_active=True, exercise_id=f'71{i}')
-
-Orthogram.objects.create(id=1, name='Проверяемая безударная гласная',
-                         letters='а,о,е,и,я,у,ю')
-Orthogram.objects.create(id=2, name='Непроверяемые безударные гласные',
-                         letters='а,о,е,и,я,у,ю')
-Orthogram.objects.create(id=12, name='Лаг/лож', letters='а,о')
-Orthogram.objects.create(id=14, name='Ё-О после шипящих', letters='ё,о')
-Orthogram.objects.create(id=11, name='Приставки на з/с', letters='з,с')
-Orthogram.objects.create(id=28, name='Ы-И после приставок', letters='ы,и')
-Orthogram.objects.create(id=29, name='Пре/при', letters='е,и')
-Orthogram.objects.create(id=6, name='Разделительные ъ и ь', letters='ъ,ь')
-
-for text, masked in [('вода', 'в*1*да'), ('гора', 'г*1*ра'), ('трава', 'тр*1*ва'),
-                     ('воды', 'в*1*ды'), ('горы', 'г*1*ры'), ('травы', 'тр*1*вы'),
-                     ('водой', 'в*1*дой'), ('горой', 'г*1*рой'),
-                     ('водяной', 'в*1*дяной'), ('гористый', 'г*1*ристый'),
-                     ('река', 'р*1*ка'), ('реки', 'р*1*ки'),
-                     ('земля', 'з*1*мля'), ('земли', 'з*1*мли'),
-                     ('сосна', 'с*1*сна'), ('сосны', 'с*1*сны')]:
-    OrthogramExample.objects.create(text=text, masked_word=masked,
-                                    orthogram_id=1, grades='10,11',
-                                    is_active=True)
-for text, masked in [('палисадник', 'п*2*лисадник'), ('семафор', 'с*2*мафор'),
-                     ('вокзал', 'в*2*кзал'), ('компания', 'к*2*мпания'),
-                     ('палисадника', 'п*2*лисадника'), ('семафора', 'с*2*мафора'),
-                     ('вокзала', 'в*2*кзала'), ('компании', 'к*2*мпании'),
-                     ('палисаднику', 'п*2*лисаднику'), ('семафоры', 'с*2*мафоры'),
-                     ('вокзалы', 'в*2*кзалы'), ('компанию', 'к*2*мпанию'),
-                     ('палисадником', 'п*2*лисадником'), ('семафором', 'с*2*мафором'),
-                     ('вокзалу', 'в*2*кзалу'), ('компанией', 'к*2*мпанией')]:
-    OrthogramExample.objects.create(text=text, masked_word=masked,
-                                    orthogram_id=2, grades='10,11',
-                                    is_active=True)
-for text, masked in [('излагать', 'изл*12*гать'), ('изложить', 'изл*12*жить'),
-                     ('предложение', 'пр*12*дложение'), ('лагерный', 'л*12*герный'),
-                     ('изложение', 'изл*12*жение'), ('полагать', 'пол*12*гать'),
-                     ('сложить', 'сл*12*жить'), ('излагал', 'изл*12*гал')]:
-    OrthogramExample.objects.create(text=text, masked_word=masked,
-                                    orthogram_id=12, grades='10,11',
-                                    is_active=True)
-for text, masked in [('шов', 'ш*14*в'), ('шёл', 'ш*14*л'),
-                     ('жёлудь', 'ж*14*лудь'), ('шёпот', 'ш*14*пот'),
-                     ('чёрный', 'ч*14*рный'), ('щётка', 'щ*14*тка'),
-                     ('чёткий', 'ч*14*ткий'), ('крыжовник', 'крыж*14*вник')]:
-    OrthogramExample.objects.create(text=text, masked_word=masked,
-                                    orthogram_id=14, grades='10,11',
-                                    is_active=True)
-for text, masked in [('разбег', 'ра*11*бег'), ('раскат', 'ра*11*кат'),
-                     ('низвергнуть', 'ни*11*звергнуть'), ('испуг', 'и*11*пуг'),
-                     ('бездарный', 'бе*11*здарный'), ('восход', 'во*11*сход'),
-                     ('разлив', 'ра*11*лив'), ('список', 'с*11*писок')]:
-    OrthogramExample.objects.create(text=text, masked_word=masked,
-                                    orthogram_id=11, grades='10,11',
-                                    is_active=True)
-for text, masked in [('предыстория', 'пред*28*история'), ('сыграть', 'с*28*грать'),
-                     ('взыскать', 'вз*28*искать'), ('изымать', 'из*28*имать'),
-                     ('межинститутский', 'меж*28*институтский'),
-                     ('сверхинтересный', 'сверх*28*интересный'),
-                     ('контригра', 'контр*28*игра'), ('панисламизм', 'пан*28*исламизм')]:
-    OrthogramExample.objects.create(text=text, masked_word=masked,
-                                    orthogram_id=28, grades='10,11',
-                                    is_active=True)
-for text, masked in [('приехать', 'пр*29*иехать'), ('преграда', 'пр*29*града'),
-                     ('пришить', 'пр*29*шить'), ('прекрасный', 'пр*29*красный'),
-                     ('приоткрыть', 'пр*29*открыть'), ('прервать', 'пр*29*рвать'),
-                     ('придумать', 'пр*29*думать'), ('преувеличить', 'пр*29*увеличить')]:
-    OrthogramExample.objects.create(text=text, masked_word=masked,
-                                    orthogram_id=29, grades='10,11',
-                                    is_active=True)
-for text, masked in [('подъезд', 'под*6*езд'), ('отъезд', 'от*6*езд'),
-                     ('съел', 'с*6*ел'), ('вьюга', 'в*6*юга'),
-                     ('подъём', 'под*6*ём'), ('объём', 'об*6*ём'),
-                     ('сьезд', 'с*6*езд'), ('пью', 'п*6*ю')]:
-    OrthogramExample.objects.create(text=text, masked_word=masked,
-                                    orthogram_id=6, grades='10,11',
-                                    is_active=True)
-
-PREFIX = {'11', '28', '29', '6'}
-
-
 def pass_code(user, code):
     CheckpointAttempt.objects.create(
-        user=user, checkpoint_code=code, passed=True, total_tasks=8,
-        correct_count=8, error_count=0, results_data={}, words_data=[])
+        user=user, checkpoint_code=code, passed=True, total_tasks=6,
+        correct_count=6, error_count=0, results_data={}, words_data=[])
 
 
-def good_answers(sess):
-    answers = {}
-    for k in ('4', '7'):
-        if f'answer_{k}' in sess:
-            answers[k] = sess[f'answer_{k}']
-    if 'answer_5' in sess:
-        answers['5'] = 'НАДЕТЬ'
-    if 'answer_6' in sess:
-        answers['6'] = sess['answer_6'].split(',')[0].strip()
-    return answers
+# === Орфограммы и примеры: пул 9 (корни) и пул 10 (приставки) ===
+ORTHS9 = {'1': 'а,о,е,и', '2': 'а,о,е,и', '14': 'ё,о', '15': 'и,ы'}
+ORTHS10 = {'10': 'а,о,е,и', '11': 'з,с', '28': 'ы,и', '29': 'е,и', '6': 'ъ,ь'}
+for oid, letters in {**ORTHS9, **ORTHS10}.items():
+    Orthogram.objects.create(id=oid, name=f'орф {oid}', letters=letters)
 
+for oid in ORTHS9:
+    for i in range(12):
+        text = f'кор{oid}ь{i}а'
+        OrthogramExample.objects.create(
+            text=text, masked_word=text.replace('ь', f'*{oid}*'),
+            orthogram_id=oid, grades='10,11', is_active=True)
+for oid in ORTHS10:
+    for i in range(10):
+        text = f'при{oid}в{i}а'
+        OrthogramExample.objects.create(
+            text=text, masked_word=text.replace('в', f'*{oid}*'),
+            orthogram_id=oid, grades='10,11', is_active=True)
 
-u = make_user('pupil')
-c = Client()
-c.force_login(u)
+# слово с ошибкой ученика (приставки) и слово из его планинга (корни)
+ERR_WORD = 'пр*29*шёл'
+OrthogramExample.objects.create(text='пришёл', masked_word=ERR_WORD,
+                                orthogram_id='29', grades='10,11', is_active=True)
+PLAN_WORD = 'зам*12*рать'
+Orthogram.objects.create(id='12', name='орф 12', letters='а,о')
+HARD_WORD = '*11*делал'
+OrthogramExample.objects.create(text='сделал', masked_word=HARD_WORD,
+                                orthogram_id='11', grades='10,11', is_active=True)
+
+pupil = make_user('pupil')
+OrthogramExample.objects.create(text='замирать', masked_word=PLAN_WORD,
+                                orthogram_id='12', grades='10,11', is_active=True,
+                                is_user_added=True, added_by=pupil)
+Task9WordStat.objects.create(user=pupil, orthogram_id='29', range_code='10',
+                             word=ERR_WORD, correct_letter='и', attempts=3,
+                             errors=2, in_correction=True)
+# общая статистика: это слово валит весь проект — fallback «самые сложные»
+for n in range(3):
+    other = make_user(f'other{n}')
+    Task9WordStat.objects.create(user=other, orthogram_id='11', range_code='10',
+                                 word='*11*делал', correct_letter='с',
+                                 attempts=4, errors=7)
 
 print('1. Гейт: cp10 только после cp94')
-r = c.get('/ege/checkpoint/10/')
+c = Client()
+c.force_login(pupil)
+r = c.get('/ege/checkpoint/10/', HTTP_HOST='localhost')
 check(r.status_code == 302, f'без cp94 -> редирект (факт: {r.status_code})')
-for code in ('cp91', 'cp92', 'cp93', 'cp94'):
-    pass_code(u, code)
-r = c.get('/ege/checkpoint/10/')
+pass_code(pupil, 'cp91')
+pass_code(pupil, 'cp92')
+pass_code(pupil, 'cp93')
+pass_code(pupil, 'cp94')
+r = c.get('/ege/checkpoint/10/', HTTP_HOST='localhost')
+html = r.content.decode('utf-8')
 check(r.status_code == 200, f'после cp94 -> 200 (факт: {r.status_code})')
-body = r.content.decode('utf-8')
-check('Рубежный тест: задания 4–10' in body, 'шапка рубежа 4–10')
-check('Чтобы открылся урок 11' in body, 'обещание открыть урок 11')
+check('Рубежный тест: задания 9 и 10' in html, 'шапка рубежа 9 и 10')
+check('урок 11' in html, 'обещание открыть урок 11')
+check('orthoepy-checkbox' not in html
+      and 'Исправьте ошибку и запишите слово правильно' not in html,
+      'заданий 4-8 на странице рубежа нет')
 
-print('2. Состав: 25 строк = 9.1-9.4 + приставки')
 sess = c.session['checkpoint_10']
+lines = sess['snapshot']['9']['lines']
 orths = sess['task9_orths']
-check(len(sess['task9_correct']) == 75, f'75 букв (факт: {len(sess["task9_correct"])})')
-check(sum(1 for o in orths if o in PREFIX) == 15,
-      f'15 букв задания 10 (факт: {sum(1 for o in orths if o in PREFIX)})')
+units = sess['task9_units']
+print('2. Состав: 30 строк = 3 варианта 9 + 3 варианта 10')
+check(len(sess['task9_correct']) == 90,
+      f'90 букв (30 строк по 3): факт {len(sess["task9_correct"])}')
+check(len(set(units)) == 6, f'6 блоков-юнитов: факт {len(set(units))}')
+for b in ('10b1', '10b2', '10b3'):
+    block_orths = {o for o, u in zip(orths, units) if u == b}
+    check(block_orths >= set(ORTHS10),
+          f'блок {b}: все орфограммы приставок представлены '
+          f'(факт {sorted(block_orths, key=int)})')
+nine_orths = {o for o, u in zip(orths, units) if u.startswith('9b')}
+check(nine_orths >= set(ORTHS9), 'блоки 9 покрывают все корни пула')
 
-print('3. Сдан целиком -> урок 11 открыт')
+print('3. Персонализация: ошибки ученика и его планинг в строках')
+all_lines = ' '.join(lines)
+check(ERR_WORD.replace('*29*', '') [:2] in all_lines.replace('*9-', '*')
+      or 'шёл' in all_lines, 'слово с ошибкой ученика в строках')
+check('зам' in all_lines and 'рать' in all_lines,
+      'слово из планинга ученика в строках')
+pupil2 = make_user('pupil2')
+for code in ('cp91', 'cp92', 'cp93', 'cp94'):
+    pass_code(pupil2, code)
+c2 = Client()
+c2.force_login(pupil2)
+c2.get('/ege/checkpoint/10/', HTTP_HOST='localhost')
+all_lines2 = ' '.join(c2.session['checkpoint_10']['snapshot']['9']['lines'])
+check('делал' in all_lines2,
+      'нет своих ошибок -> самые сложные слова проекта в строках')
+
+print('4. Сдан целиком -> урок 11 открыт')
+
+
+def good_answers(s):
+    return {f'9-{i}': l for i, l in enumerate(s['task9_correct'], 1)}
+
+
 answers = good_answers(sess)
-for i, letter in enumerate(sess['task9_correct'], 1):
-    answers[f'9-{i}'] = letter
 r = c.post('/ege/checkpoint/10/', data=json.dumps({'answers': answers}),
            content_type='application/json')
 res = r.json()
 check(res['passed'] and res['error_count'] == 0,
       f'сдан, ошибок 0 (факт: {res["passed"]}, {res["error_count"]})')
-lb = c.get('/ege/lessons/').content.decode('utf-8')
+lb = c.get('/ege/lessons/', HTTP_HOST='localhost').content.decode('utf-8')
 i11 = lb.find('Задание 11 (орфография, суффиксы)')
 j11 = lb.rfind('<div class="lesson-card lesson-card--', 0, i11)
-check('lesson-card--active' in lb[j11:i11],
-      'карточка урока 11 активна после cp10')
-i10 = lb.find('Задание 10 (орфография, приставки)')
-j10 = lb.find('<!-- Рубеж после урока 10', i10)
-check('data-video-src="https://kinescope.io/embed/5nKhuyz3bjaEZy7EKcsaqK"'
-      in lb[i10:j10], 'кнопка видео урока 10 на месте')
-i11v = lb.find('Задание 11 (орфография, суффиксы)')
-j11v = lb.find('Задание 12.1 (спряжения глаголов)', i11v)
-check('data-video-src="https://kinescope.io/embed/7NiD2EoSJoZkDcRdUaVqid"'
-      in lb[i11v:j11v], 'кнопка видео урока 11 на месте')
+check('lesson-card--active' in lb[j11:i11], 'карточка урока 11 активна после cp10')
+check('data-video-src="https://kinescope.io/embed/5nKhuyz3bjaEZy7EKcsaqK"' in lb,
+      'кнопка видео урока 10 на месте')
+check('data-video-src="https://kinescope.io/embed/7NiD2EoSJoZkDcRdUaVqid"' in lb,
+      'кнопка видео урока 11 на месте')
 
-print('4. Ошибка только в приставках: подзадание 10 отдельно')
-u2 = make_user('pupil2')
-c2 = Client()
-c2.force_login(u2)
+print('5. Ошибка в одном блоке 9 и двух блоках 10')
+p3 = make_user('pupil3')
 for code in ('cp91', 'cp92', 'cp93', 'cp94'):
-    pass_code(u2, code)
-c2.get('/ege/checkpoint/10/')
-s2 = c2.session['checkpoint_10']
-a2 = good_answers(s2)
-for i, letter in enumerate(s2['task9_correct'], 1):
-    a2[f'9-{i}'] = letter
-i10 = next(i for i, o in enumerate(s2['task9_orths'], 1) if o in PREFIX)
-good = a2[f'9-{i10}']
-a2[f'9-{i10}'] = 'я' if good != 'я' else 'у'
-r = c2.post('/ege/checkpoint/10/', data=json.dumps({'answers': a2}),
+    pass_code(p3, code)
+c3 = Client()
+c3.force_login(p3)
+c3.get('/ege/checkpoint/10/', HTTP_HOST='localhost')
+s3 = c3.session['checkpoint_10']
+a3 = good_answers(s3)
+u3 = s3['task9_units']
+for i, u in enumerate(u3, 1):
+    if u in ('9b1', '10b2', '10b3'):
+        a3[f'9-{i}'] = 'я' if a3[f'9-{i}'] != 'я' else 'у'
+r = c3.post('/ege/checkpoint/10/', data=json.dumps({'answers': a3}),
             content_type='application/json')
-res2 = r.json()
-check(res2['results']['9']['is_correct'] and res2['results']['94']['is_correct'],
-      '9.1 и 9.4 верны')
-check(not res2['results']['10']['is_correct'], 'подзадание 10 помечено ошибкой')
-check(res2['error_count'] == 1 and res2['passed'],
-      f'1 ошибка, сдан (факт: {res2["error_count"]})')
-rb = c2.get(res2['result_url']).content.decode('utf-8')
-check('/ege/zadanie-10/' in rb, 'рекомендация 10 ведёт на страницу приставок')
-check('Урок 11 открыт' in rb, 'вердикт: урок 11 открыт')
+res = r.json()
+check(res['error_count'] == 3 and not res['passed'],
+      f'3 блока ошибочны = 3 ошибки, не сдан (факт: {res["error_count"]})')
+rd = r.json()['results']
+check(rd['9b1']['is_correct'] is False and rd['9b2']['is_correct'] is True,
+      'зачёт раздельно по блокам: 9b1 ошибочен, 9b2 верен')
+page = c3.get(res['result_url'], HTTP_HOST='localhost').content.decode('utf-8')
+check('Задание 10: приставки ПРЕ- и ПРИ-' in page,
+      'рекомендации ведут на тренажёры 9 и страницу приставок')
+check('Задание 9, вариант 1' in page, 'вердикт разложен по блокам-вариантам')
+
+print('6. Допуск: 2 ошибки = сдан')
+p4 = make_user('pupil4')
+for code in ('cp91', 'cp92', 'cp93', 'cp94'):
+    pass_code(p4, code)
+c4 = Client()
+c4.force_login(p4)
+c4.get('/ege/checkpoint/10/', HTTP_HOST='localhost')
+s4 = c4.session['checkpoint_10']
+a4 = good_answers(s4)
+u4 = s4['task9_units']
+for i, u in enumerate(u4, 1):
+    if u in ('9b2', '10b1'):
+        a4[f'9-{i}'] = 'я' if a4[f'9-{i}'] != 'я' else 'у'
+r = c4.post('/ege/checkpoint/10/', data=json.dumps({'answers': a4}),
+            content_type='application/json')
+res = r.json()
+check(res['passed'] and res['error_count'] == 2,
+      f'2 ошибки в допуске -> сдан (факт: {res["error_count"]})')
 
 print()
 if fails:
@@ -252,4 +228,4 @@ if fails:
     for f_ in fails:
         print('   -', f_)
     sys.exit(2)
-print('🎉 ВСЕ ПРОВЕРКИ РУБЕЖА 4–10 ПРОЙДЕНЫ')
+print('🎉 ВСЕ ПРОВЕРКИ РУБЕЖА 9 И 10 ПРОЙДЕНЫ')

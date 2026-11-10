@@ -10728,9 +10728,9 @@ CHECKPOINT_META = {
              'unlock_lesson': '10',
              'tasks': ['4', '5', '6', '7', '8', '9', '92', '93', '94']},
     'cp10': {'session_key': 'checkpoint_10',
-             'heading': 'Рубежный тест: задания 4–10',
+             'heading': 'Рубежный тест: задания 9 и 10',
              'unlock_lesson': '11',
-             'tasks': ['4', '5', '6', '7', '8', '9', '92', '93', '94', '10']},
+             'tasks': ['9b1', '9b2', '9b3', '10b1', '10b2', '10b3']},
 }
 
 # Подписи строк разбора и ссылки рекомендаций для рубежей с 9.1/9.2
@@ -10740,7 +10740,10 @@ CHECKPOINT_TASK_ROWS = {
     'cp92': {'9': '9.1', '92': '9.2'},
     'cp93': {'9': '9.1', '92': '9.2', '93': '9.3'},
     'cp94': {'9': '9.1', '92': '9.2', '93': '9.3', '94': '9.4'},
-    'cp10': {'9': '9.1', '92': '9.2', '93': '9.3', '94': '9.4', '10': '10'},
+    'cp10': {'9b1': 'Задание 9, вариант 1', '9b2': 'Задание 9, вариант 2',
+             '9b3': 'Задание 9, вариант 3',
+             '10b1': 'Задание 10, вариант 1', '10b2': 'Задание 10, вариант 2',
+             '10b3': 'Задание 10, вариант 3'},
 }
 CHECKPOINT_TASK_LINKS = {
     'cp91': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
@@ -10763,15 +10766,17 @@ CHECKPOINT_TASK_LINKS = {
                     'Задание 9.3: чередующиеся гласные'),
              '94': ('9.4', 'trainers_ege', [],
                     'Задание 9.4: корни 14-15 (Ё-О после шипящих, И-Ы после Ц)')},
-    'cp10': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
-                   'Задание 9.1: проверяемые ударением гласные'),
-             '92': ('9.2', 'task9_section', ['neproveryaemye-glasnye'],
-                    'Задание 9.2: непроверяемые ударением гласные'),
-             '93': ('9.3', 'task9_section', ['chereduyushchiesya-glasnye'],
-                    'Задание 9.3: чередующиеся гласные'),
-             '94': ('9.4', 'trainers_ege', [],
-                    'Задание 9.4: корни 14-15 (Ё-О после шипящих, И-Ы после Ц)'),
-             '10': ('10', 'task10_pre_pri', [],
+    'cp10': {'9b1': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '9b2': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '9b3': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '10b1': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '10b2': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '10b3': ('10', 'task10_pre_pri', [],
                     'Задание 10: приставки ПРЕ- и ПРИ-')},
 }
 
@@ -10816,21 +10821,6 @@ def _task9_config(code: str):
               'orth_ids': ['14', '15'], 'name': 'group4'}
         return ([dict(g1) for _ in range(5)] + [dict(g2) for _ in range(5)]
                 + [dict(g3) for _ in range(5)] + [dict(g4) for _ in range(5)])
-    if code == 'cp10':
-        g1 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
-              'orth_ids': ['1'], 'name': 'group1'}
-        g2 = {'letters': ('о', 'а', 'е', 'и', 'я', 'у', 'ю'),
-              'orth_ids': ['2'], 'name': 'group2'}
-        g3 = {'letters': ('о', 'а', 'е', 'и', 'я'),
-              'orth_ids': ['12', '13', '24', '26', '27', '271', '272',
-                           '273', '274', '275'], 'name': 'group3'}
-        g4 = {'letters': ('ё', 'о', 'и', 'ы'),
-              'orth_ids': ['14', '15'], 'name': 'group4'}
-        g5 = {'letters': ('з', 'с', 'ы', 'и', 'е', 'ъ', 'ь'),
-              'orth_ids': ['10', '11', '28', '29', '6'], 'name': 'group5'}
-        return ([dict(g1) for _ in range(5)] + [dict(g2) for _ in range(5)]
-                + [dict(g3) for _ in range(5)] + [dict(g4) for _ in range(5)]
-                + [dict(g5) for _ in range(5)])
     return None
 CHECKPOINT_SESSION = 'checkpoint_9'
 CHECKPOINT_RECOMMEND = {
@@ -10889,6 +10879,122 @@ def _checkpoint_prefer_ids(user):
     return orthoepy, words9
 
 
+def _cp10_prefer_masks(user, pool_ids):
+    """Персонализация рубежа 9-10: маски слов, в которых ученик ошибался
+    (накопительная статистика), плюс слова, которые он сам внёс в планинг.
+    Пусто — возвращаем маски, на которых ошибаются чаще всех ученики."""
+    personal = set(Task9WordStat.objects.filter(user=user)
+                   .filter(Q(errors__gt=0) | Q(in_correction=True))
+                   .values_list('word', flat=True))
+    personal |= set(OrthogramExample.objects.filter(
+        is_user_added=True, added_by=user, orthogram_id__in=pool_ids,
+        is_active=True).values_list('masked_word', flat=True))
+    if personal:
+        return personal
+    from django.db.models import Sum
+    hard = (Task9WordStat.objects.filter(orthogram_id__in=pool_ids)
+            .values('word').annotate(total=Sum('errors'))
+            .filter(total__gt=0).order_by('-total')
+            .values_list('word', flat=True)[:40])
+    return set(hard)
+
+
+def _cp10_mixed_lines(user):
+    """Рубеж перед уроком 11: три варианта задания 9 и три варианта задания 10,
+    по 5 строк по 3 слова. Строки вразнобой по орфограммам (формат сборника ЕГЭ,
+    но вместо пропусков — смайлики); в каждом блоке задания 10 представлены все
+    орфограммы приставок. Персонализация: слова с ошибками ученика и слова из его
+    планинга идут в строки первыми; нет таких — самые сложные по общей статистике.
+    Возвращает тот же формат строк, что generate_task9_lines."""
+    from random import shuffle
+    import re as _re
+
+    ORTH9 = ['1', '2', '12', '13', '24', '26', '27',
+             '271', '272', '273', '274', '275', '14', '15']
+    ORTH10 = ['10', '11', '28', '29', '6']
+    LETTERS9 = ['о', 'а', 'е', 'и', 'я', 'у', 'ю', 'ё', 'ы']
+    LETTERS10 = ['з', 'с', 'ы', 'и', 'е', 'ъ', 'ь']
+
+    def valid_pool(orth_ids):
+        pool = []
+        for ex in OrthogramExample.objects.filter(
+                orthogram_id__in=orth_ids, is_active=True).order_by('?')[:200]:
+            letter = extract_correct_letter(ex.text, ex.masked_word)
+            if letter and len(letter) == 1:
+                pool.append((ex, letter.lower()))
+        return pool
+
+    pool9 = valid_pool(ORTH9)
+    pool10 = valid_pool(ORTH10)
+    prefer9 = _cp10_prefer_masks(user, ORTH9)
+    prefer10 = _cp10_prefer_masks(user, ORTH10)
+
+    lines = []
+    used = set()          # слово встречается в рубеже один раз
+    flat = 1
+
+    def take(pool, n, prefer):
+        live = [q for q in pool if q[0].masked_word not in used]
+        if not live:
+            live = list(pool)
+        pref = [q for q in live if q[0].masked_word in prefer]
+        rest = [q for q in live if q[0].masked_word not in prefer]
+        shuffle(pref)
+        shuffle(rest)
+        return (pref + rest)[:n]
+
+    for kind, orth_ids, pool, prefer, letters in (
+            ('9', ORTH9, pool9, prefer9, LETTERS9),
+            ('10', ORTH10, pool10, prefer10, LETTERS10)):
+        for block in range(1, 4):
+            unit = f'{kind}b{block}'
+            group = f'b{kind}-{block}'
+            for row in range(5):
+                # якорь строки: у задания 10 каждая орфограмма входит в блок,
+                # у задания 9 якоря циклом покрывают все корни за рубеж
+                anchor = orth_ids[(block * 5 + row) % len(orth_ids)]
+                anchor_pool = [q for q in pool
+                               if str(q[0].orthogram_id) == anchor]
+                first = take(anchor_pool, 1, prefer) or take(pool, 1, prefer)
+                taken = {q[0].masked_word for q in first}
+                others = take([q for q in pool
+                               if q[0].masked_word not in taken], 2, prefer)
+                selected = first + others
+                if len(selected) < 3:
+                    continue
+                for ex, _ in selected:
+                    used.add(ex.masked_word)
+                parts = []
+                letters_line = []
+                for ex, letter in selected:
+                    parts.append(_re.sub(r'\*[^*]+\*', f'*9-{flat}*',
+                                         ex.masked_word, count=1))
+                    letters_line.append(letter)
+                    flat += 1
+                lines.append({
+                    'examples': [ex for ex, _ in selected],
+                    'expected_letters': letters_line,
+                    'display_line': ', '.join(parts),
+                    'available_letters': letters,
+                    'group_name': group,
+                    'is_uniform': False,
+                    'unit': unit,
+                })
+
+    letter_groups = {}
+    idx = 1
+    for ln in lines:
+        for _ in ln['expected_letters']:
+            letter_groups[f'9-{idx}'] = ln['group_name']
+            idx += 1
+    subgroup = {}
+    for kind, letters in (('9', LETTERS9), ('10', LETTERS10)):
+        for block in range(1, 4):
+            subgroup[f'b{kind}-{block}'] = letters
+    return {'lines': lines, 'letter_groups': letter_groups,
+            'subgroup_letters': subgroup}
+
+
 def _checkpoint_build(request, code: str):
     """Собирает контекст и сессию рубежа (code: cp9 | cp91).
     Контент — из БД теми же генераторами, что текущая диагностика."""
@@ -10912,89 +11018,93 @@ def _checkpoint_build(request, code: str):
 
     prefer_orthoepy, prefer_words9 = _checkpoint_prefer_ids(request.user)
 
-    # === Задание 4: орфоэпия ===
-    try:
-        test_data = OrthoepyWord.generate_test(
-            num_options=5, correct_min=2, correct_max=4,
-            user_grade=None, test_type='main',
-            prefer_ids=prefer_orthoepy)
-        if test_data and test_data.get('variants'):
-            context['orthoepy_variants'] = test_data['variants']
-            session_data['answer_4'] = test_data['correct_answers']
-            session_data['variants_4'] = test_data['variants']
-    except Exception as e:
-        logger.error(f'Чекпоинт: задание 4 не сгенерировано: {e}')
-
-    # === Задание 5: паронимы (ротация по корням между пересдачами) ===
-    try:
-        used_roots = []
-        for a in CheckpointAttempt.objects.filter(
-                user=request.user, checkpoint_code=code):
-            used_roots += [w.get('root') for w in (a.words_data or [])
-                           if w.get('root')]
-        t5 = _build_checkpoint_task5(used_roots)
-        if t5:
-            lines5, answer5, root5 = t5
-            context['paponim_sentences'] = [{'text': ln} for ln in lines5]
-            session_data['answer_5'] = answer5
-            session_data['words'] = [{'task': 5, 'word': answer5, 'root': root5}]
-    except Exception as e:
-        logger.error(f'Чекпоинт: задание 5 не сгенерировано: {e}')
-
-    # === Задание 6: лексика ===
-    try:
-        wordok_exclude = WordOk.objects.filter(is_active=True, task_type='6100').first()
-        wordok_replace = WordOk.objects.filter(is_active=True, task_type='6200').first()
-        available = []
-        if wordok_exclude:
-            available.append(('exclude', wordok_exclude))
-        if wordok_replace:
-            available.append(('replace', wordok_replace))
-        if available:
-            task_type, wordok = random.choice(available)
-            if wordok.correct_variants.strip():
-                context['wordok'] = wordok
-                context['wordok_task_type'] = task_type
-                session_data['answer_6'] = wordok.correct_variants
-    except Exception as e:
-        logger.error(f'Чекпоинт: задание 6 не сгенерировано: {e}')
-
-    # === Задание 7: грамматика ===
-    try:
-        test_data = CorrectionExercise.generate_correction_test(user_grade=None)
-        if test_data and test_data.get('words'):
-            context['task7_phrases'] = test_data['words']
-            context['task7_instruction'] = (
-                'В одном из выделенных ниже слов допущена грамматическая ошибка. '
-                'Исправьте ошибку и запишите слово правильно.')
-            wrong_item = CorrectionExercise.objects.filter(
-                incorrect_text=test_data['incorrect_word'],
-                correct_text=test_data['correct_answer']).first()
-            session_data['answer_7'] = _correction_reference(
-                test_data['incorrect_word'], test_data['correct_answer'],
-                wrong_item.explanation if wrong_item else '')
-    except Exception as e:
-        logger.error(f'Чекпоинт: задание 7 не сгенерировано: {e}')
-
-    # === Задание 8: грамматические ошибки (соответствие) ===
-    try:
-        task8_data = generate_task8_for_diagnostic()
-        if task8_data and task8_data.get('html'):
-            context['task8_html'] = task8_data['html']
-            session_data['task8_correct'] = task8_data.get('correct_answers', {})
-            td8 = task8_data.get('test_data') or {}
-            session_data['task8_snapshot'] = {
-                'error_types': td8.get('error_type_names', {}),
-                'sentences': [x.get('text', '') for x in td8.get('sentences', [])],
-                'matches': task8_data.get('correct_answers', {}),
-            }
-    except Exception as e:
-        logger.error(f'Чекпоинт: задание 8 не сгенерировано: {e}')
+    if code != 'cp10':  # рубеж 9-10: задания 4-8 не собираем
+        # === Задание 4: орфоэпия ===
+        try:
+            test_data = OrthoepyWord.generate_test(
+                num_options=5, correct_min=2, correct_max=4,
+                user_grade=None, test_type='main',
+                prefer_ids=prefer_orthoepy)
+            if test_data and test_data.get('variants'):
+                context['orthoepy_variants'] = test_data['variants']
+                session_data['answer_4'] = test_data['correct_answers']
+                session_data['variants_4'] = test_data['variants']
+        except Exception as e:
+            logger.error(f'Чекпоинт: задание 4 не сгенерировано: {e}')
+    
+        # === Задание 5: паронимы (ротация по корням между пересдачами) ===
+        try:
+            used_roots = []
+            for a in CheckpointAttempt.objects.filter(
+                    user=request.user, checkpoint_code=code):
+                used_roots += [w.get('root') for w in (a.words_data or [])
+                               if w.get('root')]
+            t5 = _build_checkpoint_task5(used_roots)
+            if t5:
+                lines5, answer5, root5 = t5
+                context['paponim_sentences'] = [{'text': ln} for ln in lines5]
+                session_data['answer_5'] = answer5
+                session_data['words'] = [{'task': 5, 'word': answer5, 'root': root5}]
+        except Exception as e:
+            logger.error(f'Чекпоинт: задание 5 не сгенерировано: {e}')
+    
+        # === Задание 6: лексика ===
+        try:
+            wordok_exclude = WordOk.objects.filter(is_active=True, task_type='6100').first()
+            wordok_replace = WordOk.objects.filter(is_active=True, task_type='6200').first()
+            available = []
+            if wordok_exclude:
+                available.append(('exclude', wordok_exclude))
+            if wordok_replace:
+                available.append(('replace', wordok_replace))
+            if available:
+                task_type, wordok = random.choice(available)
+                if wordok.correct_variants.strip():
+                    context['wordok'] = wordok
+                    context['wordok_task_type'] = task_type
+                    session_data['answer_6'] = wordok.correct_variants
+        except Exception as e:
+            logger.error(f'Чекпоинт: задание 6 не сгенерировано: {e}')
+    
+        # === Задание 7: грамматика ===
+        try:
+            test_data = CorrectionExercise.generate_correction_test(user_grade=None)
+            if test_data and test_data.get('words'):
+                context['task7_phrases'] = test_data['words']
+                context['task7_instruction'] = (
+                    'В одном из выделенных ниже слов допущена грамматическая ошибка. '
+                    'Исправьте ошибку и запишите слово правильно.')
+                wrong_item = CorrectionExercise.objects.filter(
+                    incorrect_text=test_data['incorrect_word'],
+                    correct_text=test_data['correct_answer']).first()
+                session_data['answer_7'] = _correction_reference(
+                    test_data['incorrect_word'], test_data['correct_answer'],
+                    wrong_item.explanation if wrong_item else '')
+        except Exception as e:
+            logger.error(f'Чекпоинт: задание 7 не сгенерировано: {e}')
+    
+        # === Задание 8: грамматические ошибки (соответствие) ===
+        try:
+            task8_data = generate_task8_for_diagnostic()
+            if task8_data and task8_data.get('html'):
+                context['task8_html'] = task8_data['html']
+                session_data['task8_correct'] = task8_data.get('correct_answers', {})
+                td8 = task8_data.get('test_data') or {}
+                session_data['task8_snapshot'] = {
+                    'error_types': td8.get('error_type_names', {}),
+                    'sentences': [x.get('text', '') for x in td8.get('sentences', [])],
+                    'matches': task8_data.get('correct_answers', {}),
+                }
+        except Exception as e:
+            logger.error(f'Чекпоинт: задание 8 не сгенерировано: {e}')
 
     # === Задание 9: корни, смайлики ===
     try:
-        task9_data = generate_task9_lines(config=_task9_config(code),
-                                          prefer_words=prefer_words9)
+        if code == 'cp10':
+            task9_data = _cp10_mixed_lines(request.user)
+        else:
+            task9_data = generate_task9_lines(
+                config=_task9_config(code), prefer_words=prefer_words9)
         if task9_data.get('lines'):
             context['task9_lines'] = task9_data['lines']
             flat_letters = [
@@ -11010,6 +11120,10 @@ def _checkpoint_build(request, code: str):
                     str(ln['examples'][0].orthogram_id)
                     for ln in task9_data['lines']
                     if ln.get('examples')
+                    for _ in ln.get('expected_letters', [])
+                ]
+                session_data['task9_units'] = [
+                    ln.get('unit') for ln in task9_data['lines']
                     for _ in ln.get('expected_letters', [])
                 ]
                 session_data['task9_snapshot'] = {
@@ -11104,8 +11218,9 @@ def checkpoint_test_93(request):
 
 @subscription_required('lessons')
 def checkpoint_test_10(request):
-    """Рубеж после урока 10 (открывает 11): задания 4–10, строки 9.1-9.4 +
-    приставки. Доступен после сдачи рубежа 4–9.1, 9.2, 9.3, 9.4."""
+    """Рубеж после урока 10 (открывает 11): три варианта задания 9 и три
+    варианта задания 10, строки вразнобой по орфограммам, персонализация
+    по ошибкам ученика. Доступен после сдачи рубежа 4–9.1, 9.2, 9.3, 9.4."""
     if not CheckpointAttempt.objects.filter(
             user=request.user, checkpoint_code='cp94', passed=True).exists():
         return redirect('lessons_ege')
@@ -11255,6 +11370,13 @@ def _checkpoint_check(request, code: str):
                     results[sub] = all(
                         results[f'9-{i}'] for i, o in enumerate(orths, 1)
                         if CHECKPOINT_ORTH_SUBTASK.get(o) == sub)
+
+    units = session.get('task9_units')
+    if units and len(units) == len(expected_letters):
+        for unit in dict.fromkeys(units):
+            results[unit] = all(
+                results[f'9-{i}'] for i, u in enumerate(units, 1)
+                if u == unit)
 
     # === Итог: неверное задание = 1 ошибка ===
     scored_tasks = [t for t in meta['tasks'] if t in results]
