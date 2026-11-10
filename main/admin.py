@@ -14,7 +14,9 @@ from .models import (CorrectAnswer, Orthogram, OrthogramExample, Punktum,
                      DiagnosticAttempt, TutorInvite, LLMCache, BotLog,
     CallbackRequest,
     DictationTask,
+    Task9Attempt, Task9AttemptWord, Task9WordStat,
 )
+from zoneinfo import ZoneInfo
 from django.contrib.admin.actions import delete_selected
 from django.db.models.functions import Cast
 from django.db.models import IntegerField
@@ -753,3 +755,68 @@ class CallbackRequestAdmin(admin.ModelAdmin):
     list_filter = ('is_processed', 'source')
     search_fields = ('contact', 'name')
     readonly_fields = ('contact', 'name', 'attempt', 'source', 'created_at')
+
+
+# === Статистика задания 9: что видно преподавателю по ученику ===
+# История пишется только тренажёрами (залогиненным), руками не правим:
+# все поля readonly, добавление и удаление запрещены.
+_MSK = ZoneInfo('Europe/Moscow')
+
+
+class Task9AttemptWordInline(admin.TabularInline):
+    """Разбор прохождения по словам: выбор ученика против эталона."""
+    model = Task9AttemptWord
+    extra = 0
+    can_delete = False
+    fields = ('word', 'chosen_letter', 'correct_letter', 'is_correct')
+    readonly_fields = fields
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Task9Attempt)
+class Task9AttemptAdmin(admin.ModelAdmin):
+    """Лента прохождений блоков задания 9 (9.1/9.2 и др.): когда и счёт."""
+    list_display = ('created_at_msk', 'user', 'orthogram_id', 'range_code',
+                    'correct_count', 'chosen_count', 'total_words')
+    list_filter = ('range_code', 'orthogram_id')
+    date_hierarchy = 'created_at'
+    search_fields = ('user__username', 'user__email')
+    readonly_fields = ('user', 'orthogram_id', 'range_code', 'created_at',
+                       'total_words', 'chosen_count', 'correct_count')
+    inlines = (Task9AttemptWordInline,)
+    ordering = ('-created_at',)
+    list_per_page = 25
+
+    @admin.display(description='Когда (МСК)')
+    def created_at_msk(self, obj):
+        return timezone.localtime(obj.created_at, _MSK).strftime('%d.%m.%Y %H:%M')
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(Task9WordStat)
+class Task9WordStatAdmin(admin.ModelAdmin):
+    """Накопительно по словам: ошибки, коррекция, последние ответы."""
+    list_display = ('user', 'word', 'orthogram_id', 'range_code', 'errors',
+                    'attempts', 'in_correction', 'correction_since',
+                    'last_seen_msk')
+    list_filter = ('in_correction', 'orthogram_id', 'range_code')
+    search_fields = ('user__username', 'user__email', 'word')
+    readonly_fields = ('user', 'orthogram_id', 'range_code', 'word',
+                       'correct_letter', 'attempts', 'errors', 'last_result',
+                       'last_chosen_letter', 'last_seen', 'in_correction',
+                       'correction_since')
+    ordering = ('-last_seen',)
+    list_per_page = 25
+
+    @admin.display(description='Последний раз (МСК)')
+    def last_seen_msk(self, obj):
+        if not obj.last_seen:
+            return '—'
+        return timezone.localtime(obj.last_seen, _MSK).strftime('%d.%m.%Y %H:%M')
+
+    def has_add_permission(self, request):
+        return False
