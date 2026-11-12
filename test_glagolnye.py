@@ -104,8 +104,9 @@ check('canonical" href="https://neurostat.ru/ege/zadanie-12/glagolnye-formy/"'
 check('Глагольные формы' in html, 'h1 «Глагольные формы»')
 check('51.1 · гласная перед -ВШ-' in html and '51.3 · приставка ВЫ-' in html,
       'кнопки 51.1-51.3 на месте')
-check('какая же - перед -ВШ-' in html or 'перед -ВШ-' in html,
-      'теория 51.1 на странице')
+check('Поставить глагол в неопределённую форму' not in html
+      and 'Отбросить окончание' not in html,
+      'блок правил (теория) убран')
 check('task9-nav' not in html, 'пилюли соседних секций скрыты')
 check('?v=11' in html, 'версия task9.js поднята до v=11')
 check('data-endpoint="glagolnye"' in html, 'endpoint=glagolnye в конфиге страницы')
