@@ -173,6 +173,9 @@
                     </h4>
                     <div class="diagnostic-full-test__lines">
                         {% for line in task9_lines %}
+                    {% if line.unit %}{% ifchanged line.unit %}
+                    <h4 class="diagnostic-full-test__title">{{ line.unit_title }}</h4>
+                    {% endifchanged %}{% endif %}
                         <div class="diagnostic-full-test__line">
                             <span class="diagnostic-full-test__line-num">{{ forloop.counter }})</span>
                             <span class="practice-line diagnostic-full-test__line-text">
