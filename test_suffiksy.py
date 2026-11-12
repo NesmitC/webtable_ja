@@ -91,8 +91,8 @@ check('В существительных и прилагательных' not in
 check('task9-nav' not in html, 'пилюли соседних секций на странице убраны')
 check('data-endpoint="suffiksy"' in html, 'endpoint=suffiksy в конфиге страницы')
 check('/api/generate-suffiksy-exercise/' not in html or True,
-      'url строится в JS (v=10)')
-check('js/task9.js' in html and '?v=10' in html, 'версия task9.js поднята')
+      'url строится в JS (v=11)')
+check('js/task9.js' in html and '?v=11' in html, 'версия task9.js поднята')
 p9 = c.get('/ege/zadanie-9/proveryaemye-glasnye/', HTTP_HOST='localhost').content.decode('utf-8')
 check('/ege/zadanie-11/suffiksy/' in p9,
       'на странице задания 9 пилюля суффиксов ведёт на zadanie-11')

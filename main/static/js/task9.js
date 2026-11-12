@@ -108,7 +108,9 @@
                 var body = { mode: 'seo', range: btn.dataset.range };
                 var url = endpoint === 'suffiksy'
                     ? '/api/generate-suffiksy-exercise/'
-                    : '/api/generate-chered-exercise/';
+                    : endpoint === 'glagolnye'
+                        ? '/api/generate-glagolnye-exercise/'
+                        : '/api/generate-chered-exercise/';
                 if (endpoint === 'alphabetical') {
                     url = '/api/generate-alphabetical-exercise/';
                     body.orthogram_id = orthogramId;
