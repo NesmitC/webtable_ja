@@ -11542,6 +11542,7 @@ def _checkpoint_check(request, code: str):
     logger.info(f'Чекпоинт {code}: user={request.user.username} '
                 f'{correct_count}/{total_tasks} errors={error_count} '
                 f'passed={passed}')
+    _checkpoint_owner_report(request, attempt, results)
     return JsonResponse({
         'result_url': reverse('checkpoint_result', args=[attempt.id]),
         'results': {k: {'is_correct': bool(v)} for k, v in results.items()},
@@ -11583,6 +11584,50 @@ def _send_owner_notify_bg(subject: str, body: str) -> None:
                   [settings.OWNER_NOTIFY_EMAIL])
     except Exception as e:  # noqa: BLE001
         logger.error(f'Уведомление владельцу не отправлено: {e}')
+
+
+def _checkpoint_owner_report(request, attempt, results: dict) -> None:
+    """Письмо владельцу о каждой попытке рубежа: сдана она или провалена.
+
+    Владелец ведёт учеников вручную, поэтому поток сознательно не фильтруется:
+    видно и пересдачи, и провалы. Сбой SMTP не должен ронять сдачу рубежа —
+    отправка живёт в фоновом потоке с собственным try/except.
+    """
+    meta = CHECKPOINT_META.get(attempt.checkpoint_code, {})
+    rows = dict(_task_rows(attempt.checkpoint_code))
+    failed = [rows.get(task, task) for task in meta.get('tasks', [])
+              if results.get(task) is False]
+    was_passed = CheckpointAttempt.objects.filter(
+        user=attempt.user, checkpoint_code=attempt.checkpoint_code,
+        passed=True).exclude(id=attempt.id).exists()
+    number = CheckpointAttempt.objects.filter(
+        user=attempt.user,
+        checkpoint_code=attempt.checkpoint_code).count()
+    now = timezone.localtime(timezone.now(), ZoneInfo('Europe/Moscow'))
+    status = 'сдан' if attempt.passed else 'НЕ сдан'
+    if attempt.passed and not was_passed:
+        unlock = f"Открыт урок: {meta.get('unlock_lesson', '-')}"
+    elif attempt.passed:
+        unlock = 'Пересдача: урок уже был открыт'
+    else:
+        unlock = 'Урок остаётся закрытым'
+    body = (
+        f"Ученик: {attempt.user.username} "
+        f"({attempt.user.email or '-'})\n"
+        f"Рубеж: {meta.get('heading', attempt.checkpoint_code)}\n"
+        f"Попытка #{number}: {status} - блоков верных "
+        f"{attempt.correct_count} из {attempt.total_tasks}, "
+        f"ошибок: {attempt.error_count}\n"
+        f"Провалены блоки: {', '.join(failed) if failed else 'нет'}\n"
+        f"{unlock}\n"
+        f"Разбор попытки: "
+        f"{request.build_absolute_uri(reverse('checkpoint_review', args=[attempt.id]))}\n"
+        f"{now:%d.%m.%Y %H:%M} (МСК)\n"
+    )
+    subject = (f'Рубеж: {attempt.user.username} - {status} '
+               f'({meta.get("heading", attempt.checkpoint_code)})')
+    threading.Thread(target=_send_owner_notify_bg,
+                     args=(subject, body), daemon=True).start()
 
 
 def callback_request(request):
