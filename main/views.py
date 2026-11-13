@@ -106,7 +106,10 @@ def extract_correct_letter(text, masked_word, orth_id=None):
         if after_mask and after_mask in text_from_mask:
             # Всё, что до after_mask - это искомая буква/буквы
             pos = text_from_mask.find(after_mask)
-            return text_from_mask[:pos]
+            letter = text_from_mask[:pos]
+            # "\\" в текстах - маркер раздельного написания;
+            # в алфавите вариантов ему соответствует "|"
+            return '|' if letter == '\\' else letter
         else:
             # Если after_mask не найден, берём один символ
             char = text[mask_start]
@@ -1480,6 +1483,11 @@ def get_examples_with_subgroups(orthogram_ids, total_needed, grade_suffix=None):
             # Для орфограмм Н/НН передаём orth_id для правильной экстракции
             letter = extract_correct_letter(ex.text, ex.masked_word, orth_id)
             
+            # 621: маркер раздельного написания в текстах владельца - "\\",
+            # а буквы смайликов - "/,|,-": приводим к алфавиту вариантов
+            if letter == '\\' and str(ex.orthogram_id) == '621':
+                letter = '|'
+
             # Добавляем логирование для орфограммы 38
             if ex.orthogram_id == 38:
                 print(f"\n--- Обработка примера для орфограммы 38 ---")
@@ -1584,9 +1592,14 @@ def generate_exercise(request):
         
         # === Определяем количество ===
         TASK_13_ORTHOGRAMS = {21, 32, 36, 46, 54, 56, 57, 58, 581, 582}
+        # 621 (наречия-исключения, запомнить): 5 предложений построчно,
+        # как у задания 13, но без НЕ-соотношения слитно/раздельно
+        FIVE_SENTENCE_ORTHOGRAMS = {621}
         is_task_13 = set(orthogram_ids) <= TASK_13_ORTHOGRAMS
         is_task_14 = orthogram_ids == [1400]
-        total_needed = 5 if (is_task_13 or is_task_14) else 16
+        is_five_sentences = set(orthogram_ids) <= FIVE_SENTENCE_ORTHOGRAMS
+        total_needed = 5 if (is_task_13 or is_task_14
+                             or is_five_sentences) else 16
         
         # === Получаем примеры С ФИЛЬТРАЦИЕЙ ПО КЛАССУ ===
         examples_with_data = get_examples_with_subgroups(
@@ -1790,7 +1803,8 @@ def generate_exercise(request):
         logger.info(f"✅ После валидации: {len(formatted_items)} слов из {total_needed}")
         
         # === Форматируем вывод ===
-        is_ne_split_lines = is_task_13 or is_task_14
+        is_ne_split_lines = (is_task_13 or is_task_14
+                             or is_five_sentences)
         if is_ne_split_lines:
             words_lines = formatted_items
             words_text = None
