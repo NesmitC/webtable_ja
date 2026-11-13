@@ -1592,9 +1592,10 @@ def generate_exercise(request):
         
         # === Определяем количество ===
         TASK_13_ORTHOGRAMS = {21, 32, 36, 46, 54, 56, 57, 58, 581, 582}
-        # 621 (наречия-исключения, запомнить): 5 предложений построчно,
-        # как у задания 13, но без НЕ-соотношения слитно/раздельно
-        FIVE_SENTENCE_ORTHOGRAMS = {621}
+        # 621 (наречия-исключения), 64, 65, 67, 68 (предлоги, союзы,
+        # частицы): 5 предложений построчно, как у задания 13,
+        # но без НЕ-соотношения слитно/раздельно
+        FIVE_SENTENCE_ORTHOGRAMS = {64, 65, 67, 68, 621}
         is_task_13 = set(orthogram_ids) <= TASK_13_ORTHOGRAMS
         is_task_14 = orthogram_ids == [1400]
         is_five_sentences = set(orthogram_ids) <= FIVE_SENTENCE_ORTHOGRAMS

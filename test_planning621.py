@@ -43,6 +43,8 @@ u = User.objects.create_user(username='p', email='p@example.com',
                              password='Zk9mQ2vLp7xR')
 Orthogram.objects.create(id='621', name='Наречия слитно (запомн.)',
                          letters='/,|,-')
+for oid in ('64', '65', '67', '68', '69', '70'):
+    Orthogram.objects.create(id=oid, name=f'орф {oid}', letters='/,|,-')
 Orthogram.objects.create(id='21', name='НЕ с глаголами', letters='е,и')
 Orthogram.objects.create(id='1', name='Проверяемые гласные', letters='а,о,е,и')
 WORDS_621 = [
@@ -97,7 +99,51 @@ check(set(sess['correct_letters']) <= {'/', '|', '-'},
 check('\\' not in sess['correct_letters'],
       'маркер "\\" нормализован в "|"')
 
-print('2. Регресс форматов')
+print('2. Кнопки 64, 65, 67, 68: тоже 5 строк построчно')
+WORDS_64 = [('в/следствие', 'в*64*следствие'), ('на/подобие', 'на*64*подобие'),
+            ('в/роде', 'в*64*роде'), ('на/счет', 'на*64*счет'),
+            ('в/виду', 'в*64*виду'), ('в/след', 'в*64*след')]
+WORDS_65 = [('в/течение', 'в*65*течение'), ('в\\продолжение', 'в*65*продолжение'),
+            ('в/заключение', 'в*65*заключение'), ('в\\отношении', 'в*65*отношении'),
+            ('в/силу', 'в*65*силу')]
+WORDS_67 = [('так/же', 'так*67*же'), ('то\\же', 'то*67*же'),
+            ('что/бы', 'что*67*бы'), ('так\\же2', 'так*67*же2'),
+            ('то/же2', 'то*67*же2')]
+WORDS_68 = [('какая\\бы', 'какая*68*бы'), ('где\\ли', 'где*68*ли'),
+            ('вот\\же', 'вот*68*же'), ('куда\\бы2', 'куда*68*бы2'),
+            ('так\\ли', 'так*68*ли')]
+for words, oid in ((WORDS_64, '64'), (WORDS_65, '65'), (WORDS_67, '67'),
+                   (WORDS_68, '68')):
+    for text, masked in words:
+        OrthogramExample.objects.create(text=text, masked_word=masked,
+                                        orthogram_id=oid, grades='7',
+                                        is_active=True)
+# 69 и 70: маски съедают дефис, эталон — буква варианта "-"
+for text, masked in [('дай-ка', 'дай*69*ка'), ('ну-ка', 'ну*69*ка'),
+                     ('смотри-ка', 'смотри*69*ка')]:
+    OrthogramExample.objects.create(text=text, masked_word=masked,
+                                    orthogram_id='69', grades='7',
+                                    is_active=True)
+for text, masked in [('да-да', 'да*70*да'), ('ха-ха', 'ха*70*ха'),
+                     ('ай-ай', 'ай*70*ай')]:
+    OrthogramExample.objects.create(text=text, masked_word=masked,
+                                    orthogram_id='70', grades='7',
+                                    is_active=True)
+
+for oid in ('64', '65', '67', '68'):
+    html = gen(oid)
+    n = len(lines_of(html))
+    check(n == 5, f'кнопка {oid}: 5 строк (факт: {n})')
+    check(f'*{oid}*' in html, f'кнопка {oid}: маски на месте')
+
+print('3. Аудит 69 и 70: эталон — дефис из алфавита вариантов')
+for oid in ('69', '70'):
+    gen(oid)
+    letters = c.session['current_exercise']['correct_letters']
+    check(set(letters) == {'-'},
+          f'кнопка {oid}: эталоны "-" (факт: {set(letters)})')
+
+print('4. Регресс форматов')
 check(len(lines_of(gen('21'))) == 5, 'кнопка 21: по-прежнему 5 строк')
 html1 = gen('1')
 check(len(lines_of(html1)) == 1 and html1.count('*1*') == 16,
