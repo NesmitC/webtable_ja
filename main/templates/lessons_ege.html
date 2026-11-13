@@ -556,7 +556,21 @@
                 </div>
 
                 <!-- Урок 10: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
+                                <!-- Рубеж после урока 12: открывает урок 13 -->
+                {% if cp12_passed %}
+                <a href="{% url 'checkpoint_test_13' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 9, 10, 11, 12</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp13_passed %}Сдан: урок 13 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 13{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+<div class="lesson-card lesson-card--locked">
                     <div class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--lock">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -572,7 +586,7 @@
                 </div>
 
                 <!-- Урок 11: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
+                                {% if cp13_passed %}<div class="lesson-card lesson-card--active">{% else %}<div class="lesson-card lesson-card--locked">{% endif %}
                     <div class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--lock">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -582,8 +596,16 @@
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 13 (орфография, НЕ и НИ слитно / раздельно)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp13_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp13_passed %}Открыт{% else %}Откроется после рубежного теста 9, 10, 11, 12{% endif %}</span>
                         </span>
+                    </div>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/0QT3xD41pySq19RXA9qSXj">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
                     </div>
                 </div>
 

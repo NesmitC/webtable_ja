@@ -907,6 +907,8 @@ def lessons_ege(request):
         user=request.user, checkpoint_code='cp10')
     cp12 = CheckpointAttempt.objects.filter(
         user=request.user, checkpoint_code='cp12')
+    cp13 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp13')
     return render(request, 'lessons_ege.html', {
         'cp9_passed': cp9.filter(passed=True).exists(),
         'cp9_attempts': cp9.count(),
@@ -929,6 +931,9 @@ def lessons_ege(request):
         'cp12_passed': cp12.filter(passed=True).exists(),
         'cp12_attempts': cp12.count(),
         'cp12_best': max([a.correct_count for a in cp12], default=0),
+        'cp13_passed': cp13.filter(passed=True).exists(),
+        'cp13_attempts': cp13.count(),
+        'cp13_best': max([a.correct_count for a in cp13], default=0),
     })
 
 
@@ -10792,7 +10797,7 @@ def download_reference_file(request, file_type):
 # текущая/контрольная диагностика (generate_starting_diagnostic).
 # Ошибки считаем по заданиям: неверное задание = 1 ошибка, баллы ЕГЭ не ставим.
 CHECKPOINT_MAX_ERRORS = {'cp9': 3, 'cp91': 2, 'cp92': 2, 'cp93': 2, 'cp94': 2,
-                         'cp10': 2, 'cp12': 2}
+                         'cp10': 2, 'cp12': 2, 'cp13': 2}
 # Орфограмма буквы строки задания 9 -> подзадание (9.1/9.2/9.3/9.4)
 CHECKPOINT_ORTH_SUBTASK = {
     '1': '9', '2': '92',
@@ -10831,6 +10836,11 @@ CHECKPOINT_META = {
              'unlock_lesson': '12.1',
              'tasks': ['9b1', '9b2', '9b3', '10b1', '10b2', '10b3',
                        '11b1', '11b2', '11b3']},
+    'cp13': {'session_key': 'checkpoint_13',
+             'heading': 'Рубежный тест: задания 9, 10, 11, 12',
+             'unlock_lesson': '13',
+             'tasks': ['9b1', '9b2', '10b1', '10b2', '11b1', '11b2',
+                       '12b1', '12b2']},
 }
 
 # Подписи строк разбора и ссылки рекомендаций для рубежей с 9.1/9.2
@@ -10849,6 +10859,10 @@ CHECKPOINT_TASK_ROWS = {
              '10b2': 'Задание 10 (2)', '10b3': 'Задание 10 (3)',
              '11b1': 'Задание 11 (1)', '11b2': 'Задание 11 (2)',
              '11b3': 'Задание 11 (3)'},
+    'cp13': {'9b1': 'Задание 9 (1)', '9b2': 'Задание 9 (2)',
+             '10b1': 'Задание 10 (1)', '10b2': 'Задание 10 (2)',
+             '11b1': 'Задание 11 (1)', '11b2': 'Задание 11 (2)',
+             '12b1': 'Задание 12 (1)', '12b2': 'Задание 12 (2)'},
 }
 CHECKPOINT_TASK_LINKS = {
     'cp91': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
@@ -10883,6 +10897,22 @@ CHECKPOINT_TASK_LINKS = {
                     'Задание 10: приставки ПРЕ- и ПРИ-'),
              '10b3': ('10', 'task10_pre_pri', [],
                     'Задание 10: приставки ПРЕ- и ПРИ-')},
+    'cp13': {'9b1': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '9b2': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '10b1': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '10b2': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '11b1': ('11', 'task9_suffiksy', [],
+                    'Задание 11: суффиксы, тренажёры'),
+             '11b2': ('11', 'task9_suffiksy', [],
+                    'Задание 11: суффиксы, тренажёры'),
+             '12b1': ('12', 'trainers_ege', [],
+                    'Задание 12: спряжения и суффиксы, тренажёры'),
+             '12b2': ('12', 'trainers_ege', [],
+                    'Задание 12: спряжения и суффиксы, тренажёры')},
     'cp12': {'9b1': ('9', 'trainers_ege', [],
                    'Задание 9: корни и ударения, тренажёры'),
              '9b2': ('9', 'trainers_ege', [],
@@ -11023,7 +11053,7 @@ def _cp10_prefer_masks(user, pool_ids):
     return set(hard)
 
 
-def _cp_mixed_lines(user, kinds=('9', '10')):
+def _cp_mixed_lines(user, kinds=('9', '10'), blocks=3):
     """Смешанные строки рубежей cp10/cp12: по три варианта на каждый вид
     блока из kinds (9, 10, 11), по 5 строк по 3 слова. Строки вразнобой по орфограммам (формат сборника ЕГЭ,
     но вместо пропусков — смайлики); в каждом блоке задания 10 представлены все
@@ -11041,6 +11071,8 @@ def _cp_mixed_lines(user, kinds=('9', '10')):
                ['з', 'с', 'ы', 'и', 'е', 'ъ', 'ь']),
         '11': (['481', '482', '483', '484', '485'],
                ['а', 'е', 'и']),
+        '12': (['25', '49', '50', '51', '511', '512', '513'],
+               ['е', 'и', 'у', 'ю', 'а', 'я']),
     }
 
     def valid_pool(orth_ids):
@@ -11073,7 +11105,7 @@ def _cp_mixed_lines(user, kinds=('9', '10')):
     for kind in kinds:
         orth_ids, letters = KIND_CFG[kind]
         pool, prefer = pools[kind], prefers[kind]
-        for block in range(1, 4):
+        for block in range(1, blocks + 1):
             unit = f'{kind}b{block}'
             group = f'b{kind}-{block}'
             for row in range(5):
@@ -11117,7 +11149,7 @@ def _cp_mixed_lines(user, kinds=('9', '10')):
             idx += 1
     subgroup = {}
     for kind in kinds:
-        for block in range(1, 4):
+        for block in range(1, blocks + 1):
             subgroup[f'b{kind}-{block}'] = KIND_CFG[kind][1]
     return {'lines': lines, 'letter_groups': letter_groups,
             'subgroup_letters': subgroup}
@@ -11232,6 +11264,9 @@ def _checkpoint_build(request, code: str):
             task9_data = _cp_mixed_lines(request.user, ('9', '10'))
         elif code == 'cp12':
             task9_data = _cp_mixed_lines(request.user, ('9', '10', '11'))
+        elif code == 'cp13':
+            task9_data = _cp_mixed_lines(request.user,
+                                       ('9', '10', '11', '12'), blocks=2)
         else:
             task9_data = generate_task9_lines(
                 config=_task9_config(code), prefer_words=prefer_words9)
@@ -11373,6 +11408,21 @@ def checkpoint_test_12(request):
         return _checkpoint_check(request, 'cp12')
     context, session_data = _checkpoint_build(request, 'cp12')
     request.session[CHECKPOINT_META['cp12']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_13(request):
+    """Рубеж после урока 12 (открывает 13): по два варианта заданий
+    9, 10, 11 и 12. Доступен после сдачи рубежа 9, 10, 11."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp12', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp13')
+    context, session_data = _checkpoint_build(request, 'cp13')
+    request.session[CHECKPOINT_META['cp13']['session_key']] = session_data
     request.session.modified = True
     return render(request, 'test_fix_ege/checkpoint_test.html', context)
 
