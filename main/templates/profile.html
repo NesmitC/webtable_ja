@@ -107,6 +107,7 @@
                 {% endif %}
                 <p style="font-size:12px;color:#7A6A54;margin-top:10px;">Оплачивая, вы принимаете условия <a href="/terms/" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;">пользовательского соглашения (оферты)</a>.</p>
 
+                {% comment %} скрыто по решению владельца 13.11.2026
                 {% if subscription.kind == 'paid' or subscription.kind == 'trial' %}
                 <section class="card card-push-bot">
                     <h3>🔔 Слово дня — на телефон</h3>
@@ -125,6 +126,7 @@
                     </div>
                 </section>
                 {% endif %}
+                {% endcomment %}
 
                 {% if subscription.kind == 'paid' or subscription.kind == 'trial' %}
                 <section class="card card-vk-bot">
@@ -214,6 +216,7 @@
 
             </div>
 
+            {% comment %} скрыто по решению владельца 13.11.2026
             {% if user.profile.role != 'tutor' %}
             <section class="card card-tutor">
                 <h3>Код репетитора</h3>
@@ -224,6 +227,7 @@
                 </form>
             </section>
             {% endif %}
+            {% endcomment %}
 
 
         </div>
