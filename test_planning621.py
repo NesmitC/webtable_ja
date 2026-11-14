@@ -149,6 +149,51 @@ html1 = gen('1')
 check(len(lines_of(html1)) == 1 and html1.count('*1*') == 16,
       'обычная орфограмма: 16 слов одной строкой через запятую')
 
+print('5. Проверка: раздельное "|" зелено, старый клиент "\\" тоже зелен')
+from main.views import normalize_separate_marker
+
+check(normalize_separate_marker(['\\', ['|', '\\'], '/']) == ['|', ['|', '|'], '/'],
+      'helper нормализует вложенные списки (multi-маски)')
+gen('621')
+letters = c.session['current_exercise']['correct_letters']
+
+
+def check_answers(payload):
+    r = c.post('/api/check-exercise/', data=json.dumps({'user_words': payload}),
+               content_type='application/json', HTTP_HOST='localhost')
+    return r.json()
+
+
+check(check_answers(letters) == [True] * len(letters),
+      'ответы как в эталоне: все зелено')
+legacy = ['\\' if l == '|' else l for l in letters]
+check(check_answers(legacy) == [True] * len(letters),
+      'старый клиент со "\\": все зелено (нормализация на сервере)')
+wrong = ['/' if l == '|' else '|' for l in letters]
+check(check_answers(wrong) == [False] * len(letters),
+      'перепутанные варианты: все красное')
+
+print('6. Диагностика 13: раздельное зелено у нового и старого клиента')
+sess = c.session
+sess['starting_diagnostic'] = {'task13_correct': ['|', '/', '|']}
+sess.save()
+for label, ans in (('новый клиент', {'13-1': '|', '13-2': '/', '13-3': '|'}),
+                   ('старый клиент', {'13-1': '\\', '13-2': '/', '13-3': '\\'})):
+    r = c.post('/api/check-starting-diagnostic/',
+               data=json.dumps({'answers': ans}),
+               content_type='application/json', HTTP_HOST='localhost')
+    d = r.json()
+    ok = all(d['results'][k]['is_correct'] for k in ('13-1', '13-2', '13-3'))
+    check(ok, f'диагностика 13, {label}: все зелено')
+
+print('7. Фронтенд больше не подменяет "|" на "\\"')
+import pathlib
+js_dir = pathlib.Path(__file__).resolve().parent / 'main' / 'static' / 'js'
+for name in ('planning.js', 'diagnostic.js'):
+    src = (js_dir / name).read_text(encoding='utf-8')
+    check("selectedLetter = '\\\\';" not in src,
+          f'{name}: конверсия | → \\ удалена')
+
 print()
 if fails:
     print(f'⚠️ ПРОВАЛЕНО: {len(fails)}')

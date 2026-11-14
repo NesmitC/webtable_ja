@@ -118,6 +118,17 @@ def extract_correct_letter(text, masked_word, orth_id=None):
     except Exception:
         return ''
 
+
+def normalize_separate_marker(value: str | list) -> str | list:
+    """'\\' — маркер раздельного написания в текстах владельца; в алфавите
+    вариантов ему соответствует '|'. Приводим обе стороны сравнения к '|',
+    чтобы старые клиенты и сессии с '\\' не ломали проверку.
+    """
+    if isinstance(value, list):
+        return [normalize_separate_marker(item) for item in value]
+    return '|' if value == '\\' else value
+
+
 def teacher_required(view):
     """Доступ к разборам: staff ИЛИ активный репетитор."""
     @wraps(view)
@@ -3142,7 +3153,7 @@ def check_exercise(request):
     try:
         # === Парсинг тела запроса ===
         data = json.loads(request.body)
-        user_letters = data.get('user_words', [])
+        user_letters = normalize_separate_marker(data.get('user_words', []))
         logger.info(f"Получены ответы от пользователя: {user_letters}")
 
         if not isinstance(user_letters, list):
@@ -3155,7 +3166,8 @@ def check_exercise(request):
             logger.error("Нет активного упражнения в сессии")
             return JsonResponse({'error': 'Нет активного упражнения'}, status=400)
 
-        correct_letters = current_exercise.get('correct_letters', [])
+        correct_letters = normalize_separate_marker(
+            current_exercise.get('correct_letters', []))
         exercise_id = current_exercise.get('exercise_id', '')
         
         logger.info(f"Ожидаемые ответы: {correct_letters}")
@@ -6633,8 +6645,9 @@ def check_starting_diagnostic(request):
             for i in range(1, total_masks + 1):
                 key = f"13-{i}"
                 user_answer = user_answers_dict.get(key, "😊")
-                user_clean = str(user_answer).strip().lower()
-                correct_letter = expected_letters[i - 1] if i <= len(expected_letters) else ""
+                user_clean = normalize_separate_marker(str(user_answer).strip().lower())
+                correct_letter = normalize_separate_marker(
+                    expected_letters[i - 1] if i <= len(expected_letters) else "")
                 is_correct = (user_clean != "😊" and user_clean != "" and
                             user_clean == correct_letter)
                 task13_results[key] = {'is_correct': is_correct}
@@ -6662,11 +6675,9 @@ def check_starting_diagnostic(request):
                 user_clean = str(user_answer).strip().lower()
                 correct_letter = expected_letters[i - 1] if i <= len(expected_letters) else ""
                 
-                # Нормализация: \ → |
-                if user_clean == '\\':
-                    user_clean = '|'
-                if correct_letter == '\\':
-                    correct_letter = '|'
+                # Нормализация: \ → | (общий helper с check_exercise)
+                user_clean = normalize_separate_marker(user_clean)
+                correct_letter = normalize_separate_marker(correct_letter)
                 
                 is_correct = (user_clean != "😊" and user_clean != "" and
                             user_clean == correct_letter)

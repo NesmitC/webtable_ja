@@ -13,6 +13,73 @@
 }
 
 /* ============================================
+ЗАГОЛОВОК ОРФОГРАММЫ: лента-легенда над карточкой
+============================================ */
+.orthogram-loaded-header {
+    display: flex;
+    align-items: center;
+    max-width: 900px;
+    margin: 24px auto 0;
+    font-family: 'Cormorant', serif;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.25;
+    color: var(--color-text, #2f2a25);
+    text-align: center;
+    animation: ortho-header-in 0.35s ease-out;
+}
+
+.orthogram-loaded-header::before,
+.orthogram-loaded-header::after {
+    content: '';
+    flex: 1;
+    height: 26px;
+    background: var(--color-how-it-works-bg, #EDE2CE);
+}
+
+.orthogram-loaded-header span {
+    background: #ffffff;
+    padding: 0 18px;
+}
+
+.orthogram-loaded-header + .article-practice {
+    margin-top: 10px;
+}
+
+@keyframes ortho-header-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .orthogram-loaded-header {
+        font-size: 20px;
+        margin-top: 16px;
+    }
+
+    .orthogram-loaded-header::before,
+    .orthogram-loaded-header::after {
+        height: 20px;
+    }
+
+    .orthogram-loaded-header span {
+        padding: 0 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .orthogram-loaded-header {
+        animation: none;
+    }
+}
+
+/* ============================================
 СТРАНИЦА ДИАГНОСТИК ЕГЭ
 ============================================ */
 .diag-badge-wrap {

@@ -70,10 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (selectedLetter === ',') selectedLetter = '!';
             else if (selectedLetter === 'х') selectedLetter = '?';
 
-            // Для задания 13: | → \
-            if (orthId.startsWith('13-') && selectedLetter === '|') {
-                selectedLetter = '\\';
-            }
 
             answers[orthId] = selectedLetter;
         });

@@ -71,6 +71,37 @@ function insertTaskHeader(answerSection, taskNumber) {
 }
 
 // ===========================================================================
+// ЗАГОЛОВОК ОРФОГРАММЫ (кнопки без номера задания: 49, 67, 62.1…)
+// ===========================================================================
+function formatOrthogramLabel(id) {
+    // Суб-орфограммы в БД — 621/271/401, на кнопках и в заголовке — 62.1/27.1/40.1
+    return /^\d{3}$/.test(id) ? `${id.slice(0, 2)}.${id.slice(2)}` : id;
+}
+
+function getOrthogramHeaderTitle(orthogramIds, button) {
+    const ids = (orthogramIds || '').split(',').map(s => s.trim()).filter(Boolean);
+    if (!ids.length) return null;
+    if (ids.length === 1) {
+        const label = button ? button.textContent.trim() : '';
+        const num = /^[\d.,\s–-]+$/.test(label) ? label : formatOrthogramLabel(ids[0]);
+        return `Орфограмма ${num}`;
+    }
+    return `Орфограммы ${ids.map(formatOrthogramLabel).join(', ')}`;
+}
+
+function insertOrthogramHeader(answerSection, title) {
+    if (!title || !answerSection) return;
+    const old = answerSection.querySelector('.orthogram-loaded-header');
+    if (old) old.remove();
+    const h = document.createElement('h3');
+    h.className = 'orthogram-loaded-header';
+    const span = document.createElement('span');
+    span.textContent = title;
+    h.appendChild(span);
+    answerSection.prepend(h);
+}
+
+// ===========================================================================
 // ФУНКЦИИ ОБРАБОТКИ СМАЙЛИКОВ
 // ===========================================================================
 // для задания 9
@@ -574,10 +605,6 @@ function setupCheckAnswers(container = document) {
                 // Нормализация для пунктограмм
                 if (selectedLetter === ',') selectedLetter = '!';
                 else if (selectedLetter === 'х') selectedLetter = '?';
-                // === ИСПРАВЛЕНИЕ: преобразуем | в \ для орфограмм 32, 36 и других с раздельным написанием ===
-                if (selectedLetter === '|') {
-                    selectedLetter = '\\';  // Заменяем вертикальную черту на обратный слеш
-                }
                 if (selectedLetter !== '😊') hasSelection = true;
                 userAnswers.push(selectedLetter);
             });
@@ -1083,6 +1110,9 @@ document.addEventListener('click', async (e) => {
     const taskNumber = getTaskNumberByButton(orthogramIds, punktogramId);
     if (taskNumber) {
         insertTaskHeader(answerSection, taskNumber);
+    } else if (orthogramIds) {
+        // Заголовок орфограммы виден уже на этапе загрузки
+        insertOrthogramHeader(answerSection, getOrthogramHeaderTitle(orthogramIds, button));
     }
 
     // === НОВЫЙ БЛОК: ПУНКТОГРАММЫ 16-21 ===
@@ -1490,6 +1520,11 @@ document.addEventListener('click', async (e) => {
         }
 
         answerSection.innerHTML = htmlWithHeader;
+
+        // Орфограммы без номера задания (67, 62.1…) получают свой заголовок
+        if (!taskNumber && orthogramIds) {
+            insertOrthogramHeader(answerSection, getOrthogramHeaderTitle(orthogramIds, button));
+        }
 
         if (taskNumber === '10') {
             insertTask10Nav(answerSection);
