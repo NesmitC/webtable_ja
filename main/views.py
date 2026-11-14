@@ -1907,19 +1907,13 @@ def generate_exercise_multi(request):
             
             if orthogram_id == 1400:
                 # ЗАДАНИЕ 14: слитное/раздельное/дефисное написание
-                parts = []
-                if explanation_text:
-                    # Очищаем explanation: убираем пробелы и переносы
-                    clean_text = explanation_text.replace(' ', '').replace('\n', '').replace('\r', '')
-                    # Парсим символы
-                    for char in clean_text.split(','):
-                        if char and char in ['|', '/', '-']:
-                            parts.append(char)
-                
+                if ex.masked_word.count(f'*{orthogram_id}') != ex.masked_word.count(f'*{orthogram_id}*'):
+                    continue  # битая маска владельца — не показываем
+                parts = parse_task14_markers(explanation_text)
                 if not parts:
                     # Fallback: извлекаем из text
                     parts = extract_from_text_and_masks(ex.text, ex.masked_word, orthogram_id)
-                
+
                 if parts:
                     # Проверяем, что количество частей совпадает с количеством масок
                     mask_count = ex.masked_word.count(f'*{orthogram_id}*')
@@ -2033,33 +2027,50 @@ def generate_exercise_multi(request):
 
 
 
-def extract_from_text_and_masks(text, masked_word, orthogram_id):
+def parse_task14_markers(explanation: str) -> list[str]:
+    """Маркеры задания 14 из explanation владельца ('|', '/', '-' через
+    запятую); обратный слэш владельца нормализуется в '|'."""
+    parts: list[str] = []
+    clean = (explanation or '').replace(' ', '').replace('\n', '').replace('\r', '')
+    for char in clean.split(','):
+        char = normalize_separate_marker(char)
+        if char in ('|', '/', '-'):
+            parts.append(char)
+    return parts
+
+
+def extract_from_text_and_masks(text: str, masked_word: str, orthogram_id: int) -> list[str]:
     """
-    Извлекает правильные символы из text по позициям масок.
-    Для орфограммы 1400 нормализует обратный слэш в вертикальную черту.
+    Fallback: маркеры написания из text по позициям масок, когда
+    explanation пуст. Скобки в masked_word — разметка владельца, в text
+    их нет, поэтому посимвольное позиционное сравнение даёт сдвиг;
+    якорем служит фрагмент после маски. '\\' нормализуется в '|'.
+    Если маркер извлечь нельзя — [] (пример пропускается, не выдумываем).
     """
-    parts = []
-    masked = masked_word
-    
-    while f'*{orthogram_id}*' in masked:
-        mask_start = masked.find('*')
+    parts: list[str] = []
+    masked = masked_word.replace('(', '').replace(')', '')
+    token = f'*{orthogram_id}*'
+    cursor = 0
+    while True:
+        mask_start = masked.find(token, cursor)
         if mask_start == -1:
             break
-            
-        if mask_start >= len(text):
-            break
-            
-        char = text[mask_start]
-        
-        # Нормализация для орфограммы 1400
-        if orthogram_id == 1400 and char == '\\':
-            char = '|'  # Заменяем обратный слеш на вертикальную черту
-        
-        parts.append(char)
-        
-        # Заменяем маску для продолжения поиска
-        masked = masked.replace(f'*{orthogram_id}*', 'X', 1)
-    
+        after_start = mask_start + len(token)
+        next_mask = masked.find('*', after_start)
+        anchor = masked[after_start:next_mask if next_mask != -1 else len(masked)]
+        if anchor:
+            pos = text.find(anchor, mask_start)
+            if pos == -1:
+                return []
+            letter = text[mask_start:pos]
+        else:
+            letter = text[mask_start:mask_start + 1]
+        letter = normalize_separate_marker(letter)
+        if letter not in ('|', '/', '-'):
+            return []
+        parts.append(letter)
+        masked = masked[:mask_start] + 'X' + masked[after_start:]
+        cursor = mask_start + 1
     return parts
 
 
@@ -8097,41 +8108,23 @@ def generate_task14_lines():
     mask_index = 1
     
     for ex in examples:
-        # Извлекаем правильные символы из explanation или text
-        explanation_text = (ex.explanation or '').strip()
-        
-        if explanation_text:
-            # Парсим explanation
-            parts = []
-            clean_text = explanation_text.replace(' ', '').replace('\n', '').replace('\r', '')
-            for char in clean_text.split(','):
-                if char in ['|', '/', '-']:
-                    parts.append(char)
-        else:
-            # Извлекаем из text
+        if ex.masked_word.count('*1400') != ex.masked_word.count('*1400*'):
+            continue  # битая маска владельца
+        parts = parse_task14_markers(ex.explanation)
+        if not parts:
             parts = extract_from_text_and_masks(ex.text, ex.masked_word, 1400)
-        
-        # Заменяем маски в предложении
+        mask_count = ex.masked_word.count('*1400*')
+        if mask_count == 0 or len(parts) < mask_count:
+            continue  # эталон не выдумываем — пропускаем пример
         masked_word = ex.masked_word
-        line_parts = []
-        
-        while f'*1400*' in masked_word:
+        for i in range(mask_count):
             mask_id = f"14-{mask_index}"
-            
-            # Заменяем маску
-            masked_word = masked_word.replace(f'*1400*', f'*{mask_id}*', 1)
-            
-            # Сохраняем правильный ответ
-            if parts:
-                expected_letters.append(parts.pop(0))
-            else:
-                expected_letters.append('|')  # Fallback
-            
+            masked_word = masked_word.replace('*1400*', f'*{mask_id}*', 1)
+            expected_letters.append(parts[i])
             letter_groups[mask_id] = 'preposition'
             mask_index += 1
-        
         lines.append(masked_word)
-    
+
     return {
         'lines': lines[:5],  # Гарантируем максимум 5
         'expected_letters': expected_letters,
