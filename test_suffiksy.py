@@ -93,9 +93,13 @@ check('data-endpoint="suffiksy"' in html, 'endpoint=suffiksy в конфиге �
 check('/api/generate-suffiksy-exercise/' not in html or True,
       'url строится в JS (v=11)')
 check('js/task9.js' in html and '?v=11' in html, 'версия task9.js поднята')
-p9 = c.get('/ege/zadanie-9/proveryaemye-glasnye/', HTTP_HOST='localhost').content.decode('utf-8')
-check('/ege/zadanie-11/suffiksy/' in p9,
-      'на странице задания 9 пилюля суффиксов ведёт на zadanie-11')
+for slug in ('proveryaemye-glasnye', 'neproveryaemye-glasnye',
+             'chereduyushchiesya-glasnye'):
+    p9 = c.get(f'/ege/zadanie-9/{slug}/', HTTP_HOST='localhost').content.decode('utf-8')
+    check('/ege/zadanie-11/suffiksy/' not in p9
+          and 'Правописание суффиксов' not in p9,
+          f'на странице {slug} пилюли суффиксов нет')
+    check('task9-nav' in p9, f'на странице {slug} пилюли соседних корней остались')
 
 print('2. Хабы и пилюли на странице тренажёров')
 hub = c.get('/ege/zadanie-9/', HTTP_HOST='localhost').content.decode('utf-8')
