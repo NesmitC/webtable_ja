@@ -58,7 +58,7 @@
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
-    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261114">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261115b">
 </head>
 
 <body>
@@ -1557,12 +1557,39 @@
 
         <article id="task16" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
 
-            <h2 class="title-table-container">Задание 16. Знаки препинания при ОЧП и ССП</h2>
+            <div class="task-head">
+                <h2 class="title-table-container">Задание 16. Знаки препинания при ОЧП и ССП</h2>
+                <button type="button" class="scheme-toggle"
+                    data-src="{% static 'images/punktum_task_16.webp' %}"
+                    data-alt="Схема задания 16: однородные члены предложения, причастные и деепричастные обороты, сложносочинённое предложение"
+                    aria-expanded="false" aria-controls="schemePanel16">
+                    <svg class="scheme-toggle__glyph" width="20" height="16" viewBox="0 0 20 16" fill="none"
+                        aria-hidden="true">
+                        <path d="M4 1.5H1.5v13H4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M16 1.5h2.5v13H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M10.6 5.2c.9 0 1.6.7 1.6 1.6 0 1.5-1 2.6-2.4 3.2" stroke="currentColor"
+                            stroke-width="1.6" stroke-linecap="round" />
+                        <circle cx="9.4" cy="5.6" r="1.5" fill="currentColor" />
+                    </svg>
+                    <span class="scheme-toggle__label">Показать схему</span>
+                    <svg class="scheme-toggle__chev" width="12" height="8" viewBox="0 0 12 8" fill="none"
+                        aria-hidden="true">
+                        <path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
 
-            <p class="text-orf task-lead">Все случаи постановки и непостановки запятой при
-                союзах <strong>и, а, но, да, или, либо</strong>: однородные члены предложения
-                и простые предложения в составе сложносочинённого. Выберите пунктограмму,
-                повторите правило и запишите собственные примеры.</p>
+            <!-- Схема по клику: до первого нажатия картинка не запрашивается (img создаётся в scheme_toggle.js) -->
+            <div class="scheme-panel" id="schemePanel16" hidden role="region" aria-label="Схема задания 16">
+                <p class="scheme-hint">Схема широкая — листайте вбок →</p>
+                <div class="scheme-skeleton">Загружаем схему…</div>
+                <figure class="scheme-figure" hidden>
+                    <div class="scheme-scroller"></div>
+                </figure>
+            </div>
 
             <h3 class="subtitle-table-container">Однородные члены предложения (ОЧП): пунктограммы 2–2.5</h3>
 
@@ -2204,6 +2231,7 @@
     <script src="{% static 'js/planning_orthoepos.js' %}"></script>
     <script src="{% static 'js/planning_text.js' %}"></script>
     <script src="{% static 'js/freemium_lock.js' %}"></script>
+    <script src="{% static 'js/scheme_toggle.js' %}?v=1"></script>
 
 </body>
 

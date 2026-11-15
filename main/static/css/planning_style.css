@@ -4240,3 +4240,214 @@ input[type="checkbox"]:checked.task-match-incorrect {
 .planning-jump-link:hover span {
     transform: translateX(3px);
 }
+
+/* ===== Кнопка «Показать схему» в шапке карточки пунктуации (задание 16) =====
+   Семья пилюль .orthoepy-dictionary-link; картинка грузится только по клику. */
+.task-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+    margin-bottom: 6px;
+}
+
+.task-head .title-table-container {
+    flex: 1 1 320px;
+    margin: 0;
+}
+
+.scheme-toggle {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    color: var(--color-btn-primary);
+    font-family: 'DM Sans', var(--font-body);
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scheme-toggle:hover {
+    background: var(--color-how-it-works-bg);
+    border-color: var(--color-btn-primary);
+    box-shadow: 0 2px 8px rgba(122, 82, 48, 0.15);
+    transform: translateY(-1px);
+}
+
+.scheme-toggle:focus-visible {
+    outline: 2px solid var(--color-btn-primary);
+    outline-offset: 2px;
+}
+
+.scheme-toggle[aria-expanded="true"] {
+    background: var(--color-how-it-works-bg);
+    border-color: var(--color-btn-primary);
+}
+
+.scheme-toggle[aria-busy="true"] {
+    opacity: 0.7;
+    cursor: progress;
+    transform: none;
+}
+
+.scheme-toggle__glyph {
+    display: block;
+    flex-shrink: 0;
+}
+
+.scheme-toggle__chev {
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+}
+
+.scheme-toggle[aria-expanded="true"] .scheme-toggle__chev {
+    transform: rotate(180deg);
+}
+
+.scheme-panel {
+    margin: 0 0 18px;
+}
+
+.scheme-panel[hidden] {
+    display: none;
+}
+
+.scheme-hint {
+    display: none;
+    margin: 0 0 6px;
+    font-size: 12.5px;
+    color: var(--color-btn-primary);
+}
+
+.scheme-skeleton {
+    aspect-ratio: 3399 / 1155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: linear-gradient(100deg, var(--color-how-it-works-bg) 30%, #f7efdf 46%, var(--color-how-it-works-bg) 62%);
+    background-size: 220% 100%;
+    animation: scheme-shimmer 1.1s linear infinite;
+    color: var(--color-nav-text);
+    font-size: 13px;
+}
+
+.scheme-skeleton[hidden] {
+    display: none;
+}
+
+@keyframes scheme-shimmer {
+    from {
+        background-position: 120% 0;
+    }
+
+    to {
+        background-position: -120% 0;
+    }
+}
+
+.scheme-figure {
+    margin: 0;
+    animation: scheme-rise 0.3s ease;
+}
+
+.scheme-figure[hidden] {
+    display: none;
+}
+
+@keyframes scheme-rise {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.scheme-scroller {
+    overflow-x: auto;
+    /* body — flex: без contain широкая схема распирает main через min-width:auto */
+    contain: inline-size;
+    border-radius: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) var(--color-how-it-works-bg);
+}
+
+.scheme-scroller::-webkit-scrollbar {
+    height: 10px;
+}
+
+.scheme-scroller::-webkit-scrollbar-track {
+    background: var(--color-how-it-works-bg);
+    border-radius: 8px;
+}
+
+.scheme-scroller::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 8px;
+    border: 2px solid var(--color-how-it-works-bg);
+}
+
+.scheme-scroller::-webkit-scrollbar-thumb:hover {
+    background: var(--color-btn-primary);
+}
+
+.scheme-figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: #f6e8e6;
+}
+
+.scheme-figure figcaption {
+    margin-top: 8px;
+    font-size: 12.5px;
+    color: var(--color-nav-text);
+}
+
+@media (max-width: 768px) {
+    .task-head .title-table-container {
+        flex-basis: 100%;
+    }
+
+    .scheme-toggle {
+        margin-left: 0;
+    }
+
+    .scheme-hint {
+        display: block;
+    }
+
+    /* схема в три колонки нечитаема при сжатии — на телефоне листаем вбок */
+    .scheme-figure img {
+        min-width: 720px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scheme-skeleton {
+        animation: none;
+    }
+
+    .scheme-figure {
+        animation: none;
+    }
+
+    .scheme-toggle,
+    .scheme-toggle__chev {
+        transition: none;
+    }
+}
