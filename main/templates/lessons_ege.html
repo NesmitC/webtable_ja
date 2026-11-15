@@ -609,8 +609,22 @@
                     </div>
                 </div>
 
+                <!-- Рубеж после урока 13: открывает урок 14 -->
+                {% if cp13_passed %}
+                <a href="{% url 'checkpoint_test_14' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 9, 10, 11, 12, 13</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp14_passed %}Сдан: урок 14 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 14{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
                 <!-- Урок 12: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
+                                {% if cp14_passed %}<div class="lesson-card lesson-card--active">{% else %}<div class="lesson-card lesson-card--locked">{% endif %}
                     <div class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--lock">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -620,7 +634,7 @@
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 14 (орфография, слитно / раздельно / дефис)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp14_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp14_passed %}Открыт{% else %}Откроется после рубежного теста 9, 10, 11, 12, 13{% endif %}</span>
                         </span>
                     </div>
                     <div class="lesson-card__body">

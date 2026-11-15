@@ -923,6 +923,8 @@ def lessons_ege(request):
         user=request.user, checkpoint_code='cp12')
     cp13 = CheckpointAttempt.objects.filter(
         user=request.user, checkpoint_code='cp13')
+    cp14 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp14')
     return render(request, 'lessons_ege.html', {
         'cp9_passed': cp9.filter(passed=True).exists(),
         'cp9_attempts': cp9.count(),
@@ -948,6 +950,9 @@ def lessons_ege(request):
         'cp13_passed': cp13.filter(passed=True).exists(),
         'cp13_attempts': cp13.count(),
         'cp13_best': max([a.correct_count for a in cp13], default=0),
+        'cp14_passed': cp14.filter(passed=True).exists(),
+        'cp14_attempts': cp14.count(),
+        'cp14_best': max([a.correct_count for a in cp14], default=0),
     })
 
 
@@ -10816,7 +10821,7 @@ def download_reference_file(request, file_type):
 # текущая/контрольная диагностика (generate_starting_diagnostic).
 # Ошибки считаем по заданиям: неверное задание = 1 ошибка, баллы ЕГЭ не ставим.
 CHECKPOINT_MAX_ERRORS = {'cp9': 3, 'cp91': 2, 'cp92': 2, 'cp93': 2, 'cp94': 2,
-                         'cp10': 2, 'cp12': 2, 'cp13': 2}
+                         'cp10': 2, 'cp12': 2, 'cp13': 2, 'cp14': 2}
 # Орфограмма буквы строки задания 9 -> подзадание (9.1/9.2/9.3/9.4)
 CHECKPOINT_ORTH_SUBTASK = {
     '1': '9', '2': '92',
@@ -10860,6 +10865,11 @@ CHECKPOINT_META = {
              'unlock_lesson': '13',
              'tasks': ['9b1', '9b2', '10b1', '10b2', '11b1', '11b2',
                        '12b1', '12b2']},
+    'cp14': {'session_key': 'checkpoint_14',
+             'heading': 'Рубежный тест: задания 9, 10, 11, 12, 13',
+             'unlock_lesson': '14',
+             'tasks': ['9b1', '9b2', '10b1', '10b2', '11b1', '11b2',
+                       '12b1', '12b2', '13b1', '13b2']},
 }
 
 # Подписи строк разбора и ссылки рекомендаций для рубежей с 9.1/9.2
@@ -10882,6 +10892,11 @@ CHECKPOINT_TASK_ROWS = {
              '10b1': 'Задание 10 (1)', '10b2': 'Задание 10 (2)',
              '11b1': 'Задание 11 (1)', '11b2': 'Задание 11 (2)',
              '12b1': 'Задание 12 (1)', '12b2': 'Задание 12 (2)'},
+    'cp14': {'9b1': 'Задание 9 (1)', '9b2': 'Задание 9 (2)',
+             '10b1': 'Задание 10 (1)', '10b2': 'Задание 10 (2)',
+             '11b1': 'Задание 11 (1)', '11b2': 'Задание 11 (2)',
+             '12b1': 'Задание 12 (1)', '12b2': 'Задание 12 (2)',
+             '13b1': 'Задание 13 (1)', '13b2': 'Задание 13 (2)'},
 }
 CHECKPOINT_TASK_LINKS = {
     'cp91': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
@@ -10916,6 +10931,26 @@ CHECKPOINT_TASK_LINKS = {
                     'Задание 10: приставки ПРЕ- и ПРИ-'),
              '10b3': ('10', 'task10_pre_pri', [],
                     'Задание 10: приставки ПРЕ- и ПРИ-')},
+    'cp14': {'9b1': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '9b2': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '10b1': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '10b2': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '11b1': ('11', 'task9_suffiksy', [],
+                    'Задание 11: суффиксы, тренажёры'),
+             '11b2': ('11', 'task9_suffiksy', [],
+                    'Задание 11: суффиксы, тренажёры'),
+             '12b1': ('12', 'trainers_ege', [],
+                    'Задание 12: спряжения и суффиксы, тренажёры'),
+             '12b2': ('12', 'trainers_ege', [],
+                    'Задание 12: спряжения и суффиксы, тренажёры'),
+             '13b1': ('13', 'trainers_ege', [],
+                    'Задание 13: НЕ и НИ слитно / раздельно, тренажёры'),
+             '13b2': ('13', 'trainers_ege', [],
+                    'Задание 13: НЕ и НИ слитно / раздельно, тренажёры')},
     'cp13': {'9b1': ('9', 'trainers_ege', [],
                    'Задание 9: корни и ударения, тренажёры'),
              '9b2': ('9', 'trainers_ege', [],
@@ -11092,6 +11127,9 @@ def _cp_mixed_lines(user, kinds=('9', '10'), blocks=3):
                ['а', 'е', 'и']),
         '12': (['25', '49', '50', '51', '511', '512', '513'],
                ['е', 'и', 'у', 'ю', 'а', 'я']),
+        '13': (['21', '32', '36', '46', '54', '56', '57', '58',
+                '581', '582'],
+               ['|', '/']),
     }
 
     def valid_pool(orth_ids):
@@ -11104,6 +11142,9 @@ def _cp_mixed_lines(user, kinds=('9', '10'), blocks=3):
         return pool
 
     pools = {k: valid_pool(cfg[0]) for k, cfg in KIND_CFG.items()}
+    if '13' in pools:
+        pools['13'] = [(ex, l) for ex, l in pools['13']
+                       if l in ('|', '/')]
     prefers = {k: _cp10_prefer_masks(user, cfg[0])
                for k, cfg in KIND_CFG.items()}
 
@@ -11286,6 +11327,10 @@ def _checkpoint_build(request, code: str):
         elif code == 'cp13':
             task9_data = _cp_mixed_lines(request.user,
                                        ('9', '10', '11', '12'), blocks=2)
+        elif code == 'cp14':
+            task9_data = _cp_mixed_lines(request.user,
+                                       ('9', '10', '11', '12', '13'),
+                                       blocks=2)
         else:
             task9_data = generate_task9_lines(
                 config=_task9_config(code), prefer_words=prefer_words9)
@@ -11442,6 +11487,21 @@ def checkpoint_test_13(request):
         return _checkpoint_check(request, 'cp13')
     context, session_data = _checkpoint_build(request, 'cp13')
     request.session[CHECKPOINT_META['cp13']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_14(request):
+    """Рубеж после урока 13 (открывает 14): по два варианта заданий
+    9, 10, 11, 12 и 13. Доступен после сдачи рубежа 9, 10, 11, 12."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp13', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp14')
+    context, session_data = _checkpoint_build(request, 'cp14')
+    request.session[CHECKPOINT_META['cp14']['session_key']] = session_data
     request.session.modified = True
     return render(request, 'test_fix_ege/checkpoint_test.html', context)
 
