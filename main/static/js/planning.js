@@ -1999,7 +1999,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.input-text').forEach(textarea => {
         const idNum = textarea.id.split('-').pop();
         const counter = document.getElementById(`counter-${idNum}`);
-        const MAX = 300;
+        const MAX = parseInt(textarea.getAttribute('maxlength'), 10) || 1000;  // лимит из HTML maxlength, не дублируем число здесь
 
         // Счётчик при загрузке
         if (counter) counter.textContent = `${textarea.value.length} / ${MAX}`;
