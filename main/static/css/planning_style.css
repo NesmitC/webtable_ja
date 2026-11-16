@@ -4451,3 +4451,51 @@ input[type="checkbox"]:checked.task-match-incorrect {
         transition: none;
     }
 }
+
+/* === Разбор рубежа для преподавателя: буквы ученика в словах задания 9 === */
+.cp-words {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0 12px;
+}
+
+.cp-words__line {
+    line-height: 1.9;
+}
+
+.cp-legend {
+    font-size: 13px;
+    opacity: 0.75;
+}
+
+.cp-letter {
+    font-weight: 700;
+    padding: 0 2px;
+    border-radius: 3px;
+}
+
+/* зелёный сайта (.check-task.green) и парный к нему красный */
+.cp-letter--ok {
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.12);
+}
+
+.cp-letter--bad {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.12);
+}
+
+.cp-letter--skip {
+    color: #9ca3af;
+    background: rgba(156, 163, 175, 0.15);
+}
+
+/* верная буква рядом с ошибкой ученика — мелким верхним индексом */
+.cp-letter-fix {
+    color: #16a34a;
+    font-size: 0.78em;
+    font-weight: 700;
+    vertical-align: super;
+    margin-left: 1px;
+}

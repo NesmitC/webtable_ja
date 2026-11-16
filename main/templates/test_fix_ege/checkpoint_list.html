@@ -9,9 +9,10 @@
     <title>Рубежные тесты: реестр попыток | Нейростат</title>
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261116a">
 </head>
-<body>
+<body class="test_fix_ege">
     {% include 'includes/header.html' %}
     <main class="page-container-diagnostics">
         <section class="container-diagnostics">
@@ -33,5 +34,6 @@
             </table>
         </section>
     </main>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>

@@ -11902,6 +11902,91 @@ def checkpoint_fact_digest(attempt):
     return '\n'.join(out)
 
 
+def _checkpoint_task9_lines_html(t9: dict, ans: dict,
+                                 res: dict) -> tuple[list[str], int, int]:
+    """Строки задания 9 как слова с буквами ученика вместо масок *9-N*.
+
+    Вердикт по букве берётся из results_data попытки (тот же, что при
+    зачёте); для старых попыток без результатов — сравнение как в
+    _checkpoint_check. Возвращает (html-строки, верно букв, всего масок).
+    """
+    exp = t9.get('expected') or []
+    lines_html = []
+    ok_count = 0
+    total = 0
+    for line in t9.get('lines') or []:
+        parts = []
+        pos = 0
+        for m in re.finditer(r'\*9-(\d+)\*', line):
+            parts.append(escape(line[pos:m.start()]))
+            i = int(m.group(1))
+            key = f'9-{i}'
+            raw = str(ans.get(key, '')).strip()
+            correct = str(exp[i - 1]).strip() if 0 < i <= len(exp) else ''
+            r = res.get(key)
+            if r is not None:
+                ok = bool(r.get('correct'))
+            else:
+                ok = (raw.lower() not in ('', '😊')
+                      and raw.lower() == correct.lower())
+            total += 1
+            ok_count += int(ok)
+            skipped = raw in ('', '😊')
+            if skipped:
+                shown, cls = '…', 'cp-letter--skip'
+            else:
+                shown = raw
+                cls = 'cp-letter--ok' if ok else 'cp-letter--bad'
+            title = ''
+            if not ok:
+                title = (f'нет ответа, верно: {correct}' if skipped
+                         else f'верно: {correct}')
+            span = f'<span class="cp-letter {cls}"'
+            if title:
+                span += f' title="{escape(title)}"'
+            span += f'>{escape(shown)}</span>'
+            if not ok and correct:
+                span += (f'<span class="cp-letter-fix" '
+                         f'title="верная буква">{escape(correct)}</span>')
+            parts.append(span)
+            pos = m.end()
+        parts.append(escape(line[pos:]))
+        lines_html.append(''.join(parts))
+    return lines_html, ok_count, total
+
+
+def _checkpoint_fact_html(attempt: CheckpointAttempt) -> str:
+    """Читаемый слепок попытки для страницы разбора: вместо сырых масок
+    и перечней букв задания 9 — слова с буквами ученика и подсветкой."""
+    td = attempt.test_data or {}
+    ans = attempt.answers_data or {}
+    res = attempt.results_data or {}
+    parts = []
+    for ln in checkpoint_fact_digest(attempt).split('\n'):
+        if ln.startswith('Задание 9 ['):
+            lines_html, ok_n, total_n = _checkpoint_task9_lines_html(
+                td.get('9') or {}, ans, res)
+            head = ln.split(':', 1)[0]
+            parts.append(
+                f'<p class="practice-line"><b>{escape(head)}</b> — '
+                f'слова с буквами ученика, верно {ok_n} из {total_n}:</p>')
+            parts.append(
+                '<p class="practice-line cp-legend">Зелёная буква — верно, '
+                'красная — ошибка ученика (верная буква показана рядом), '
+                'серая … — нет ответа.</p>')
+            parts.append('<div class="cp-words">' + ''.join(
+                f'<div class="cp-words__line">{s}</div>'
+                for s in lines_html) + '</div>')
+        else:
+            head, sep, tail = ln.partition(':')
+            if sep:
+                parts.append(f'<p class="practice-line">'
+                             f'<b>{escape(head)}</b>:{escape(tail)}</p>')
+            else:
+                parts.append(f'<p class="practice-line">{escape(ln)}</p>')
+    return ''.join(parts)
+
+
 def ensure_checkpoint_digest(attempt):
     """LLM-выжимка с кэшем в поле попытки: генерится один раз."""
     if attempt.digest:
@@ -11919,62 +12004,6 @@ def ensure_checkpoint_digest(attempt):
     return digest or fact
 
 
-def _checkpoint_review_blocks(attempt):
-    """Блоки «что видел / эталон / что ответил» для страницы разбора."""
-    td = attempt.test_data or {}
-    ans = attempt.answers_data or {}
-    res = attempt.results_data or {}
-    blocks = []
-
-    def st(t):
-        r = res.get(t)
-        return None if r is None else bool(r.get('correct'))
-
-    for q in (td.get('1_3') or {}).get('questions', []):
-        num = str(q.get('num'))
-        shown = [q.get('text', '')]
-        shown += [f'{i}) {o}' for i, o in enumerate(q.get('options', []), 1)]
-        blocks.append({'task': num, 'shown': shown,
-                       'correct': q.get('correct', ''),
-                       'user': ans.get(num, ''), 'ok': st(num)})
-    t4 = td.get('4')
-    if t4:
-        blocks.append({'task': '4', 'shown': t4.get('variants', []),
-                       'correct': ', '.join(map(str, t4.get('correct', []))),
-                       'user': str(ans.get('4', '')), 'ok': st('4')})
-    t5 = td.get('5')
-    if t5:
-        blocks.append({'task': '5', 'shown': t5.get('sentences', []),
-                       'correct': t5.get('correct', ''),
-                       'user': ans.get('5', ''), 'ok': st('5')})
-    t6 = td.get('6')
-    if t6:
-        blocks.append({'task': '6', 'shown': [t6.get('text', '')],
-                       'correct': t6.get('correct', ''),
-                       'user': ans.get('6', ''), 'ok': st('6')})
-    t7 = td.get('7')
-    if t7:
-        blocks.append({'task': '7', 'shown': t7.get('phrases', []),
-                       'correct': t7.get('correct', ''),
-                       'user': ans.get('7', ''), 'ok': st('7')})
-    t8 = td.get('8')
-    if t8:
-        shown = [f'{i}) {x}' for i, x in enumerate(t8.get('sentences', []), 1)]
-        shown += [f'{l}) {n}' for l, n in (t8.get('error_types') or {}).items()]
-        correct = ', '.join(f'{l}->{n}' for l, n in sorted((t8.get('matches') or {}).items()))
-        user = ', '.join(f'{l}:{ans.get("8_" + l, "-")}' for l in 'АБВГД')
-        blocks.append({'task': '8', 'shown': shown, 'correct': correct,
-                       'user': user, 'ok': st('8')})
-    t9 = td.get('9')
-    if t9:
-        exp = t9.get('expected', [])
-        user9 = [ans.get(f'9-{i}', '') for i in range(1, len(exp) + 1)]
-        blocks.append({'task': '9', 'shown': t9.get('lines', []),
-                       'correct': ', '.join(map(str, exp)),
-                       'user': ', '.join(map(str, user9)), 'ok': st('9')})
-    return blocks
-
-
 @teacher_required
 def checkpoint_list(request):
     attempts = (CheckpointAttempt.objects.select_related('user')
@@ -11986,11 +12015,12 @@ def checkpoint_list(request):
 @teacher_required
 def checkpoint_review(request, attempt_id):
     attempt = get_object_or_404(CheckpointAttempt, id=attempt_id)
-    digest = ensure_checkpoint_digest(attempt)
+    ensure_checkpoint_digest(attempt)
     return render(request, 'test_fix_ege/checkpoint_review.html', {
         'attempt': attempt,
-        'digest': digest,
-        'blocks': _checkpoint_review_blocks(attempt),
+        'digest': attempt.digest,
+        # один блок: слова с подсветкой + Итог; LLM-выжимка — комментарием
+        'digest_html': _checkpoint_fact_html(attempt),
     })
 
 
