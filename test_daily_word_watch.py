@@ -4,8 +4,9 @@
 19:00 МСК — письмо на каждого молчуна (7 ч после открытия слова в 12:00);
 20:30 — перепроверка, только те, кто ТАК И НЕ ответил. Любой ответ, даже
 неправильный, = активность, письма нет. Бесплатный тариф, staff/superuser
-и деактивированные аккаунты не отслеживаются. Ученик без записи за период
-(«только сайт», не открывал) — тоже молчит. БД команда не пишет.
+и деактивированные аккаунты не отслеживаются. Отчёт только про реальных
+получателей: бот (VK/MAX/TG), активный пуш или сам открыл карточку;
+«только сайтовые» без записи за период в отчёт не попадают. БД не пишет.
 Изоляция: test_settings_isolated (SQLite в памяти, письма в outbox).
 
 Запуск: .\\.venv\\Scripts\\python.exe test_daily_word_watch.py
@@ -116,9 +117,16 @@ with mock.patch('main.bot_core.now_msk', return_value=NOW), \
     right = make_user('olya_right', plan='premium')
     make_word(right, PERIOD, answered=True, correctly=True)
 
-    noopen = make_user('sasha_noopen')                 # записи за сегодня нет — «только сайт»
+    noopen = make_user('sasha_noopen')                 # «только сайт», не открывал — НЕ получатель
     make_word(noopen, PERIOD - timedelta(days=1))
     make_word(noopen, PERIOD - timedelta(days=2), answered=True, correctly=True)
+
+    site_opened = make_user('site_opened')             # без бота/пуша, но карточку открыл
+    make_word(site_opened, PERIOD)
+
+    tg_norecord = make_user('tg_norecord', telegram_id=555)  # получатель бота, не открыл
+    make_word(tg_norecord, PERIOD - timedelta(days=1))
+    make_word(tg_norecord, PERIOD - timedelta(days=2), answered=True, correctly=True)
 
     make_user('free_user', plan='free')                # тариф «0» — слова дня нет
     make_user('boss', staff=True)                      # владелец
@@ -132,7 +140,8 @@ with mock.patch('main.bot_core.now_msk', return_value=NOW), \
     make_word(late, PERIOD)
     still = make_user('still_user')                    # молчит на обеих проверках
     make_word(still, PERIOD)
-    newbie = make_user('newbie', joined=NOW - timedelta(hours=1))  # зарегистрировался сегодня
+    newbie = make_user('newbie', joined=NOW - timedelta(hours=1),
+                       vk_id=222)                      # новичок-получатель, записи ещё нет
 
     words_before = DailyWord.objects.count()
 
@@ -142,11 +151,11 @@ with mock.patch('main.bot_core.now_msk', return_value=NOW), \
     mails1 = daily_mails()
     b1 = bodies()
 
-    check(len(mails1) == 5, f'писем ровно по числу молчунов: 5 (получено {len(mails1)})')
+    check(len(mails1) == 6, f'писем ровно по числу молчунов-получателей: 6 (получено {len(mails1)})')
     check(all(m.to == [settings.OWNER_NOTIFY_EMAIL] for m in mails1),
           'все письма на OWNER_NOTIFY_EMAIL')
     check(settings.OWNER_NOTIFY_EMAIL == 'a_timof@mail.ru', 'адрес владельца = a_timof@mail.ru')
-    check(len({m.subject for m in mails1}) == 5, 'отдельное письмо на каждого, не сводка')
+    check(len({m.subject for m in mails1}) == 6, 'отдельное письмо на каждого, не сводка')
     check('16.11.2026' in out1, 'период по умолчанию = сегодня (после 12:00 МСК)')
 
     check('petya_wrong' not in b1, 'неправильный ответ = активность, письма нет')
@@ -169,11 +178,19 @@ with mock.patch('main.bot_core.now_msk', return_value=NOW), \
     check(f'/admin/main/userprofile/{silent.profile.pk}/change/' in masha_mail.body,
           'ссылка на профиль в админке')
 
-    noopen_mail = next(m for m in mails1 if 'sasha_noopen' in m.body)
-    check('не открывал' in noopen_mail.body and 'только сайт' in noopen_mail.body,
-          'без записи за период: «не открывал», канал «только сайт»')
-    check('Молчит подряд: 2 дня (с 15.11)' in noopen_mail.body,
-          'серия для «не открывавшего»: сегодня + вчера')
+    check('sasha_noopen' not in b1,
+          '«только сайт» без записи за период — не получатель, письма нет')
+
+    opened_mail = next(m for m in mails1 if 'site_opened' in m.body)
+    check('только сайт (открывает карточку сам)' in opened_mail.body,
+          'открыл карточку сам: письмо есть, канал «только сайт»')
+    check('орг😊единица' in opened_mail.body, 'открывшему слово показано в письме')
+
+    tg_mail = next(m for m in mails1 if 'tg_norecord' in m.body)
+    check('не открывал' in tg_mail.body and 'Telegram-бот' in tg_mail.body,
+          'получатель бота без записи: «не открывал», канал Telegram-бот')
+    check('Молчит подряд: 2 дня (с 15.11)' in tg_mail.body,
+          'серия для «не открывавшего» получателя: сегодня + вчера')
 
     newbie_mail = next(m for m in mails1 if 'newbie' in m.body)
     check('Молчит подряд: 1 день' in newbie_mail.body and '(с ' not in newbie_mail.body,
@@ -185,7 +202,7 @@ with mock.patch('main.bot_core.now_msk', return_value=NOW), \
     mail.outbox.clear()
     out_dry = run_watch('--dry-run')
     check(len(daily_mails()) == 0, 'dry-run: письма не отправляются')
-    check('молчунов 5' in out_dry and 'dry-run' in out_dry, 'dry-run: отчёт в stdout')
+    check('молчунов 6' in out_dry and 'dry-run' in out_dry, 'dry-run: отчёт в stdout')
     check('Слово дня: Маша молчит 7 часов' in out_dry, 'dry-run показывает темы и тексты')
 
     print('=== Период и аргументы ===')
@@ -213,7 +230,7 @@ with mock.patch('main.bot_core.now_msk', return_value=NOW), \
     mails2 = daily_mails()
     b2 = bodies()
 
-    check(len(mails2) == 4, f'второе письмо только про так и не ответивших: 4 (получено {len(mails2)})')
+    check(len(mails2) == 5, f'второе письмо только про так и не ответивших: 5 (получено {len(mails2)})')
     check('late_user' not in b2, 'ответил между 19:00 и 20:30 (пусть неправильно) — второго письма нет')
     still_mail = next(m for m in mails2 if 'still_user' in m.body)
     check(still_mail.subject == 'Слово дня: still_user всё ещё молчит (8,5 ч)',
@@ -223,16 +240,16 @@ with mock.patch('main.bot_core.now_msk', return_value=NOW), \
     check('Перепроверка 20:30' in out2, 'в stdout стадия перепроверки')
 
     print('=== Все ответили ===')
-    for u in (silent, noopen, still, newbie):
-        # у «только сайтовых» записи за период может не быть — создаём отвеченную
+    for u in (silent, site_opened, tg_norecord, late, still, newbie):
+        # у получателей без записи создаём отвеченную — молчунов не остаётся
         DailyWord.objects.update_or_create(
             user=u, period_date=PERIOD,
             defaults={'question': QUESTION, 'answered': True,
                       'answered_correctly': True, 'answered_at': NOW})
     mail.outbox.clear()
     out3 = run_watch('--recheck')
-    check(len(daily_mails()) == 0 and 'все ответили' in out3,
-          'все ответили — писем нет')
+    check(len(daily_mails()) == 0 and 'молчунов среди получателей нет' in out3,
+          'все получатели ответили — писем нет')
 
 print()
 if fails:

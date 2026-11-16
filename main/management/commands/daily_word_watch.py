@@ -8,8 +8,9 @@
 Письмо на каждого молчуна отдельно (не сводка) на OWNER_NOTIFY_EMAIL:
 учеников мало, владелец работает с каждым адресно. Любой ответ, даже
 неправильный, считается активностью — тревога только за полное молчание.
-Ученик без записи DailyWord за период тоже молчит («даже не открывал
-слово») — так не теряются те, кто ходит только на сайт, без бота и пуша.
+Отслеживаются только РЕАЛЬНЫЕ получатели слова: привязан бот (VK/MAX/TG),
+есть активная пуш-подписка или ученик сам открыл карточку (запись DailyWord
+за период). «Только сайтовые», кто карточку не открывал, в отчёт не попадают.
 
 БД только читается: записи не создаются, LLM не вызывается.
 """
@@ -73,10 +74,19 @@ def silent_streak(user_id: int, period_date: date, joined: date) -> int:
     return streak
 
 
-def collect_silent(period_date: date) -> list:
-    """Платные + триал (level>=1), кто не ответил на слово периода.
+def receives_daily(profile: UserProfile, push_user_ids: set,
+                   has_record: bool) -> bool:
+    """Ученик реально получает слово дня: бот-рассылка 12:00 (привязан
+    мессенджер), пуш 16:00 (активная подписка) или сам открыл карточку."""
+    bot_linked = bool(profile.vk_id or profile.max_chat_id or profile.telegram_id)
+    return bot_linked or profile.user_id in push_user_ids or has_record
 
-    Исключаем staff/superuser (владелец) и деактивированные аккаунты.
+
+def collect_silent(period_date: date) -> list:
+    """Платные + триал (level>=1), кто получает слово и не ответил.
+
+    Исключаем staff/superuser (владелец), деактивированные аккаунты
+    и тех, кому слово не доставляется и кто его не открывал.
     """
     push_user_ids = set(
         PushSubscription.objects.filter(active=True).values_list('user_id', flat=True)
@@ -91,6 +101,8 @@ def collect_silent(period_date: date) -> list:
         user = profile.user
         daily = DailyWord.objects.filter(user_id=user.id, period_date=period_date).first()
         if daily is not None and daily.answered:
+            continue
+        if not receives_daily(profile, push_user_ids, daily is not None):
             continue
         joined = timezone.localtime(user.date_joined, bot_core.MSK).date()
         info = profile.subscription_info()
@@ -174,7 +186,7 @@ class Command(BaseCommand):
         items = collect_silent(period)
         if not items:
             self.stdout.write(
-                f'{stage} (период {period:%d.%m.%Y}): все ответили, писем нет.')
+                f'{stage} (период {period:%d.%m.%Y}): молчунов среди получателей нет, писем нет.')
             return
 
         sent = failed = 0
