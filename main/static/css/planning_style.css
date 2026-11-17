@@ -4375,6 +4375,11 @@ input[type="checkbox"]:checked.task-match-incorrect {
     }
 }
 
+/* сдвоенные схемы (задания 19–20): вторая и далее — под предыдущей */
+.scheme-figure .scheme-scroller+.scheme-scroller {
+    margin-top: 10px;
+}
+
 .scheme-scroller {
     overflow-x: auto;
     /* body — flex: без contain широкая схема распирает main через min-width:auto */

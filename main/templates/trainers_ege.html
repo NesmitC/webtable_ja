@@ -58,7 +58,7 @@
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/adaptive.css' %}">
-    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261115b">
+    <link rel="stylesheet" href="{% static 'css/planning_style.css' %}?v=20261117a">
 </head>
 
 <body>
@@ -2185,8 +2185,41 @@
 
         <article id="task19-20" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
 
-            <h2 class="title-table-container">Задания 19–20. Знаки препинания в СПП и предложениях с различными видами
-                связи</h2>
+            <div class="task-head">
+                <h2 class="title-table-container">Задания 19–20. Знаки препинания в СПП и предложениях с различными видами
+                    связи</h2>
+                <button type="button" class="scheme-toggle"
+                    data-src="{% static 'images/punktum_task_19.webp' %},{% static 'images/punktum_task_20.webp' %}"
+                    data-alt="Схема задания 19: знаки препинания в сложноподчинённом предложении|Схема задания 20: предложения с различными видами связи"
+                    data-width="1920,2685" data-height="321,422"
+                    aria-expanded="false" aria-controls="schemePanel19-20">
+                    <svg class="scheme-toggle__glyph" width="20" height="16" viewBox="0 0 20 16" fill="none"
+                        aria-hidden="true">
+                        <path d="M4 1.5H1.5v13H4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M16 1.5h2.5v13H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M10.6 5.2c.9 0 1.6.7 1.6 1.6 0 1.5-1 2.6-2.4 3.2" stroke="currentColor"
+                            stroke-width="1.6" stroke-linecap="round" />
+                        <circle cx="9.4" cy="5.6" r="1.5" fill="currentColor" />
+                    </svg>
+                    <span class="scheme-toggle__label">Показать схему</span>
+                    <svg class="scheme-toggle__chev" width="12" height="8" viewBox="0 0 12 8" fill="none"
+                        aria-hidden="true">
+                        <path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Схема по клику: до первого нажатия картинки не запрашиваются (img создаются в scheme_toggle.js) -->
+            <div class="scheme-panel" id="schemePanel19-20" hidden role="region" aria-label="Схемы заданий 19 и 20">
+                <p class="scheme-hint">Схемы широкие — листайте вбок →</p>
+                <div class="scheme-skeleton">Загружаем схему…</div>
+                <figure class="scheme-figure" hidden>
+                    <div class="scheme-scroller"></div>
+                </figure>
+            </div>
 
             <p class="text-orf task-lead">Оба задания проверяют одно умение — видеть границы
                 частей сложноподчинённого предложения. Главная ловушка — <strong>стык союзов</strong>
@@ -2225,14 +2258,8 @@
                 </div>
                 <div class="item item-punktum-3">
                     <div class="wrap-circle-punktum">
-                        <div class="item item-punktum-3 junction-line">
-                            [ ] , что <span class="junction-comma junction-comma--yes">,</span> если ( )
-                            <span class="junction-tag junction-tag--yes">нет «то» — ставим</span>
-                        </div>
-                        <div class="item item-punktum-3 junction-line">
-                            [ ] , что <span class="junction-comma junction-comma--no">,</span> если ( ) , то
-                            <span class="junction-tag junction-tag--no">есть «то» — не ставим</span>
-                        </div>
+                        <div class="item item-punktum-3 junction-line">что , если ( )</div>
+                        <div class="item item-punktum-3 junction-line">что если (то )</div>
                     </div>
                 </div>
                 <div class="item item-punktum-4">
@@ -2252,10 +2279,7 @@
                 </div>
                 <div class="item item-punktum-3">
                     <div class="wrap-circle-punktum">
-                        <div class="item item-punktum-3 junction-line">
-                            [ ] , что ( ) <span class="junction-comma junction-comma--no">,</span> и что ( )
-                            <span class="junction-tag junction-tag--no">однородные — не ставим</span>
-                        </div>
+                        <div class="item item-punktum-3 junction-line">[ ] , что ( ) и что ( )</div>
                     </div>
                 </div>
                 <div class="item item-punktum-4">
@@ -2365,7 +2389,7 @@
     <script src="{% static 'js/planning_orthoepos.js' %}"></script>
     <script src="{% static 'js/planning_text.js' %}"></script>
     <script src="{% static 'js/freemium_lock.js' %}"></script>
-    <script src="{% static 'js/scheme_toggle.js' %}?v=1"></script>
+    <script src="{% static 'js/scheme_toggle.js' %}?v=2"></script>
 
 </body>
 
