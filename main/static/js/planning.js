@@ -1100,6 +1100,10 @@ document.addEventListener('click', async (e) => {
     const orthogramIds = button.dataset.orthogram;
     const punktogramId = button.dataset.punktogram;
 
+    // Маски повтораются между упражнениями (21-1… у всех подтипов 21):
+    // без сброса кэша выпадающий список показывал буквы прошлого варианта.
+    lettersCache.clear();
+
     const answerSection = document.querySelector('.block-answer');
     if (!answerSection) {
         console.error('❌ Не найден блок .block-answer');
