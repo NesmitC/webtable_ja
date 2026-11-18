@@ -2337,7 +2337,9 @@ def generate_punktum_exercise_multi(request):
         
         # === ГРУППЫ БУКВ ДЛЯ ПУНКТОГРАММ 16-20 ===
         letter_groups = {}
-        subgroup_letters = {f'punktum_{task_num}': ['!', '?']}
+        # Для 21 ключ контекста task21_subgroup_letters совпадает с f-ключом ниже:
+        # дефолт ['!','?'] перезатирал бы номера пунктограмм в смайликах.
+        subgroup_letters = task21_subgroup_letters or {f'punktum_{task_num}': ['!', '?']}
         
         for ex in valid_examples:
             masked = ex.masked_word.strip()
