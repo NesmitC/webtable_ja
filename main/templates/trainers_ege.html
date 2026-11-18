@@ -97,9 +97,7 @@
                 <li class="planning-item"><a href="#task17">17</a></li>
                 <li class="planning-item"><a href="#task18">18</a></li>
                 <li class="planning-item"><a href="#task19-20">19-20</a></li>
-                <!-- <li class="planning-item"><a href="#task20">20</a></li> -->
                 <li class="planning-item"><a href="#task21">21</a></li>
-                <!-- <li class="planning-item"><a href="#task16">22</a></li> -->
             </ul>
         </article>
 
@@ -2291,23 +2289,194 @@
         </article>
 
         <article id="task21" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
-            <h2 class="title-table-container">Задание 21. Тире и двоеточие в БСП. Прямая речь</h2>
 
-            <p class="text-orf task-lead">Задание 21 — пунктуация в сложном предложении и простом осложненном
-                предложении</p>
+            <div class="task-head">
+                <h2 class="title-table-container">Задание 21. Тире (определи общее правило)</h2>
+                <button type="button" class="scheme-toggle"
+                    data-src="{% static 'images/punktum_task_21_0.webp' %}"
+                    data-alt="Схема задания 21: Тире"
+                    data-width="3399" data-height="731"
+                    aria-expanded="false" aria-controls="schemePanel21_0">
+                    <svg class="scheme-toggle__glyph" width="20" height="16" viewBox="0 0 20 16" fill="none"
+                        aria-hidden="true">
+                        <path d="M4 1.5H1.5v13H4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M16 1.5h2.5v13H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M10.6 5.2c.9 0 1.6.7 1.6 1.6 0 1.5-1 2.6-2.4 3.2" stroke="currentColor"
+                            stroke-width="1.6" stroke-linecap="round" />
+                        <circle cx="9.4" cy="5.6" r="1.5" fill="currentColor" />
+                    </svg>
+                    <span class="scheme-toggle__label">Показать схему</span>
+                    <svg class="scheme-toggle__chev" width="12" height="8" viewBox="0 0 12 8" fill="none"
+                        aria-hidden="true">
+                        <path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
 
-            <h3 class="subtitle-table-container">БСП: тире и двоеточие (пунктограммы 18–19)</h3>
+            <!-- Схема по клику: до первого нажатия картинка не запрашивается (img создаётся в scheme_toggle.js) -->
+            <div class="scheme-panel" id="schemePanel21_0" hidden role="region" aria-label="Схема задания 21">
+                <p class="scheme-hint">Схема широкая — листайте вбок →</p>
+                <div class="scheme-skeleton">Загружаем схему…</div>
+                <figure class="scheme-figure" hidden>
+                    <div class="scheme-scroller"></div>
+                </figure>
+            </div>
 
-            <!-- Пунктограмма 18 · Тире в БСП -->
+            <h3 class="subtitle-table-container">Тире (пунктограммы 5, 8, 8.1, 9.2, 10, 13, 16, 18)</h3>
+
+            <!-- Пунктограмма 5 · Прямая речь -->
             <section class="table-container-punktum"
-                aria-label="Пунктограмма 18: тире в бессоюзном сложном предложении">
+                aria-label="Пунктограмма 5: Прямая речь">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">5</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">После слов автора в кавычках ставится тире</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="quote-mark">“</span>П,<span
+                                class="quote-mark">”</span> — а</div>
+                    </div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-5" class="input-text input-text-punktum"
+                        name="user-input-punktum-5" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 8 · Тире между подлежащим и сказуемым -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 8: Тире между подлежащим и сказуемым">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">8</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Между подлежащим и сказуемым тире ставится в следующих случаях:</p>
+                    <p class="text-orf">1) если подлежащее и сказуемое выражены существительным в именительном падеже,</p>
+                    <p class="text-orf">2) если оба главных члена выражены неопределённой формой глагола,</p>
+                    <p class="text-orf">3) если один главный член выражен неопределённой формой глагола, а другой — именем существительным.</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">П<span class="bsp-dash">—</span> С</div>
+                    </div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-8" class="input-text input-text-punktum"
+                        name="user-input-punktum-8" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 8.1 · Тире ставится при пропуске сказуемого -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 8.1: Тире ставится при пропуске сказуемого">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">8.1</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Тире ставится при пропуске сказуемого</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum"></div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-81" class="input-text input-text-punktum"
+                        name="user-input-punktum-81" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 9.2 · Тире перед обобщающим словом после ряда ОЧП -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 9.2: Тире перед обобщающим словом после ряда ОЧП">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">9.2</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Если обобщающее слово стоит после однородных членов</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span>,<span class="circle-punktum"></span>,<span class="circle-punktum"></span><span class="bsp-dash">—</span><span class="circle-punktum"></span></div>
+                    </div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-92" class="input-text input-text-punktum"
+                        name="user-input-punktum-92" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 10 · Приложение -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 10: Приложение">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">10</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Приложение (поясняющее сущ.) обособляется с одной или обеих сторон</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="bsp-dash">—</span>ПРИЛ.<span class="bsp-dash">—</span></div>
+                    </div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-10" class="input-text input-text-punktum"
+                        name="user-input-punktum-10" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 13 · Уточняющие ЧП -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 13: Уточняющие ЧП">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">13</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Уточняющие ЧП места, времени обособляются с одной или обеих сторон</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="bsp-dash">—</span>УТОЧН.<span class="bsp-dash">—</span></div>
+                    </div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-13" class="input-text input-text-punktum"
+                        name="user-input-punktum-13" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 16 · Вводные конструкции -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 16: Вводные конструкции">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">16</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Вводные конструкции обособляются с обеих сторон</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="bsp-dash">—</span>ВК<span class="bsp-dash">—</span></div>
+                    </div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-16" class="input-text input-text-punktum"
+                        name="user-input-punktum-16" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 18 · Бессоюзнае сложное предложение -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 18: Бессоюзнае сложное предложение">
                 <div class="item item-punktum-1">
                     <div class="title-punktum"><span class="circle">18</span></div>
                 </div>
                 <div class="item item-punktum-2">
-                    <p class="text-orf">Простые предложения в составе БСП разделяются ТИРЕ, если
-                        вторая часть указывает на время, условие, вывод, быструю смену событий
-                        или противопоставлена первой</p>
+                    <p class="text-orf">Тире разделяет простые предложения в составе сложного (БСП)</p>
                 </div>
                 <div class="item item-punktum-3">
                     <div class="wrap-circle-punktum">
@@ -2315,62 +2484,171 @@
                     </div>
                 </div>
                 <div class="item item-punktum-4">
-                    <textarea id="item-text-punktum-42" class="input-text input-text-punktum"
-                        name="user-input-punktum-42" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                    <textarea id="item-text-punktum-18" class="input-text input-text-punktum"
+                        name="user-input-punktum-18" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
                 </div>
             </section>
+        </article>
 
-            <!-- Пунктограмма 19 · Двоеточие в БСП -->
-            <section class="table-container-punktum"
-                aria-label="Пунктограмма 19: двоеточие в бессоюзном сложном предложении">
-                <div class="item item-punktum-1">
-                    <div class="title-punktum"><span class="circle">19</span></div>
-                </div>
-                <div class="item item-punktum-2">
-                    <p class="text-orf">Простые предложения в составе БСП разделяются ДВОЕТОЧИЕМ,
-                        если вторая часть указывает на причину, поясняет или дополняет первую</p>
-                </div>
-                <div class="item item-punktum-3">
-                    <div class="wrap-circle-punktum">
-                        <div class="item item-punktum-3">[ ] <span class="bsp-colon">:</span> [ ]</div>
-                    </div>
-                </div>
-                <div class="item item-punktum-4">
-                    <textarea id="item-text-punktum-41" class="input-text input-text-punktum"
-                        name="user-input-punktum-41" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
-                </div>
-            </section>
+        <article id="task21_1" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
 
-            <h3 class="subtitle-table-container">Прямая речь (пунктограмма 5)</h3>
+            <div class="task-head">
+                <h2 class="title-table-container">Задание 21. Двоеточие (определи общее правило)</h2>
+                <button type="button" class="scheme-toggle"
+                    data-src="{% static 'images/punktum_task_21_1.webp' %}"
+                    data-alt="Схема задания 21: Двоеточие"
+                    data-width="2551" data-height="587"
+                    aria-expanded="false" aria-controls="schemePanel21_1">
+                    <svg class="scheme-toggle__glyph" width="20" height="16" viewBox="0 0 20 16" fill="none"
+                        aria-hidden="true">
+                        <path d="M4 1.5H1.5v13H4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M16 1.5h2.5v13H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M10.6 5.2c.9 0 1.6.7 1.6 1.6 0 1.5-1 2.6-2.4 3.2" stroke="currentColor"
+                            stroke-width="1.6" stroke-linecap="round" />
+                        <circle cx="9.4" cy="5.6" r="1.5" fill="currentColor" />
+                    </svg>
+                    <span class="scheme-toggle__label">Показать схему</span>
+                    <svg class="scheme-toggle__chev" width="12" height="8" viewBox="0 0 12 8" fill="none"
+                        aria-hidden="true">
+                        <path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Схема по клику: до первого нажатия картинка не запрашивается (img создаётся в scheme_toggle.js) -->
+            <div class="scheme-panel" id="schemePanel21_1" hidden role="region" aria-label="Схема задания 21: двоеточие">
+                <p class="scheme-hint">Схема широкая — листайте вбок →</p>
+                <div class="scheme-skeleton">Загружаем схему…</div>
+                <figure class="scheme-figure" hidden>
+                    <div class="scheme-scroller"></div>
+                </figure>
+            </div>
+
+            <h3 class="subtitle-table-container">Двоеточие (пунктограммы 5, 9.1, 19)</h3>
 
             <!-- Пунктограмма 5 · Прямая речь -->
-            <section class="table-container-punktum" aria-label="Пунктограмма 5: прямая речь">
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 5: Прямая речь">
                 <div class="item item-punktum-1">
                     <div class="title-punktum"><span class="circle">5</span></div>
                 </div>
                 <div class="item item-punktum-2">
-                    <p class="text-orf">Прямая речь выделяется кавычками и отделяется от слов
-                        автора разными знаками препинания</p>
+                    <p class="text-orf">Перед словами автора в кавычках ставится двоеточие</p>
                 </div>
                 <div class="item item-punktum-3">
                     <div class="wrap-circle-punktum">
-                        <div class="item item-punktum-3">А: <span class="quote-mark">“</span>П<span
-                                class="quote-mark">”</span></div>
-                        <div class="item item-punktum-3"><span class="quote-mark">“</span>П,<span
-                                class="quote-mark">”</span> — а</div>
-                        <div class="item item-punktum-3"><span class="quote-mark">“</span>П, — а, — п<span
+                        <div class="item item-punktum-3">А:<span class="quote-mark">“</span>П.<span
                                 class="quote-mark">”</span></div>
                     </div>
                 </div>
                 <div class="item item-punktum-4">
-                    <textarea id="item-text-punktum-5" class="input-text input-text-punktum" name="user-input-punktum-5"
-                        rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                    <textarea id="item-text-punktum-5" class="input-text input-text-punktum"
+                        name="user-input-punktum-5" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 9.1 · Двоеточие после обобщающим слова перед рядом ОЧП -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 9.1: Двоеточие после обобщающим слова перед рядом ОЧП">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">9.1</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Если обобщающее слово стоит перед однородными членами после обобщающего стова</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3"><span class="circle-punktum"></span>:<span class="circle-punktum"></span>,<span class="circle-punktum"></span>,<span class="circle-punktum"></span></div>
+                    </div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-91" class="input-text input-text-punktum"
+                        name="user-input-punktum-91" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+
+            <!-- Пунктограмма 19 · Бессоюзное сложное предложение -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограмма 19: Бессоюзнае сложное предложение">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">19</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">Двоеточие разделяет простые предложения в составе сложного (БСП)</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum">
+                        <div class="item item-punktum-3">[ ] <span class="bsp-dash">:</span> [ ]</div>
+                    </div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-19" class="input-text input-text-punktum"
+                        name="user-input-punktum-19" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
+                </div>
+            </section>
+        </article>
+
+        <article id="task21_2" class="article-table-container{% if level == 0 %} locked-feature{% endif %}">
+
+            <div class="task-head">
+                <h2 class="title-table-container">Задание 21. Запятые</h2>
+                <button type="button" class="scheme-toggle"
+                    data-src="{% static 'images/punktum_task_21_2.webp' %}"
+                    data-alt="Схема задания 21: Запятые"
+                    data-width="4515" data-height="1755"
+                    aria-expanded="false" aria-controls="schemePanel21_2">
+                    <svg class="scheme-toggle__glyph" width="20" height="16" viewBox="0 0 20 16" fill="none"
+                        aria-hidden="true">
+                        <path d="M4 1.5H1.5v13H4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M16 1.5h2.5v13H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M10.6 5.2c.9 0 1.6.7 1.6 1.6 0 1.5-1 2.6-2.4 3.2" stroke="currentColor"
+                            stroke-width="1.6" stroke-linecap="round" />
+                        <circle cx="9.4" cy="5.6" r="1.5" fill="currentColor" />
+                    </svg>
+                    <span class="scheme-toggle__label">Показать схему</span>
+                    <svg class="scheme-toggle__chev" width="12" height="8" viewBox="0 0 12 8" fill="none"
+                        aria-hidden="true">
+                        <path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Схема по клику: до первого нажатия картинка не запрашивается (img создаётся в scheme_toggle.js) -->
+            <div class="scheme-panel" id="schemePanel21_2" hidden role="region" aria-label="Схема задания 21: запятые">
+                <p class="scheme-hint">Схема широкая — листайте вбок →</p>
+                <div class="scheme-skeleton">Загружаем схему…</div>
+                <figure class="scheme-figure" hidden>
+                    <div class="scheme-scroller"></div>
+                </figure>
+            </div>
+
+            <h3 class="subtitle-table-container">Запятые (пунктограммы 2, 3, 4.0, 4.1, 4.2, 5, 6, 7, 10, 11, 12, 13, 14, 15, 17)</h3>
+
+            <!-- Пунктограммы · Запятые -->
+            <section class="table-container-punktum"
+                aria-label="Пунктограммы: Запятые">
+                <div class="item item-punktum-1">
+                    <div class="title-punktum"><span class="circle">5</span></div>
+                </div>
+                <div class="item item-punktum-2">
+                    <p class="text-orf">См. цветную табличку</p>
+                </div>
+                <div class="item item-punktum-3">
+                    <div class="wrap-circle-punktum"></div>
+                </div>
+                <div class="item item-punktum-4">
+                    <textarea id="item-text-punktum-2-17" class="input-text input-text-punktum"
+                        name="user-input-punktum-217" rows="3" maxlength="1000" placeholder="Напишите примеры"></textarea>
                 </div>
             </section>
 
         </article>
-
-
 
         <!-- Скрытое поле с CSRF-токеном (нужно для POST из planning.js) -->
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">

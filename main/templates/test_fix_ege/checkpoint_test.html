@@ -169,7 +169,7 @@
                 {% if task9_lines %}
                 <div class="question-diagnostic diagnostic-full-test__question" data-question-number="9">
                     <h4 class="diagnostic-full-test__title">
-                        {% if cp_code == 'cp91' %}9.1{% elif cp_code == 'cp92' %}9.1–9.2{% else %}9{% endif %}. Выберите правильную букву, кликнув на смайлик.
+                        {% if cp_code != 'cp16' and cp_code != 'cp17' and cp_code != 'cp18' and cp_code != 'cp19' and cp_code != 'cp20' %}{% if cp_code == 'cp91' %}9.1{% elif cp_code == 'cp92' %}9.1–9.2{% else %}9{% endif %}. {% endif %}{% if cp_code == 'cp17' or cp_code == 'cp18' or cp_code == 'cp19' or cp_code == 'cp20' %}Выберите правильный вариант, кликнув на смайлик: «,» — запятая ставится, «х» — не ставится.{% elif cp_code == 'cp16' %}Выберите правильный вариант, кликнув на смайлик.{% else %}Выберите правильную букву, кликнув на смайлик.{% endif %}
                     </h4>
                     <div class="diagnostic-full-test__lines">
                         {% for line in task9_lines %}

@@ -71,10 +71,10 @@
             <div class="lessons-progress">
                 <div class="lessons-progress__info">
                     <span class="lessons-progress__label">Открыто</span>
-                    <span class="lessons-progress__count">7 из 29 уроков</span>
+                    <span class="lessons-progress__count">12 из 29 уроков</span>
                 </div>
                 <div class="lessons-progress__bar">
-                    <div class="lessons-progress__fill" style="width: 24%;"></div>
+                    <div class="lessons-progress__fill" style="width: 41%;"></div>
                 </div>
             </div>
         </header>
@@ -647,122 +647,269 @@
                     </div>
                 </div>
 
-                <!-- Урок 13: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
+                <!-- Рубеж после урока 14: открывает урок 15 -->
+                {% if cp14_passed %}
+                <a href="{% url 'checkpoint_test_15' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
                     <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 9, 10, 11, 12, 13, 14</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp15_passed %}Сдан: урок 15 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 15{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+                <!-- Задание 15: видео добавлено 18.11.2026; открывается после рубежа 9–14 -->
+                {% if cp15_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 15 (орфография, Н и НН)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp15_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp15_passed %}Открыт{% else %}Откроется после рубежного теста 9, 10, 11, 12, 13, 14{% endif %}</span>
                         </span>
-                    </div>
-                </div>
-
-                <!-- Урок 14: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/g2rd4yaMqSreNb6u2okRFp">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}#task15">Тренажер</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Рубеж после урока 15: открывает урок 16 -->
+                {% if cp15_passed %}
+                <a href="{% url 'checkpoint_test_16' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 9–15</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp16_passed %}Сдан: урок 16 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 16{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+                <!-- Задание 16: видео добавлено 18.11.2026; открывается после рубежа 9–15 -->
+                {% if cp16_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 16 (пунктуация, простые осложнённые и сложные
                                 предложения)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp16_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp16_passed %}Открыт{% else %}Откроется после рубежного теста 9–15{% endif %}</span>
                         </span>
-                    </div>
-                </div>
-
-                <!-- Урок 15: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/vBmYWz7egigotSVoVrEFp3">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}#task16">Тренажер</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Рубеж после урока 16: открывает урок 17 -->
+                {% if cp16_passed %}
+                <a href="{% url 'checkpoint_test_17' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 14, 15, 16</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp17_passed %}Сдан: урок 17 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 17{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+                <!-- Задание 17: видео добавлено 18.11.2026; открывается после рубежа 14–16 -->
+                {% if cp17_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 17 (пунктуация, причастные и деепричастные
                                 обороты)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp17_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp17_passed %}Открыт{% else %}Откроется после рубежного теста 14–16{% endif %}</span>
                         </span>
-                    </div>
-                </div>
-
-                <!-- Урок 16: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/ekTcAmi7EB2B5gsUvNrTXi">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}#task17">Тренажер</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Рубеж после урока 17: открывает урок 18 -->
+                {% if cp17_passed %}
+                <a href="{% url 'checkpoint_test_18' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 15, 16, 17</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp18_passed %}Сдан: урок 18 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 18{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+                <!-- Задание 18: видео добавлено 18.11.2026; открывается после рубежа 15–17 -->
+                {% if cp18_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 18 (пунктуация, вводные конструкции и
                                 обращения)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp18_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp18_passed %}Открыт{% else %}Откроется после рубежного теста 15–17{% endif %}</span>
                         </span>
-                    </div>
-                </div>
-
-                <!-- Урок 17: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/gvv2CG7M8zn7o8HrMCt41f">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}#task18">Тренажер</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Рубеж после урока 18: открывает урок 19–20 -->
+                {% if cp18_passed %}
+                <a href="{% url 'checkpoint_test_19' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
+                    <div class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 16, 17, 18</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp19_passed %}Сдан: урок 19–20 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 19–20{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+                <!-- Задания 19–20 объединены в один урок (общее видео, как в тренажёре); открывается после рубежа 16–18 -->
+                {% if cp19_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
-                            <h3 class="lesson-card__title">Задание 19 (пунктуация, СПП с несколькими
-                                придаточными)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <h3 class="lesson-card__title">Задание 19–20 (пунктуация, СПП: несколько придаточных
+                                и разные виды связи)</h3>
+                            <span class="lesson-card__status {% if cp19_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp19_passed %}Открыт{% else %}Откроется после рубежного теста 16–18{% endif %}</span>
                         </span>
-                    </div>
-                </div>
-
-                <!-- Урок 18: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/cs6oBa9ZiznxZ9Tc5qmPrp">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                                <path d="M8 5v14l11-7z" />
                             </svg>
-                        </span>
-                        <span class="lesson-card__info">
-                            <h3 class="lesson-card__title">Задание 20 (пунктуация, СПП с различными видами
-                                связи)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
-                        </span>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}#task19-20">Тренажер</a></li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
+                </details>
 
-                <!-- Урок 19: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
+                <!-- Задание 20 объединено с заданием 19 в одну карточку выше (общее видео 19–20) -->
+
+                <!-- Рубеж после урока 19–20: открывает урок 21 -->
+                {% if cp19_passed %}
+                <a href="{% url 'checkpoint_test_20' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
                     <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 16–20</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp20_passed %}Сдан: урок 21 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 21{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+                <!-- Задание 21: открывается после рубежа 16–20; видео будет добавлено позже -->
+                {% if cp20_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 21 (пунктуация, тире / двоеточия / запятые)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp20_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp20_passed %}Открыт{% else %}Откроется после рубежного теста 16–20{% endif %}</span>
                         </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <ul class="lesson-card__links">
+                                <li><a href="{% url 'trainers_ege' %}#task21">Тренажер</a></li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
+                </details>
 
                 <!-- Урок 20: ЗАКРЫТ -->
                 <div class="lesson-card lesson-card--locked">

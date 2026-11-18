@@ -925,6 +925,18 @@ def lessons_ege(request):
         user=request.user, checkpoint_code='cp13')
     cp14 = CheckpointAttempt.objects.filter(
         user=request.user, checkpoint_code='cp14')
+    cp15 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp15')
+    cp16 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp16')
+    cp17 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp17')
+    cp18 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp18')
+    cp19 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp19')
+    cp20 = CheckpointAttempt.objects.filter(
+        user=request.user, checkpoint_code='cp20')
     return render(request, 'lessons_ege.html', {
         'cp9_passed': cp9.filter(passed=True).exists(),
         'cp9_attempts': cp9.count(),
@@ -953,6 +965,24 @@ def lessons_ege(request):
         'cp14_passed': cp14.filter(passed=True).exists(),
         'cp14_attempts': cp14.count(),
         'cp14_best': max([a.correct_count for a in cp14], default=0),
+        'cp15_passed': cp15.filter(passed=True).exists(),
+        'cp15_attempts': cp15.count(),
+        'cp15_best': max([a.correct_count for a in cp15], default=0),
+        'cp16_passed': cp16.filter(passed=True).exists(),
+        'cp16_attempts': cp16.count(),
+        'cp16_best': max([a.correct_count for a in cp16], default=0),
+        'cp17_passed': cp17.filter(passed=True).exists(),
+        'cp17_attempts': cp17.count(),
+        'cp17_best': max([a.correct_count for a in cp17], default=0),
+        'cp18_passed': cp18.filter(passed=True).exists(),
+        'cp18_attempts': cp18.count(),
+        'cp18_best': max([a.correct_count for a in cp18], default=0),
+        'cp19_passed': cp19.filter(passed=True).exists(),
+        'cp19_attempts': cp19.count(),
+        'cp19_best': max([a.correct_count for a in cp19], default=0),
+        'cp20_passed': cp20.filter(passed=True).exists(),
+        'cp20_attempts': cp20.count(),
+        'cp20_best': max([a.correct_count for a in cp20], default=0),
     })
 
 
@@ -10820,7 +10850,8 @@ def download_reference_file(request, file_type):
 # текущая/контрольная диагностика (generate_starting_diagnostic).
 # Ошибки считаем по заданиям: неверное задание = 1 ошибка, баллы ЕГЭ не ставим.
 CHECKPOINT_MAX_ERRORS = {'cp9': 3, 'cp91': 2, 'cp92': 2, 'cp93': 2, 'cp94': 2,
-                         'cp10': 2, 'cp12': 2, 'cp13': 2, 'cp14': 2}
+                         'cp10': 2, 'cp12': 2, 'cp13': 2, 'cp14': 2, 'cp15': 2,
+                         'cp16': 2, 'cp17': 2, 'cp18': 2, 'cp19': 2, 'cp20': 2}
 # Орфограмма буквы строки задания 9 -> подзадание (9.1/9.2/9.3/9.4)
 CHECKPOINT_ORTH_SUBTASK = {
     '1': '9', '2': '92',
@@ -10869,6 +10900,33 @@ CHECKPOINT_META = {
              'unlock_lesson': '14',
              'tasks': ['9b1', '9b2', '10b1', '10b2', '11b1', '11b2',
                        '12b1', '12b2', '13b1', '13b2']},
+    'cp15': {'session_key': 'checkpoint_15',
+             'heading': 'Рубежный тест: задания 9, 10, 11, 12, 13, 14',
+             'unlock_lesson': '15',
+             'tasks': ['9b1', '9b2', '10b1', '10b2', '11b1', '11b2',
+                       '12b1', '12b2', '13b1', '13b2', '14b1', '14b2']},
+    'cp16': {'session_key': 'checkpoint_16',
+             'heading': 'Рубежный тест: задания 9–15',
+             'unlock_lesson': '16',
+             'tasks': ['9b1', '10b1', '11b1', '12b1', '13b1', '14b1',
+                       '15b1', '15b2', '15b3']},
+    'cp17': {'session_key': 'checkpoint_17',
+             'heading': 'Рубежный тест: задания 14, 15, 16',
+             'unlock_lesson': '17',
+             'tasks': ['14b1', '15b1', '16b1', '16b2']},
+    'cp18': {'session_key': 'checkpoint_18',
+             'heading': 'Рубежный тест: задания 15, 16, 17',
+             'unlock_lesson': '18',
+             'tasks': ['15b1', '16b1', '17b1', '17b2', '17b3']},
+    'cp19': {'session_key': 'checkpoint_19',
+             'heading': 'Рубежный тест: задания 16, 17, 18',
+             'unlock_lesson': '19–20',
+             'tasks': ['16b1', '17b1', '17b2', '18b1', '18b2', '18b3']},
+    'cp20': {'session_key': 'checkpoint_20',
+             'heading': 'Рубежный тест: задания 16–20',
+             'unlock_lesson': '21',
+             'tasks': ['16b1', '17b1', '18b1', '19b1', '19b2',
+                       '20b1', '20b2']},
 }
 
 # Подписи строк разбора и ссылки рекомендаций для рубежей с 9.1/9.2
@@ -10896,6 +10954,30 @@ CHECKPOINT_TASK_ROWS = {
              '11b1': 'Задание 11 (1)', '11b2': 'Задание 11 (2)',
              '12b1': 'Задание 12 (1)', '12b2': 'Задание 12 (2)',
              '13b1': 'Задание 13 (1)', '13b2': 'Задание 13 (2)'},
+    'cp15': {'9b1': 'Задание 9 (1)', '9b2': 'Задание 9 (2)',
+             '10b1': 'Задание 10 (1)', '10b2': 'Задание 10 (2)',
+             '11b1': 'Задание 11 (1)', '11b2': 'Задание 11 (2)',
+             '12b1': 'Задание 12 (1)', '12b2': 'Задание 12 (2)',
+             '13b1': 'Задание 13 (1)', '13b2': 'Задание 13 (2)',
+             '14b1': 'Задание 14 (1)', '14b2': 'Задание 14 (2)'},
+    'cp16': {'9b1': 'Задание 9', '10b1': 'Задание 10',
+             '11b1': 'Задание 11', '12b1': 'Задание 12',
+             '13b1': 'Задание 13', '14b1': 'Задание 14',
+             '15b1': 'Задание 15 (1)', '15b2': 'Задание 15 (2)',
+             '15b3': 'Задание 15 (3)'},
+    'cp17': {'14b1': 'Задание 14', '15b1': 'Задание 15',
+             '16b1': 'Задание 16 (1)', '16b2': 'Задание 16 (2)'},
+    'cp18': {'15b1': 'Задание 15', '16b1': 'Задание 16',
+             '17b1': 'Задание 17 (1)', '17b2': 'Задание 17 (2)',
+             '17b3': 'Задание 17 (3)'},
+    'cp19': {'16b1': 'Задание 16',
+             '17b1': 'Задание 17 (1)', '17b2': 'Задание 17 (2)',
+             '18b1': 'Задание 18 (1)', '18b2': 'Задание 18 (2)',
+             '18b3': 'Задание 18 (3)'},
+    'cp20': {'16b1': 'Задание 16', '17b1': 'Задание 17',
+             '18b1': 'Задание 18',
+             '19b1': 'Задание 19 (1)', '19b2': 'Задание 19 (2)',
+             '20b1': 'Задание 20 (1)', '20b2': 'Задание 20 (2)'},
 }
 CHECKPOINT_TASK_LINKS = {
     'cp91': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
@@ -10950,6 +11032,92 @@ CHECKPOINT_TASK_LINKS = {
                     'Задание 13: НЕ и НИ слитно / раздельно, тренажёры'),
              '13b2': ('13', 'trainers_ege', [],
                     'Задание 13: НЕ и НИ слитно / раздельно, тренажёры')},
+    'cp15': {'9b1': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '9b2': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '10b1': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '10b2': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '11b1': ('11', 'task9_suffiksy', [],
+                    'Задание 11: суффиксы, тренажёры'),
+             '11b2': ('11', 'task9_suffiksy', [],
+                    'Задание 11: суффиксы, тренажёры'),
+             '12b1': ('12', 'trainers_ege', [],
+                    'Задание 12: спряжения и суффиксы, тренажёры'),
+             '12b2': ('12', 'trainers_ege', [],
+                    'Задание 12: спряжения и суффиксы, тренажёры'),
+             '13b1': ('13', 'trainers_ege', [],
+                    'Задание 13: НЕ и НИ слитно / раздельно, тренажёры'),
+             '13b2': ('13', 'trainers_ege', [],
+                    'Задание 13: НЕ и НИ слитно / раздельно, тренажёры'),
+             '14b1': ('14', 'trainers_ege', [],
+                    'Задание 14: слитно / раздельно / дефис, тренажёры'),
+             '14b2': ('14', 'trainers_ege', [],
+                    'Задание 14: слитно / раздельно / дефис, тренажёры')},
+    'cp16': {'9b1': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '10b1': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '11b1': ('11', 'task9_suffiksy', [],
+                    'Задание 11: суффиксы, тренажёры'),
+             '12b1': ('12', 'trainers_ege', [],
+                    'Задание 12: спряжения и суффиксы, тренажёры'),
+             '13b1': ('13', 'trainers_ege', [],
+                    'Задание 13: НЕ и НИ слитно / раздельно, тренажёры'),
+             '14b1': ('14', 'trainers_ege', [],
+                    'Задание 14: слитно / раздельно / дефис, тренажёры'),
+             '15b1': ('15', 'trainers_ege', [],
+                    'Задание 15: Н и НН, тренажёр'),
+             '15b2': ('15', 'trainers_ege', [],
+                    'Задание 15: Н и НН, тренажёр'),
+             '15b3': ('15', 'trainers_ege', [],
+                    'Задание 15: Н и НН, тренажёр')},
+    'cp17': {'14b1': ('14', 'trainers_ege', [],
+                    'Задание 14: слитно / раздельно / дефис, тренажёры'),
+             '15b1': ('15', 'trainers_ege', [],
+                    'Задание 15: Н и НН, тренажёр'),
+             '16b1': ('16', 'trainers_ege', [],
+                    'Задание 16: запятые, тренажёр'),
+             '16b2': ('16', 'trainers_ege', [],
+                    'Задание 16: запятые, тренажёр')},
+    'cp18': {'15b1': ('15', 'trainers_ege', [],
+                    'Задание 15: Н и НН, тренажёр'),
+             '16b1': ('16', 'trainers_ege', [],
+                    'Задание 16: запятые, тренажёр'),
+             '17b1': ('17', 'trainers_ege', [],
+                    'Задание 17: обособленные определения, тренажёр'),
+             '17b2': ('17', 'trainers_ege', [],
+                    'Задание 17: обособленные определения, тренажёр'),
+             '17b3': ('17', 'trainers_ege', [],
+                    'Задание 17: обособленные определения, тренажёр')},
+    'cp19': {'16b1': ('16', 'trainers_ege', [],
+                    'Задание 16: запятые, тренажёр'),
+             '17b1': ('17', 'trainers_ege', [],
+                    'Задание 17: обособленные определения, тренажёр'),
+             '17b2': ('17', 'trainers_ege', [],
+                    'Задание 17: обособленные определения, тренажёр'),
+             '18b1': ('18', 'trainers_ege', [],
+                    'Задание 18: вводные конструкции и обращения, тренажёр'),
+             '18b2': ('18', 'trainers_ege', [],
+                    'Задание 18: вводные конструкции и обращения, тренажёр'),
+             '18b3': ('18', 'trainers_ege', [],
+                    'Задание 18: вводные конструкции и обращения, тренажёр')},
+    'cp20': {'16b1': ('16', 'trainers_ege', [],
+                    'Задание 16: запятые, тренажёр'),
+             '17b1': ('17', 'trainers_ege', [],
+                    'Задание 17: обособленные определения, тренажёр'),
+             '18b1': ('18', 'trainers_ege', [],
+                    'Задание 18: вводные конструкции и обращения, тренажёр'),
+             '19b1': ('19', 'trainers_ege', [],
+                    'Задание 19: СПП, несколько придаточных, тренажёр'),
+             '19b2': ('19', 'trainers_ege', [],
+                    'Задание 19: СПП, несколько придаточных, тренажёр'),
+             '20b1': ('20', 'trainers_ege', [],
+                    'Задание 20: СПП, разные виды связи, тренажёр'),
+             '20b2': ('20', 'trainers_ege', [],
+                    'Задание 20: СПП, разные виды связи, тренажёр')},
     'cp13': {'9b1': ('9', 'trainers_ege', [],
                    'Задание 9: корни и ударения, тренажёры'),
              '9b2': ('9', 'trainers_ege', [],
@@ -11132,6 +11300,11 @@ def _cp_mixed_lines(user, kinds=('9', '10'), blocks=3):
         '13': (['21', '32', '36', '46', '54', '56', '57', '58',
                 '581', '582'],
                ['|', '/']),
+        # Задание 14: слитно/раздельно/дефис. Пул — планинг-орфограммы
+        # (слова и фразы, а не предложения 1400): маркеры '/'=слитно,
+        # '\'=раздельно (-> '|'), '-'=дефис.
+        '14': (['621', '64', '65', '67', '68', '69', '691', '692', '70'],
+               ['|', '/', '-']),
     }
 
     def valid_pool(orth_ids):
@@ -11150,6 +11323,9 @@ def _cp_mixed_lines(user, kinds=('9', '10'), blocks=3):
     if '13' in pools:
         pools['13'] = [(ex, l) for ex, l in pools['13']
                        if l in ('|', '/')]
+    if '14' in pools:
+        pools['14'] = [(ex, l) for ex, l in pools['14']
+                       if l in ('|', '/', '-')]
     prefers = {k: _cp10_prefer_masks(user, cfg[0])
                for k, cfg in KIND_CFG.items()}
 
@@ -11159,8 +11335,12 @@ def _cp_mixed_lines(user, kinds=('9', '10'), blocks=3):
 
     def take(pool, n, prefer):
         live = [q for q in pool if q[0].masked_word not in used]
-        if not live:
-            live = list(pool)
+        if len(live) < n:
+            # Малый пул: добираем уже использованными словами, иначе строка
+            # молча пропадает (на больших пулах live всегда >= n — без изменений)
+            extra = [q for q in pool if q[0].masked_word in used]
+            shuffle(extra)
+            live = live + extra
         pref = [q for q in live if q[0].masked_word in prefer]
         rest = [q for q in live if q[0].masked_word not in prefer]
         shuffle(pref)
@@ -11203,7 +11383,8 @@ def _cp_mixed_lines(user, kinds=('9', '10'), blocks=3):
                     'group_name': group,
                     'is_uniform': False,
                     'unit': unit,
-                    'unit_title': f'Задание {kind} ({block})',
+                    'unit_title': (f'Задание {kind}' if blocks == 1
+                                   else f'Задание {kind} ({block})'),
                 })
 
     letter_groups = {}
@@ -11218,6 +11399,104 @@ def _cp_mixed_lines(user, kinds=('9', '10'), blocks=3):
             subgroup[f'b{kind}-{block}'] = KIND_CFG[kind][1]
     return {'lines': lines, 'letter_groups': letter_groups,
             'subgroup_letters': subgroup}
+
+
+def _cp_nn_sentences(blocks: int = 3, start_flat: int = 1):
+    """Задание 15 рубежа: по одному предложению с Н/НН на блок.
+    Пул — орфограмма 1500 (как в тренажёре). Эталон только из explanation
+    или correct_letters; примеры, где число букв не совпадает с числом
+    масок, пропускаем (эталон не выдумываем). Если примеров меньше блоков,
+    предложения повторяются по кругу. Формат строк — как у _cp_mixed_lines."""
+    valid = []
+    for ex in OrthogramExample.objects.filter(
+            orthogram_id=1500, is_active=True).order_by('?'):
+        masks = (ex.masked_word or '').count('*1500*')
+        if not masks:
+            continue
+        source = ((ex.explanation or '').strip()
+                  or (ex.correct_letters or '').strip())
+        clean = source.replace(' ', '').replace('\n', '').replace('\r', '')
+        letters = [p for p in clean.split(',') if p in ('н', 'нн')]
+        if len(letters) == masks:
+            valid.append((ex, letters))
+    lines, letter_groups, subgroup = [], {}, {}
+    flat = start_flat
+    for block in range(1, blocks + 1):
+        if not valid:
+            break
+        ex, letters = valid[(block - 1) % len(valid)]
+        group = f'b15-{block}'
+        display = ex.masked_word
+        for _ in letters:
+            display = display.replace('*1500*', f'*9-{flat}*', 1)
+            letter_groups[f'9-{flat}'] = group
+            flat += 1
+        lines.append({
+            'examples': [ex],
+            'expected_letters': letters,
+            'display_line': display,
+            'available_letters': ['н', 'нн'],
+            'group_name': group,
+            'is_uniform': False,
+            'unit': f'15b{block}',
+            'unit_title': ('Задание 15' if blocks == 1
+                           else f'Задание 15 ({block})'),
+        })
+        subgroup[group] = ['н', 'нн']
+    return {'lines': lines, 'letter_groups': letter_groups,
+            'subgroup_letters': subgroup, 'next_flat': flat}
+
+
+def _cp_punktum_sentences(punktum_id: str = '1600', blocks: int = 3,
+                          per_block: int = 1, start_flat: int = 1):
+    """Предложения с запятыми для рубежа (пунктограммы 1600/1700/1800).
+    per_block — сколько предложений в блоке (в тренажёре 16 их 5).
+    Эталон '!' (запятая есть) / '?' (запятой нет) берётся из explanation;
+    примеры с несовпадением числа масок и знаков пропускаются.
+    При малом пуле предложения идут по кругу (внутри блока повторов
+    нет, пока пул не исчерпан). Ученик видит кнопки ',' и 'х'."""
+    kind = punktum_id[:2]
+    mask = f'*{punktum_id}*'
+    valid = []
+    for ex in PunktumExample.objects.filter(
+            punktum__id=punktum_id, is_active=True).order_by('?'):
+        masks = (ex.masked_word or '').count(mask)
+        if not masks:
+            continue
+        parts = [p.strip() for p in (ex.explanation or '').split(',')
+                 if p.strip()]
+        if len(parts) == masks and all(p in ('!', '?') for p in parts):
+            valid.append((ex, parts))
+    lines, letter_groups, subgroup = [], {}, {}
+    flat = start_flat
+    cursor = 0
+    for block in range(1, blocks + 1):
+        if not valid:
+            break
+        group = f'b{kind}-{block}'
+        title = (f'Задание {kind}' if blocks == 1
+                 else f'Задание {kind} ({block})')
+        for _ in range(per_block):
+            ex, letters = valid[cursor % len(valid)]
+            cursor += 1
+            display = ex.masked_word
+            for _ in letters:
+                display = display.replace(mask, f'*9-{flat}*', 1)
+                letter_groups[f'9-{flat}'] = group
+                flat += 1
+            lines.append({
+                'examples': [ex],
+                'expected_letters': letters,
+                'display_line': display,
+                'available_letters': [',', 'х'],
+                'group_name': group,
+                'is_uniform': False,
+                'unit': f'{kind}b{block}',
+                'unit_title': title,
+            })
+        subgroup[group] = [',', 'х']
+    return {'lines': lines, 'letter_groups': letter_groups,
+            'subgroup_letters': subgroup, 'next_flat': flat}
 
 
 def _checkpoint_build(request, code: str):
@@ -11243,7 +11522,7 @@ def _checkpoint_build(request, code: str):
 
     prefer_orthoepy, prefer_words9 = _checkpoint_prefer_ids(request.user)
 
-    if code != 'cp10':  # рубеж 9-10: задания 4-8 не собираем
+    if code not in ('cp10', 'cp16', 'cp17', 'cp18', 'cp19', 'cp20'):  # у этих рубежей заданий 4-8 нет
         # === Задание 4: орфоэпия ===
         try:
             test_data = OrthoepyWord.generate_test(
@@ -11336,6 +11615,81 @@ def _checkpoint_build(request, code: str):
             task9_data = _cp_mixed_lines(request.user,
                                        ('9', '10', '11', '12', '13'),
                                        blocks=2)
+        elif code == 'cp15':
+            task9_data = _cp_mixed_lines(request.user,
+                                       ('9', '10', '11', '12', '13', '14'),
+                                       blocks=2)
+        elif code == 'cp16':
+            task9_data = _cp_mixed_lines(request.user,
+                                       ('9', '10', '11', '12', '13', '14'),
+                                       blocks=1)
+            nn = _cp_nn_sentences(
+                blocks=3,
+                start_flat=sum(len(ln['expected_letters'])
+                               for ln in task9_data['lines']) + 1)
+            task9_data['lines'] += nn['lines']
+            task9_data['letter_groups'].update(nn['letter_groups'])
+            task9_data['subgroup_letters'].update(nn['subgroup_letters'])
+        elif code == 'cp17':
+            task9_data = _cp_mixed_lines(request.user, ('14',), blocks=1)
+            nn = _cp_nn_sentences(
+                blocks=1,
+                start_flat=sum(len(ln['expected_letters'])
+                               for ln in task9_data['lines']) + 1)
+            task9_data['lines'] += nn['lines']
+            task9_data['letter_groups'].update(nn['letter_groups'])
+            task9_data['subgroup_letters'].update(nn['subgroup_letters'])
+            pk = _cp_punktum_sentences('1600', blocks=2, per_block=5,
+                                       start_flat=nn['next_flat'])
+            task9_data['lines'] += pk['lines']
+            task9_data['letter_groups'].update(pk['letter_groups'])
+            task9_data['subgroup_letters'].update(pk['subgroup_letters'])
+        elif code == 'cp18':
+            nn = _cp_nn_sentences(blocks=1, start_flat=1)
+            task9_data = {'lines': nn['lines'],
+                          'letter_groups': nn['letter_groups'],
+                          'subgroup_letters': nn['subgroup_letters']}
+            p16 = _cp_punktum_sentences('1600', blocks=1, per_block=5,
+                                        start_flat=nn['next_flat'])
+            task9_data['lines'] += p16['lines']
+            task9_data['letter_groups'].update(p16['letter_groups'])
+            task9_data['subgroup_letters'].update(p16['subgroup_letters'])
+            p17 = _cp_punktum_sentences('1700', blocks=3, per_block=1,
+                                        start_flat=p16['next_flat'])
+            task9_data['lines'] += p17['lines']
+            task9_data['letter_groups'].update(p17['letter_groups'])
+            task9_data['subgroup_letters'].update(p17['subgroup_letters'])
+        elif code == 'cp19':
+            p16 = _cp_punktum_sentences('1600', blocks=1, per_block=5,
+                                        start_flat=1)
+            task9_data = {'lines': p16['lines'],
+                          'letter_groups': p16['letter_groups'],
+                          'subgroup_letters': p16['subgroup_letters']}
+            p17 = _cp_punktum_sentences('1700', blocks=2, per_block=1,
+                                        start_flat=p16['next_flat'])
+            task9_data['lines'] += p17['lines']
+            task9_data['letter_groups'].update(p17['letter_groups'])
+            task9_data['subgroup_letters'].update(p17['subgroup_letters'])
+            p18 = _cp_punktum_sentences('1800', blocks=3, per_block=1,
+                                        start_flat=p17['next_flat'])
+            task9_data['lines'] += p18['lines']
+            task9_data['letter_groups'].update(p18['letter_groups'])
+            task9_data['subgroup_letters'].update(p18['subgroup_letters'])
+        elif code == 'cp20':
+            p16 = _cp_punktum_sentences('1600', blocks=1, per_block=5,
+                                        start_flat=1)
+            task9_data = {'lines': p16['lines'],
+                          'letter_groups': p16['letter_groups'],
+                          'subgroup_letters': p16['subgroup_letters']}
+            for pid, blocks in (('1700', 1), ('1800', 1),
+                                ('1900', 2), ('2000', 2)):
+                pk = _cp_punktum_sentences(
+                    pid, blocks=blocks, per_block=1,
+                    start_flat=sum(len(ln['expected_letters'])
+                                   for ln in task9_data['lines']) + 1)
+                task9_data['lines'] += pk['lines']
+                task9_data['letter_groups'].update(pk['letter_groups'])
+                task9_data['subgroup_letters'].update(pk['subgroup_letters'])
         else:
             task9_data = generate_task9_lines(
                 config=_task9_config(code), prefer_words=prefer_words9)
@@ -11351,7 +11705,8 @@ def _checkpoint_build(request, code: str):
                 # К какому подзаданию (9.1/9.2) относится каждая буква —
                 # по маскам строк: проверка разводит результаты 9 и 92
                 session_data['task9_orths'] = [
-                    str(ln['examples'][0].orthogram_id)
+                    str(getattr(ln['examples'][0], 'orthogram_id', None)
+                        or getattr(ln['examples'][0], 'punktum_id', ''))
                     for ln in task9_data['lines']
                     if ln.get('examples')
                     for _ in ln.get('expected_letters', [])
@@ -11512,6 +11867,99 @@ def checkpoint_test_14(request):
 
 
 @subscription_required('lessons')
+def checkpoint_test_15(request):
+    """Рубеж после урока 14 (открывает 15): по два варианта заданий
+    9, 10, 11, 12, 13 и 14. Доступен после сдачи рубежа 9, 10, 11, 12, 13."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp14', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp15')
+    context, session_data = _checkpoint_build(request, 'cp15')
+    request.session[CHECKPOINT_META['cp15']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_16(request):
+    """Рубеж после урока 15 (открывает 16): по одному блоку заданий 9–14
+    и три предложения с Н/НН (задание 15). Доступен после сдачи рубежа 9–14."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp15', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp16')
+    context, session_data = _checkpoint_build(request, 'cp16')
+    request.session[CHECKPOINT_META['cp16']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_17(request):
+    """Рубеж после урока 16 (открывает 17): блок задания 14, предложение
+    с Н/НН (15) и три предложения с запятыми (16). Вход после сдачи 9–15."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp16', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp17')
+    context, session_data = _checkpoint_build(request, 'cp17')
+    request.session[CHECKPOINT_META['cp17']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_18(request):
+    """Рубеж после урока 17 (открывает 18): предложение с Н/НН (15),
+    5 предложений с запятыми (16) и по одному предложению (17) x3.
+    Вход после сдачи рубежа 14–16."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp17', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp18')
+    context, session_data = _checkpoint_build(request, 'cp18')
+    request.session[CHECKPOINT_META['cp18']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_19(request):
+    """Рубеж после урока 18 (открывает 19–20): 5 предложений с запятыми (16),
+    по одному предложению (17) x2 и по одному предложению (18) x3.
+    Вход после сдачи рубежа 15–17."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp18', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp19')
+    context, session_data = _checkpoint_build(request, 'cp19')
+    request.session[CHECKPOINT_META['cp19']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_20(request):
+    """Рубеж после урока 19–20 (открывает 21): 5 предложений с запятыми (16),
+    по одному предложению (17) и (18), по одному предложению (19) x2
+    и (20) x2. Вход после сдачи рубежа 16–18."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp19', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp20')
+    context, session_data = _checkpoint_build(request, 'cp20')
+    request.session[CHECKPOINT_META['cp20']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
 def checkpoint_test_94(request):
     """Финальный рубеж задания 9 (после урока 9.4): 4–9.1, 9.2, 9.3, 9.4.
     Доступен после сдачи рубежа 4–9.1, 9.2, 9.3."""
@@ -11634,6 +12082,9 @@ def _checkpoint_check(request, code: str):
         for i, correct_letter in enumerate(expected_letters, 1):
             key = f'9-{i}'
             user_letter = str(user_answers.get(key, '')).strip().lower()
+            # пунктуация: кнопки ','/'х' -> эталоны '!'/'?'
+            # (checkpoint.js нормализует на клиенте; дублируем для надёжности)
+            user_letter = {',': '!', 'х': '?'}.get(user_letter, user_letter)
             is_correct = (user_letter not in ('', '😊')
                           and user_letter == str(correct_letter).strip().lower())
             results[key] = is_correct

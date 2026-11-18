@@ -164,6 +164,18 @@ urlpatterns = [
          name='checkpoint_test_13'),
     path('ege/checkpoint/14/', views.checkpoint_test_14,
          name='checkpoint_test_14'),
+    path('ege/checkpoint/15/', views.checkpoint_test_15,
+         name='checkpoint_test_15'),
+    path('ege/checkpoint/16/', views.checkpoint_test_16,
+         name='checkpoint_test_16'),
+    path('ege/checkpoint/17/', views.checkpoint_test_17,
+         name='checkpoint_test_17'),
+    path('ege/checkpoint/18/', views.checkpoint_test_18,
+         name='checkpoint_test_18'),
+    path('ege/checkpoint/19/', views.checkpoint_test_19,
+         name='checkpoint_test_19'),
+    path('ege/checkpoint/20/', views.checkpoint_test_20,
+         name='checkpoint_test_20'),
 
     # Входящая диагностика ЕГЭ (фиксированный вариант из фикстуры)
     path('diagnostic/fix-ege/', views.diagnostic_fix_ege, name='diagnostic_fix_ege'),
