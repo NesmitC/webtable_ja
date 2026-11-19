@@ -873,7 +873,7 @@
 
                 <!-- Задание 20 объединено с заданием 19 в одну карточку выше (общее видео 19–20) -->
 
-                <!-- Рубеж после урока 19–20: открывает урок 21 -->
+                <!-- Рубеж после урока 19–20 (урок 21 открыт без рубежа) -->
                 {% if cp19_passed %}
                 <a href="{% url 'checkpoint_test_20' %}" class="lesson-card lesson-card--active"
                     style="display:block;text-decoration:none;color:inherit;">
@@ -881,14 +881,14 @@
                         <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Рубежный тест: задания 16–20</h3>
-                            <span class="lesson-card__status lesson-card__status--open">{% if cp20_passed %}Сдан: урок 21 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 21{% endif %}</span>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp20_passed %}Сдан · можно пересдать{% else %}Пройти рубеж{% endif %}</span>
                         </span>
                         <span class="lesson-card__chevron">→</span>
                     </div>
                 </a>
                 {% endif %}
-                <!-- Задание 21: открывается после рубежа 16–20 -->
-                {% if cp20_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                <!-- Задание 21: АКТИВНЫЙ без рубежа (как уроки 4–5) — подготовка к контрольной -->
+                <details class="lesson-card lesson-card--active">
                     <summary class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--play">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -897,7 +897,7 @@
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 21 (пунктуация, тире / двоеточия / запятые)</h3>
-                            <span class="lesson-card__status {% if cp20_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp20_passed %}Открыт{% else %}Откроется после рубежного теста 16–20{% endif %}</span>
+                            <span class="lesson-card__status lesson-card__status--open">Открыт</span>
                         </span>
                         <span class="lesson-card__chevron">▾</span>
                     </summary>
