@@ -887,7 +887,7 @@
                     </div>
                 </a>
                 {% endif %}
-                <!-- Задание 21: открывается после рубежа 16–20; видео будет добавлено позже -->
+                <!-- Задание 21: открывается после рубежа 16–20 -->
                 {% if cp20_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
                     <summary class="lesson-card__header">
                         <span class="lesson-card__icon lesson-card__icon--play">
@@ -902,6 +902,12 @@
                         <span class="lesson-card__chevron">▾</span>
                     </summary>
                     <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/ush8kzPwr1CdBNCzPYUCy7">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
                         <div class="lesson-card__materials">
                             <h4 class="lesson-card__materials-title">Материалы для работы</h4>
                             <ul class="lesson-card__links">
