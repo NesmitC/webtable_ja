@@ -20,11 +20,11 @@
         "@type": "Course",
         "@id": "https://neurostat.ru/lessons/#course",
         "name": "Видеоуроки ЕГЭ по русскому языку: задания 1–27 и итоговое сочинение",
-        "description": "Видеоуроки по каждому заданию ЕГЭ с конспектами, шпаргалками и тренажёрами. 29 уроков, учитесь в своём темпе.",
+        "description": "Видеоуроки по каждому заданию ЕГЭ с конспектами, шпаргалками и тренажёрами. 27 уроков, учитесь в своём темпе.",
         "educationalLevel": "10-11 класс",
         "teaches": "Подготовка ко всем заданиям ЕГЭ по русскому языку и итоговому сочинению",
         "inLanguage": "ru",
-        "numberOfCredits": 29,
+        "numberOfCredits": 27,
         "provider": {"@id": "https://neurostat.ru/#organization"},
         "instructor": {"@id": "https://neurostat.ru/#person"},
         "hasCourseInstance": {
@@ -71,10 +71,10 @@
             <div class="lessons-progress">
                 <div class="lessons-progress__info">
                     <span class="lessons-progress__label">Открыто</span>
-                    <span class="lessons-progress__count">12 из 29 уроков</span>
+                    <span class="lessons-progress__count">{{ lessons_open_count }} из {{ lessons_total_count }} уроков</span>
                 </div>
                 <div class="lessons-progress__bar">
-                    <div class="lessons-progress__fill" style="width: 41%;"></div>
+                    <div class="lessons-progress__fill" style="width: {{ lessons_progress_pct }}%;"></div>
                 </div>
             </div>
         </header>
@@ -917,86 +917,104 @@
                     </div>
                 </details>
 
-                <!-- Урок 20: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
+                <!-- Рубеж после урока 21: открывает урок 22 -->
+                {% if cp20_passed %}
+                <a href="{% url 'checkpoint_test_21' %}" class="lesson-card lesson-card--active"
+                    style="display:block;text-decoration:none;color:inherit;">
                     <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                        <span class="lesson-card__icon lesson-card__icon--play">⚑</span>
+                        <span class="lesson-card__info">
+                            <h3 class="lesson-card__title">Рубежный тест: задания 9–21</h3>
+                            <span class="lesson-card__status lesson-card__status--open">{% if cp21_passed %}Сдан: урок 22 открыт · можно пересдать{% else %}Пройти рубеж — откроется урок 22{% endif %}</span>
+                        </span>
+                        <span class="lesson-card__chevron">→</span>
+                    </div>
+                </a>
+                {% endif %}
+                <!-- Задание 22: открывается после рубежа 9–21 -->
+                {% if cp21_passed %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 22 (средства выразительности)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if cp21_passed %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if cp21_passed %}Открыт{% else %}Откроется после рубежного теста 9–21{% endif %}</span>
                         </span>
-                    </div>
-                </div>
-
-                <!-- Урок 21: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/ac4VrxYQN4p63rcZkxaTNb">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <p>Тренажёр и материалы появятся позже.</p>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Задания 23–25 объединены в один урок (общее видео);
+                     открывается, когда пройдены все уроки 1–22 -->
+                {% if lessons_23_26_open %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
-                            <h3 class="lesson-card__title">Задание 23 (текст, содержание)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <h3 class="lesson-card__title">Задания 23–25 (текст: содержание, типы речи, лексика)</h3>
+                            <span class="lesson-card__status {% if lessons_23_26_open %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if lessons_23_26_open %}Открыт{% else %}Откроется, когда пройдены все уроки 1–22{% endif %}</span>
                         </span>
-                    </div>
-                </div>
-
-                <!-- Урок 22: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/3Z2FHX22hBrcAAnSQ4dBwp">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                                <path d="M8 5v14l11-7z" />
                             </svg>
-                        </span>
-                        <span class="lesson-card__info">
-                            <h3 class="lesson-card__title">Задание 24 (текст, описание / повествование /
-                                рассуждение)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
-                        </span>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <p>Тренажёр и материалы появятся позже.</p>
+                        </div>
                     </div>
-                </div>
+                </details>
 
-                <!-- Урок 23: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
-                            </svg>
-                        </span>
-                        <span class="lesson-card__info">
-                            <h3 class="lesson-card__title">Задание 25 (текст, лексика)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Урок 24: ЗАКРЫТ -->
-                <div class="lesson-card lesson-card--locked">
-                    <div class="lesson-card__header">
-                        <span class="lesson-card__icon lesson-card__icon--lock">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path
-                                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" />
+                <!-- Задание 26: открывается, когда пройдены все уроки 1–22 -->
+                {% if lessons_23_26_open %}<details class="lesson-card lesson-card--active">{% else %}<details class="lesson-card lesson-card--locked">{% endif %}
+                    <summary class="lesson-card__header">
+                        <span class="lesson-card__icon lesson-card__icon--play">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
                             </svg>
                         </span>
                         <span class="lesson-card__info">
                             <h3 class="lesson-card__title">Задание 26 (текст, средства связи)</h3>
-                            <span class="lesson-card__status lesson-card__status--locked">Откроется позже</span>
+                            <span class="lesson-card__status {% if lessons_23_26_open %}lesson-card__status--open{% else %}lesson-card__status--locked{% endif %}">{% if lessons_23_26_open %}Открыт{% else %}Откроется, когда пройдены все уроки 1–22{% endif %}</span>
                         </span>
+                        <span class="lesson-card__chevron">▾</span>
+                    </summary>
+                    <div class="lesson-card__body">
+                        <a href="#" class="lesson-card__video-btn" data-video-src="https://kinescope.io/embed/55UKYprMYTBkQLJxL7xqen">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Смотреть видео
+                        </a>
+                        <div class="lesson-card__materials">
+                            <h4 class="lesson-card__materials-title">Материалы для работы</h4>
+                            <p>Тренажёр и материалы появятся позже.</p>
+                        </div>
                     </div>
-                </div>
+                </details>
 
             </div>
         </section>

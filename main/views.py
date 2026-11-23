@@ -907,82 +907,94 @@ def quizzes_ege(request):
 
 @subscription_required('lessons')
 def lessons_ege(request):
-    cp9 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp9')
-    cp91 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp91')
-    cp92 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp92')
-    cp93 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp93')
-    cp94 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp94')
-    cp10 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp10')
-    cp12 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp12')
-    cp13 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp13')
-    cp14 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp14')
-    cp15 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp15')
-    cp16 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp16')
-    cp17 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp17')
-    cp18 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp18')
-    cp19 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp19')
-    cp20 = CheckpointAttempt.objects.filter(
-        user=request.user, checkpoint_code='cp20')
+    # Одна агрегация вместо десятков запросов и выгрузки всех попыток с их
+    # JSON-снимками: страница уроков должна открываться мгновенно даже у
+    # ученика с сотней попыток.
+    from django.db.models import Case, Count, IntegerField, Max, When
+    rows = (CheckpointAttempt.objects.filter(user=request.user)
+            .values('checkpoint_code')
+            .annotate(attempts=Count('id'), best=Max('correct_count'),
+                      any_passed=Max(Case(When(passed=True, then=1),
+                                          default=0,
+                                          output_field=IntegerField()))))
+    st = {r['checkpoint_code']: r for r in rows}
+
+    def gate(code: str) -> bool:
+        return bool(st.get(code, {}).get('any_passed'))
+
+    def n_attempts(code: str) -> int:
+        return st.get(code, {}).get('attempts', 0)
+
+    def best(code: str) -> int:
+        return st.get(code, {}).get('best') or 0
+
+    # Уроки 23–25 и 26 открываются, когда пройдена вся цепочка уроков 1–22.
+    # «Урок пройден» = сдан его рубеж; уроки без рубежа (1–3, 4–8, 9.1, 21)
+    # открыты всегда. Входы рубежей не перепрыгиваются, но AND всех гейтов
+    # считаем явно — формулировка владельца дословно.
+    codes = ['91', '92', '93', '94', '10', '12', '13', '14',
+             '15', '16', '17', '18', '19', '20', '21']
+    lessons_23_26_open = all(gate('cp' + c) for c in codes)
+    # 8 уроков без рубежа + 14 карточек по гейтам + 2 новых (23–25, 26);
+    # 12.2, 27 и итоговое сочинение — заглушки «откроется позже».
+    # cp20 в прогресс не считаем: его урок 21 открыт без рубежа.
+    open_gates = sum(gate('cp' + c) for c in codes if c != '20')
+    lessons_total_count = 27
+    lessons_open_count = 8 + open_gates + (2 if lessons_23_26_open else 0)
+    lessons_progress_pct = round(lessons_open_count * 100 / lessons_total_count)
     return render(request, 'lessons_ege.html', {
-        'cp9_passed': cp9.filter(passed=True).exists(),
-        'cp9_attempts': cp9.count(),
-        'cp9_best': max([a.correct_count for a in cp9], default=0),
-        'cp91_passed': cp91.filter(passed=True).exists(),
-        'cp91_attempts': cp91.count(),
-        'cp91_best': max([a.correct_count for a in cp91], default=0),
-        'cp92_passed': cp92.filter(passed=True).exists(),
-        'cp92_attempts': cp92.count(),
-        'cp92_best': max([a.correct_count for a in cp92], default=0),
-        'cp93_passed': cp93.filter(passed=True).exists(),
-        'cp93_attempts': cp93.count(),
-        'cp93_best': max([a.correct_count for a in cp93], default=0),
-        'cp94_passed': cp94.filter(passed=True).exists(),
-        'cp94_attempts': cp94.count(),
-        'cp94_best': max([a.correct_count for a in cp94], default=0),
-        'cp10_passed': cp10.filter(passed=True).exists(),
-        'cp10_attempts': cp10.count(),
-        'cp10_best': max([a.correct_count for a in cp10], default=0),
-        'cp12_passed': cp12.filter(passed=True).exists(),
-        'cp12_attempts': cp12.count(),
-        'cp12_best': max([a.correct_count for a in cp12], default=0),
-        'cp13_passed': cp13.filter(passed=True).exists(),
-        'cp13_attempts': cp13.count(),
-        'cp13_best': max([a.correct_count for a in cp13], default=0),
-        'cp14_passed': cp14.filter(passed=True).exists(),
-        'cp14_attempts': cp14.count(),
-        'cp14_best': max([a.correct_count for a in cp14], default=0),
-        'cp15_passed': cp15.filter(passed=True).exists(),
-        'cp15_attempts': cp15.count(),
-        'cp15_best': max([a.correct_count for a in cp15], default=0),
-        'cp16_passed': cp16.filter(passed=True).exists(),
-        'cp16_attempts': cp16.count(),
-        'cp16_best': max([a.correct_count for a in cp16], default=0),
-        'cp17_passed': cp17.filter(passed=True).exists(),
-        'cp17_attempts': cp17.count(),
-        'cp17_best': max([a.correct_count for a in cp17], default=0),
-        'cp18_passed': cp18.filter(passed=True).exists(),
-        'cp18_attempts': cp18.count(),
-        'cp18_best': max([a.correct_count for a in cp18], default=0),
-        'cp19_passed': cp19.filter(passed=True).exists(),
-        'cp19_attempts': cp19.count(),
-        'cp19_best': max([a.correct_count for a in cp19], default=0),
-        'cp20_passed': cp20.filter(passed=True).exists(),
-        'cp20_attempts': cp20.count(),
-        'cp20_best': max([a.correct_count for a in cp20], default=0),
+        'cp9_passed': gate('cp9'),
+        'cp9_attempts': n_attempts('cp9'),
+        'cp9_best': best('cp9'),
+        'cp91_passed': gate('cp91'),
+        'cp91_attempts': n_attempts('cp91'),
+        'cp91_best': best('cp91'),
+        'cp92_passed': gate('cp92'),
+        'cp92_attempts': n_attempts('cp92'),
+        'cp92_best': best('cp92'),
+        'cp93_passed': gate('cp93'),
+        'cp93_attempts': n_attempts('cp93'),
+        'cp93_best': best('cp93'),
+        'cp94_passed': gate('cp94'),
+        'cp94_attempts': n_attempts('cp94'),
+        'cp94_best': best('cp94'),
+        'cp10_passed': gate('cp10'),
+        'cp10_attempts': n_attempts('cp10'),
+        'cp10_best': best('cp10'),
+        'cp12_passed': gate('cp12'),
+        'cp12_attempts': n_attempts('cp12'),
+        'cp12_best': best('cp12'),
+        'cp13_passed': gate('cp13'),
+        'cp13_attempts': n_attempts('cp13'),
+        'cp13_best': best('cp13'),
+        'cp14_passed': gate('cp14'),
+        'cp14_attempts': n_attempts('cp14'),
+        'cp14_best': best('cp14'),
+        'cp15_passed': gate('cp15'),
+        'cp15_attempts': n_attempts('cp15'),
+        'cp15_best': best('cp15'),
+        'cp16_passed': gate('cp16'),
+        'cp16_attempts': n_attempts('cp16'),
+        'cp16_best': best('cp16'),
+        'cp17_passed': gate('cp17'),
+        'cp17_attempts': n_attempts('cp17'),
+        'cp17_best': best('cp17'),
+        'cp18_passed': gate('cp18'),
+        'cp18_attempts': n_attempts('cp18'),
+        'cp18_best': best('cp18'),
+        'cp19_passed': gate('cp19'),
+        'cp19_attempts': n_attempts('cp19'),
+        'cp19_best': best('cp19'),
+        'cp20_passed': gate('cp20'),
+        'cp20_attempts': n_attempts('cp20'),
+        'cp20_best': best('cp20'),
+        'cp21_passed': gate('cp21'),
+        'cp21_attempts': n_attempts('cp21'),
+        'cp21_best': best('cp21'),
+        'lessons_23_26_open': lessons_23_26_open,
+        'lessons_open_count': lessons_open_count,
+        'lessons_total_count': lessons_total_count,
+        'lessons_progress_pct': lessons_progress_pct,
     })
 
 
@@ -10853,7 +10865,8 @@ def download_reference_file(request, file_type):
 # Ошибки считаем по заданиям: неверное задание = 1 ошибка, баллы ЕГЭ не ставим.
 CHECKPOINT_MAX_ERRORS = {'cp9': 3, 'cp91': 2, 'cp92': 2, 'cp93': 2, 'cp94': 2,
                          'cp10': 2, 'cp12': 2, 'cp13': 2, 'cp14': 2, 'cp15': 2,
-                         'cp16': 2, 'cp17': 2, 'cp18': 2, 'cp19': 2, 'cp20': 2}
+                         'cp16': 2, 'cp17': 2, 'cp18': 2, 'cp19': 2, 'cp20': 2,
+                         'cp21': 2}
 # Орфограмма буквы строки задания 9 -> подзадание (9.1/9.2/9.3/9.4)
 CHECKPOINT_ORTH_SUBTASK = {
     '1': '9', '2': '92',
@@ -10929,6 +10942,16 @@ CHECKPOINT_META = {
              'unlock_lesson': '21',
              'tasks': ['16b1', '17b1', '18b1', '19b1', '19b2',
                        '20b1', '20b2']},
+    # Рубеж после урока 21 (открывает урок 22): по одному блоку заданий 9–21
+    # в привычной форме тренажёров: 9–14 — 5 строк по 3 слова, 15 — одно
+    # предложение Н/НН, 16 — 5 предложений, 17–20 — по одному, 21 — одно
+    # предложение случайного подтипа (тире/двоеточие/запятые).
+    'cp21': {'session_key': 'checkpoint_21',
+             'heading': 'Рубежный тест: задания 9–21',
+             'unlock_lesson': '22',
+             'tasks': ['9b1', '10b1', '11b1', '12b1', '13b1', '14b1',
+                       '15b1', '16b1', '17b1', '18b1', '19b1', '20b1',
+                       '21b1']},
 }
 
 # Подписи строк разбора и ссылки рекомендаций для рубежей с 9.1/9.2
@@ -10980,6 +11003,13 @@ CHECKPOINT_TASK_ROWS = {
              '18b1': 'Задание 18',
              '19b1': 'Задание 19 (1)', '19b2': 'Задание 19 (2)',
              '20b1': 'Задание 20 (1)', '20b2': 'Задание 20 (2)'},
+    'cp21': {'9b1': 'Задание 9', '10b1': 'Задание 10',
+             '11b1': 'Задание 11', '12b1': 'Задание 12',
+             '13b1': 'Задание 13', '14b1': 'Задание 14',
+             '15b1': 'Задание 15', '16b1': 'Задание 16',
+             '17b1': 'Задание 17', '18b1': 'Задание 18',
+             '19b1': 'Задание 19', '20b1': 'Задание 20',
+             '21b1': 'Задание 21'},
 }
 CHECKPOINT_TASK_LINKS = {
     'cp91': {'9': ('9.1', 'task9_section', ['proveryaemye-glasnye'],
@@ -11120,6 +11150,32 @@ CHECKPOINT_TASK_LINKS = {
                     'Задание 20: СПП, разные виды связи, тренажёр'),
              '20b2': ('20', 'trainers_ege', [],
                     'Задание 20: СПП, разные виды связи, тренажёр')},
+    'cp21': {'9b1': ('9', 'trainers_ege', [],
+                   'Задание 9: корни и ударения, тренажёры'),
+             '10b1': ('10', 'task10_pre_pri', [],
+                    'Задание 10: приставки ПРЕ- и ПРИ-'),
+             '11b1': ('11', 'task9_suffiksy', [],
+                    'Задание 11: суффиксы, тренажёры'),
+             '12b1': ('12', 'trainers_ege', [],
+                    'Задание 12: спряжения и суффиксы, тренажёры'),
+             '13b1': ('13', 'trainers_ege', [],
+                    'Задание 13: НЕ и НИ слитно / раздельно, тренажёры'),
+             '14b1': ('14', 'trainers_ege', [],
+                    'Задание 14: слитно / раздельно / дефис, тренажёры'),
+             '15b1': ('15', 'trainers_ege', [],
+                    'Задание 15: Н и НН, тренажёр'),
+             '16b1': ('16', 'trainers_ege', [],
+                    'Задание 16: запятые, тренажёр'),
+             '17b1': ('17', 'trainers_ege', [],
+                    'Задание 17: обособленные определения, тренажёр'),
+             '18b1': ('18', 'trainers_ege', [],
+                    'Задание 18: вводные конструкции и обращения, тренажёр'),
+             '19b1': ('19', 'trainers_ege', [],
+                    'Задание 19: СПП, несколько придаточных, тренажёр'),
+             '20b1': ('20', 'trainers_ege', [],
+                    'Задание 20: СПП, разные виды связи, тренажёр'),
+             '21b1': ('21', 'trainers_ege', [],
+                    'Задание 21: тире, двоеточие и запятые, тренажёр')},
     'cp13': {'9b1': ('9', 'trainers_ege', [],
                    'Задание 9: корни и ударения, тренажёры'),
              '9b2': ('9', 'trainers_ege', [],
@@ -11501,6 +11557,65 @@ def _cp_punktum_sentences(punktum_id: str = '1600', blocks: int = 3,
             'subgroup_letters': subgroup, 'next_flat': flat}
 
 
+# Алфавиты кнопок задания 21 — как в тренажёре (generate_punktum_exercise_multi)
+CP21_ALPHABETS = {
+    '2100': ['5', '8', '8.1', '9.2', '10', '13', '16', '18'],
+    '2101': ['5', '9.1', '19'],
+    '2102': ['2', '4.0', '4.1', '4.2', '5', '6', '7', '11', '12',
+             '13', '14', '15', '16', '17'],
+}
+CP21_KIND_NAME = {'2100': 'тире', '2101': 'двоеточие', '2102': 'запятые'}
+
+
+def _cp_punktum21_sentence(start_flat: int = 1):
+    """Задание 21 рубежа: одно предложение случайного подтипа
+    (2100/2101/2102), как в тренажёре. Эталон — номера пунктограмм
+    из explanation; кнопки — алфавит подтипа. Примеры, где число масок
+    не совпадает с числом эталонов или эталон вне алфавита, пропускаем
+    (ответить нечем). Подтипы с пустым пулом пропускаются; если пусты
+    все — блок не генерируется."""
+    subtypes = list(CP21_ALPHABETS)
+    random.shuffle(subtypes)
+    for pid in subtypes:
+        alpha = CP21_ALPHABETS[pid]
+        mask = f'*{pid}*'
+        valid = []
+        for ex in PunktumExample.objects.filter(
+                punktum__id=pid, is_active=True).order_by('?'):
+            masks = (ex.masked_word or '').count(mask)
+            if not masks:
+                continue
+            parts = [p.strip() for p in (ex.explanation or '').split(',')
+                     if p.strip()]
+            if len(parts) == masks and all(p in alpha for p in parts):
+                valid.append((ex, parts))
+        if not valid:
+            continue
+        ex, letters = valid[0]
+        group = 'b21-1'
+        display = ex.masked_word
+        letter_groups = {}
+        flat = start_flat
+        for _ in letters:
+            display = display.replace(mask, f'*9-{flat}*', 1)
+            letter_groups[f'9-{flat}'] = group
+            flat += 1
+        line = {
+            'examples': [ex],
+            'expected_letters': letters,
+            'display_line': display,
+            'available_letters': alpha,
+            'group_name': group,
+            'is_uniform': False,
+            'unit': '21b1',
+            'unit_title': f'Задание 21 ({CP21_KIND_NAME[pid]})',
+        }
+        return {'lines': [line], 'letter_groups': letter_groups,
+                'subgroup_letters': {group: alpha}, 'next_flat': flat}
+    return {'lines': [], 'letter_groups': {}, 'subgroup_letters': {},
+            'next_flat': start_flat}
+
+
 def _checkpoint_build(request, code: str):
     """Собирает контекст и сессию рубежа (code: cp9 | cp91).
     Контент — из БД теми же генераторами, что текущая диагностика."""
@@ -11524,7 +11639,8 @@ def _checkpoint_build(request, code: str):
 
     prefer_orthoepy, prefer_words9 = _checkpoint_prefer_ids(request.user)
 
-    if code not in ('cp10', 'cp16', 'cp17', 'cp18', 'cp19', 'cp20'):  # у этих рубежей заданий 4-8 нет
+    if code not in ('cp10', 'cp16', 'cp17', 'cp18', 'cp19', 'cp20',
+                    'cp21'):  # у этих рубежей заданий 4-8 нет
         # === Задание 4: орфоэпия ===
         try:
             test_data = OrthoepyWord.generate_test(
@@ -11692,6 +11808,37 @@ def _checkpoint_build(request, code: str):
                 task9_data['lines'] += pk['lines']
                 task9_data['letter_groups'].update(pk['letter_groups'])
                 task9_data['subgroup_letters'].update(pk['subgroup_letters'])
+        elif code == 'cp21':
+            # 9–14: по одному блоку 5 строк по 3 слова (как в cp16)
+            task9_data = _cp_mixed_lines(request.user,
+                                       ('9', '10', '11', '12', '13', '14'),
+                                       blocks=1)
+            nn = _cp_nn_sentences(
+                blocks=1,
+                start_flat=sum(len(ln['expected_letters'])
+                               for ln in task9_data['lines']) + 1)
+            task9_data['lines'] += nn['lines']
+            task9_data['letter_groups'].update(nn['letter_groups'])
+            task9_data['subgroup_letters'].update(nn['subgroup_letters'])
+            p16 = _cp_punktum_sentences('1600', blocks=1, per_block=5,
+                                        start_flat=nn['next_flat'])
+            task9_data['lines'] += p16['lines']
+            task9_data['letter_groups'].update(p16['letter_groups'])
+            task9_data['subgroup_letters'].update(p16['subgroup_letters'])
+            for pid in ('1700', '1800', '1900', '2000'):
+                pk = _cp_punktum_sentences(
+                    pid, blocks=1, per_block=1,
+                    start_flat=sum(len(ln['expected_letters'])
+                                   for ln in task9_data['lines']) + 1)
+                task9_data['lines'] += pk['lines']
+                task9_data['letter_groups'].update(pk['letter_groups'])
+                task9_data['subgroup_letters'].update(pk['subgroup_letters'])
+            p21 = _cp_punktum21_sentence(
+                start_flat=sum(len(ln['expected_letters'])
+                               for ln in task9_data['lines']) + 1)
+            task9_data['lines'] += p21['lines']
+            task9_data['letter_groups'].update(p21['letter_groups'])
+            task9_data['subgroup_letters'].update(p21['subgroup_letters'])
         else:
             task9_data = generate_task9_lines(
                 config=_task9_config(code), prefer_words=prefer_words9)
@@ -11957,6 +12104,23 @@ def checkpoint_test_20(request):
         return _checkpoint_check(request, 'cp20')
     context, session_data = _checkpoint_build(request, 'cp20')
     request.session[CHECKPOINT_META['cp20']['session_key']] = session_data
+    request.session.modified = True
+    return render(request, 'test_fix_ege/checkpoint_test.html', context)
+
+
+@subscription_required('lessons')
+def checkpoint_test_21(request):
+    """Рубеж после урока 21 (открывает 22): по одному блоку заданий 9–14
+    (5 строк по 3 слова), предложение с Н/НН (15), 5 предложений с запятыми
+    (16), по одному предложению (17–20) и случайный подтип задания 21.
+    Вход после сдачи рубежа 16–20."""
+    if not CheckpointAttempt.objects.filter(
+            user=request.user, checkpoint_code='cp20', passed=True).exists():
+        return redirect('lessons_ege')
+    if request.method == 'POST':
+        return _checkpoint_check(request, 'cp21')
+    context, session_data = _checkpoint_build(request, 'cp21')
+    request.session[CHECKPOINT_META['cp21']['session_key']] = session_data
     request.session.modified = True
     return render(request, 'test_fix_ege/checkpoint_test.html', context)
 

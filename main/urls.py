@@ -176,6 +176,8 @@ urlpatterns = [
          name='checkpoint_test_19'),
     path('ege/checkpoint/20/', views.checkpoint_test_20,
          name='checkpoint_test_20'),
+    path('ege/checkpoint/21/', views.checkpoint_test_21,
+         name='checkpoint_test_21'),
 
     # Входящая диагностика ЕГЭ (фиксированный вариант из фикстуры)
     path('diagnostic/fix-ege/', views.diagnostic_fix_ege, name='diagnostic_fix_ege'),
